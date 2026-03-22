@@ -1,0 +1,8 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: pdsl-07-node-app
+    ports:
+      - "827:8080"

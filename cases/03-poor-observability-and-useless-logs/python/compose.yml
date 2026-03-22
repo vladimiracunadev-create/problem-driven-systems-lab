@@ -1,0 +1,8 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: pdsl-03-python-app
+    ports:
+      - "833:8080"

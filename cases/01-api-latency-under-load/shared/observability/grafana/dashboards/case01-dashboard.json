@@ -1,0 +1,104 @@
+{
+  "annotations": {
+    "list": []
+  },
+  "editable": true,
+  "graphTooltip": 0,
+  "panels": [
+    {
+      "type": "timeseries",
+      "title": "App p95 / p99 latency (ms)",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 0
+      },
+      "targets": [
+        {
+          "expr": "app_request_latency_ms{stat=\"p95\"}",
+          "legendFormat": "p95"
+        },
+        {
+          "expr": "app_request_latency_ms{stat=\"p99\"}",
+          "legendFormat": "p99"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "DB time and DB queries",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 0
+      },
+      "targets": [
+        {
+          "expr": "app_db_time_ms{stat=\"avg\"}",
+          "legendFormat": "db avg ms"
+        },
+        {
+          "expr": "app_db_queries{stat=\"avg\"}",
+          "legendFormat": "db avg queries"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Route p95 latency",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 8
+      },
+      "targets": [
+        {
+          "expr": "app_route_latency_ms{stat=\"p95\",route=\"/report-legacy\"}",
+          "legendFormat": "legacy p95"
+        },
+        {
+          "expr": "app_route_latency_ms{stat=\"p95\",route=\"/report-optimized\"}",
+          "legendFormat": "optimized p95"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Worker duration and PostgreSQL connections",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 8
+      },
+      "targets": [
+        {
+          "expr": "app_worker_last_duration_ms",
+          "legendFormat": "worker duration ms"
+        },
+        {
+          "expr": "pg_stat_database_numbackends{datname=\"problemlab\"}",
+          "legendFormat": "db connections"
+        }
+      ]
+    }
+  ],
+  "schemaVersion": 39,
+  "style": "dark",
+  "tags": [
+    "problem-lab",
+    "case01"
+  ],
+  "templating": {
+    "list": []
+  },
+  "time": {
+    "from": "now-15m",
+    "to": "now"
+  },
+  "title": "Case 01 - API latency under load",
+  "version": 1
+}

@@ -1,0 +1,34 @@
+# N+1 queries y cuellos de botella en base de datos — Python
+
+## Objetivo de esta variante
+Representar este caso desde el stack **Python**, manteniendo foco en el problema y no solo en la sintaxis.
+
+## Qué debería mostrar esta carpeta
+- una base dockerizada,
+- un punto de entrada mínimo,
+- espacio para instrumentación, pruebas o scripts,
+- notas de diseño específicas del stack.
+
+## Qué NO debería hacer
+- mezclar dependencias de otros stacks,
+- levantar todo el laboratorio,
+- esconder decisiones importantes fuera del repositorio.
+
+## Puertos de referencia
+- Puerto local sugerido: `832`
+
+## Comando esperado
+```bash
+docker compose -f compose.yml up -d --build
+```
+
+## Notas del stack
+En Python conviene estudiar este caso considerando:
+- ergonomía del runtime,
+- patrones habituales del ecosistema,
+- observabilidad disponible,
+- costos de complejidad,
+- límites y trade-offs específicos.
+
+## Estado inicial
+Esta carpeta deja una base mínima documentada y ampliable para que el caso evolucione hacia un escenario más realista.

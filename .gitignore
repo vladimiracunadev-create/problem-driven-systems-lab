@@ -1,0 +1,21 @@
+# General
+.DS_Store
+Thumbs.db
+.env
+.env.local
+*.log
+
+# Docker / build
+**/.docker-cache/
+**/tmp/
+**/vendor/
+**/node_modules/
+**/__pycache__/
+**/bin/
+**/obj/
+**/out/
+**/target/
+
+# IDE
+.vscode/
+.idea/

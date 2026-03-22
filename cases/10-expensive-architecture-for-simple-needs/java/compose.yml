@@ -1,0 +1,8 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: pdsl-10-java-app
+    ports:
+      - "8410:8080"

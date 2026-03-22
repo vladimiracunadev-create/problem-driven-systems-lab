@@ -1,0 +1,8 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: pdsl-12-python-app
+    ports:
+      - "8312:8080"

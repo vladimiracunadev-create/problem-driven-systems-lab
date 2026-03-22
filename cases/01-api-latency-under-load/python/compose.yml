@@ -1,0 +1,13 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: pdsl-01-python-app
+    ports:
+      - "831:8080"
+    healthcheck:
+      test: ["CMD", "python", "-c", "print('ok')"]
+      interval: 10s
+      timeout: 3s
+      retries: 3

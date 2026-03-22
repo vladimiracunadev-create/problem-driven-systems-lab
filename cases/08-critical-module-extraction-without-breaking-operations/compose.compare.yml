@@ -1,0 +1,40 @@
+services:
+  php:
+    build:
+      context: ./php
+      dockerfile: Dockerfile
+    container_name: pdsl-08-php
+    ports:
+      - "818:8080"
+
+  node:
+    build:
+      context: ./node
+      dockerfile: Dockerfile
+    container_name: pdsl-08-node
+    ports:
+      - "828:8080"
+
+  python:
+    build:
+      context: ./python
+      dockerfile: Dockerfile
+    container_name: pdsl-08-python
+    ports:
+      - "838:8080"
+
+  java:
+    build:
+      context: ./java
+      dockerfile: Dockerfile
+    container_name: pdsl-08-java
+    ports:
+      - "848:8080"
+
+  dotnet:
+    build:
+      context: ./dotnet
+      dockerfile: Dockerfile
+    container_name: pdsl-08-dotnet
+    ports:
+      - "858:8080"

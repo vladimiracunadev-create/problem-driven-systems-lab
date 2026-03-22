@@ -1,0 +1,40 @@
+services:
+  php:
+    build:
+      context: ./php
+      dockerfile: Dockerfile
+    container_name: pdsl-10-php
+    ports:
+      - "8110:8080"
+
+  node:
+    build:
+      context: ./node
+      dockerfile: Dockerfile
+    container_name: pdsl-10-node
+    ports:
+      - "8210:8080"
+
+  python:
+    build:
+      context: ./python
+      dockerfile: Dockerfile
+    container_name: pdsl-10-python
+    ports:
+      - "8310:8080"
+
+  java:
+    build:
+      context: ./java
+      dockerfile: Dockerfile
+    container_name: pdsl-10-java
+    ports:
+      - "8410:8080"
+
+  dotnet:
+    build:
+      context: ./dotnet
+      dockerfile: Dockerfile
+    container_name: pdsl-10-dotnet
+    ports:
+      - "8510:8080"

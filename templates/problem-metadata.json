@@ -1,0 +1,13 @@
+{
+  "id": "XX",
+  "slug": "example-problem",
+  "title": "Ejemplo",
+  "summary": "Resumen",
+  "stacks": [
+    "php",
+    "node",
+    "python",
+    "java",
+    "dotnet"
+  ]
+}
