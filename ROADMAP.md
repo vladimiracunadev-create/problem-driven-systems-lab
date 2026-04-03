@@ -5,8 +5,10 @@
 ## Fotografia actual
 
 - Casos `01`, `02` y `03` operativos en PHP.
+- Caso `03` operativo tambien en Node.js y Python.
 - Docker por caso y por stack definido como ruta oficial.
 - Familia documental profesional incorporada en la raiz del repo.
+- Catalogo y portal conectados por metadatos compartidos.
 - Casos `04` al `12` documentados y listos para profundizacion funcional.
 
 ## Fase 1 - Base estructural
@@ -24,6 +26,7 @@ Estado: completada
 
 - README raiz reestructurado con rutas por audiencia.
 - Incorporacion de `RECRUITER.md`, `INSTALL.md`, `RUNBOOK.md`, `SUPPORT.md`, `SECURITY.md`, `CONTRIBUTING.md` y `CHANGELOG.md`.
+- Incorporacion de `ARCHITECTURE.md` como vista ejecutiva del sistema actual.
 - Alineacion editorial con el ecosistema publico de Vladimir Acuna: Docker-first, honestidad de madurez, documentacion operativa y valor ejecutivo.
 
 ## Fase 2 - Profundizacion tecnica
@@ -34,13 +37,14 @@ Estado: en progreso
 - Agregar medicion reproducible donde el problema lo requiera.
 - Sumar mas observabilidad compartida cuando aporte valor real.
 - Llevar el caso `01` a mayor paridad multi-stack sin degradarlo a demo superficial.
+- Llevar el caso `02` a mayor paridad multi-stack con una implementacion real fuera de PHP.
 - Continuar con casos `04` al `12`, priorizando problemas con mayor impacto operativo.
 
 Avance actual:
 
 - Caso `01`: PHP + PostgreSQL + worker + Prometheus + Grafana.
 - Caso `02`: PHP + PostgreSQL con N+1 legacy vs lectura optimizada.
-- Caso `03`: PHP con logs pobres vs telemetria util y trazabilidad.
+- Caso `03`: PHP + Node.js + Python con logs pobres vs telemetria util y trazabilidad.
 
 ## Fase 3 - Valor de portafolio
 

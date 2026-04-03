@@ -1,0 +1,84 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  structure:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.3"
+
+      - name: Check generated catalog
+        run: php scripts/generate_case_catalog.php --check
+
+      - name: Validate repository structure
+        run: bash scripts/validate-structure.sh
+
+  compose-config:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        compose_file:
+          - compose.root.yml
+          - cases/01-api-latency-under-load/php/compose.yml
+          - cases/02-n-plus-one-and-db-bottlenecks/php/compose.yml
+          - cases/03-poor-observability-and-useless-logs/php/compose.yml
+          - cases/03-poor-observability-and-useless-logs/node/compose.yml
+          - cases/03-poor-observability-and-useless-logs/python/compose.yml
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate docker compose file
+        run: docker compose -f ${{ matrix.compose_file }} config > /dev/null
+
+  compose-smoke:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - name: portal
+            compose_file: compose.root.yml
+            probe_url: http://127.0.0.1:8080/
+          - name: case03-php
+            compose_file: cases/03-poor-observability-and-useless-logs/php/compose.yml
+            probe_url: http://127.0.0.1:813/health
+          - name: case03-node
+            compose_file: cases/03-poor-observability-and-useless-logs/node/compose.yml
+            probe_url: http://127.0.0.1:823/health
+          - name: case03-python
+            compose_file: cases/03-poor-observability-and-useless-logs/python/compose.yml
+            probe_url: http://127.0.0.1:833/health
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build and boot ${{ matrix.name }}
+        run: docker compose -f ${{ matrix.compose_file }} up -d --build
+
+      - name: Probe ${{ matrix.name }}
+        shell: bash
+        run: |
+          for attempt in {1..40}; do
+            if curl -fsS "${{ matrix.probe_url }}" > /dev/null; then
+              exit 0
+            fi
+            sleep 2
+          done
+          docker compose -f "${{ matrix.compose_file }}" ps
+          docker compose -f "${{ matrix.compose_file }}" logs
+          exit 1
+
+      - name: Shutdown ${{ matrix.name }}
+        if: always()
+        run: docker compose -f ${{ matrix.compose_file }} down -v

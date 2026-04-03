@@ -1,13 +1,11 @@
 {
   "id": "XX",
+  "icon": "🧪",
   "slug": "example-problem",
   "title": "Ejemplo",
+  "category": "Categoria",
+  "status": "DOCUMENTADO / SCAFFOLD",
+  "level_detail": "estructura y docs listas",
   "summary": "Resumen",
-  "stacks": [
-    "php",
-    "node",
-    "python",
-    "java",
-    "dotnet"
-  ]
+  "operational_stacks": []
 }

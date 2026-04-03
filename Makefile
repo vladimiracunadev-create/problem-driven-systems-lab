@@ -1,12 +1,15 @@
 SHELL := /bin/bash
 
-.PHONY: help portal-up portal-down portal-logs case-list case-up case-down compare-up compare-down case-load case1-benchmark
+.PHONY: help portal-up portal-down portal-logs case-list case-up case-down compare-up compare-down case-load case1-benchmark catalog-sync catalog-check validate-structure
 
 help:
 	@echo "Comandos disponibles:"
 	@echo "  make portal-up"
 	@echo "  make portal-down"
 	@echo "  make portal-logs"
+	@echo "  make catalog-sync"
+	@echo "  make catalog-check"
+	@echo "  make validate-structure"
 	@echo "  make case-list"
 	@echo "  make case-up CASE=01-api-latency-under-load STACK=php"
 	@echo "  make case-down CASE=01-api-latency-under-load STACK=php"
@@ -23,6 +26,15 @@ portal-down:
 
 portal-logs:
 	docker compose -f compose.root.yml logs -f
+
+catalog-sync:
+	php scripts/generate_case_catalog.php
+
+catalog-check:
+	php scripts/generate_case_catalog.php --check
+
+validate-structure:
+	bash scripts/validate-structure.sh
 
 case-list:
 	@find cases -maxdepth 1 -mindepth 1 -type d | sort

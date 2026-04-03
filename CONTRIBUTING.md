@@ -1,8 +1,8 @@
-# CONTRIBUTING
+# 🧱 CONTRIBUTING
 
 Guia para contribuir sin degradar el estandar tecnico ni documental del laboratorio.
 
-## Flujo recomendado
+## 🔁 Flujo recomendado
 
 1. Trabaja en una rama dedicada.
 2. Implementa o ajusta el caso.
@@ -10,11 +10,11 @@ Guia para contribuir sin degradar el estandar tecnico ni documental del laborato
 4. Actualiza la documentacion afectada en el mismo cambio.
 5. Usa un commit descriptivo y pequeno si es posible.
 
-## Regla principal del repositorio
+## 🎯 Regla principal del repositorio
 
 Si un caso se marca como `OPERATIVO`, debe resolver un problema real con suficiente evidencia. No basta con un endpoint trivial o una simulacion superficial.
 
-## Al agregar o profundizar un caso
+## 🧪 Al agregar o profundizar un caso
 
 Cada cambio serio deberia considerar:
 
@@ -24,14 +24,14 @@ Cada cambio serio deberia considerar:
 - explicacion honesta de limites;
 - observabilidad o diagnostico suficiente para sostener la narrativa tecnica.
 
-## Reglas editoriales
+## 📝 Reglas editoriales
 
 - Mantener consistencia con la familia documental raiz.
 - Explicitar si algo es `OPERATIVO`, `DOCUMENTADO / SCAFFOLD` o `PLANIFICADO`.
 - Evitar claims de paridad multi-stack que el codigo no soporte.
 - No convertir un caso real en un demo pobre solo para "completar lenguajes".
 
-## Convenciones utiles de commit
+## 🧾 Convenciones utiles de commit
 
 | Prefijo | Uso |
 | --- | --- |
@@ -41,14 +41,14 @@ Cada cambio serio deberia considerar:
 | `refactor:` | reorganizacion sin cambio funcional principal |
 | `chore:` | mantenimiento, limpieza o tooling |
 
-## Artefactos que no deben versionarse
+## 🧹 Artefactos que no deben versionarse
 
 - binarios compilados;
 - caches temporales;
 - archivos de salida de benchmarks;
 - datos locales de ejecucion que no pertenezcan a la fuente del caso.
 
-## Validacion minima esperada
+## ✅ Validacion minima esperada
 
 Antes de proponer cambios:
 

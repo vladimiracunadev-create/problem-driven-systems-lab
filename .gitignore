@@ -11,6 +11,11 @@ Thumbs.db
 **/vendor/
 **/node_modules/
 **/__pycache__/
+**/.pytest_cache/
+**/.mypy_cache/
+**/.ruff_cache/
+**/.coverage
+**/coverage/
 **/*.pyc
 **/bin/
 **/obj/
@@ -18,6 +23,13 @@ Thumbs.db
 **/target/
 **/*.class
 **/shared/benchmark/out/
+**/*.sqlite
+**/*.sqlite3
+**/.phpunit.result.cache
+**/metrics-store.json
+**/telemetry.json
+**/legacy.log
+**/observable.log
 
 # IDE
 .vscode/

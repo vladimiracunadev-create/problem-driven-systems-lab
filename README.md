@@ -15,7 +15,9 @@ Portafolio tecnico orientado a problemas reales de software: rendimiento, observ
 
 - El repositorio modela 12 problemas reales, desde sintoma hasta solucion y valor de negocio.
 - Los casos `01`, `02` y `03` ya cuentan con implementacion operativa real en PHP.
+- El caso `03` ya cuenta tambien con implementaciones operativas en Node.js y Python.
 - Docker es la via oficial para ejecutar los casos implementados de forma limpia y reproducible.
+- El catalogo del portal y `docs/case-catalog.md` ahora se sostienen desde metadatos compartidos.
 - La madurez se comunica con honestidad: `OPERATIVO`, `DOCUMENTADO / SCAFFOLD` o `PLANIFICADO`.
 - El objetivo no es competir por sintaxis ni vender seniority vacia, sino evidenciar criterio transferible.
 
@@ -40,7 +42,8 @@ Portafolio tecnico orientado a problemas reales de software: rendimiento, observ
 Estado actual:
 
 - `OPERATIVO`: casos [01](cases/01-api-latency-under-load/README.md), [02](cases/02-n-plus-one-and-db-bottlenecks/README.md) y [03](cases/03-poor-observability-and-useless-logs/README.md) en PHP.
-- `DOCUMENTADO / SCAFFOLD`: casos `04` al `12`, y stacks no PHP de los casos `01` al `03`.
+- `OPERATIVO` adicional en stacks no PHP: [caso 03](cases/03-poor-observability-and-useless-logs/README.md) en Node.js y Python.
+- `DOCUMENTADO / SCAFFOLD`: casos `04` al `12`, y stacks no profundizados de los casos `01` al `03`.
 
 ## Por donde empezar
 
@@ -88,7 +91,7 @@ make case-up CASE=03-poor-observability-and-useless-logs STACK=php
 | --- | --- | --- |
 | [01 - API lenta bajo carga](cases/01-api-latency-under-load/README.md) | `OPERATIVO` | Mide latencia, contencion sobre DB, worker concurrente y mejora antes/despues |
 | [02 - N+1 y cuellos de botella DB](cases/02-n-plus-one-and-db-bottlenecks/README.md) | `OPERATIVO` | Compara consultas legacy vs optimizadas sobre un modelo relacional real |
-| [03 - Observabilidad deficiente](cases/03-poor-observability-and-useless-logs/README.md) | `OPERATIVO` | Contrasta logs inutiles contra telemetria util para reducir MTTR |
+| [03 - Observabilidad deficiente](cases/03-poor-observability-and-useless-logs/README.md) | `OPERATIVO` | Contrasta logs inutiles contra telemetria util para reducir MTTR en PHP, Node.js y Python |
 
 El catalogo completo esta en [docs/case-catalog.md](docs/case-catalog.md).
 
@@ -97,6 +100,7 @@ El catalogo completo esta en [docs/case-catalog.md](docs/case-catalog.md).
 | Documento | Para que sirve |
 | --- | --- |
 | [RECRUITER.md](RECRUITER.md) | Ruta ejecutiva para evaluacion rapida |
+| [ARCHITECTURE.md](ARCHITECTURE.md) | Vista ejecutiva de la arquitectura actual del sistema |
 | [INSTALL.md](INSTALL.md) | Instalacion y puesta en marcha recomendada |
 | [RUNBOOK.md](RUNBOOK.md) | Operacion diaria, diagnostico y respuesta inicial |
 | [SECURITY.md](SECURITY.md) | Politica de seguridad y reporte responsable |

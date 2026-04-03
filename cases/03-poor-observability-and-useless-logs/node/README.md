@@ -1,34 +1,54 @@
-# Observabilidad deficiente y logs inútiles — Node.js
+# 🔭 Caso 03 - Node.js con observabilidad comparada
 
-## Objetivo de esta variante
-Representar este caso desde el stack **Node.js**, manteniendo foco en el problema y no solo en la sintaxis.
+Esta variante ya no es una base minima: implementa el mismo flujo conceptual del caso PHP con dos modos de ejecucion.
 
-## Qué debería mostrar esta carpeta
-- una base dockerizada,
-- un punto de entrada mínimo,
-- espacio para instrumentación, pruebas o scripts,
-- notas de diseño específicas del stack.
+- `checkout-legacy` -> logs pobres, sin correlacion y con muy poca capacidad de diagnostico
+- `checkout-observable` -> logs estructurados, `request_id`, `trace_id`, metricas y trazas locales
 
-## Qué NO debería hacer
-- mezclar dependencias de otros stacks,
-- levantar todo el laboratorio,
-- esconder decisiones importantes fuera del repositorio.
+## ✅ Que resuelve
 
-## Puertos de referencia
-- Puerto local sugerido: `823`
+Modela un checkout con pasos internos y dependencias externas:
 
-## Comando esperado
+- validacion del carrito;
+- reserva de inventario;
+- autorizacion de pago;
+- envio de notificacion.
+
+Cuando algo falla, el modo legacy deja evidencia insuficiente. El modo observable deja informacion accionable para responder rapido que paso, donde y con que impacto.
+
+## 🧰 Servicio
+
+- `app` -> API Node.js 20 con logs legacy y observable, metricas y trazas locales
+
+## 🚀 Arranque
+
 ```bash
 docker compose -f compose.yml up -d --build
 ```
 
-## Notas del stack
-En Node.js conviene estudiar este caso considerando:
-- ergonomía del runtime,
-- patrones habituales del ecosistema,
-- observabilidad disponible,
-- costos de complejidad,
-- límites y trade-offs específicos.
+## 🔎 Endpoints
 
-## Estado inicial
-Esta carpeta deja una base mínima documentada y ampliable para que el caso evolucione hacia un escenario más realista.
+```bash
+curl http://localhost:823/
+curl http://localhost:823/health
+curl "http://localhost:823/checkout-legacy?scenario=payment_timeout&customer_id=42&cart_items=3"
+curl "http://localhost:823/checkout-observable?scenario=payment_timeout&customer_id=42&cart_items=3"
+curl http://localhost:823/logs/legacy?tail=20
+curl http://localhost:823/logs/observable?tail=20
+curl http://localhost:823/traces?limit=10
+curl http://localhost:823/diagnostics/summary
+curl http://localhost:823/metrics
+curl http://localhost:823/metrics-prometheus
+curl http://localhost:823/reset-observability
+```
+
+## 🧭 Que observar
+
+- si puedes identificar el paso exacto que fallo;
+- si puedes correlacionar eventos de una misma request;
+- si tienes latencias por etapa y dependencia;
+- si el diagnostico permite pasar de "fallo algo" a "fallo payment.authorize por timeout".
+
+## ⚖️ Nota de honestidad
+
+No reemplaza un stack completo de tracing distribuido, pero si deja una base reproducible para demostrar por que logs pobres alargan el MTTR y que cambia cuando la telemetria es util.

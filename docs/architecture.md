@@ -1,65 +1,93 @@
 # 🏛️ Arquitectura del repositorio
 
-> Cómo está organizado el laboratorio y por qué.
-
----
+> Vista estructural del laboratorio, con foco en el estado actual del sistema y no solo en la forma del arbol.
 
 ## 📐 Estructura por niveles
 
-```
+```text
 problem-driven-systems-lab/
-│
-├── [Nivel 1] Raíz del repositorio
-│   ├── README.md          → punto de entrada del laboratorio
-│   ├── ROADMAP.md         → estado y evolución del proyecto
-│   ├── Makefile           → comandos operacionales
-│   ├── compose.root.yml   → portal principal
-│   └── docs/              → documentación global
-│
-├── [Nivel 2] Portal
-│   └── portal/            → landing local PHP 8
-│
-├── [Nivel 3] Casos
-│   └── cases/             → 12 problemas reales documentados
-│       ├── 01-api-latency-under-load/
-│       ├── 02-n-plus-one-and-db-bottlenecks/
-│       └── ... (hasta el 12)
-│
-└── [Nivel 4] Implementaciones por stack
-    └── cases/<caso>/
-        ├── php/           → implementación PHP 8
-        ├── node/          → implementación Node.js
-        ├── python/        → implementación Python
-        ├── java/          → implementación Java
-        └── dotnet/        → implementación .NET 8
+|- README.md
+|- ARCHITECTURE.md
+|- RECRUITER.md
+|- INSTALL.md
+|- RUNBOOK.md
+|- SECURITY.md
+|- SUPPORT.md
+|- CONTRIBUTING.md
+|- CHANGELOG.md
+|- ROADMAP.md
+|- compose.root.yml
+|- .github/workflows/ci.yml
+|- portal/
+|- docs/
+|- cases/
+|- shared/
+|  `- catalog/cases.json
+`- scripts/
+   `- generate_case_catalog.php
 ```
 
----
+## 🧱 Capas principales
 
-## 📂 Descripción de cada nivel
+### 1. Capa editorial y operativa
 
-### Nivel 1 — Raíz del repositorio
+La raiz del repositorio contiene los documentos para lectura ejecutiva, tecnica y operacional. Esta capa explica el sistema antes de entrar a cualquier caso.
 
-Contiene el punto de entrada, el mapa general y los comandos operacionales del laboratorio. Sirve para orientar al lector antes de entrar a cualquier caso.
+### 2. Capa de metadatos
 
-### Nivel 2 — Portal
+`shared/catalog/cases.json` es la fuente de verdad del catalogo.
 
-`portal/` es el punto de entrada **local** del laboratorio. No reemplaza a los casos ni ejecuta todos los entornos. Sirve para aterrizar el proyecto, navegar su propósito y mostrar el mapa inicial cuando alguien lo levanta localmente.
+- el portal local lo consume;
+- `scripts/generate_case_catalog.php` genera `docs/case-catalog.md`;
+- la CI puede verificar que no exista drift documental.
 
-### Nivel 3 — Casos
+### 3. Capa de portal
 
-Cada carpeta bajo `cases/` representa un **problema real documentado**. El caso es la unidad principal del laboratorio: tiene su propio README, documentación técnica, stacks y archivos Docker.
+`compose.root.yml` levanta un portal ligero en PHP que resume el laboratorio, los documentos clave y el estado actual de los casos.
 
-### Nivel 4 — Implementaciones por stack
+### 4. Capa de casos
 
-Dentro de cada caso, cada stack es una **implementación o variante del mismo problema**, no un fin en sí mismo. Los stacks permiten comparar cómo la misma dificultad técnica se resuelve de forma diferente según el runtime, el tooling y las convenciones del ecosistema.
+Cada carpeta en `cases/` representa un problema real. La unidad central del laboratorio es el caso, no el lenguaje.
 
----
+### 5. Capa de stacks
 
-## 📏 Regla principal
+Cada caso contiene `php`, `node`, `python`, `java` y `dotnet` con Docker aislado. La madurez real de cada stack depende de su implementacion, no solo de la existencia de la carpeta.
 
-> La estructura responde a la pregunta:
-> **¿Cómo resolver y estudiar este problema?**
->
-> No a:
-> **¿Cómo ordenar mis lenguajes favoritos?**
+## 🔁 Flujo de sincronizacion actual
+
+```mermaid
+flowchart LR
+    A["shared/catalog/cases.json"] --> B["portal/app/index.php"]
+    A --> C["scripts/generate_case_catalog.php"]
+    C --> D["docs/case-catalog.md"]
+    D --> E["README.md y docs"]
+    F["scripts/validate-structure.sh"] --> G[".github/workflows/ci.yml"]
+    B --> G
+    C --> G
+```
+
+## 🐳 Modelo de ejecucion
+
+| Pieza | Rol |
+| --- | --- |
+| `compose.root.yml` | portal del laboratorio |
+| `cases/<caso>/<stack>/compose.yml` | escenario concreto y aislado |
+| `cases/<caso>/compose.compare.yml` | comparacion entre stacks del mismo caso |
+
+## ✅ Estado operativo real
+
+| Caso | Stacks operativos actuales |
+| --- | --- |
+| `01` | `php` |
+| `02` | `php` |
+| `03` | `php`, `node`, `python` |
+
+## 🧭 Regla principal
+
+La arquitectura responde a esta pregunta:
+
+> ¿Como resolver y estudiar este problema con evidencia reproducible?
+
+No responde a:
+
+> ¿Como ordenar lenguajes por gusto o llenar carpetas sin profundidad?

@@ -1,10 +1,10 @@
-# RECRUITER
+# 👔 RECRUITER
 
 > Estado: activo
 > Audiencia: reclutadores, hiring managers, lideres tecnicos
 > Executive Summary: este repositorio demuestra como se modelan y resuelven problemas reales de software con criterio tecnico, Docker como via oficial y documentacion profesional, sin inflar la madurez real del trabajo.
 
-## Valor de negocio
+## 💼 Valor de negocio
 
 Este laboratorio no busca impresionar con cantidad de carpetas. Su valor esta en mostrar un patron profesional de trabajo:
 
@@ -13,7 +13,7 @@ Este laboratorio no busca impresionar con cantidad de carpetas. Su valor esta en
 - levantar entornos reproducibles;
 - comunicar claramente que ya esta operativo y que sigue en evolucion.
 
-## Que evidencia entrega hoy
+## 📡 Que evidencia entrega hoy
 
 | Area | Evidencia visible |
 | --- | --- |
@@ -23,7 +23,7 @@ Este laboratorio no busca impresionar con cantidad de carpetas. Su valor esta en
 | Documentacion | Existe una familia de documentos por audiencia: instalacion, runbook, seguridad, soporte, contribucion |
 | Honestidad tecnica | El repo distingue entre casos `OPERATIVO` y `DOCUMENTADO / SCAFFOLD` |
 
-## Que mirar en 5 minutos
+## ⚡ Que mirar en 5 minutos
 
 1. Abre [README.md](README.md) para entender la historia general del laboratorio.
 2. Revisa [docs/positioning-and-objective.md](docs/positioning-and-objective.md) para ver que problema profesional resuelve este repo.
@@ -31,7 +31,7 @@ Este laboratorio no busca impresionar con cantidad de carpetas. Su valor esta en
 4. Abre [docs/case-catalog.md](docs/case-catalog.md) para ver el estado del resto del laboratorio.
 5. Revisa [RUNBOOK.md](RUNBOOK.md) para confirmar que la operacion esta pensada con criterio realista.
 
-## Que senales profesionales deja el repo
+## ✅ Que senales profesionales deja el repo
 
 | Senal | Donde se ve |
 | --- | --- |
@@ -53,7 +53,7 @@ Este laboratorio no busca impresionar con cantidad de carpetas. Su valor esta en
 - equivalencia funcional completa entre PHP, Node, Python, Java y .NET;
 - un producto SaaS terminado o una plataforma productiva cerrada.
 
-## Contexto dentro del ecosistema publico
+## 🌐 Contexto dentro del ecosistema publico
 
 Este laboratorio se alinea con una linea publica mas amplia centrada en modernizacion legacy, performance, observabilidad, delivery reproducible y documentacion por audiencia.
 
@@ -61,7 +61,7 @@ Este laboratorio se alinea con una linea publica mas amplia centrada en moderniz
 - Perfil GitHub: [github.com/vladimiracunadev-create](https://github.com/vladimiracunadev-create)
 - Grupo GitLab: [gitlab.com/vladimir.acuna.dev-group/vladimir.acuna.dev-group](https://gitlab.com/vladimir.acuna.dev-group/vladimir.acuna.dev-group)
 
-## Documentos recomendados despues
+## 📚 Documentos recomendados despues
 
 | Documento | Motivo |
 | --- | --- |

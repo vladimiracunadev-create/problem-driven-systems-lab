@@ -1,6 +1,22 @@
-# CHANGELOG
+# 📝 CHANGELOG
 
 Todos los cambios notables de este laboratorio se registran aqui con foco en madurez tecnica y documental.
+
+## 2026-04-03 - Catalogo compartido, CI minima y caso 03 multi-stack
+
+### Added
+
+- `ARCHITECTURE.md` como vista ejecutiva de la arquitectura actual.
+- `shared/catalog/cases.json` como fuente de verdad del catalogo.
+- `scripts/generate_case_catalog.php` para generar `docs/case-catalog.md`.
+- `.github/workflows/ci.yml` con validacion estructural, chequeo del catalogo generado y smoke boot de compose.
+
+### Changed
+
+- `portal/app/index.php` ahora consume metadatos compartidos y presenta una landing mas profesional con iconos y estados.
+- `compose.root.yml` monta el catalogo compartido para eliminar duplicacion manual del portal.
+- `scripts/validate-structure.sh`, `.gitignore`, `Makefile`, `shared/README.md` y `templates/problem-metadata.json` endurecidos para crecimiento mas limpio.
+- Caso `03` profundizado en Node.js y Python con `legacy` vs `observable`, logs estructurados, trazas, metricas y endpoints de diagnostico.
 
 ## 2026-04-02 - Profesionalizacion documental
 

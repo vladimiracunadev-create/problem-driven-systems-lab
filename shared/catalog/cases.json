@@ -1,0 +1,134 @@
+[
+  {
+    "id": "01",
+    "icon": "⚡",
+    "slug": "api-latency-under-load",
+    "title": "API lenta bajo carga",
+    "category": "Rendimiento",
+    "status": "OPERATIVO",
+    "level_detail": "PHP + PostgreSQL + worker + Prometheus + Grafana",
+    "summary": "La aplicacion responde bien con pocos usuarios, pero degrada su latencia y estabilidad al aumentar la concurrencia.",
+    "operational_stacks": ["php"]
+  },
+  {
+    "id": "02",
+    "icon": "🔄",
+    "slug": "n-plus-one-and-db-bottlenecks",
+    "title": "N+1 queries y cuellos de botella en base de datos",
+    "category": "Rendimiento",
+    "status": "OPERATIVO",
+    "level_detail": "PHP + PostgreSQL",
+    "summary": "La aplicacion ejecuta demasiadas consultas por solicitud o usa el ORM de forma ineficiente, generando saturacion de base de datos.",
+    "operational_stacks": ["php"]
+  },
+  {
+    "id": "03",
+    "icon": "🔭",
+    "slug": "poor-observability-and-useless-logs",
+    "title": "Observabilidad deficiente y logs inutiles",
+    "category": "Observabilidad",
+    "status": "OPERATIVO",
+    "level_detail": "PHP + Node.js + Python con logs estructurados, trazas y metricas",
+    "summary": "Existen errores e incidentes, pero no hay trazabilidad suficiente para identificar causa raiz de forma rapida y confiable.",
+    "operational_stacks": ["php", "node", "python"]
+  },
+  {
+    "id": "04",
+    "icon": "⏱️",
+    "slug": "timeout-chain-and-retry-storms",
+    "title": "Cadena de timeouts y tormentas de reintentos",
+    "category": "Resiliencia",
+    "status": "DOCUMENTADO / SCAFFOLD",
+    "level_detail": "estructura y docs listas",
+    "summary": "Una integracion lenta o inestable dispara reintentos, bloqueos y cascadas de fallas entre servicios.",
+    "operational_stacks": []
+  },
+  {
+    "id": "05",
+    "icon": "🧠",
+    "slug": "memory-pressure-and-resource-leaks",
+    "title": "Presion de memoria y fugas de recursos",
+    "category": "Rendimiento",
+    "status": "DOCUMENTADO / SCAFFOLD",
+    "level_detail": "estructura y docs listas",
+    "summary": "El sistema consume memoria, descriptores o conexiones de forma progresiva hasta degradar o caerse.",
+    "operational_stacks": []
+  },
+  {
+    "id": "06",
+    "icon": "🚚",
+    "slug": "broken-pipeline-and-fragile-delivery",
+    "title": "Pipeline roto y entrega fragil",
+    "category": "Entrega",
+    "status": "DOCUMENTADO / SCAFFOLD",
+    "level_detail": "estructura y docs listas",
+    "summary": "El software funciona en desarrollo, pero falla al desplegar, promover cambios o revertir incidentes con seguridad.",
+    "operational_stacks": []
+  },
+  {
+    "id": "07",
+    "icon": "🏗️",
+    "slug": "incremental-monolith-modernization",
+    "title": "Modernizacion incremental de monolito",
+    "category": "Arquitectura",
+    "status": "DOCUMENTADO / SCAFFOLD",
+    "level_detail": "estructura y docs listas",
+    "summary": "El sistema legacy sigue siendo critico, pero su evolucion se vuelve lenta, riesgosa y costosa.",
+    "operational_stacks": []
+  },
+  {
+    "id": "08",
+    "icon": "🧩",
+    "slug": "critical-module-extraction-without-breaking-operations",
+    "title": "Extraccion de modulo critico sin romper operacion",
+    "category": "Arquitectura",
+    "status": "DOCUMENTADO / SCAFFOLD",
+    "level_detail": "estructura y docs listas",
+    "summary": "Se necesita desacoplar una parte clave del sistema, pero esa parte participa en flujos sensibles y no admite quiebres.",
+    "operational_stacks": []
+  },
+  {
+    "id": "09",
+    "icon": "🌐",
+    "slug": "unstable-external-integration",
+    "title": "Integracion externa inestable",
+    "category": "Resiliencia",
+    "status": "DOCUMENTADO / SCAFFOLD",
+    "level_detail": "estructura y docs listas",
+    "summary": "Una API, servicio o proveedor externo introduce latencia, errores intermitentes o reglas cambiantes que afectan el sistema propio.",
+    "operational_stacks": []
+  },
+  {
+    "id": "10",
+    "icon": "💸",
+    "slug": "expensive-architecture-for-simple-needs",
+    "title": "Arquitectura cara para un problema simple",
+    "category": "Arquitectura",
+    "status": "DOCUMENTADO / SCAFFOLD",
+    "level_detail": "estructura y docs listas",
+    "summary": "La solucion tecnica consume mas servicios, complejidad y costo del que el problema de negocio realmente necesita.",
+    "operational_stacks": []
+  },
+  {
+    "id": "11",
+    "icon": "📊",
+    "slug": "heavy-reporting-blocks-operations",
+    "title": "Reportes pesados que bloquean la operacion",
+    "category": "Operaciones",
+    "status": "DOCUMENTADO / SCAFFOLD",
+    "level_detail": "estructura y docs listas",
+    "summary": "Consultas y procesos de reporting compiten con la operacion transaccional y degradan el sistema completo.",
+    "operational_stacks": []
+  },
+  {
+    "id": "12",
+    "icon": "👤",
+    "slug": "single-point-of-knowledge-and-operational-risk",
+    "title": "Punto unico de conocimiento y riesgo operacional",
+    "category": "Operaciones",
+    "status": "DOCUMENTADO / SCAFFOLD",
+    "level_detail": "estructura y docs listas",
+    "summary": "Una persona, modulo o procedimiento concentra tanto conocimiento que el sistema se vuelve fragil ante ausencias o rotacion.",
+    "operational_stacks": []
+  }
+]

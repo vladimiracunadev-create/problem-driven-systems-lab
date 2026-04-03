@@ -1,10 +1,10 @@
-# INSTALL
+# 🚀 INSTALL
 
 > Estado: activo
 > Ruta oficial: Docker Compose
 > Uso recomendado: levantar el portal y los casos implementados de forma limpia y reproducible
 
-## Requisitos
+## 📋 Requisitos
 
 | Requisito | Comentario |
 | --- | --- |
@@ -18,14 +18,14 @@ Notas practicas:
 - El `Makefile` actual usa `/bin/bash`, por lo que funciona mejor en WSL, Git Bash o Linux/macOS.
 - Caso `01` consume mas recursos porque incluye PostgreSQL, Prometheus y Grafana.
 
-## Clonacion
+## 📦 Clonacion
 
 ```bash
 git clone https://github.com/vladimiracunadev-create/problem-driven-systems-lab.git
 cd problem-driven-systems-lab
 ```
 
-## Portal del laboratorio
+## 🧭 Portal del laboratorio
 
 ```bash
 docker compose -f compose.root.yml up -d --build
@@ -41,7 +41,7 @@ Para apagar:
 docker compose -f compose.root.yml down
 ```
 
-## Casos operativos actuales
+## ✅ Casos operativos actuales
 
 ### Caso 01
 
@@ -75,7 +75,19 @@ URL esperada:
 
 - API: `http://localhost:813`
 
-## Atajos con Makefile
+Variantes operativas adicionales del caso 03:
+
+```bash
+docker compose -f cases/03-poor-observability-and-useless-logs/node/compose.yml up -d --build
+docker compose -f cases/03-poor-observability-and-useless-logs/python/compose.yml up -d --build
+```
+
+URLs esperadas:
+
+- Node.js: `http://localhost:823`
+- Python: `http://localhost:833`
+
+## 🛠️ Atajos con Makefile
 
 Si tu shell soporta `/bin/bash`, puedes usar:
 
@@ -86,7 +98,7 @@ make case-up CASE=02-n-plus-one-and-db-bottlenecks STACK=php
 make case-up CASE=03-poor-observability-and-useless-logs STACK=php
 ```
 
-## Comparacion multi-stack
+## 🔁 Comparacion multi-stack
 
 Cada caso tiene `compose.compare.yml`, pero eso no significa que todos los stacks esten al mismo nivel de madurez. Usalo como marco de comparacion, no como garantia de paridad funcional completa.
 
@@ -94,7 +106,7 @@ Cada caso tiene `compose.compare.yml`, pero eso no significa que todos los stack
 docker compose -f cases/01-api-latency-under-load/compose.compare.yml up -d --build
 ```
 
-## Verificacion basica
+## 🔎 Verificacion basica
 
 Recomendado despues de levantar un caso:
 
@@ -103,7 +115,7 @@ docker compose -f cases/01-api-latency-under-load/php/compose.yml ps
 docker compose -f cases/01-api-latency-under-load/php/compose.yml logs --tail=50
 ```
 
-## Apagado ordenado
+## 🧯 Apagado ordenado
 
 ```bash
 docker compose -f cases/01-api-latency-under-load/php/compose.yml down
@@ -111,7 +123,7 @@ docker compose -f cases/02-n-plus-one-and-db-bottlenecks/php/compose.yml down
 docker compose -f cases/03-poor-observability-and-useless-logs/php/compose.yml down
 ```
 
-## Alcance honesto de la instalacion
+## ⚖️ Alcance honesto de la instalacion
 
 - La ruta oficialmente soportada hoy es Docker para los casos implementados.
 - Los casos `04` al `12` siguen siendo principalmente documentales o scaffold.

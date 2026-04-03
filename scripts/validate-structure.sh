@@ -4,14 +4,25 @@ set -euo pipefail
 echo "Validando estructura básica..."
 
 required_root=(
+  .github/workflows/ci.yml
+  ARCHITECTURE.md
+  CHANGELOG.md
+  CONTRIBUTING.md
+  INSTALL.md
   README.md
+  RECRUITER.md
   ROADMAP.md
+  RUNBOOK.md
+  SECURITY.md
+  SUPPORT.md
   Makefile
   compose.root.yml
   docs
   cases
+  shared/catalog
   templates
   shared
+  scripts/generate_case_catalog.php
 )
 
 required_case_docs=(
@@ -49,7 +60,13 @@ for case_dir in cases/*; do
   done
 done
 
-if git ls-files | grep -E '\.class$|/__pycache__/|\.pyc$' >/dev/null; then
+test -f shared/catalog/cases.json
+
+if command -v php >/dev/null 2>&1; then
+  php scripts/generate_case_catalog.php --check
+fi
+
+if git ls-files | grep -E '\.class$|/__pycache__/|\.pyc$|metrics-store\.json$|telemetry\.json$|legacy\.log$|observable\.log$|\.coverage$|/coverage/|/\.pytest_cache/' >/dev/null; then
   echo "Se detectaron artefactos generados versionados en Git."
   exit 1
 fi
