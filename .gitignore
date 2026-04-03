@@ -11,10 +11,13 @@ Thumbs.db
 **/vendor/
 **/node_modules/
 **/__pycache__/
+**/*.pyc
 **/bin/
 **/obj/
 **/out/
 **/target/
+**/*.class
+**/shared/benchmark/out/
 
 # IDE
 .vscode/

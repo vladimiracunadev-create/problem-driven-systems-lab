@@ -9,7 +9,7 @@
 [![Python](https://img.shields.io/badge/Python-3-3776AB?logo=python&logoColor=white)](cases/)
 [![Java](https://img.shields.io/badge/Java-JVM-ED8B00?logo=openjdk&logoColor=white)](cases/)
 [![.NET](https://img.shields.io/badge/.NET-8-512BD4?logo=dotnet&logoColor=white)](cases/)
-[![Status](https://img.shields.io/badge/Estado-Fase%201%20completa-success)](ROADMAP.md)
+[![Status](https://img.shields.io/badge/Estado-Fase%202%20en%20progreso-blue)](ROADMAP.md)
 
 ---
 
@@ -202,10 +202,12 @@ Esta versión incluye:
 - ✅ Documentación raíz extensa
 - ✅ 12 casos con base documental
 - ✅ Caso 01 con implementación real (PHP + PostgreSQL + worker + Prometheus + Grafana)
+- ✅ Caso 02 con implementación real (PHP + PostgreSQL, N+1 legacy vs optimized)
+- ✅ Caso 03 con implementación real (PHP, logs pobres vs telemetría útil)
 - ✅ Carpetas por stack con Dockerfiles de referencia
 - ✅ `compose.compare.yml` por caso
 - ✅ Convenciones de crecimiento documentadas
-- 🔧 Casos 02–12 listos para profundizar implementaciones funcionales
+- 🔧 Casos 04–12 listos para profundizar implementaciones funcionales
 
 > No pretende cerrar todos los desarrollos funcionales en una primera iteración.
 > Pretende dejar una **base extremadamente documentada, coherente y extensible**.

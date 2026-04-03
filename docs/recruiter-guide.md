@@ -40,6 +40,7 @@
 ## ✅ Qué sí pretende mostrar
 
 - ✅ **Base seria de laboratorio** con convenciones documentadas y extensibles
+- ✅ **Implementaciones funcionales reales** en los casos 01–03 dentro del stack PHP
 - ✅ **Forma de pensar y construir** — el proceso importa tanto como el resultado
 - ✅ **Foco en resolución y continuidad** — no solo en tecnología por sí misma
 

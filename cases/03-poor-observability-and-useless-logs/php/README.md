@@ -1,34 +1,48 @@
-# Observabilidad deficiente y logs inútiles — PHP 8
+# Caso 03 - PHP 8 con observabilidad comparada
 
-## Objetivo de esta variante
-Representar este caso desde el stack **PHP 8**, manteniendo foco en el problema y no solo en la sintaxis.
+Esta variante implementa el mismo flujo operacional en dos modos:
 
-## Qué debería mostrar esta carpeta
-- una base dockerizada,
-- un punto de entrada mínimo,
-- espacio para instrumentación, pruebas o scripts,
-- notas de diseño específicas del stack.
+- `checkout-legacy` -> logs pobres, sin correlacion y con poco contexto
+- `checkout-observable` -> logs estructurados, correlation IDs, metricas y trazas utiles
 
-## Qué NO debería hacer
-- mezclar dependencias de otros stacks,
-- levantar todo el laboratorio,
-- esconder decisiones importantes fuera del repositorio.
+## Qué resuelve
+Modela un checkout con pasos internos y dependencias externas:
 
-## Puertos de referencia
-- Puerto local sugerido: `813`
+- validacion del carrito,
+- reserva de inventario,
+- autorizacion de pago,
+- envio de notificacion.
 
-## Comando esperado
+Cuando algo falla, el modo legacy deja evidencia insuficiente. El modo observable deja informacion accionable para responder rapido que paso, donde y con que impacto.
+
+## Servicio
+- `app` -> API PHP 8.3 con logs legacy y observable, metricas y trazas locales
+
+## Arranque
 ```bash
 docker compose -f compose.yml up -d --build
 ```
 
-## Notas del stack
-En PHP 8 conviene estudiar este caso considerando:
-- ergonomía del runtime,
-- patrones habituales del ecosistema,
-- observabilidad disponible,
-- costos de complejidad,
-- límites y trade-offs específicos.
+## Endpoints
+```bash
+curl http://localhost:813/
+curl http://localhost:813/health
+curl "http://localhost:813/checkout-legacy?scenario=payment_timeout&customer_id=42&cart_items=3"
+curl "http://localhost:813/checkout-observable?scenario=payment_timeout&customer_id=42&cart_items=3"
+curl http://localhost:813/logs/legacy?tail=20
+curl http://localhost:813/logs/observable?tail=20
+curl http://localhost:813/traces?limit=10
+curl http://localhost:813/diagnostics/summary
+curl http://localhost:813/metrics
+curl http://localhost:813/metrics-prometheus
+curl http://localhost:813/reset-observability
+```
 
-## Estado inicial
-Esta carpeta deja una base mínima documentada y ampliable para que el caso evolucione hacia un escenario más realista.
+## Qué observar
+- si puedes identificar el paso exacto que fallo
+- si puedes correlacionar eventos de una misma request
+- si tienes latencias por etapa y dependencia
+- si el diagnostico permite pasar de "fallo algo" a "fallo payment.authorize por timeout"
+
+## Nota de honestidad
+No sustituye un stack completo de tracing distribuido. Sí deja una base reproducible para demostrar por qué logs pobres alargan el MTTR y qué cambia cuando la telemetria es util.

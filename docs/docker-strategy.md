@@ -64,3 +64,13 @@ El laboratorio **no se levanta todo junto**. Se levanta únicamente lo necesario
 > - 🔒 aislar dependencias por escenario,
 > - ▶️ facilitar la ejecución sin configuración manual,
 > - ⚖️ mantener comparabilidad entre stacks.
+
+## 🧭 Regla práctica actual
+
+- Los casos implementados deben poder levantarse de forma limpia con Docker.
+- No todos los casos necesitan la misma infraestructura.
+- Cada `compose.yml` debe incluir solo lo necesario para reproducir el problema con honestidad.
+
+Ejemplos actuales:
+- Caso 02 PHP usa `app + db` porque el problema depende de relaciones y round-trips reales.
+- Caso 03 PHP usa un contenedor liviano de `app` porque el foco está en logs, trazas y capacidad de diagnóstico, no en una base de datos externa.

@@ -37,7 +37,7 @@ function db(): PDO
 
 function metricsPath(): string
 {
-    $dir = sys_get_temp_dir() . '/pdsl-case01';
+    $dir = sys_get_temp_dir() . '/pdsl-case02';
     if (!is_dir($dir)) {
         mkdir($dir, 0777, true);
     }

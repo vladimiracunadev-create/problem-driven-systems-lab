@@ -1,34 +1,43 @@
-# N+1 queries y cuellos de botella en base de datos — PHP 8
+# Caso 02 - PHP 8 + PostgreSQL
 
-## Objetivo de esta variante
-Representar este caso desde el stack **PHP 8**, manteniendo foco en el problema y no solo en la sintaxis.
+Esta variante ya no es un placeholder. Implementa un problema real de N+1 y una corrección medible sobre la misma base de datos.
 
-## Qué debería mostrar esta carpeta
-- una base dockerizada,
-- un punto de entrada mínimo,
-- espacio para instrumentación, pruebas o scripts,
-- notas de diseño específicas del stack.
+## Qué resuelve
+Modela un feed operacional de pedidos recientes que necesita devolver:
 
-## Qué NO debería hacer
-- mezclar dependencias de otros stacks,
-- levantar todo el laboratorio,
-- esconder decisiones importantes fuera del repositorio.
+- datos del pedido,
+- datos del cliente,
+- items del pedido,
+- producto y categoría de cada item.
 
-## Puertos de referencia
-- Puerto local sugerido: `812`
+La ruta `orders-legacy` hace múltiples round-trips por pedido e incluso por item. La ruta `orders-optimized` consolida lectura base y detalles con consultas agrupadas.
 
-## Comando esperado
+## Servicios
+- `app` -> API PHP 8.3 con endpoints legacy y optimized
+- `db` -> PostgreSQL 16 con datos semilla y relaciones reales
+
+## Arranque
 ```bash
 docker compose -f compose.yml up -d --build
 ```
 
-## Notas del stack
-En PHP 8 conviene estudiar este caso considerando:
-- ergonomía del runtime,
-- patrones habituales del ecosistema,
-- observabilidad disponible,
-- costos de complejidad,
-- límites y trade-offs específicos.
+## Endpoints
+```bash
+curl http://localhost:812/
+curl http://localhost:812/health
+curl "http://localhost:812/orders-legacy?days=30&limit=20"
+curl "http://localhost:812/orders-optimized?days=30&limit=20"
+curl http://localhost:812/diagnostics/summary
+curl http://localhost:812/metrics
+curl http://localhost:812/metrics-prometheus
+curl http://localhost:812/reset-metrics
+```
 
-## Estado inicial
-Esta carpeta deja una base mínima documentada y ampliable para que el caso evolucione hacia un escenario más realista.
+## Qué observar
+- `db_queries_in_request`
+- `db_time_ms_in_request`
+- diferencia de latencia entre legacy y optimized
+- caída del costo por request cuando se reemplaza N+1 por cargas consolidadas
+
+## Nota de honestidad
+No intenta reproducir un ORM específico. Sí reproduce un patrón muy real: listas enriquecidas que parecen inocentes y terminan escalando mal por round-trips repetidos y relaciones cargadas dentro de bucles.

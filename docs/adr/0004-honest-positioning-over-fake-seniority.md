@@ -23,7 +23,7 @@ Esa interpretación sería:
 La documentación debe:
 
 1. **Explicitar** que el valor del laboratorio es demostrar **criterio técnico transferible**, no inventar trayectoria exacta por stack.
-2. **Distinguir** entre profundidad funcional (el caso 01 en PHP tiene implementación real) y presencia estructural (los demás stacks están listos para crecer).
+2. **Distinguir** entre profundidad funcional (hoy los casos 01–03 en PHP tienen implementación real) y presencia estructural (los demás stacks están listos para crecer).
 3. **Ser honesta** sobre lo que está implementado profundamente y lo que es base estructural.
 
 ---

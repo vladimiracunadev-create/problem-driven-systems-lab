@@ -1,6 +1,6 @@
 # 🔄 Caso 02 — N+1 queries y cuellos de botella en base de datos
 
-[![Estado](https://img.shields.io/badge/Estado-Base%20documental%20lista-blue)](docs/)
+[![Estado](https://img.shields.io/badge/Estado-Implementado%20PHP-success)](php/)
 [![Categoría](https://img.shields.io/badge/Categoría-Rendimiento-red)](../../README.md)
 
 ---
@@ -55,6 +55,22 @@ Muchos sistemas parecen correctos funcionalmente, pero escalan mal por decisione
 
 ---
 
+## 🏗️ Implementación actual
+
+### ✅ PHP 8 + PostgreSQL
+
+El stack PHP ya implementa este caso con una base relacional real y dos rutas comparables:
+
+- `orders-legacy` -> carga pedido, cliente, items, producto y categoría dentro de bucles
+- `orders-optimized` -> consolida pedidos y detalles con lecturas agrupadas
+- `/metrics`, `/metrics-prometheus` y `/diagnostics/summary` -> dejan evidencia medible de la diferencia
+
+### 🔧 Node.js / Python / Java / .NET
+
+Se mantienen como base de crecimiento para llevar el mismo caso a paridad multi-stack en una fase posterior.
+
+---
+
 ## ⚖️ Trade-offs
 
 | Decisión | Ventaja | Costo |
@@ -76,7 +92,7 @@ Muchos sistemas parecen correctos funcionalmente, pero escalan mal por decisione
 
 | Stack | Estado |
 |-------|--------|
-| 🐘 PHP 8 | 🔧 Estructura lista |
+| 🐘 PHP 8 | ✅ Implementado (Docker + PostgreSQL) |
 | 🟢 Node.js | 🔧 Estructura lista |
 | 🐍 Python | 🔧 Estructura lista |
 | ☕ Java | 🔧 Estructura lista |

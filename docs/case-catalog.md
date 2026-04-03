@@ -6,9 +6,9 @@
 
 | # | Ícono | Nombre del caso | Carpeta | Estado |
 |---|-------|----------------|---------|--------|
-| 01 | ⚡ | API lenta bajo carga | [01-api-latency-under-load](../cases/01-api-latency-under-load/) | ✅ Implementado (PHP + Observabilidad) |
-| 02 | 🔄 | N+1 queries y cuellos de botella en DB | [02-n-plus-one-and-db-bottlenecks](../cases/02-n-plus-one-and-db-bottlenecks/) | 🔧 Base documental lista |
-| 03 | 🔭 | Observabilidad deficiente y logs inútiles | [03-poor-observability-and-useless-logs](../cases/03-poor-observability-and-useless-logs/) | 🔧 Base documental lista |
+| 01 | ⚡ | API lenta bajo carga | [01-api-latency-under-load](../cases/01-api-latency-under-load/) | ✅ Implementado (PHP + PostgreSQL + Observabilidad) |
+| 02 | 🔄 | N+1 queries y cuellos de botella en DB | [02-n-plus-one-and-db-bottlenecks](../cases/02-n-plus-one-and-db-bottlenecks/) | ✅ Implementado (PHP + PostgreSQL) |
+| 03 | 🔭 | Observabilidad deficiente y logs inútiles | [03-poor-observability-and-useless-logs](../cases/03-poor-observability-and-useless-logs/) | ✅ Implementado (PHP + Telemetría útil) |
 | 04 | ⛓️ | Cadena de timeouts y tormentas de reintentos | [04-timeout-chain-and-retry-storms](../cases/04-timeout-chain-and-retry-storms/) | 🔧 Base documental lista |
 | 05 | 🧠 | Presión de memoria y fugas de recursos | [05-memory-pressure-and-resource-leaks](../cases/05-memory-pressure-and-resource-leaks/) | 🔧 Base documental lista |
 | 06 | 🚚 | Pipeline roto y entrega frágil | [06-broken-pipeline-and-fragile-delivery](../cases/06-broken-pipeline-and-fragile-delivery/) | 🔧 Base documental lista |

@@ -20,11 +20,18 @@
 
 | Estado | Ítem |
 |--------|------|
-| ⬜ | Completar implementaciones funcionales por caso/stack con mayor lógica de negocio |
-| ⬜ | Agregar pruebas de carga y perfiles reproducibles |
-| ⬜ | Incorporar observabilidad compartida más detallada |
+| 🟡 | Completar implementaciones funcionales por caso/stack con mayor lógica de negocio |
+| 🟡 | Agregar pruebas de carga y perfiles reproducibles |
+| 🟡 | Incorporar observabilidad compartida más detallada |
 | ⬜ | Agregar diagramas por caso |
 | ⬜ | Sumar métricas comparativas cuando tenga sentido |
+
+### Avance actual de la fase 2
+
+- ✅ Caso 01 implementado en profundidad con PHP + PostgreSQL + worker + observabilidad
+- ✅ Caso 02 implementado en PHP con comparación real entre N+1 legacy y versión optimizada
+- ✅ Caso 03 implementado en PHP con comparación real entre logs pobres y telemetría útil
+- 🔧 Siguiente foco natural: llevar el caso 01 a mayor paridad multi-stack y continuar con los casos 04–12
 
 ---
 

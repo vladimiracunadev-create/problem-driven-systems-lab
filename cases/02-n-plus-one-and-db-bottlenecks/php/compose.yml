@@ -1,8 +1,47 @@
 services:
+  db:
+    image: postgres:16-alpine
+    container_name: pdsl-02-php-db
+    environment:
+      POSTGRES_DB: problemlab
+      POSTGRES_USER: problemlab
+      POSTGRES_PASSWORD: problemlab
+    volumes:
+      - ./db/init:/docker-entrypoint-initdb.d:ro
+      - pgdata_case02:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U problemlab -d problemlab"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    mem_limit: 768m
+    cpus: 1.25
+
   app:
     build:
       context: .
       dockerfile: Dockerfile
     container_name: pdsl-02-php-app
+    environment:
+      APP_STACK: PHP 8.3
+      DB_HOST: db
+      DB_PORT: "5432"
+      DB_NAME: problemlab
+      DB_USER: problemlab
+      DB_PASSWORD: problemlab
+    command: ["php", "-S", "0.0.0.0:8080", "-t", "/app", "/app/index.php"]
     ports:
       - "812:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "php", "-r", "echo 'ok';"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+    mem_limit: 512m
+    cpus: 1.00
+
+volumes:
+  pgdata_case02:

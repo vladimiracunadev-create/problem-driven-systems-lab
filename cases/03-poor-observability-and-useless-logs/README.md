@@ -1,6 +1,6 @@
 # 🔭 Caso 03 — Observabilidad deficiente y logs inútiles
 
-[![Estado](https://img.shields.io/badge/Estado-Base%20documental%20lista-blue)](docs/)
+[![Estado](https://img.shields.io/badge/Estado-Implementado%20PHP-success)](php/)
 [![Categoría](https://img.shields.io/badge/Categoría-Observabilidad-purple)](../../README.md)
 
 ---
@@ -53,6 +53,22 @@ Existen errores e incidentes, pero **no hay trazabilidad suficiente para identif
 
 ---
 
+## 🏗️ Implementación actual
+
+### ✅ PHP 8
+
+El stack PHP ya implementa este caso con dos modos del mismo flujo operacional:
+
+- `checkout-legacy` -> logs pobres, genéricos y difíciles de correlacionar
+- `checkout-observable` -> logs estructurados, `request_id`, `trace_id`, métricas y trazas locales
+- `/logs/legacy`, `/logs/observable`, `/traces` y `/diagnostics/summary` -> permiten comparar qué tan diagnosticable es el incidente
+
+### 🔧 Node.js / Python / Java / .NET
+
+Se mantienen como base de crecimiento para llevar el caso a otros runtimes sin degradarlo a un demo superficial.
+
+---
+
 ## ⚖️ Trade-offs
 
 | Decisión | Ventaja | Costo |
@@ -74,7 +90,7 @@ Existen errores e incidentes, pero **no hay trazabilidad suficiente para identif
 
 | Stack | Estado |
 |-------|--------|
-| 🐘 PHP 8 | 🔧 Estructura lista |
+| 🐘 PHP 8 | ✅ Implementado (Docker + telemetría útil) |
 | 🟢 Node.js | 🔧 Estructura lista |
 | 🐍 Python | 🔧 Estructura lista |
 | ☕ Java | 🔧 Estructura lista |
