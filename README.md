@@ -9,154 +9,130 @@
 [![.NET](https://img.shields.io/badge/.NET-8-512BD4?logo=dotnet&logoColor=white)](cases/)
 [![Status](https://img.shields.io/badge/Estado-Activo-blue)](ROADMAP.md)
 
-Portafolio tecnico orientado a problemas reales de software: rendimiento, observabilidad, resiliencia, arquitectura y continuidad operacional. Este repositorio forma parte del ecosistema publico de Vladimir Acuna y aterriza una linea consistente de trabajo: modernizacion de sistemas vivos, Docker como ruta oficial de ejecucion, documentacion por audiencia y soluciones honestas a problemas de produccion.
+Portafolio tecnico orientado a problemas reales de software: rendimiento, observabilidad, resiliencia, arquitectura y continuidad operacional. Este repositorio forma parte del ecosistema publico de Vladimir Acuna y baja esa narrativa a escenarios ejecutables, documentados y honestos sobre su madurez real.
 
 ## 🎯 Executive Summary
 
-- El repositorio modela 12 problemas reales, desde sintoma hasta solucion y valor de negocio.
-- Los casos `01`, `02` y `03` ya cuentan con implementacion operativa real en PHP.
-- El caso `03` ya cuenta tambien con implementaciones operativas en Node.js y Python.
-- Docker es la via oficial para ejecutar los casos implementados de forma limpia y reproducible.
-- El catalogo del portal y `docs/case-catalog.md` ahora se sostienen desde metadatos compartidos.
-- El portal raiz ofrece una portada HTML con selector de lenguaje y acceso rapido a los casos operativos por stack.
-- La madurez se comunica con honestidad: `OPERATIVO`, `DOCUMENTADO / SCAFFOLD` o `PLANIFICADO`.
-- El objetivo no es competir por sintaxis ni vender seniority vacia, sino evidenciar criterio transferible.
+- El laboratorio modela 12 problemas reales, pero comunica con honestidad cuales ya tienen profundidad operativa hoy.
+- Los casos `01`, `02` y `03` son operativos en PHP.
+- El caso `03` tambien es operativo en Node.js y Python.
+- Docker es la via oficial de ejecucion limpia y reproducible.
+- [`shared/catalog/cases.json`](shared/catalog/cases.json) es la fuente de verdad del portal, de la documentacion generada y de la narrativa operativa.
+- El portal raiz ahora sirve como hub de evaluacion: rutas por audiencia, seleccion por lenguaje, proof cards y probes server-side.
 
-## 📡 Que demuestra este laboratorio
+## 💡 Que demuestra este producto
 
-| Area | Evidencia |
+| Area | Evidencia concreta |
 | --- | --- |
-| Diagnostico tecnico | El problema se explica con contexto, sintomas, causas, trade-offs y solucion |
-| Ejecucion reproducible | Cada caso implementado tiene `Dockerfile` y `compose.yml` propios |
-| Operacion realista | Los casos no se reducen a "sleep demos"; usan DB, worker, logs o telemetria segun corresponda |
-| Documentacion profesional | El repo ya tiene rutas para reclutadores, operacion, seguridad, contribucion e instalacion |
-| Honestidad tecnica | Se distingue claramente entre casos operativos y scaffolds documentados |
+| Diagnostico tecnico | Cada caso parte desde sintomas, causas, trade-offs y solucion esperada |
+| Ejecucion reproducible | Cada stack mantiene `Dockerfile` y `compose.yml` propios |
+| Operacion realista | Los casos operativos no son demos vacias: usan DB, worker, metricas, logs o trazas segun corresponda |
+| Claridad para audiencias mixtas | El portal y la documentacion separan rutas para recruiter, liderazgo tecnico, developer y beginner |
+| Honestidad tecnica | Se distingue explicitamente entre `OPERATIVO` y `DOCUMENTADO / SCAFFOLD` |
 
-## 🏷️ Taxonomia de madurez actual
+## 🧭 Como evaluarlo rapido
 
-| Nivel | Que significa hoy en este repo |
+| Perfil | Punto de entrada | Que deberia poder concluir |
+| --- | --- | --- |
+| Recruiter / hiring manager | [RECRUITER.md](RECRUITER.md) | El repo deja evidencia real y no solo una narrativa bonita |
+| CTO / Head of Engineering | [ARCHITECTURE.md](ARCHITECTURE.md) | Hay criterio sistemico, foco en operacion y reduccion de riesgo |
+| Developer / DevOps | [INSTALL.md](INSTALL.md) → [RUNBOOK.md](RUNBOOK.md) | El entorno levanta limpio y los casos operativos cuentan una historia tecnica verificable |
+| Beginner | [docs/BEGINNERS_GUIDE.md](docs/BEGINNERS_GUIDE.md) | La estructura y la taxonomia de madurez son comprensibles antes de entrar al codigo |
+
+Si prefieres una sola puerta de entrada local, levanta el portal con `docker compose -f compose.root.yml up -d --build` y abre `http://localhost:8080`.
+
+## 🏷️ Madurez actual
+
+| Nivel | Significado |
 | --- | --- |
 | `OPERATIVO` | Caso resolviendo el problema de forma real, con Docker y evidencia observable |
-| `DOCUMENTADO / SCAFFOLD` | Caso bien modelado, con estructura y stack folders, pero sin paridad funcional profunda aun |
-| `PLANIFICADO` | Linea futura del roadmap, sin prometer madurez operativa actual |
+| `DOCUMENTADO / SCAFFOLD` | Caso bien modelado, con estructura y docs listas, pero sin la misma profundidad funcional todavia |
+| `PLANIFICADO` | Futuro del roadmap, aun no presente en el arbol actual |
 
 Estado actual:
 
 - `OPERATIVO`: casos [01](cases/01-api-latency-under-load/README.md), [02](cases/02-n-plus-one-and-db-bottlenecks/README.md) y [03](cases/03-poor-observability-and-useless-logs/README.md) en PHP.
-- `OPERATIVO` adicional en stacks no PHP: [caso 03](cases/03-poor-observability-and-useless-logs/README.md) en Node.js y Python.
-- `DOCUMENTADO / SCAFFOLD`: casos `04` al `12`, y stacks no profundizados de los casos `01` al `03`.
-
-## 🧭 Por donde empezar
-
-| Perfil | Ruta recomendada | Objetivo |
-| --- | --- | --- |
-| Reclutador o hiring manager | [RECRUITER.md](RECRUITER.md) | Entender el valor del repo en pocos minutos |
-| Lider de ingenieria | [docs/positioning-and-objective.md](docs/positioning-and-objective.md) | Ver el problema que este laboratorio viene a resolver |
-| Dev / DevOps | [INSTALL.md](INSTALL.md) -> [RUNBOOK.md](RUNBOOK.md) -> caso [01](cases/01-api-latency-under-load/README.md) | Levantar y evaluar una implementacion operativa real |
-| Principiante | [docs/BEGINNERS_GUIDE.md](docs/BEGINNERS_GUIDE.md) | Entender la estructura antes de entrar al codigo |
-| Seguridad / operacion | [SECURITY.md](SECURITY.md) -> [RUNBOOK.md](RUNBOOK.md) | Validar postura operativa, limites y reportes |
-
-## 🚀 Inicio rapido
-
-Ruta oficial para ambientes implementados:
-
-```bash
-# Portal del laboratorio
-docker compose -f compose.root.yml up -d --build
-
-# Caso 01 (PHP + PostgreSQL + worker + observabilidad)
-docker compose -f cases/01-api-latency-under-load/php/compose.yml up -d --build
-
-# Caso 02 (PHP + PostgreSQL)
-docker compose -f cases/02-n-plus-one-and-db-bottlenecks/php/compose.yml up -d --build
-
-# Caso 03 (PHP + telemetria util)
-docker compose -f cases/03-poor-observability-and-useless-logs/php/compose.yml up -d --build
-```
-
-Atajos disponibles:
-
-```bash
-make portal-up
-make case-up CASE=01-api-latency-under-load STACK=php
-make case-up CASE=02-n-plus-one-and-db-bottlenecks STACK=php
-make case-up CASE=03-poor-observability-and-useless-logs STACK=php
-```
-
-> [!IMPORTANT]
-> En este repositorio `make` es una capa de conveniencia. La ruta realmente soportada y mas portable es `docker compose` directo. En Windows puro, esto importa porque el `Makefile` actual usa `/bin/bash`.
+- `OPERATIVO` adicional fuera de PHP: [caso 03](cases/03-poor-observability-and-useless-logs/README.md) en Node.js y Python.
+- `DOCUMENTADO / SCAFFOLD`: casos `04` al `12`, y los stacks todavia no profundizados de los casos `01` al `03`.
 
 ## 🔎 Casos prioritarios
 
-| Caso | Estado | Valor principal |
+| Caso | Estado | Que deja como prueba |
 | --- | --- | --- |
-| [01 - API lenta bajo carga](cases/01-api-latency-under-load/README.md) | `OPERATIVO` | Mide latencia, contencion sobre DB, worker concurrente y mejora antes/despues |
-| [02 - N+1 y cuellos de botella DB](cases/02-n-plus-one-and-db-bottlenecks/README.md) | `OPERATIVO` | Compara consultas legacy vs optimizadas sobre un modelo relacional real |
-| [03 - Observabilidad deficiente](cases/03-poor-observability-and-useless-logs/README.md) | `OPERATIVO` | Contrasta logs inutiles contra telemetria util para reducir MTTR en PHP, Node.js y Python |
+| [01 - API lenta bajo carga](cases/01-api-latency-under-load/README.md) | `OPERATIVO` | Latencia legacy vs optimized, contencion real sobre DB, worker concurrente y observabilidad con Grafana |
+| [02 - N+1 y cuellos de botella DB](cases/02-n-plus-one-and-db-bottlenecks/README.md) | `OPERATIVO` | N+1 reproducible, costo por request medido y lectura consolidada contra la misma base relacional |
+| [03 - Observabilidad deficiente](cases/03-poor-observability-and-useless-logs/README.md) | `OPERATIVO` | Diferencia clara entre logs pobres y telemetria util en PHP, Node.js y Python |
 
-El catalogo completo esta en [docs/case-catalog.md](docs/case-catalog.md).
+El catalogo completo se genera desde metadatos y vive en [docs/case-catalog.md](docs/case-catalog.md).
 
-## 📚 Documentacion profesional del repositorio
+## 🖥️ Portal y experiencia de producto
 
-| Documento | Para que sirve |
+La raiz del laboratorio ya no es solo una lista de archivos. El portal local ahora cumple cuatro funciones:
+
+- explica el producto por audiencia;
+- deja elegir lenguaje y ver solo casos realmente operativos;
+- muestra por que importa cada caso y que evidencia deberia verse;
+- ejecuta probes server-side para devolver `status code`, latencia y ultima verificacion real desde el propio portal.
+
+Esto lo vuelve mucho mas claro para reclutadores, lideres y personas que quieren corroborar rapido si el producto esta vivo y por que importa.
+
+## 🚀 Inicio rapido
+
+```bash
+# Portal del laboratorio
+
+docker compose -f compose.root.yml up -d --build
+
+# Casos operativos hoy
+
+docker compose -f cases/01-api-latency-under-load/php/compose.yml up -d --build
+docker compose -f cases/02-n-plus-one-and-db-bottlenecks/php/compose.yml up -d --build
+docker compose -f cases/03-poor-observability-and-useless-logs/php/compose.yml up -d --build
+docker compose -f cases/03-poor-observability-and-useless-logs/node/compose.yml up -d --build
+docker compose -f cases/03-poor-observability-and-useless-logs/python/compose.yml up -d --build
+```
+
+Tambien existen atajos con `make`, pero la ruta soportada y mas portable sigue siendo `docker compose` directo.
+
+## 📚 Documentacion del repositorio
+
+| Documento | Rol |
 | --- | --- |
 | [RECRUITER.md](RECRUITER.md) | Ruta ejecutiva para evaluacion rapida |
-| [ARCHITECTURE.md](ARCHITECTURE.md) | Vista ejecutiva de la arquitectura actual del sistema |
+| [ARCHITECTURE.md](ARCHITECTURE.md) | Vista ejecutiva de la arquitectura actual |
 | [INSTALL.md](INSTALL.md) | Instalacion y puesta en marcha recomendada |
-| [RUNBOOK.md](RUNBOOK.md) | Operacion diaria, diagnostico y respuesta inicial |
+| [RUNBOOK.md](RUNBOOK.md) | Operacion diaria y chequeos iniciales |
 | [SECURITY.md](SECURITY.md) | Politica de seguridad y reporte responsable |
 | [SUPPORT.md](SUPPORT.md) | Como pedir ayuda y que informacion incluir |
 | [CONTRIBUTING.md](CONTRIBUTING.md) | Reglas para crecer el laboratorio sin degradarlo |
-| [CHANGELOG.md](CHANGELOG.md) | Historial notable de cambios y madurez |
-| [docs/BEGINNERS_GUIDE.md](docs/BEGINNERS_GUIDE.md) | Ruta simple para primeros pasos |
-| [docs/architecture.md](docs/architecture.md) | Estructura del repo y reglas de organizacion |
+| [CHANGELOG.md](CHANGELOG.md) | Historial notable de cambios |
+| [docs/architecture.md](docs/architecture.md) | Mapa estructural del repositorio |
+| [docs/case-catalog.md](docs/case-catalog.md) | Catalogo sincronizado desde metadatos |
 | [docs/docker-strategy.md](docs/docker-strategy.md) | Por que Docker es el modelo operativo oficial |
-| [docs/usage-and-scope.md](docs/usage-and-scope.md) | Limites reales de esta version |
 | [docs/recruiter-guide.md](docs/recruiter-guide.md) | Guia extendida para lectores no tecnicos |
 
-## 🌐 Ecosistema relacionado
+## 🏗️ Arquitectura en una frase
 
-Este laboratorio no existe aislado. Se alinea con un ecosistema publico mas amplio:
+El sistema se organiza como una capa editorial en raiz, un portal ligero de evaluacion, una biblioteca de casos problem-driven y stacks aislados por Docker. La arquitectura completa esta documentada en [ARCHITECTURE.md](ARCHITECTURE.md) y [docs/architecture.md](docs/architecture.md).
+
+## 🌐 Ecosistema relacionado
 
 - Web profesional: [vladimiracunadev-create.github.io](https://vladimiracunadev-create.github.io/)
 - Perfil GitHub: [github.com/vladimiracunadev-create](https://github.com/vladimiracunadev-create)
 - Grupo GitLab: [gitlab.com/vladimir.acuna.dev-group/vladimir.acuna.dev-group](https://gitlab.com/vladimir.acuna.dev-group/vladimir.acuna.dev-group)
 
-La linea comun entre estos activos es consistente: repos reproducibles, documentacion por audiencia, observabilidad, continuidad operacional y modernizacion de plataformas reales.
-
 ## ✅ Lo que este repo si es
 
 - Un laboratorio serio para demostrar criterio tecnico transferible.
 - Una base reproducible para conversar de rendimiento, observabilidad y arquitectura.
-- Un portafolio documentado que privilegia problemas reales por sobre features aisladas.
+- Un portfolio documentado que privilegia problemas reales sobre features aisladas.
 
-## 🚫 Lo que este repo no intenta vender
+## 🚫 Lo que este repo no vende
 
 - Paridad funcional completa en todos los stacks desde la primera iteracion.
 - Benchmarks absolutos entre lenguajes.
-- "Todo listo" en doce casos al mismo nivel de profundidad.
+- Doce casos al mismo nivel de profundidad hoy.
 - Seniority inflada con claims sin evidencia.
-
-## 🧱 Estructura general
-
-```text
-problem-driven-systems-lab/
-|- README.md
-|- RECRUITER.md
-|- INSTALL.md
-|- RUNBOOK.md
-|- SECURITY.md
-|- SUPPORT.md
-|- CONTRIBUTING.md
-|- CHANGELOG.md
-|- ROADMAP.md
-|- compose.root.yml
-|- portal/
-|- docs/
-|- shared/
-|- templates/
-`- cases/
-```
 
 ## ⚖️ Licencia
 

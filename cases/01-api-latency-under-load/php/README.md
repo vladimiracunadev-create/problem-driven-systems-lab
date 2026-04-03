@@ -1,29 +1,37 @@
-# Caso 01 — PHP 8 + PostgreSQL + worker concurrente
+# ⚡ Caso 01 - PHP 8 + PostgreSQL + worker concurrente
 
-Esta implementación es la versión **real** del caso 1.
+> Implementacion operativa real del caso 01 para estudiar latencia bajo carga con evidencia observable.
 
-## Qué resuelve
+## 🎯 Que resuelve
+
 Modela una API de reportes con dos variantes:
 
-- `report-legacy`: consulta defectuosa sobre tabla transaccional + N+1
-- `report-optimized`: lectura sobre tabla resumen refrescada por worker
+- `report-legacy`: consulta defectuosa sobre tabla transaccional con demasiada carga sobre DB.
+- `report-optimized`: lectura sobre tabla resumen refrescada por un worker concurrente.
 
-Además levanta un proceso crítico concurrente (`worker`) que recalcula el resumen periódicamente.
+El escenario no se queda en un `sleep`. Mantiene un proceso de fondo que recalcula el resumen y deja visible la competencia real por recursos.
 
-## Servicios
-- `app` → API PHP 8
-- `db` → PostgreSQL 16 con datos semilla
-- `worker` → refresco periódico de resumen y heartbeat operacional
-- `postgres-exporter` → métricas del motor PostgreSQL
-- `prometheus` → scraping de la app y la base
-- `grafana` → dashboard inicial del caso
+## 💼 Por que importa
 
-## Arranque
+Este caso sirve para mostrar como se pasa de una API que "parece funcionar" a una implementacion que deja evidencia medible de por que degrada y como se corrige sin adivinar infraestructura.
+
+## 🧱 Servicios
+
+- `app` -> API PHP 8 con rutas legacy y optimized.
+- `db` -> PostgreSQL 16 con datos semilla.
+- `worker` -> refresco periodico de tabla resumen y heartbeat operacional.
+- `postgres-exporter` -> metricas del motor PostgreSQL.
+- `prometheus` -> scraping de la app y la base.
+- `grafana` -> dashboard inicial del caso.
+
+## 🚀 Arranque
+
 ```bash
 docker compose -f compose.yml up -d --build
 ```
 
-## Endpoints
+## 🔎 Endpoints
+
 ```bash
 curl http://localhost:811/
 curl http://localhost:811/health
@@ -36,13 +44,16 @@ curl http://localhost:811/metrics
 curl http://localhost:811/metrics-prometheus
 ```
 
-## Observabilidad
+## 📈 Observabilidad
+
 - Prometheus: `http://localhost:9091`
 - Grafana: `http://localhost:3001` (`admin` / `admin`)
 - PostgreSQL exporter: `http://localhost:9187/metrics`
 
-## Benchmark sugerido
+## 🧪 Benchmark sugerido
+
 ### Manual
+
 ```bash
 curl http://localhost:811/reset-metrics
 make case-load CASE=01-api-latency-under-load TARGET_URL="http://php-app:8080/report-legacy?days=30&limit=20" REQUESTS=60 CONCURRENCY=8
@@ -56,21 +67,19 @@ curl http://localhost:811/diagnostics/summary | jq
 ```
 
 ### Automatizado
+
 ```bash
 bash ../shared/benchmark/run-benchmark.sh
 ```
 
-## Qué observar
-- diferencia de latencia entre legacy y optimized,
-- diferencia de `avg_db_queries` y `avg_db_time_ms`,
-- duración de los refresh del worker,
-- efecto del proceso concurrente sobre las lecturas,
+## 🧭 Que observar
+
+- diferencia de latencia entre legacy y optimized;
+- diferencia de `avg_db_queries` y `avg_db_time_ms`;
+- duracion de los refresh del worker;
+- efecto del proceso concurrente sobre las lecturas;
 - si la mejora es real o solo aparente.
 
-## Perfil de recursos
-El compose usa un perfil deliberadamente acotado para hacer visible la degradación sin requerir infraestructura grande:
-- app: ~1 CPU / 512 MB
-- db: ~1.5 CPU / 1 GB
-- worker: ~0.75 CPU / 256 MB
+## ⚖️ Nota de honestidad
 
-No pretende ser réplica exacta de producción; sí busca aproximar presión relativa de recursos de forma honesta y reproducible.
+No pretende benchmarkear PHP contra otros runtimes. Su objetivo es mostrar diagnostico y remediacion real de un problema de latencia bajo carga, con observabilidad suficiente para sostener la conclusion.

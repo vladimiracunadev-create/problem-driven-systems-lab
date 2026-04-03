@@ -1,134 +1,399 @@
-[
-  {
-    "id": "01",
-    "icon": "⚡",
-    "slug": "api-latency-under-load",
-    "title": "API lenta bajo carga",
-    "category": "Rendimiento",
-    "status": "OPERATIVO",
-    "level_detail": "PHP + PostgreSQL + worker + Prometheus + Grafana",
-    "summary": "La aplicacion responde bien con pocos usuarios, pero degrada su latencia y estabilidad al aumentar la concurrencia.",
-    "operational_stacks": ["php"]
+{
+  "lab": {
+    "name": "Problem-Driven Systems Lab",
+    "tagline": "Laboratorio Docker-first orientado a rendimiento, observabilidad, resiliencia, arquitectura y operacion.",
+    "hero_title": "Elige una audiencia o un lenguaje y evalua el laboratorio con evidencia real",
+    "audience_message": "Pensado para reclutadores, lideres tecnicos, clientes internos y personas que necesitan entender rapido que hace el producto y por que importa."
   },
-  {
-    "id": "02",
-    "icon": "🔄",
-    "slug": "n-plus-one-and-db-bottlenecks",
-    "title": "N+1 queries y cuellos de botella en base de datos",
-    "category": "Rendimiento",
-    "status": "OPERATIVO",
-    "level_detail": "PHP + PostgreSQL",
-    "summary": "La aplicacion ejecuta demasiadas consultas por solicitud o usa el ORM de forma ineficiente, generando saturacion de base de datos.",
-    "operational_stacks": ["php"]
-  },
-  {
-    "id": "03",
-    "icon": "🔭",
-    "slug": "poor-observability-and-useless-logs",
-    "title": "Observabilidad deficiente y logs inutiles",
-    "category": "Observabilidad",
-    "status": "OPERATIVO",
-    "level_detail": "PHP + Node.js + Python con logs estructurados, trazas y metricas",
-    "summary": "Existen errores e incidentes, pero no hay trazabilidad suficiente para identificar causa raiz de forma rapida y confiable.",
-    "operational_stacks": ["php", "node", "python"]
-  },
-  {
-    "id": "04",
-    "icon": "⏱️",
-    "slug": "timeout-chain-and-retry-storms",
-    "title": "Cadena de timeouts y tormentas de reintentos",
-    "category": "Resiliencia",
-    "status": "DOCUMENTADO / SCAFFOLD",
-    "level_detail": "estructura y docs listas",
-    "summary": "Una integracion lenta o inestable dispara reintentos, bloqueos y cascadas de fallas entre servicios.",
-    "operational_stacks": []
-  },
-  {
-    "id": "05",
-    "icon": "🧠",
-    "slug": "memory-pressure-and-resource-leaks",
-    "title": "Presion de memoria y fugas de recursos",
-    "category": "Rendimiento",
-    "status": "DOCUMENTADO / SCAFFOLD",
-    "level_detail": "estructura y docs listas",
-    "summary": "El sistema consume memoria, descriptores o conexiones de forma progresiva hasta degradar o caerse.",
-    "operational_stacks": []
-  },
-  {
-    "id": "06",
-    "icon": "🚚",
-    "slug": "broken-pipeline-and-fragile-delivery",
-    "title": "Pipeline roto y entrega fragil",
-    "category": "Entrega",
-    "status": "DOCUMENTADO / SCAFFOLD",
-    "level_detail": "estructura y docs listas",
-    "summary": "El software funciona en desarrollo, pero falla al desplegar, promover cambios o revertir incidentes con seguridad.",
-    "operational_stacks": []
-  },
-  {
-    "id": "07",
-    "icon": "🏗️",
-    "slug": "incremental-monolith-modernization",
-    "title": "Modernizacion incremental de monolito",
-    "category": "Arquitectura",
-    "status": "DOCUMENTADO / SCAFFOLD",
-    "level_detail": "estructura y docs listas",
-    "summary": "El sistema legacy sigue siendo critico, pero su evolucion se vuelve lenta, riesgosa y costosa.",
-    "operational_stacks": []
-  },
-  {
-    "id": "08",
-    "icon": "🧩",
-    "slug": "critical-module-extraction-without-breaking-operations",
-    "title": "Extraccion de modulo critico sin romper operacion",
-    "category": "Arquitectura",
-    "status": "DOCUMENTADO / SCAFFOLD",
-    "level_detail": "estructura y docs listas",
-    "summary": "Se necesita desacoplar una parte clave del sistema, pero esa parte participa en flujos sensibles y no admite quiebres.",
-    "operational_stacks": []
-  },
-  {
-    "id": "09",
-    "icon": "🌐",
-    "slug": "unstable-external-integration",
-    "title": "Integracion externa inestable",
-    "category": "Resiliencia",
-    "status": "DOCUMENTADO / SCAFFOLD",
-    "level_detail": "estructura y docs listas",
-    "summary": "Una API, servicio o proveedor externo introduce latencia, errores intermitentes o reglas cambiantes que afectan el sistema propio.",
-    "operational_stacks": []
-  },
-  {
-    "id": "10",
-    "icon": "💸",
-    "slug": "expensive-architecture-for-simple-needs",
-    "title": "Arquitectura cara para un problema simple",
-    "category": "Arquitectura",
-    "status": "DOCUMENTADO / SCAFFOLD",
-    "level_detail": "estructura y docs listas",
-    "summary": "La solucion tecnica consume mas servicios, complejidad y costo del que el problema de negocio realmente necesita.",
-    "operational_stacks": []
-  },
-  {
-    "id": "11",
-    "icon": "📊",
-    "slug": "heavy-reporting-blocks-operations",
-    "title": "Reportes pesados que bloquean la operacion",
-    "category": "Operaciones",
-    "status": "DOCUMENTADO / SCAFFOLD",
-    "level_detail": "estructura y docs listas",
-    "summary": "Consultas y procesos de reporting compiten con la operacion transaccional y degradan el sistema completo.",
-    "operational_stacks": []
-  },
-  {
-    "id": "12",
-    "icon": "👤",
-    "slug": "single-point-of-knowledge-and-operational-risk",
-    "title": "Punto unico de conocimiento y riesgo operacional",
-    "category": "Operaciones",
-    "status": "DOCUMENTADO / SCAFFOLD",
-    "level_detail": "estructura y docs listas",
-    "summary": "Una persona, modulo o procedimiento concentra tanto conocimiento que el sistema se vuelve fragil ante ausencias o rotacion.",
-    "operational_stacks": []
-  }
-]
+  "recommended_github_about": "Problem-driven systems lab with Docker-first cases for performance, observability, resilience, architecture, and operational risk across PHP, Node.js, Python, Java, and .NET.",
+  "recommended_github_topics": [
+    "problem-driven",
+    "docker",
+    "docker-compose",
+    "php",
+    "nodejs",
+    "python",
+    "java",
+    "dotnet",
+    "observability",
+    "performance",
+    "resilience",
+    "systems-design",
+    "software-architecture",
+    "legacy-modernization",
+    "technical-portfolio",
+    "postgresql",
+    "prometheus",
+    "grafana"
+  ],
+  "documents": [
+    {
+      "icon": "👔",
+      "title": "RECRUITER.md",
+      "path": "RECRUITER.md",
+      "description": "Ruta ejecutiva para entender el producto y que evidencia deja en pocos minutos."
+    },
+    {
+      "icon": "🏗️",
+      "title": "ARCHITECTURE.md",
+      "path": "ARCHITECTURE.md",
+      "description": "Arquitectura actual del repositorio, del portal y del flujo de metadatos."
+    },
+    {
+      "icon": "🚀",
+      "title": "INSTALL.md",
+      "path": "INSTALL.md",
+      "description": "Instalacion y primer arranque con Docker como via oficial."
+    },
+    {
+      "icon": "🛠️",
+      "title": "RUNBOOK.md",
+      "path": "RUNBOOK.md",
+      "description": "Operacion diaria, comandos utiles y chequeos de salud."
+    },
+    {
+      "icon": "🗂️",
+      "title": "docs/case-catalog.md",
+      "path": "docs/case-catalog.md",
+      "description": "Catalogo generado desde metadatos con estado real y stacks operativos."
+    },
+    {
+      "icon": "🌱",
+      "title": "docs/BEGINNERS_GUIDE.md",
+      "path": "docs/BEGINNERS_GUIDE.md",
+      "description": "Entrada simple para personas que quieren entender la estructura antes de ejecutar."
+    }
+  ],
+  "audiences": [
+    {
+      "key": "recruiter",
+      "icon": "👔",
+      "label": "Recruiter",
+      "headline": "Entender valor, madurez y foco en pocos minutos.",
+      "description": "Empieza por la narrativa del producto, el catalogo y un caso operativo para validar que no es solo documentacion bonita.",
+      "document_path": "RECRUITER.md",
+      "goal": "Confirmar criterio tecnico, honestidad de madurez y capacidad de comunicar decisiones."
+    },
+    {
+      "key": "leadership",
+      "icon": "🧭",
+      "label": "CTO / Head of Engineering",
+      "headline": "Evaluar criterio sistemico, arquitectura y trade-offs.",
+      "description": "Revisa arquitectura, runbook y los casos 01-03 para ver como se pasa de sintomas a evidencia y remediacion operativa.",
+      "document_path": "ARCHITECTURE.md",
+      "goal": "Entender si el producto demuestra pensamiento de plataforma, observabilidad y reduccion de riesgo."
+    },
+    {
+      "key": "developer",
+      "icon": "🛠️",
+      "label": "Developer",
+      "headline": "Levantar el entorno y seguir la evidencia tecnica paso a paso.",
+      "description": "Usa Docker, prueba health checks y compara rutas legacy vs optimized u observable en los casos operativos.",
+      "document_path": "INSTALL.md",
+      "goal": "Corroborar que los escenarios se ejecutan de forma limpia y que los endpoints cuentan una historia tecnica util."
+    },
+    {
+      "key": "beginner",
+      "icon": "🌱",
+      "label": "Beginner",
+      "headline": "Entender primero el mapa del laboratorio antes del codigo.",
+      "description": "Empieza por la guia de principiantes y luego avanza al catalogo para distinguir entre casos operativos y scaffolds documentados.",
+      "document_path": "docs/BEGINNERS_GUIDE.md",
+      "goal": "Entender que problema modela cada caso y por que Docker se usa aqui como mecanismo de reproducibilidad."
+    }
+  ],
+  "languages": [
+    {
+      "key": "php",
+      "label": "PHP",
+      "headline": "Stack principal hoy para profundidad funcional.",
+      "note": "Muestra los casos mas maduros y mejor instrumentados del laboratorio."
+    },
+    {
+      "key": "node",
+      "label": "Node.js",
+      "headline": "Stack operativo real en observabilidad comparada.",
+      "note": "Ideal para mostrar transferibilidad del criterio fuera de PHP."
+    },
+    {
+      "key": "python",
+      "label": "Python",
+      "headline": "Stack operativo real en observabilidad comparada.",
+      "note": "Permite contrastar la misma narrativa operacional en otro runtime."
+    },
+    {
+      "key": "java",
+      "label": "Java",
+      "headline": "Aun sin casos operativos profundizados.",
+      "note": "La estructura existe, pero la madurez real todavia esta en evolucion."
+    },
+    {
+      "key": "dotnet",
+      "label": ".NET",
+      "headline": "Aun sin casos operativos profundizados.",
+      "note": "La estructura existe, pero la madurez real todavia esta en evolucion."
+    }
+  ],
+  "cases": [
+    {
+      "id": "01",
+      "icon": "⚡",
+      "slug": "api-latency-under-load",
+      "title": "API lenta bajo carga",
+      "category": "Rendimiento",
+      "status": "OPERATIVO",
+      "level_detail": "PHP + PostgreSQL + worker + Prometheus + Grafana",
+      "summary": "La aplicacion responde bien con pocos usuarios, pero degrada su latencia y estabilidad al aumentar la concurrencia.",
+      "case_readme_path": "cases/01-api-latency-under-load/README.md",
+      "business_outcome": "Reduce latencia visible y evita sobredimensionar infraestructura a ciegas.",
+      "recruiter_pitch": "Demuestra diagnostico serio de performance, medicion antes y despues, y una solucion con evidencia observable.",
+      "proof_points": [
+        "Compara /report-legacy y /report-optimized con latencia, p95 y queries promedio.",
+        "Mantiene un worker concurrente que refresca la tabla resumen sin esconder la presion real del sistema.",
+        "Exporta metricas locales y tambien Prometheus/Grafana para mostrar evidencia antes y despues."
+      ],
+      "look_for": [
+        "Diferencia entre legacy y optimized en avg_ms, p95_ms y max_ms.",
+        "Cambio real en avg_db_queries y avg_db_time_ms cuando se usa la tabla resumen.",
+        "Actividad del worker y costo de refresco en batch/status, job-runs y diagnostics/summary."
+      ],
+      "honesty_note": "No busca benchmarkear lenguajes. Busca demostrar diagnostico y remediacion real del problema de latencia bajo carga.",
+      "operational_stacks": [
+        "php"
+      ],
+      "runtime_entries": {
+        "php": {
+          "port": 811,
+          "compose_path": "cases/01-api-latency-under-load/php/compose.yml",
+          "readme_path": "cases/01-api-latency-under-load/php/README.md",
+          "health_path": "/health",
+          "root_path": "/"
+        }
+      }
+    },
+    {
+      "id": "02",
+      "icon": "🔄",
+      "slug": "n-plus-one-and-db-bottlenecks",
+      "title": "N+1 queries y cuellos de botella en base de datos",
+      "category": "Rendimiento",
+      "status": "OPERATIVO",
+      "level_detail": "PHP + PostgreSQL",
+      "summary": "La aplicacion ejecuta demasiadas consultas por solicitud o usa el acceso a datos de forma ineficiente, generando saturacion de base de datos.",
+      "case_readme_path": "cases/02-n-plus-one-and-db-bottlenecks/README.md",
+      "business_outcome": "Reduce round-trips, costo por request y desgaste innecesario sobre la base de datos.",
+      "recruiter_pitch": "Muestra criterio de acceso a datos mas alla del lenguaje: el problema no es el ORM en abstracto, sino el patron de carga dentro de bucles.",
+      "proof_points": [
+        "Contrasta /orders-legacy y /orders-optimized sobre la misma base relacional y los mismos datos semilla.",
+        "Mide cuantas queries y cuanto tiempo de DB consume cada request.",
+        "Entrega diagnostics/summary con densidad relacional para explicar por que el problema escala mal."
+      ],
+      "look_for": [
+        "Cuantas consultas hace la ruta legacy frente a la optimized para el mismo limit y rango de dias.",
+        "Como cae db_time_ms_in_request cuando la lectura se consolida.",
+        "Si diagnostics/summary deja claro por que la cardinalidad de items empeora el patron N+1."
+      ],
+      "honesty_note": "No intenta representar un ORM especifico. Reproduce un patron muy real de round-trips repetidos y relaciones cargadas dentro de bucles.",
+      "operational_stacks": [
+        "php"
+      ],
+      "runtime_entries": {
+        "php": {
+          "port": 812,
+          "compose_path": "cases/02-n-plus-one-and-db-bottlenecks/php/compose.yml",
+          "readme_path": "cases/02-n-plus-one-and-db-bottlenecks/php/README.md",
+          "health_path": "/health",
+          "root_path": "/"
+        }
+      }
+    },
+    {
+      "id": "03",
+      "icon": "🔭",
+      "slug": "poor-observability-and-useless-logs",
+      "title": "Observabilidad deficiente y logs inutiles",
+      "category": "Observabilidad",
+      "status": "OPERATIVO",
+      "level_detail": "PHP + Node.js + Python con logs estructurados, trazas y metricas",
+      "summary": "Existen errores e incidentes, pero no hay trazabilidad suficiente para identificar causa raiz de forma rapida y confiable.",
+      "case_readme_path": "cases/03-poor-observability-and-useless-logs/README.md",
+      "business_outcome": "Reduce MTTR y convierte incidentes vagos en fallas diagnosticables con evidencia.",
+      "recruiter_pitch": "Prueba la diferencia entre tener logs pobres y tener telemetria util en tres runtimes distintos sin cambiar la historia del problema.",
+      "proof_points": [
+        "Compara checkout-legacy contra checkout-observable para ver que cambia cuando existe correlacion real.",
+        "Expone logs, trazas, metricas y diagnostics/summary para reconstruir el incidente con evidencia.",
+        "Demuestra transferibilidad del criterio en PHP, Node.js y Python sin vender paridad falsa en otros casos."
+      ],
+      "look_for": [
+        "Si puedes identificar el paso exacto que falla y la dependencia implicada.",
+        "Si request_id y trace_id permiten correlacionar una request de punta a punta.",
+        "Si diagnostics/summary pasa de un incidente vago a una explicacion accionable."
+      ],
+      "honesty_note": "No reemplaza una plataforma completa de tracing distribuido. Si deja una base reproducible para demostrar por que logs pobres alargan el MTTR.",
+      "operational_stacks": [
+        "php",
+        "node",
+        "python"
+      ],
+      "runtime_entries": {
+        "php": {
+          "port": 813,
+          "compose_path": "cases/03-poor-observability-and-useless-logs/php/compose.yml",
+          "readme_path": "cases/03-poor-observability-and-useless-logs/php/README.md",
+          "health_path": "/health",
+          "root_path": "/"
+        },
+        "node": {
+          "port": 823,
+          "compose_path": "cases/03-poor-observability-and-useless-logs/node/compose.yml",
+          "readme_path": "cases/03-poor-observability-and-useless-logs/node/README.md",
+          "health_path": "/health",
+          "root_path": "/"
+        },
+        "python": {
+          "port": 833,
+          "compose_path": "cases/03-poor-observability-and-useless-logs/python/compose.yml",
+          "readme_path": "cases/03-poor-observability-and-useless-logs/python/README.md",
+          "health_path": "/health",
+          "root_path": "/"
+        }
+      }
+    },
+    {
+      "id": "04",
+      "icon": "⏱️",
+      "slug": "timeout-chain-and-retry-storms",
+      "title": "Cadena de timeouts y tormentas de reintentos",
+      "category": "Resiliencia",
+      "status": "DOCUMENTADO / SCAFFOLD",
+      "level_detail": "estructura y docs listas",
+      "summary": "Una integracion lenta o inestable dispara reintentos, bloqueos y cascadas de fallas entre servicios.",
+      "case_readme_path": "cases/04-timeout-chain-and-retry-storms/README.md",
+      "business_outcome": "Ayuda a reducir fallas en cascada y a disenar limites mas sanos de timeout, retry y backoff.",
+      "recruiter_pitch": "Modela una categoria de incidente muy frecuente en plataformas distribuidas aunque aun no este operativa en todos los stacks.",
+      "operational_stacks": [],
+      "runtime_entries": {}
+    },
+    {
+      "id": "05",
+      "icon": "🧠",
+      "slug": "memory-pressure-and-resource-leaks",
+      "title": "Presion de memoria y fugas de recursos",
+      "category": "Rendimiento",
+      "status": "DOCUMENTADO / SCAFFOLD",
+      "level_detail": "estructura y docs listas",
+      "summary": "El sistema consume memoria, descriptores o conexiones de forma progresiva hasta degradar o caerse.",
+      "case_readme_path": "cases/05-memory-pressure-and-resource-leaks/README.md",
+      "business_outcome": "Sirve para razonar estabilidad, limites de recursos y degradacion progresiva antes del colapso.",
+      "recruiter_pitch": "Visibiliza criterio sobre leaks, limites operativos y sintomas que suelen pasar inadvertidos hasta produccion.",
+      "operational_stacks": [],
+      "runtime_entries": {}
+    },
+    {
+      "id": "06",
+      "icon": "🚚",
+      "slug": "broken-pipeline-and-fragile-delivery",
+      "title": "Pipeline roto y entrega fragil",
+      "category": "Entrega",
+      "status": "DOCUMENTADO / SCAFFOLD",
+      "level_detail": "estructura y docs listas",
+      "summary": "El software funciona en desarrollo, pero falla al desplegar, promover cambios o revertir incidentes con seguridad.",
+      "case_readme_path": "cases/06-broken-pipeline-and-fragile-delivery/README.md",
+      "business_outcome": "Ayuda a reducir riesgo en despliegues y a fortalecer rollback, promotion y entrega continua.",
+      "recruiter_pitch": "Conecta calidad de delivery con continuidad operacional en vez de tratar CI/CD como un check cosmetico.",
+      "operational_stacks": [],
+      "runtime_entries": {}
+    },
+    {
+      "id": "07",
+      "icon": "🏗️",
+      "slug": "incremental-monolith-modernization",
+      "title": "Modernizacion incremental de monolito",
+      "category": "Arquitectura",
+      "status": "DOCUMENTADO / SCAFFOLD",
+      "level_detail": "estructura y docs listas",
+      "summary": "El sistema legacy sigue siendo critico, pero su evolucion se vuelve lenta, riesgosa y costosa.",
+      "case_readme_path": "cases/07-incremental-monolith-modernization/README.md",
+      "business_outcome": "Permite discutir modernizacion sin caer en reescrituras irresponsables o slogans de moda.",
+      "recruiter_pitch": "Muestra foco en evolucion segura de sistemas vivos y no solo en greenfield idealizado.",
+      "operational_stacks": [],
+      "runtime_entries": {}
+    },
+    {
+      "id": "08",
+      "icon": "🧩",
+      "slug": "critical-module-extraction-without-breaking-operations",
+      "title": "Extraccion de modulo critico sin romper operacion",
+      "category": "Arquitectura",
+      "status": "DOCUMENTADO / SCAFFOLD",
+      "level_detail": "estructura y docs listas",
+      "summary": "Se necesita desacoplar una parte clave del sistema, pero esa parte participa en flujos sensibles y no admite quiebres.",
+      "case_readme_path": "cases/08-critical-module-extraction-without-breaking-operations/README.md",
+      "business_outcome": "Ayuda a pensar extracciones modulares sin sacrificar continuidad operacional ni trazabilidad.",
+      "recruiter_pitch": "Subraya criterio de refactor y separacion de dominios sobre sistemas ya en operacion.",
+      "operational_stacks": [],
+      "runtime_entries": {}
+    },
+    {
+      "id": "09",
+      "icon": "🌐",
+      "slug": "unstable-external-integration",
+      "title": "Integracion externa inestable",
+      "category": "Resiliencia",
+      "status": "DOCUMENTADO / SCAFFOLD",
+      "level_detail": "estructura y docs listas",
+      "summary": "Una API, servicio o proveedor externo introduce latencia, errores intermitentes o reglas cambiantes que afectan el sistema propio.",
+      "case_readme_path": "cases/09-unstable-external-integration/README.md",
+      "business_outcome": "Permite razonar protecciones frente a dependencias externas que no controlamos.",
+      "recruiter_pitch": "Aterriza resiliencia realista frente a terceros, no solo manejo local de excepciones.",
+      "operational_stacks": [],
+      "runtime_entries": {}
+    },
+    {
+      "id": "10",
+      "icon": "💸",
+      "slug": "expensive-architecture-for-simple-needs",
+      "title": "Arquitectura cara para un problema simple",
+      "category": "Arquitectura",
+      "status": "DOCUMENTADO / SCAFFOLD",
+      "level_detail": "estructura y docs listas",
+      "summary": "La solucion tecnica consume mas servicios, complejidad y costo del que el problema de negocio realmente necesita.",
+      "case_readme_path": "cases/10-expensive-architecture-for-simple-needs/README.md",
+      "business_outcome": "Ayuda a tomar decisiones tecnologicas mas proporcionales al problema de negocio.",
+      "recruiter_pitch": "Muestra criterio para decir no a complejidad innecesaria cuando la situacion pide simplicidad."
+      ,
+      "operational_stacks": [],
+      "runtime_entries": {}
+    },
+    {
+      "id": "11",
+      "icon": "📊",
+      "slug": "heavy-reporting-blocks-operations",
+      "title": "Reportes pesados que bloquean la operacion",
+      "category": "Operaciones",
+      "status": "DOCUMENTADO / SCAFFOLD",
+      "level_detail": "estructura y docs listas",
+      "summary": "Consultas y procesos de reporting compiten con la operacion transaccional y degradan el sistema completo.",
+      "case_readme_path": "cases/11-heavy-reporting-blocks-operations/README.md",
+      "business_outcome": "Permite discutir aislamiento de cargas, reporting y proteccion de flujos operativos.",
+      "recruiter_pitch": "Conecta datos y operacion en un problema cotidiano que suele aparecer tarde y costar caro.",
+      "operational_stacks": [],
+      "runtime_entries": {}
+    },
+    {
+      "id": "12",
+      "icon": "👤",
+      "slug": "single-point-of-knowledge-and-operational-risk",
+      "title": "Punto unico de conocimiento y riesgo operacional",
+      "category": "Operaciones",
+      "status": "DOCUMENTADO / SCAFFOLD",
+      "level_detail": "estructura y docs listas",
+      "summary": "Una persona, modulo o procedimiento concentra tanto conocimiento que el sistema se vuelve fragil ante ausencias o rotacion.",
+      "case_readme_path": "cases/12-single-point-of-knowledge-and-operational-risk/README.md",
+      "business_outcome": "Ayuda a discutir continuidad operacional, documentacion y reduccion de dependencia critica en personas.",
+      "recruiter_pitch": "Aterriza riesgo operacional y sostenibilidad del conocimiento como parte de la calidad del sistema.",
+      "operational_stacks": [],
+      "runtime_entries": {}
+    }
+  ]
+}

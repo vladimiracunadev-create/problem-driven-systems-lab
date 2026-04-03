@@ -4,168 +4,138 @@ declare(strict_types=1);
 
 header('Content-Type: application/json; charset=utf-8');
 
-$metadataPath = '/workspace/shared/catalog/cases.json';
-if (!is_file($metadataPath)) {
-    http_response_code(500);
-    echo json_encode(['error' => 'No se encontro el catalogo compartido.'], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+function envOr(string $key, string $default): string
+{
+    $value = getenv($key);
+    return ($value === false || $value === '') ? $default : $value;
+}
+
+function metadataPath(): string
+{
+    return '/workspace/shared/catalog/cases.json';
+}
+
+function jsonError(int $status, string $message): never
+{
+    http_response_code($status);
+    echo json_encode(['error' => $message], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
     exit;
 }
 
-$raw = file_get_contents($metadataPath);
-if ($raw === false) {
-    http_response_code(500);
-    echo json_encode(['error' => 'No se pudo leer el catalogo compartido.'], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
-    exit;
+function loadCatalog(): array
+{
+    $path = metadataPath();
+    if (!is_file($path)) {
+        jsonError(500, 'No se encontro el catalogo compartido.');
+    }
+
+    $raw = file_get_contents($path);
+    if ($raw === false) {
+        jsonError(500, 'No se pudo leer el catalogo compartido.');
+    }
+
+    try {
+        $catalog = json_decode($raw, true, 512, JSON_THROW_ON_ERROR);
+    } catch (JsonException $e) {
+        jsonError(500, 'El catalogo compartido no es un JSON valido.');
+    }
+
+    if (!is_array($catalog) || !isset($catalog['cases']) || !is_array($catalog['cases'])) {
+        jsonError(500, 'El catalogo compartido no tiene la estructura esperada.');
+    }
+
+    return $catalog;
 }
 
-$cases = json_decode($raw, true);
-if (!is_array($cases)) {
-    http_response_code(500);
-    echo json_encode(['error' => 'El catalogo compartido no es un JSON valido.'], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
-    exit;
+function normalizePath(string $path): string
+{
+    return '/' . ltrim($path === '' ? '/' : $path, '/');
 }
 
+function buildBrowserUrl(string $host, int $port, string $path): string
+{
+    return sprintf('http://%s:%d%s', $host, $port, normalizePath($path));
+}
+
+function repoUrl(string $base, string $path): string
+{
+    return $base . ltrim($path, '/');
+}
+
+$catalog = loadCatalog();
+$repoBaseUrl = 'https://github.com/vladimiracunadev-create/problem-driven-systems-lab/blob/main/';
+$hostHeader = $_SERVER['HTTP_HOST'] ?? 'localhost:8080';
+$browserHost = parse_url('http://' . $hostHeader, PHP_URL_HOST) ?: 'localhost';
+$publicHost = envOr('PDSL_PUBLIC_HOST', $browserHost);
+
+$cases = $catalog['cases'];
 usort(
     $cases,
     static fn (array $left, array $right): int => strcmp((string) ($left['id'] ?? ''), (string) ($right['id'] ?? ''))
 );
 
-$repoBaseUrl = 'https://github.com/vladimiracunadev-create/problem-driven-systems-lab/blob/main/';
-$hostHeader = $_SERVER['HTTP_HOST'] ?? 'localhost:8080';
-$host = parse_url('http://' . $hostHeader, PHP_URL_HOST) ?: 'localhost';
-
-$aboutText = 'Problem-driven systems lab with Docker-first cases for performance, observability, resilience, architecture, and operational risk across PHP, Node.js, Python, Java, and .NET.';
-$topics = [
-    'problem-driven',
-    'docker',
-    'docker-compose',
-    'php',
-    'nodejs',
-    'python',
-    'java',
-    'dotnet',
-    'observability',
-    'performance',
-    'resilience',
-    'systems-design',
-    'software-architecture',
-    'legacy-modernization',
-    'technical-portfolio',
-    'postgresql',
-    'prometheus',
-    'grafana',
-];
-
-$stackMeta = [
-    'php' => [
-        'label' => 'PHP',
-        'headline' => 'Stack principal hoy para profundidad funcional.',
-        'note' => 'Muestra los casos mas maduros y mejor instrumentados del laboratorio.',
-    ],
-    'node' => [
-        'label' => 'Node.js',
-        'headline' => 'Stack operativo real en observabilidad comparada.',
-        'note' => 'Ideal para mostrar transferibilidad del criterio fuera de PHP.',
-    ],
-    'python' => [
-        'label' => 'Python',
-        'headline' => 'Stack operativo real en observabilidad comparada.',
-        'note' => 'Permite contrastar la misma narrativa operacional en otro runtime.',
-    ],
-    'java' => [
-        'label' => 'Java',
-        'headline' => 'Aun sin casos operativos profundizados.',
-        'note' => 'La estructura existe, pero la madurez real todavia esta en evolucion.',
-    ],
-    'dotnet' => [
-        'label' => '.NET',
-        'headline' => 'Aun sin casos operativos profundizados.',
-        'note' => 'La estructura existe, pero la madurez real todavia esta en evolucion.',
-    ],
-];
-
-$businessOutcomes = [
-    '01' => 'Reduce latencia visible y evita sobredimensionar infraestructura a ciegas.',
-    '02' => 'Reduce round-trips, costo por request y desgaste innecesario sobre la base de datos.',
-    '03' => 'Reduce MTTR y convierte incidentes vagos en fallas diagnosticables con evidencia.',
-];
-
-$stackLinks = [
-    '01' => [
-        'php' => [
-            'port' => 811,
-            'compose_path' => 'cases/01-api-latency-under-load/php/compose.yml',
-            'readme_path' => 'cases/01-api-latency-under-load/php/README.md',
-            'health_path' => '/health',
-            'root_path' => '/',
-        ],
-    ],
-    '02' => [
-        'php' => [
-            'port' => 812,
-            'compose_path' => 'cases/02-n-plus-one-and-db-bottlenecks/php/compose.yml',
-            'readme_path' => 'cases/02-n-plus-one-and-db-bottlenecks/php/README.md',
-            'health_path' => '/health',
-            'root_path' => '/',
-        ],
-    ],
-    '03' => [
-        'php' => [
-            'port' => 813,
-            'compose_path' => 'cases/03-poor-observability-and-useless-logs/php/compose.yml',
-            'readme_path' => 'cases/03-poor-observability-and-useless-logs/php/README.md',
-            'health_path' => '/health',
-            'root_path' => '/',
-        ],
-        'node' => [
-            'port' => 823,
-            'compose_path' => 'cases/03-poor-observability-and-useless-logs/node/compose.yml',
-            'readme_path' => 'cases/03-poor-observability-and-useless-logs/node/README.md',
-            'health_path' => '/health',
-            'root_path' => '/',
-        ],
-        'python' => [
-            'port' => 833,
-            'compose_path' => 'cases/03-poor-observability-and-useless-logs/python/compose.yml',
-            'readme_path' => 'cases/03-poor-observability-and-useless-logs/python/README.md',
-            'health_path' => '/health',
-            'root_path' => '/',
-        ],
-    ],
-];
+$languageMeta = [];
+foreach (($catalog['languages'] ?? []) as $language) {
+    if (!is_array($language) || !isset($language['key'])) {
+        continue;
+    }
+    $languageMeta[(string) $language['key']] = $language;
+}
 
 foreach ($cases as &$case) {
     $caseId = (string) ($case['id'] ?? '');
-    $case['business_outcome'] = $businessOutcomes[$caseId] ?? 'Este caso sigue documentado para crecimiento futuro.';
+    $case['case_readme_url'] = repoUrl($repoBaseUrl, (string) ($case['case_readme_path'] ?? 'README.md'));
+    $runtimeEntries = is_array($case['runtime_entries'] ?? null) ? $case['runtime_entries'] : [];
     $case['runtime_entries'] = [];
 
-    foreach (($case['operational_stacks'] ?? []) as $stack) {
-        $entry = $stackLinks[$caseId][$stack] ?? null;
-        if ($entry === null) {
+    foreach ($runtimeEntries as $stack => $entry) {
+        if (!is_array($entry)) {
             continue;
         }
 
-        $baseUrl = sprintf('http://%s:%d', $host, $entry['port']);
-        $case['runtime_entries'][$stack] = [
-            'stack' => $stack,
-            'label' => $stackMeta[$stack]['label'] ?? strtoupper((string) $stack),
-            'base_url' => $baseUrl . $entry['root_path'],
-            'health_url' => $baseUrl . $entry['health_path'],
-            'compose_path' => $entry['compose_path'],
-            'compose_url' => $repoBaseUrl . $entry['compose_path'],
-            'readme_path' => $entry['readme_path'],
-            'readme_url' => $repoBaseUrl . $entry['readme_path'],
-            'up_command' => 'docker compose -f ' . $entry['compose_path'] . ' up -d --build',
+        $port = (int) ($entry['port'] ?? 0);
+        if ($port <= 0) {
+            continue;
+        }
+
+        $stackKey = (string) $stack;
+        $rootPath = normalizePath((string) ($entry['root_path'] ?? '/'));
+        $healthPath = normalizePath((string) ($entry['health_path'] ?? '/health'));
+        $composePath = (string) ($entry['compose_path'] ?? '');
+        $readmePath = (string) ($entry['readme_path'] ?? '');
+        $stackLabel = (string) (($languageMeta[$stackKey]['label'] ?? strtoupper($stackKey)));
+
+        $case['runtime_entries'][$stackKey] = [
+            'stack' => $stackKey,
+            'label' => $stackLabel,
+            'port' => $port,
+            'base_url' => buildBrowserUrl($publicHost, $port, $rootPath),
+            'health_url' => buildBrowserUrl($publicHost, $port, $healthPath),
+            'compose_path' => $composePath,
+            'compose_url' => repoUrl($repoBaseUrl, $composePath),
+            'readme_path' => $readmePath,
+            'readme_url' => repoUrl($repoBaseUrl, $readmePath),
+            'up_command' => 'docker compose -f ' . $composePath . ' up -d --build',
+            'probe_url' => '/probe.php?case_id=' . rawurlencode($caseId) . '&stack=' . rawurlencode($stackKey),
         ];
     }
 }
 unset($case);
 
 $languages = [];
-foreach ($stackMeta as $key => $meta) {
+foreach (($catalog['languages'] ?? []) as $language) {
+    if (!is_array($language)) {
+        continue;
+    }
+
+    $languageKey = (string) ($language['key'] ?? '');
+    if ($languageKey === '') {
+        continue;
+    }
+
     $languageCases = [];
     foreach ($cases as $case) {
-        if (!isset($case['runtime_entries'][$key])) {
+        if (!isset($case['runtime_entries'][$languageKey])) {
             continue;
         }
 
@@ -177,42 +147,73 @@ foreach ($stackMeta as $key => $meta) {
             'category' => $case['category'],
             'status' => $case['status'],
             'summary' => $case['summary'],
-            'business_outcome' => $case['business_outcome'],
-            'runtime' => $case['runtime_entries'][$key],
+            'business_outcome' => $case['business_outcome'] ?? 'Pendiente de detallar.',
+            'recruiter_pitch' => $case['recruiter_pitch'] ?? '',
+            'proof_points' => $case['proof_points'] ?? [],
+            'look_for' => $case['look_for'] ?? [],
+            'honesty_note' => $case['honesty_note'] ?? 'La madurez se declara de forma honesta y gradual.',
+            'case_readme_url' => $case['case_readme_url'],
+            'runtime' => $case['runtime_entries'][$languageKey],
         ];
     }
 
     $languages[] = [
-        'key' => $key,
-        'label' => $meta['label'],
-        'headline' => $meta['headline'],
-        'note' => $meta['note'],
+        'key' => $languageKey,
+        'label' => $language['label'] ?? strtoupper($languageKey),
+        'headline' => $language['headline'] ?? '',
+        'note' => $language['note'] ?? '',
         'available' => $languageCases !== [],
         'cases' => $languageCases,
     ];
 }
 
+$documents = [];
+foreach (($catalog['documents'] ?? []) as $document) {
+    if (!is_array($document)) {
+        continue;
+    }
+
+    $path = (string) ($document['path'] ?? 'README.md');
+    $documents[] = [
+        'icon' => $document['icon'] ?? '📄',
+        'title' => $document['title'] ?? $path,
+        'description' => $document['description'] ?? 'Documento del laboratorio.',
+        'path' => $path,
+        'url' => repoUrl($repoBaseUrl, $path),
+    ];
+}
+
+$audiences = [];
+foreach (($catalog['audiences'] ?? []) as $audience) {
+    if (!is_array($audience)) {
+        continue;
+    }
+
+    $path = (string) ($audience['document_path'] ?? 'README.md');
+    $audiences[] = [
+        'key' => $audience['key'] ?? 'audience',
+        'icon' => $audience['icon'] ?? '🧭',
+        'label' => $audience['label'] ?? 'Audience',
+        'headline' => $audience['headline'] ?? '',
+        'description' => $audience['description'] ?? '',
+        'goal' => $audience['goal'] ?? '',
+        'document_path' => $path,
+        'document_url' => repoUrl($repoBaseUrl, $path),
+    ];
+}
+
 $response = [
-    'lab' => [
-        'name' => 'Problem-Driven Systems Lab',
-        'tagline' => 'Laboratorio Docker-first orientado a rendimiento, observabilidad, resiliencia, arquitectura y operacion.',
-        'audience_message' => 'Pensado para reclutadores, lideres tecnicos y personas que necesitan entender rapidamente que hace el producto y por que importa.',
-    ],
-    'recommended_github_about' => $aboutText,
-    'recommended_github_topics' => $topics,
+    'lab' => $catalog['lab'] ?? [],
+    'recommended_github_about' => $catalog['recommended_github_about'] ?? '',
+    'recommended_github_topics' => $catalog['recommended_github_topics'] ?? [],
+    'documents' => $documents,
+    'audiences' => $audiences,
+    'languages' => $languages,
     'stats' => [
         'cases_total' => count($cases),
         'cases_operational' => count(array_filter($cases, static fn (array $case): bool => ($case['status'] ?? '') === 'OPERATIVO')),
-        'stacks_operational' => array_sum(array_map(static fn (array $case): int => count($case['operational_stacks'] ?? []), $cases)),
+        'stacks_operational' => array_sum(array_map(static fn (array $case): int => count($case['runtime_entries'] ?? []), $cases)),
     ],
-    'documents' => [
-        ['icon' => '👔', 'title' => 'RECRUITER.md', 'url' => $repoBaseUrl . 'RECRUITER.md'],
-        ['icon' => '🏗️', 'title' => 'ARCHITECTURE.md', 'url' => $repoBaseUrl . 'ARCHITECTURE.md'],
-        ['icon' => '🚀', 'title' => 'INSTALL.md', 'url' => $repoBaseUrl . 'INSTALL.md'],
-        ['icon' => '🛠️', 'title' => 'RUNBOOK.md', 'url' => $repoBaseUrl . 'RUNBOOK.md'],
-        ['icon' => '🗂️', 'title' => 'docs/case-catalog.md', 'url' => $repoBaseUrl . 'docs/case-catalog.md'],
-    ],
-    'languages' => $languages,
 ];
 
 echo json_encode($response, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);

@@ -1,11 +1,8 @@
 # 🔭 Caso 03 - Node.js con observabilidad comparada
 
-Esta variante ya no es una base minima: implementa el mismo flujo conceptual del caso PHP con dos modos de ejecucion.
+> Implementacion operativa real del caso 03 en Node.js para comparar logs pobres y telemetria util sin cambiar la historia del problema.
 
-- `checkout-legacy` -> logs pobres, sin correlacion y con muy poca capacidad de diagnostico
-- `checkout-observable` -> logs estructurados, `request_id`, `trace_id`, metricas y trazas locales
-
-## ✅ Que resuelve
+## 🎯 Que resuelve
 
 Modela un checkout con pasos internos y dependencias externas:
 
@@ -14,11 +11,18 @@ Modela un checkout con pasos internos y dependencias externas:
 - autorizacion de pago;
 - envio de notificacion.
 
-Cuando algo falla, el modo legacy deja evidencia insuficiente. El modo observable deja informacion accionable para responder rapido que paso, donde y con que impacto.
+El mismo flujo se expone en dos modos:
 
-## 🧰 Servicio
+- `checkout-legacy` -> logs pobres, sin correlacion y con muy poca capacidad de diagnostico.
+- `checkout-observable` -> logs estructurados, `request_id`, `trace_id`, metricas y trazas locales.
 
-- `app` -> API Node.js 20 con logs legacy y observable, metricas y trazas locales
+## 💼 Por que importa
+
+Esta variante muestra que el valor de la observabilidad no depende del runtime. Lo importante es el criterio: dejar evidencia accionable que reduzca el tiempo para encontrar la causa raiz.
+
+## 🧱 Servicio
+
+- `app` -> API Node.js 20 con logs legacy y observable, metricas y trazas locales.
 
 ## 🚀 Arranque
 

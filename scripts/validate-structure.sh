@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-echo "Validando estructura básica..."
+echo "Validando estructura basica..."
 
 required_root=(
   .github/workflows/ci.yml
@@ -44,6 +44,8 @@ done
 test -f portal/app/index.html
 test -f portal/app/index.php
 test -f portal/app/catalog.php
+test -f portal/app/probe.php
+test -f shared/catalog/cases.json
 
 for case_dir in cases/*; do
   test -d "$case_dir"
@@ -64,9 +66,8 @@ for case_dir in cases/*; do
   done
 done
 
-test -f shared/catalog/cases.json
-
 if command -v php >/dev/null 2>&1; then
+  php -r '$catalog = json_decode(file_get_contents("shared/catalog/cases.json"), true, 512, JSON_THROW_ON_ERROR); if (!is_array($catalog) || !isset($catalog["cases"]) || !is_array($catalog["cases"])) { fwrite(STDERR, "Catalogo invalido\n"); exit(1);}';
   php scripts/generate_case_catalog.php --check
 fi
 

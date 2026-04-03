@@ -6,6 +6,21 @@
   "category": "Categoria",
   "status": "DOCUMENTADO / SCAFFOLD",
   "level_detail": "estructura y docs listas",
-  "summary": "Resumen",
-  "operational_stacks": []
+  "summary": "Resumen corto del problema.",
+  "case_readme_path": "cases/XX-example-problem/README.md",
+  "business_outcome": "Impacto esperado para negocio u operacion.",
+  "recruiter_pitch": "Por que este caso deja una senal util para evaluar criterio tecnico.",
+  "proof_points": [
+    "Evidencia 1.",
+    "Evidencia 2.",
+    "Evidencia 3."
+  ],
+  "look_for": [
+    "Que observar 1.",
+    "Que observar 2.",
+    "Que observar 3."
+  ],
+  "honesty_note": "Nota de honestidad sobre el alcance real del caso.",
+  "operational_stacks": [],
+  "runtime_entries": {}
 }

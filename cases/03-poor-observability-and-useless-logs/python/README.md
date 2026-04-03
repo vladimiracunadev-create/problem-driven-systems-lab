@@ -1,11 +1,8 @@
 # 🔭 Caso 03 - Python con observabilidad comparada
 
-Esta variante implementa el mismo flujo conceptual del caso PHP y Node en Python, con dos modos de ejecucion.
+> Implementacion operativa real del caso 03 en Python para comparar logs pobres y telemetria util sobre el mismo flujo funcional.
 
-- `checkout-legacy` -> logs pobres, sin correlacion y con poca capacidad de respuesta operacional
-- `checkout-observable` -> logs estructurados, `request_id`, `trace_id`, metricas y trazas locales
-
-## ✅ Que resuelve
+## 🎯 Que resuelve
 
 Modela un checkout con pasos internos y dependencias externas:
 
@@ -14,11 +11,18 @@ Modela un checkout con pasos internos y dependencias externas:
 - autorizacion de pago;
 - envio de notificacion.
 
-Cuando algo falla, el modo legacy deja evidencia insuficiente. El modo observable deja informacion accionable para responder rapido que paso, donde y con que impacto.
+El mismo flujo se expone en dos modos:
 
-## 🧰 Servicio
+- `checkout-legacy` -> logs pobres, sin correlacion y con poca capacidad de respuesta operacional.
+- `checkout-observable` -> logs estructurados, `request_id`, `trace_id`, metricas y trazas locales.
 
-- `app` -> API Python 3.12 con logs legacy y observable, metricas y trazas locales
+## 💼 Por que importa
+
+Sirve para demostrar que una mejora de observabilidad es portable como criterio operativo: si puedes explicar mejor el incidente, puedes responder mejor sin depender del lenguaje de turno.
+
+## 🧱 Servicio
+
+- `app` -> API Python 3.12 con logs legacy y observable, metricas y trazas locales.
 
 ## 🚀 Arranque
 

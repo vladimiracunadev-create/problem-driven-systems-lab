@@ -11,3 +11,6 @@ services:
       - ./shared/catalog:/workspace/shared/catalog:ro
     environment:
       APP_NAME: "Problem-Driven Systems Lab"
+      PDSL_PROBE_HOST: "host.docker.internal"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"

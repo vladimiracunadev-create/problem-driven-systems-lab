@@ -31,7 +31,7 @@ problem-driven-systems-lab/
 
 ### 1. Capa editorial y operativa
 
-La raiz del repositorio contiene los documentos para lectura ejecutiva, tecnica y operacional. Esta capa explica el sistema antes de entrar a cualquier caso.
+La raiz contiene documentos para lectura ejecutiva, tecnica y operacional. Esta capa explica el producto antes de entrar a cualquier caso.
 
 ### 2. Capa de metadatos
 
@@ -39,7 +39,7 @@ La raiz del repositorio contiene los documentos para lectura ejecutiva, tecnica 
 
 - el portal local lo consume;
 - `scripts/generate_case_catalog.php` genera `docs/case-catalog.md`;
-- la CI puede verificar que no exista drift documental.
+- la CI verifica que no exista drift documental.
 
 ### 3. Capa de portal
 
@@ -47,6 +47,7 @@ La raiz del repositorio contiene los documentos para lectura ejecutiva, tecnica 
 
 - `index.html` como portada principal para personas tecnicas y no tecnicas;
 - `catalog.php` como endpoint de metadatos para la UI;
+- `probe.php` como verificador server-side de health checks;
 - `index.php` como redireccion de compatibilidad.
 
 ### 4. Capa de casos
@@ -62,9 +63,9 @@ Cada caso contiene `php`, `node`, `python`, `java` y `dotnet` con Docker aislado
 ```mermaid
 flowchart LR
     A["shared/catalog/cases.json"] --> B["portal/app/catalog.php"]
-    A --> C["scripts/generate_case_catalog.php"]
-    C --> D["docs/case-catalog.md"]
-    D --> E["README.md y docs"]
+    A --> C["portal/app/probe.php"]
+    A --> D["scripts/generate_case_catalog.php"]
+    D --> E["docs/case-catalog.md"]
     F["scripts/validate-structure.sh"] --> G[".github/workflows/ci.yml"]
     B --> G
     C --> G

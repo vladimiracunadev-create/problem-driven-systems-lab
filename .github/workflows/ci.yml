@@ -50,6 +50,12 @@ jobs:
           - name: portal
             compose_file: compose.root.yml
             probe_url: http://127.0.0.1:8080/
+          - name: case01-php
+            compose_file: cases/01-api-latency-under-load/php/compose.yml
+            probe_url: http://127.0.0.1:811/health
+          - name: case02-php
+            compose_file: cases/02-n-plus-one-and-db-bottlenecks/php/compose.yml
+            probe_url: http://127.0.0.1:812/health
           - name: case03-php
             compose_file: cases/03-poor-observability-and-useless-logs/php/compose.yml
             probe_url: http://127.0.0.1:813/health
@@ -82,3 +88,35 @@ jobs:
       - name: Shutdown ${{ matrix.name }}
         if: always()
         run: docker compose -f ${{ matrix.compose_file }} down -v
+
+  portal-probe:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build and boot portal plus case01
+        run: |
+          docker compose -f compose.root.yml up -d --build
+          docker compose -f cases/01-api-latency-under-load/php/compose.yml up -d --build
+
+      - name: Wait for case01 health
+        shell: bash
+        run: |
+          for attempt in {1..50}; do
+            if curl -fsS "http://127.0.0.1:811/health" > /dev/null; then
+              exit 0
+            fi
+            sleep 2
+          done
+          docker compose -f cases/01-api-latency-under-load/php/compose.yml logs
+          exit 1
+
+      - name: Validate portal probe endpoint
+        run: curl -fsS "http://127.0.0.1:8080/probe.php?case_id=01&stack=php"
+
+      - name: Shutdown portal and case01
+        if: always()
+        run: |
+          docker compose -f cases/01-api-latency-under-load/php/compose.yml down -v
+          docker compose -f compose.root.yml down -v

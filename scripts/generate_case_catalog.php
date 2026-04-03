@@ -18,17 +18,18 @@ if ($raw === false) {
 }
 
 try {
-    $cases = json_decode($raw, true, 512, JSON_THROW_ON_ERROR);
+    $catalog = json_decode($raw, true, 512, JSON_THROW_ON_ERROR);
 } catch (JsonException $e) {
     fwrite(STDERR, "JSON invalido en {$metadataPath}: {$e->getMessage()}\n");
     exit(1);
 }
 
-if (!is_array($cases)) {
-    fwrite(STDERR, "El archivo de metadatos no contiene una lista valida de casos.\n");
+if (!is_array($catalog) || !isset($catalog['cases']) || !is_array($catalog['cases'])) {
+    fwrite(STDERR, "El archivo de metadatos no contiene un catalogo valido.\n");
     exit(1);
 }
 
+$cases = $catalog['cases'];
 usort(
     $cases,
     static fn (array $left, array $right): int => strcmp((string) ($left['id'] ?? ''), (string) ($right['id'] ?? ''))
@@ -41,17 +42,18 @@ $lines[] = '> Lista completa de los 12 casos del laboratorio generada desde `sha
 $lines[] = '';
 $lines[] = '## 📊 Estado actual';
 $lines[] = '';
-$lines[] = '| Icono | Caso | Categoria | Estado | Stacks operativos | Nivel actual |';
-$lines[] = '| --- | --- | --- | --- | --- | --- |';
+$lines[] = '| Icono | Caso | Categoria | Estado | Stacks operativos | Nivel actual | Impacto de negocio |';
+$lines[] = '| --- | --- | --- | --- | --- | --- | --- |';
 
 foreach ($cases as $case) {
     $id = (string) ($case['id'] ?? '??');
-    $slug = (string) ($case['slug'] ?? '');
     $icon = (string) ($case['icon'] ?? '•');
     $title = (string) ($case['title'] ?? 'Sin titulo');
     $category = (string) ($case['category'] ?? 'Sin categoria');
     $status = (string) ($case['status'] ?? 'SIN ESTADO');
     $levelDetail = (string) ($case['level_detail'] ?? 'sin detalle');
+    $businessOutcome = (string) ($case['business_outcome'] ?? 'Pendiente de detallar.');
+    $caseReadmePath = (string) ($case['case_readme_path'] ?? 'README.md');
     $stacks = $case['operational_stacks'] ?? [];
 
     $stacksMarkdown = '—';
@@ -60,27 +62,57 @@ foreach ($cases as $case) {
     }
 
     $lines[] = sprintf(
-        '| %s | [%s - %s](../cases/%s-%s/README.md) | %s | `%s` | %s | %s |',
+        '| %s | [%s - %s](../%s) | %s | `%s` | %s | %s | %s |',
         $icon,
         $id,
         $title,
-        $id,
-        $slug,
+        $caseReadmePath,
         $category,
         $status,
         $stacksMarkdown,
-        $levelDetail
+        $levelDetail,
+        $businessOutcome
     );
 }
 
 $lines[] = '';
-$lines[] = '## 🧭 Ruta recomendada';
+$lines[] = '## ✅ Casos operativos hoy';
 $lines[] = '';
-$lines[] = 'Si quieres evaluar el repositorio rapido, empieza por:';
+
+foreach ($cases as $case) {
+    if (($case['status'] ?? '') !== 'OPERATIVO') {
+        continue;
+    }
+
+    $icon = (string) ($case['icon'] ?? '•');
+    $id = (string) ($case['id'] ?? '??');
+    $title = (string) ($case['title'] ?? 'Sin titulo');
+    $readme = (string) ($case['case_readme_path'] ?? 'README.md');
+    $stacks = implode(', ', array_map(static fn (string $stack): string => "`{$stack}`", $case['operational_stacks'] ?? []));
+    $proofPoints = $case['proof_points'] ?? [];
+    $firstProof = is_array($proofPoints) && $proofPoints !== [] ? (string) $proofPoints[0] : 'Caso operativo con evidencia observable.';
+
+    $lines[] = sprintf('### %s [%s - %s](../%s)', $icon, $id, $title, $readme);
+    $lines[] = '';
+    $lines[] = '- Stacks operativos: ' . $stacks;
+    $lines[] = '- Impacto de negocio: ' . (string) ($case['business_outcome'] ?? 'Pendiente de detallar.');
+    $lines[] = '- Que demuestra: ' . $firstProof;
+    $lines[] = '';
+}
+
+$lines[] = '## 🧭 Rutas de evaluacion';
 $lines[] = '';
-$lines[] = '1. Caso `01` para rendimiento + observabilidad.';
-$lines[] = '2. Caso `02` para modelado serio de acceso a datos.';
-$lines[] = '3. Caso `03` para diagnostico, logs estructurados y trazabilidad.';
+$lines[] = '| Audiencia | Punto de entrada | Que obtiene |';
+$lines[] = '| --- | --- | --- |';
+
+foreach (($catalog['audiences'] ?? []) as $audience) {
+    $label = (string) ($audience['label'] ?? 'Audiencia');
+    $icon = (string) ($audience['icon'] ?? '•');
+    $documentPath = (string) ($audience['document_path'] ?? 'README.md');
+    $goal = (string) ($audience['goal'] ?? 'Entender el laboratorio.');
+    $lines[] = sprintf('| %s %s | [Abrir](../%s) | %s |', $icon, $label, $documentPath, $goal);
+}
+
 $lines[] = '';
 $lines[] = '## 🏷️ Leyenda';
 $lines[] = '';

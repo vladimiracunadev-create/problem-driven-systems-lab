@@ -1,27 +1,35 @@
-# Caso 02 - PHP 8 + PostgreSQL
+# 🔄 Caso 02 - PHP 8 + PostgreSQL
 
-Esta variante ya no es un placeholder. Implementa un problema real de N+1 y una corrección medible sobre la misma base de datos.
+> Implementacion operativa real del caso 02 para demostrar N+1 y una correccion medible sobre la misma base de datos.
 
-## Qué resuelve
+## 🎯 Que resuelve
+
 Modela un feed operacional de pedidos recientes que necesita devolver:
 
-- datos del pedido,
-- datos del cliente,
-- items del pedido,
-- producto y categoría de cada item.
+- datos del pedido;
+- datos del cliente;
+- items del pedido;
+- producto y categoria de cada item.
 
-La ruta `orders-legacy` hace múltiples round-trips por pedido e incluso por item. La ruta `orders-optimized` consolida lectura base y detalles con consultas agrupadas.
+La ruta `orders-legacy` hace multiples round-trips por pedido e incluso por item. La ruta `orders-optimized` consolida lectura base y detalles con consultas agrupadas.
 
-## Servicios
-- `app` -> API PHP 8.3 con endpoints legacy y optimized
-- `db` -> PostgreSQL 16 con datos semilla y relaciones reales
+## 💼 Por que importa
 
-## Arranque
+Este caso deja una evidencia muy clara: el problema no es "usar o no usar ORM" en abstracto, sino el patron de acceso a datos. Cuando las relaciones se cargan dentro de bucles, el costo por request crece rapido y desgasta innecesariamente la base.
+
+## 🧱 Servicios
+
+- `app` -> API PHP 8.3 con endpoints legacy y optimized.
+- `db` -> PostgreSQL 16 con datos semilla y relaciones reales.
+
+## 🚀 Arranque
+
 ```bash
 docker compose -f compose.yml up -d --build
 ```
 
-## Endpoints
+## 🔎 Endpoints
+
 ```bash
 curl http://localhost:812/
 curl http://localhost:812/health
@@ -33,11 +41,14 @@ curl http://localhost:812/metrics-prometheus
 curl http://localhost:812/reset-metrics
 ```
 
-## Qué observar
-- `db_queries_in_request`
-- `db_time_ms_in_request`
-- diferencia de latencia entre legacy y optimized
-- caída del costo por request cuando se reemplaza N+1 por cargas consolidadas
+## 🧭 Que observar
 
-## Nota de honestidad
-No intenta reproducir un ORM específico. Sí reproduce un patrón muy real: listas enriquecidas que parecen inocentes y terminan escalando mal por round-trips repetidos y relaciones cargadas dentro de bucles.
+- `db_queries_in_request`;
+- `db_time_ms_in_request`;
+- diferencia de latencia entre legacy y optimized;
+- caida del costo por request cuando se reemplaza N+1 por cargas consolidadas;
+- explicacion relacional que entrega `diagnostics/summary`.
+
+## ⚖️ Nota de honestidad
+
+No intenta reproducir un ORM especifico. Si reproduce un patron muy real: listas enriquecidas que parecen inocentes y terminan escalando mal por round-trips repetidos y relaciones cargadas dentro de bucles.
