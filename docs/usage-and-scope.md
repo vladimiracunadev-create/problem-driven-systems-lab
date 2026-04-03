@@ -1,40 +1,42 @@
-# 📐 Alcance y uso esperado
+# Alcance y uso esperado
 
-> Qué cubre esta versión del laboratorio y qué queda fuera conscientemente.
+> Que cubre esta version del laboratorio y que queda fuera conscientemente.
 
----
+## Uso esperado
 
-## ✅ Uso esperado
+| Uso | Descripcion |
+| --- | --- |
+| Laboratorio tecnico | Explorar problemas reales y sus rutas de solucion |
+| Portafolio profesional | Mostrar criterio transferible mas alla de un stack puntual |
+| Base de demos serias | Levantar un caso concreto con Docker y explicar el before/after |
+| Marco de crecimiento | Usar la estructura para seguir profundizando casos y stacks |
 
-| Uso | Descripción |
-|-----|-------------|
-| 🧪 **Laboratorio personal/profesional** | Explorar, estudiar y comparar soluciones a problemas reales |
-| 💼 **Portafolio técnico** | Demostrar criterio, organización y pensamiento sistémico |
-| 🎤 **Base para demos** | Levantar un caso concreto y mostrar el análisis completo |
-| 🔁 **Base para implementaciones futuras** | Usar como plantilla para resolver problemas similares en otros proyectos |
-| 📚 **Material formativo** | Estudiar cómo se diagnostican y resuelven problemas reales de producción |
+## Lo que si incluye hoy esta version
 
----
+| Area | Estado actual |
+| --- | --- |
+| 12 casos definidos y documentados | si |
+| Casos `01`, `02` y `03` operativos en PHP | si |
+| Docker por caso y por stack como ruta oficial | si |
+| Portal raiz para navegar el laboratorio | si |
+| Familia documental profesional en la raiz | si |
+| Paridad funcional completa entre todos los lenguajes | no |
 
-## 📦 Alcance actual — Qué Sí incluye esta versión
+## Limites conscientes
 
-| Área | Estado |
-|------|--------|
-| Estructura completa del laboratorio | ✅ |
-| 12 casos documentados con base técnica | ✅ |
-| Casos 01–03 con implementación funcional real en PHP | ✅ |
-| Docker por caso y por stack como estándar operativo del laboratorio | ✅ |
-| Carpetas de stack y Dockerfiles de referencia en casos 04–12 | ✅ |
-| Convenciones de crecimiento documentadas | ✅ |
-| ADRs de decisiones de arquitectura | ✅ |
+| Fuera de alcance | Por que |
+| --- | --- |
+| Benchmark absoluto entre lenguajes | El objetivo es resolver problemas, no coronar runtimes |
+| Entorno productivo completo | Es un laboratorio controlado y portable |
+| Igual nivel de madurez en todos los stacks | Se prefirio crecer con honestidad y no con demos vacias |
+| Un unico `docker compose up` para todo el universo | Haria el repo mas pesado, menos claro y peor para diagnostico |
 
----
+## Regla operativa importante
 
-## 🚫 Fuera del alcance inicial
+Para los casos ya implementados, Docker Compose es la ruta oficialmente soportada. El `Makefile` es una ayuda, no el contrato principal de ejecucion.
 
-| Fuera de alcance | Por qué |
-|-----------------|---------|
-| ❌ Benchmarks absolutos y definitivos | El objetivo no es medir lenguajes, sino ilustrar problemas y soluciones |
-| ❌ Entornos productivos completos | Es un laboratorio controlado, no una réplica de producción |
-| ❌ Cobertura exhaustiva de todos los frameworks | La amplitud excesiva genera ruido, no valor |
-| ❌ Paridad funcional completa entre todos los stacks en esta versión | Se creció con honestidad — hoy la profundidad funcional está en PHP para los casos 01–03 |
+## Como leer el alcance correctamente
+
+- Si un caso esta marcado como `OPERATIVO`, deberia poder ejecutarse de forma limpia.
+- Si un caso esta marcado como `DOCUMENTADO / SCAFFOLD`, aun no debes leerlo como solucion completa.
+- Si un stack no tiene paridad funcional real, el repositorio lo declara explicitamente.

@@ -1,6 +1,4 @@
-# 🧪 Problem-Driven Systems Lab
-
-> **Un laboratorio orientado a problemas reales de software, no a colecciones de sintaxis.**
+# Problem-Driven Systems Lab
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker&logoColor=white)](compose.root.yml)
@@ -9,241 +7,152 @@
 [![Python](https://img.shields.io/badge/Python-3-3776AB?logo=python&logoColor=white)](cases/)
 [![Java](https://img.shields.io/badge/Java-JVM-ED8B00?logo=openjdk&logoColor=white)](cases/)
 [![.NET](https://img.shields.io/badge/.NET-8-512BD4?logo=dotnet&logoColor=white)](cases/)
-[![Status](https://img.shields.io/badge/Estado-Fase%202%20en%20progreso-blue)](ROADMAP.md)
+[![Status](https://img.shields.io/badge/Estado-Activo-blue)](ROADMAP.md)
 
----
+Portafolio tecnico orientado a problemas reales de software: rendimiento, observabilidad, resiliencia, arquitectura y continuidad operacional. Este repositorio forma parte del ecosistema publico de Vladimir Acuna y aterriza una linea consistente de trabajo: modernizacion de sistemas vivos, Docker como ruta oficial de ejecucion, documentacion por audiencia y soluciones honestas a problemas de produccion.
 
-## 🎯 Propósito del repositorio
+## Executive Summary
 
-Este laboratorio existe para demostrar una idea concreta:
+- El repositorio modela 12 problemas reales, desde sintoma hasta solucion y valor de negocio.
+- Los casos `01`, `02` y `03` ya cuentan con implementacion operativa real en PHP.
+- Docker es la via oficial para ejecutar los casos implementados de forma limpia y reproducible.
+- La madurez se comunica con honestidad: `OPERATIVO`, `DOCUMENTADO / SCAFFOLD` o `PLANIFICADO`.
+- El objetivo no es competir por sintaxis ni vender seniority vacia, sino evidenciar criterio transferible.
 
-> **Un perfil senior no se define solo por años en una sintaxis, sino por su capacidad de diagnosticar, justificar, priorizar y resolver problemas complejos de software en producción.**
+## Que demuestra este laboratorio
 
-El repositorio documenta, compara y levanta casos reproducibles sobre:
+| Area | Evidencia |
+| --- | --- |
+| Diagnostico tecnico | El problema se explica con contexto, sintomas, causas, trade-offs y solucion |
+| Ejecucion reproducible | Cada caso implementado tiene `Dockerfile` y `compose.yml` propios |
+| Operacion realista | Los casos no se reducen a "sleep demos"; usan DB, worker, logs o telemetria segun corresponda |
+| Documentacion profesional | El repo ya tiene rutas para reclutadores, operacion, seguridad, contribucion e instalacion |
+| Honestidad tecnica | Se distingue claramente entre casos operativos y scaffolds documentados |
 
-| Área | Problemas que cubre |
-|------|-------------------|
-| ⚡ **Rendimiento** | Latencia, N+1 queries, cuellos de botella, presión de memoria |
-| 🔭 **Observabilidad** | Logs inútiles, falta de trazabilidad, métricas ausentes |
-| 🛡️ **Resiliencia** | Timeouts en cascada, reintentos, integraciones inestables |
-| 🏗️ **Arquitectura** | Modernización legacy, extracción de módulos, sobrecosto |
-| 🚚 **Entrega** | Pipelines rotos, deploys frágiles, deuda de automatización |
-| 🧠 **Operaciones** | Conocimiento único, reportes bloqueantes, continuidad |
+## Taxonomia de madurez actual
 
----
+| Nivel | Que significa hoy en este repo |
+| --- | --- |
+| `OPERATIVO` | Caso resolviendo el problema de forma real, con Docker y evidencia observable |
+| `DOCUMENTADO / SCAFFOLD` | Caso bien modelado, con estructura y stack folders, pero sin paridad funcional profunda aun |
+| `PLANIFICADO` | Linea futura del roadmap, sin prometer madurez operativa actual |
 
-## ❓ Qué problema resuelve este repositorio
+Estado actual:
 
-En el mercado suele ocurrir que:
+- `OPERATIVO`: casos [01](cases/01-api-latency-under-load/README.md), [02](cases/02-n-plus-one-and-db-bottlenecks/README.md) y [03](cases/03-poor-observability-and-useless-logs/README.md) en PHP.
+- `DOCUMENTADO / SCAFFOLD`: casos `04` al `12`, y stacks no PHP de los casos `01` al `03`.
 
-- 🔴 se filtra por lenguaje antes que por criterio técnico,
-- 🔴 se pide experiencia exacta en un stack aunque el problema real sea arquitectónico,
-- 🔴 se confunde "saber sintaxis" con "saber resolver producción",
-- 🔴 se habla de seniority en abstracto, pero sin evidencias comparables.
+## Por donde empezar
 
-Este repositorio responde a eso con un **enfoque problem-driven**:
+| Perfil | Ruta recomendada | Objetivo |
+| --- | --- | --- |
+| Reclutador o hiring manager | [RECRUITER.md](RECRUITER.md) | Entender el valor del repo en pocos minutos |
+| Lider de ingenieria | [docs/positioning-and-objective.md](docs/positioning-and-objective.md) | Ver el problema que este laboratorio viene a resolver |
+| Dev / DevOps | [INSTALL.md](INSTALL.md) -> [RUNBOOK.md](RUNBOOK.md) -> caso [01](cases/01-api-latency-under-load/README.md) | Levantar y evaluar una implementacion operativa real |
+| Principiante | [docs/BEGINNERS_GUIDE.md](docs/BEGINNERS_GUIDE.md) | Entender la estructura antes de entrar al codigo |
+| Seguridad / operacion | [SECURITY.md](SECURITY.md) -> [RUNBOOK.md](RUNBOOK.md) | Validar postura operativa, limites y reportes |
 
-1. 📌 Parte desde un problema real con contexto y síntomas
-2. 🔍 Explica causas y diagnóstico
-3. 🧩 Propone soluciones con trade-offs
-4. 🐳 Lo implementa en varios stacks aislados con Docker
-5. 📊 Deja estructura lista para medir y comparar
+## Inicio rapido
 
----
+Ruta oficial para ambientes implementados:
 
-## 🚫 Qué NO es este repositorio
+```bash
+# Portal del laboratorio
+docker compose -f compose.root.yml up -d --build
 
-| ❌ NO es | ✅ SÍ es |
-|---------|---------|
-| Enciclopedia de features por lenguaje | Laboratorio de análisis técnico |
-| Curso básico de "hola mundo" | Base de comparación multi-stack |
-| Benchmark absoluto entre tecnologías | Pieza de portafolio documentada |
-| Afirmación falsa de seniority en todo | Guía de diseño reproducible |
-| Un único `docker compose up` masivo | Biblioteca de casos extensibles |
+# Caso 01 (PHP + PostgreSQL + worker + observabilidad)
+docker compose -f cases/01-api-latency-under-load/php/compose.yml up -d --build
 
----
+# Caso 02 (PHP + PostgreSQL)
+docker compose -f cases/02-n-plus-one-and-db-bottlenecks/php/compose.yml up -d --build
 
-## 📋 Los 12 casos del laboratorio
-
-| # | Ícono | Caso | Categoría | Valor principal |
-|---|-------|------|-----------|-----------------|
-| `01` | ⚡ | [API lenta bajo carga](cases/01-api-latency-under-load/) | Rendimiento | Reduce latencia y evita sobredimensionar infra |
-| `02` | 🔄 | [N+1 queries y cuellos de botella DB](cases/02-n-plus-one-and-db-bottlenecks/) | Rendimiento | Base sana = menos incidentes y menos costos |
-| `03` | 🔭 | [Observabilidad deficiente y logs inútiles](cases/03-poor-observability-and-useless-logs/) | Observabilidad | Menor MTTR y mejores decisiones operacionales |
-| `04` | ⛓️ | [Cadena de timeouts y tormentas de reintentos](cases/04-timeout-chain-and-retry-storms/) | Resiliencia | Evita caídas en cascada ante terceros inestables |
-| `05` | 🧠 | [Presión de memoria y fugas de recursos](cases/05-memory-pressure-and-resource-leaks/) | Rendimiento | Elimina reinicios silenciosos y consumo innecesario |
-| `06` | 🚚 | [Pipeline roto y entrega frágil](cases/06-broken-pipeline-and-fragile-delivery/) | Entrega | Publicar sin riesgo y revertir incidentes |
-| `07` | 🏗️ | [Modernización incremental de monolito](cases/07-incremental-monolith-modernization/) | Arquitectura | Evolucionar plataformas vivas sin reescritura total |
-| `08` | 🔧 | [Extracción de módulo crítico sin romper ops](cases/08-critical-module-extraction-without-breaking-operations/) | Arquitectura | Desacople controlado de piezas sensibles |
-| `09` | 🌐 | [Integración externa inestable](cases/09-unstable-external-integration/) | Resiliencia | Mitigar dependencia de proveedores externos |
-| `10` | 💰 | [Arquitectura cara para un problema simple](cases/10-expensive-architecture-for-simple-needs/) | Arquitectura | Reducir costos manteniendo el foco en el negocio |
-| `11` | 📊 | [Reportes pesados que bloquean la operación](cases/11-heavy-reporting-blocks-operations/) | Operaciones | Proteger la operación diaria durante analítica |
-| `12` | 🧑‍💼 | [Punto único de conocimiento y riesgo operacional](cases/12-single-point-of-knowledge-and-operational-risk/) | Operaciones | Reducir riesgo organizacional y mejorar continuidad |
-
----
-
-## 🏛️ Principios de diseño
-
-| # | Principio | Descripción |
-|---|-----------|-------------|
-| 1 | **Problema primero** | El caso manda; el stack acompaña. |
-| 2 | **Portal raíz liviano** | El entorno principal sirve como landing y documentación. |
-| 3 | **Casos aislados** | Cada caso se levanta por separado. No existe un único `docker compose up` masivo. |
-| 4 | **Comparación multi-stack** | Un mismo problema puede implementarse en PHP, Node, Python, Java o .NET. |
-| 5 | **Documentación extrema y honesta** | Cada carpeta explica por qué existe, para qué sirve, cómo se usa y sus límites. |
-| 6 | **Crecimiento sostenible** | Claridad, mantenibilidad y continuidad antes que cantidad vacía. |
-
----
-
-## 🐳 Modelo Docker del laboratorio
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│                    compose.root.yml                          │
-│            Portal principal del laboratorio                  │
-│  (landing local, arquitectura general, enlaces a casos)      │
-└─────────────────────────────────────────────────────────────┘
-
-┌─────────────────────────────────────────────────────────────┐
-│         cases/<caso>/<stack>/compose.yml                     │
-│       Un escenario específico aislado                        │
-│  (solo las dependencias del stack que quieres trabajar)      │
-└─────────────────────────────────────────────────────────────┘
-
-┌─────────────────────────────────────────────────────────────┐
-│         cases/<caso>/compose.compare.yml                     │
-│      Comparación multi-stack del mismo caso                  │
-│  (solo cuando conviene analizar diferencias lado a lado)     │
-└─────────────────────────────────────────────────────────────┘
+# Caso 03 (PHP + telemetria util)
+docker compose -f cases/03-poor-observability-and-useless-logs/php/compose.yml up -d --build
 ```
 
-> **¿Por qué no levantar todo junto?**
-> Sería más pesado, más caro, más lento de depurar y menos útil para portafolio.
-> Docker aquí no es adorno — es una forma de documentar, aislar y comparar.
+Atajos disponibles:
 
----
+```bash
+make portal-up
+make case-up CASE=01-api-latency-under-load STACK=php
+make case-up CASE=02-n-plus-one-and-db-bottlenecks STACK=php
+make case-up CASE=03-poor-observability-and-useless-logs STACK=php
+```
 
-## 📁 Estructura general
+> [!IMPORTANT]
+> En este repositorio `make` es una capa de conveniencia. La ruta realmente soportada y mas portable es `docker compose` directo. En Windows puro, esto importa porque el `Makefile` actual usa `/bin/bash`.
+
+## Casos prioritarios
+
+| Caso | Estado | Valor principal |
+| --- | --- | --- |
+| [01 - API lenta bajo carga](cases/01-api-latency-under-load/README.md) | `OPERATIVO` | Mide latencia, contencion sobre DB, worker concurrente y mejora antes/despues |
+| [02 - N+1 y cuellos de botella DB](cases/02-n-plus-one-and-db-bottlenecks/README.md) | `OPERATIVO` | Compara consultas legacy vs optimizadas sobre un modelo relacional real |
+| [03 - Observabilidad deficiente](cases/03-poor-observability-and-useless-logs/README.md) | `OPERATIVO` | Contrasta logs inutiles contra telemetria util para reducir MTTR |
+
+El catalogo completo esta en [docs/case-catalog.md](docs/case-catalog.md).
+
+## Documentacion profesional del repositorio
+
+| Documento | Para que sirve |
+| --- | --- |
+| [RECRUITER.md](RECRUITER.md) | Ruta ejecutiva para evaluacion rapida |
+| [INSTALL.md](INSTALL.md) | Instalacion y puesta en marcha recomendada |
+| [RUNBOOK.md](RUNBOOK.md) | Operacion diaria, diagnostico y respuesta inicial |
+| [SECURITY.md](SECURITY.md) | Politica de seguridad y reporte responsable |
+| [SUPPORT.md](SUPPORT.md) | Como pedir ayuda y que informacion incluir |
+| [CONTRIBUTING.md](CONTRIBUTING.md) | Reglas para crecer el laboratorio sin degradarlo |
+| [CHANGELOG.md](CHANGELOG.md) | Historial notable de cambios y madurez |
+| [docs/BEGINNERS_GUIDE.md](docs/BEGINNERS_GUIDE.md) | Ruta simple para primeros pasos |
+| [docs/architecture.md](docs/architecture.md) | Estructura del repo y reglas de organizacion |
+| [docs/docker-strategy.md](docs/docker-strategy.md) | Por que Docker es el modelo operativo oficial |
+| [docs/usage-and-scope.md](docs/usage-and-scope.md) | Limites reales de esta version |
+| [docs/recruiter-guide.md](docs/recruiter-guide.md) | Guia extendida para lectores no tecnicos |
+
+## Ecosistema relacionado
+
+Este laboratorio no existe aislado. Se alinea con un ecosistema publico mas amplio:
+
+- Web profesional: [vladimiracunadev-create.github.io](https://vladimiracunadev-create.github.io/)
+- Perfil GitHub: [github.com/vladimiracunadev-create](https://github.com/vladimiracunadev-create)
+- Grupo GitLab: [gitlab.com/vladimir.acuna.dev-group/vladimir.acuna.dev-group](https://gitlab.com/vladimir.acuna.dev-group/vladimir.acuna.dev-group)
+
+La linea comun entre estos activos es consistente: repos reproducibles, documentacion por audiencia, observabilidad, continuidad operacional y modernizacion de plataformas reales.
+
+## Lo que este repo si es
+
+- Un laboratorio serio para demostrar criterio tecnico transferible.
+- Una base reproducible para conversar de rendimiento, observabilidad y arquitectura.
+- Un portafolio documentado que privilegia problemas reales por sobre features aisladas.
+
+## Lo que este repo no intenta vender
+
+- Paridad funcional completa en todos los stacks desde la primera iteracion.
+- Benchmarks absolutos entre lenguajes.
+- "Todo listo" en doce casos al mismo nivel de profundidad.
+- Seniority inflada con claims sin evidencia.
+
+## Estructura general
 
 ```text
 problem-driven-systems-lab/
-├── 📄 README.md              ← Este archivo
-├── 🗺️  ROADMAP.md             ← Estado y fases del laboratorio
-├── 🛠️  Makefile               ← Comandos rápidos
-├── 🐳  compose.root.yml       ← Portal principal
-├── 🔒  .env.example           ← Variables de entorno de ejemplo
-├── 🌐  portal/                ← Landing local PHP 8
-├── 📚  docs/                  ← Documentación global y ADRs
-├── 🔗  shared/                ← Recursos compartidos entre casos
-├── 📋  templates/             ← Plantillas para nuevos casos
-└── 🧪  cases/                 ← Los 12 casos del laboratorio
-    ├── 01-api-latency-under-load/
-    ├── 02-n-plus-one-and-db-bottlenecks/
-    ├── ...
-    └── 12-single-point-of-knowledge-and-operational-risk/
+|- README.md
+|- RECRUITER.md
+|- INSTALL.md
+|- RUNBOOK.md
+|- SECURITY.md
+|- SUPPORT.md
+|- CONTRIBUTING.md
+|- CHANGELOG.md
+|- ROADMAP.md
+|- compose.root.yml
+|- portal/
+|- docs/
+|- shared/
+|- templates/
+`- cases/
 ```
 
----
+## Licencia
 
-## 🚀 Cómo navegar este repositorio
-
-### 👔 Ruta para reclutadores o lectores ejecutivos
-
-```
-1. Leer este README.md
-2. Abrir docs/positioning-and-objective.md
-3. Revisar docs/problem-map.md
-4. Abrir uno o dos casos relevantes
-5. Revisar docs/recruiter-guide.md
-```
-
-### 🧑‍💻 Ruta técnica
-
-```
-1. docs/architecture.md
-2. docs/case-methodology.md
-3. cases/01-* hasta cases/12-*
-4. templates/
-5. shared/
-```
-
----
-
-## ⚙️ Comandos rápidos
-
-```bash
-# Ver todos los comandos disponibles
-make help
-
-# Levantar el portal principal
-make portal-up
-make portal-down
-
-# Ver lista de casos
-make case-list
-
-# Levantar un caso específico en un stack
-make case-up CASE=01-api-latency-under-load STACK=php
-make case-down CASE=01-api-latency-under-load STACK=php
-
-# Comparar múltiples stacks de un mismo caso
-make compare-up CASE=01-api-latency-under-load
-make compare-down CASE=01-api-latency-under-load
-```
-
----
-
-## 📈 Estado actual del repositorio
-
-Esta versión incluye:
-
-- ✅ Estructura completa del laboratorio
-- ✅ Portal base PHP 8
-- ✅ Documentación raíz extensa
-- ✅ 12 casos con base documental
-- ✅ Caso 01 con implementación real (PHP + PostgreSQL + worker + Prometheus + Grafana)
-- ✅ Caso 02 con implementación real (PHP + PostgreSQL, N+1 legacy vs optimized)
-- ✅ Caso 03 con implementación real (PHP, logs pobres vs telemetría útil)
-- ✅ Carpetas por stack con Dockerfiles de referencia
-- ✅ `compose.compare.yml` por caso
-- ✅ Convenciones de crecimiento documentadas
-- 🔧 Casos 04–12 listos para profundizar implementaciones funcionales
-
-> No pretende cerrar todos los desarrollos funcionales en una primera iteración.
-> Pretende dejar una **base extremadamente documentada, coherente y extensible**.
-
----
-
-## 📚 Índice documental
-
-| Documento | Descripción |
-|-----------|-------------|
-| [Visión y objetivo](docs/positioning-and-objective.md) | Por qué existe este laboratorio |
-| [Arquitectura del repositorio](docs/architecture.md) | Estructura por niveles y reglas |
-| [Estrategia Docker](docs/docker-strategy.md) | Patrones de compose y filosofía de aislamiento |
-| [Metodología de casos](docs/case-methodology.md) | Las 7 preguntas que responde cada caso |
-| [Mapa de problemas](docs/problem-map.md) | Descripción y valor de cada uno de los 12 casos |
-| [Mapa de stacks](docs/stack-map.md) | Por qué hay múltiples lenguajes y cómo se usan |
-| [Guía para reclutadores](docs/recruiter-guide.md) | Cómo leer el repositorio en 5 minutos |
-| [Alcance y uso esperado](docs/usage-and-scope.md) | Qué sí y qué no cubre esta versión |
-| [Catálogo de casos](docs/case-catalog.md) | Lista completa con estado de cada caso |
-| [Guía de crecimiento](docs/growth-guidelines.md) | Cómo agregar casos y stacks correctamente |
-| [Decisiones de arquitectura (ADRs)](docs/adr/) | Decisiones clave documentadas con contexto |
-
----
-
-## 📜 Convención de crecimiento
-
-Cada nuevo caso debe incluir:
-
-- `README.md` del caso con síntomas, diagnóstico y valor
-- Documentación funcional y técnica completa
-- Al menos una implementación dockerizada funcional
-- Explicación de opciones, trade-offs y justificación del caso
-
----
-
-## ⚖️ Licenciamiento
-
-Este repositorio está pensado como laboratorio personal/profesional, material de portafolio y base documental reusable.
-Revisa [`LICENSE`](LICENSE) y [`docs/usage-and-scope.md`](docs/usage-and-scope.md) para detalles de uso.
+El repositorio se publica bajo [MIT](LICENSE). Revisa tambien [docs/usage-and-scope.md](docs/usage-and-scope.md) para entender sus limites de uso y la postura honesta del proyecto.

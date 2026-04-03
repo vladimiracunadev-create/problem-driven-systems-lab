@@ -1,76 +1,53 @@
-# 🐳 Estrategia Docker
+# Estrategia Docker
 
-> Cómo y cuándo usar cada archivo `compose` del laboratorio.
+> Como y cuando usar Docker en este laboratorio.
 
----
+## Resumen ejecutivo
 
-## 🎯 Resumen ejecutivo
+Docker no es opcional en los casos implementados. Es la ruta oficial para:
 
-El laboratorio **no se levanta todo junto**. Se levanta únicamente lo necesario en cada momento:
+- documentar entornos de forma reproducible;
+- aislar dependencias por escenario;
+- ejecutar demos serias sin configuracion manual extensa;
+- comparar stacks sin contaminar el resto del laboratorio.
 
-```
-┌─ ¿Quieres explorar el laboratorio? ─────────────────────────┐
-│  → compose.root.yml   (portal principal)                     │
-└──────────────────────────────────────────────────────────────┘
+## Regla de diseno
 
-┌─ ¿Quieres trabajar un caso específico? ─────────────────────┐
-│  → cases/<caso>/<stack>/compose.yml                          │
-└──────────────────────────────────────────────────────────────┘
+El laboratorio no se levanta como un unico sistema enorme. Se trabaja por capas:
 
-┌─ ¿Quieres comparar stacks del mismo caso? ──────────────────┐
-│  → cases/<caso>/compose.compare.yml                          │
-└──────────────────────────────────────────────────────────────┘
-```
+| Patron | Uso |
+| --- | --- |
+| `compose.root.yml` | Portal del laboratorio |
+| `cases/<caso>/<stack>/compose.yml` | Un escenario concreto y aislado |
+| `cases/<caso>/compose.compare.yml` | Comparacion entre stacks del mismo caso |
 
----
+## Por que este enfoque es mejor aqui
 
-## 📋 Cuándo usar cada patrón
+| Beneficio | Impacto |
+| --- | --- |
+| Menor consumo | Solo levantas lo que necesitas |
+| Menos ruido | No mezclas logs ni servicios de otros casos |
+| Mejor diagnostico | Cada problema se observa con menos interferencia |
+| Portafolio mas claro | Puedes mostrar un caso concreto sin cargar todo el mundo |
 
-| Patrón | Cuándo usarlo | Comando |
-|--------|--------------|---------|
-| `compose.root.yml` | Para navegar la landing local del laboratorio | `make portal-up` |
-| `cases/<caso>/<stack>/compose.yml` | Para trabajar un escenario concreto | `make case-up CASE=... STACK=...` |
-| `cases/<caso>/compose.compare.yml` | Para comparar implementaciones del mismo caso | `make compare-up CASE=...` |
+## Lo que se evita conscientemente
 
----
+- un `docker compose up` gigante para todos los casos;
+- dependencias cruzadas entre escenarios que deberian ser aislados;
+- infraestructura innecesaria solo para "verse enterprise".
 
-## ✅ Qué se logra con este diseño
+## Regla practica actual
 
-| Beneficio | Descripción |
-|-----------|-------------|
-| 🪶 **Menor consumo de recursos** | Solo levantas lo que necesitas |
-| 🔍 **Menos ruido** | No hay servicios de otros casos corriendo en paralelo |
-| 🛠️ **Mejor mantenibilidad** | Cada caso es independiente y no rompe a los demás |
-| 📊 **Demos más claras** | Puedes mostrar un caso sin distracciones |
-| 🔒 **Aislamiento por escenario** | Los entornos no se interfieren entre sí |
+- Los casos `01`, `02` y `03` deben poder levantarse con Docker de forma limpia.
+- Cada `compose.yml` debe incluir solo la infraestructura que el problema realmente necesita.
+- La presencia de `compose.compare.yml` no implica que todos los stacks tengan la misma profundidad funcional.
 
----
+## Ejemplos concretos
 
-## 🚫 Qué se evita conscientemente
+- Caso `01`: necesita `app + db + worker + observabilidad` porque el problema es contencion real bajo carga.
+- Caso `02`: necesita `app + db` porque el N+1 debe verse sobre relaciones reales.
+- Caso `03`: usa solo `app` porque el foco esta en logs, trazas y diagnostico, no en una DB externa.
 
-- ❌ Un único `docker compose up` que levante el laboratorio completo
-- ❌ Acoplamiento entre casos o dependencias cruzadas
-- ❌ Un `compose.yml` raíz que crezca indefinidamente
-- ❌ Dificultad de depuración por mezcla de entornos
+## Nota sobre el Makefile
 
----
-
-## 💡 Filosofía
-
-> **Docker aquí no es adorno.**
->
-> Es una forma de:
-> - 📝 documentar entornos de forma reproducible,
-> - 🔒 aislar dependencias por escenario,
-> - ▶️ facilitar la ejecución sin configuración manual,
-> - ⚖️ mantener comparabilidad entre stacks.
-
-## 🧭 Regla práctica actual
-
-- Los casos implementados deben poder levantarse de forma limpia con Docker.
-- No todos los casos necesitan la misma infraestructura.
-- Cada `compose.yml` debe incluir solo lo necesario para reproducir el problema con honestidad.
-
-Ejemplos actuales:
-- Caso 02 PHP usa `app + db` porque el problema depende de relaciones y round-trips reales.
-- Caso 03 PHP usa un contenedor liviano de `app` porque el foco está en logs, trazas y capacidad de diagnóstico, no en una base de datos externa.
+El `Makefile` es util como atajo, pero no reemplaza la estrategia oficial. Si trabajas en Windows puro, prefiere `docker compose` directo.

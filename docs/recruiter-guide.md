@@ -1,52 +1,36 @@
-# 👔 Guía para reclutadores y revisores no técnicos
+# Guia extendida para reclutadores y revisores no tecnicos
 
-> Cómo leer este repositorio en 5 minutos y qué señales entrega.
+> Documento complementario a [RECRUITER.md](../RECRUITER.md).
 
----
+## Lectura recomendada en 5 minutos
 
-## 🚀 Cómo leer este repositorio en 5 minutos
+| Paso | Documento | Que senal deja |
+| --- | --- | --- |
+| 1 | [README.md](../README.md) | Entender proposito, madurez y rutas de entrada |
+| 2 | [docs/positioning-and-objective.md](positioning-and-objective.md) | Ver el problema profesional que este laboratorio resuelve |
+| 3 | [docs/case-catalog.md](case-catalog.md) | Diferenciar entre casos operativos y scaffold |
+| 4 | [caso 01](../cases/01-api-latency-under-load/README.md) o [caso 02](../cases/02-n-plus-one-and-db-bottlenecks/README.md) | Ver una implementacion real y no solo una descripcion |
+| 5 | [RUNBOOK.md](../RUNBOOK.md) | Confirmar que la operacion tambien fue pensada |
 
-| Paso | Qué abrir | Qué encontrarás |
-|------|-----------|----------------|
-| 1️⃣ | [`README.md`](../README.md) | El mapa general del laboratorio: propósito, casos y estructura |
-| 2️⃣ | [`docs/positioning-and-objective.md`](positioning-and-objective.md) | Por qué existe este laboratorio y a quién le sirve |
-| 3️⃣ | [`docs/problem-map.md`](problem-map.md) | Los 12 problemas reales con síntomas y valor de cada uno |
-| 4️⃣ | Uno o dos casos relevantes | Cómo se documenta un problema desde síntomas hasta solución |
-| 5️⃣ | [`docs/case-methodology.md`](case-methodology.md) | Cómo se estructura cada caso para garantizar rigor técnico |
+## Senales que vale la pena observar
 
----
+| Senal | Como se evidencia |
+| --- | --- |
+| Organizacion | Estructura clara, coherente y repetible por caso |
+| Criterio tecnico | Cada caso parte desde sintomas y no desde slogans tecnologicos |
+| Documentacion profesional | El repo distingue entre guias para instalacion, operacion, soporte y evaluacion |
+| Honestidad | Se declara explicitamente que hoy la profundidad real esta en PHP para los casos 01-03 |
+| Pensamiento sistemico | El repositorio conecta rendimiento, observabilidad, arquitectura y continuidad operacional |
 
-## 📡 Qué señales entrega este repositorio
+## Que no deberia esperarse
 
-| Señal | Evidencia |
-|-------|-----------|
-| 🗂️ **Organización** | Estructura clara, sin archivos sueltos ni carpetas vacías sin explicación |
-| 🧠 **Criterio técnico** | Cada caso justifica por qué existe, qué valor aporta y qué trade-offs tiene |
-| 📝 **Capacidad de documentación** | Documentación extrema, honesta y orientada a diferentes lectores |
-| 🔗 **Pensamiento sistémico** | Los problemas se abordan desde síntoma → diagnóstico → solución → valor |
-| 🎯 **Claridad de diseño** | Decisiones explícitamente documentadas en ADRs |
-| 🔍 **Enfoque en problemas reales** | Nada está planteado como ejercicio académico |
+- doce casos al mismo nivel de implementacion;
+- paridad funcional completa entre los cinco lenguajes hoy;
+- una promesa de benchmark absoluto entre runtimes.
 
----
+## Que si puede concluirse con fundamento
 
-## 🚫 Qué no pretende vender este repositorio
-
-- ❌ **Años ficticios** en tecnologías concretas donde no existe experiencia profunda
-- ❌ **Humo de marketing** — no hay afirmaciones sin evidencia
-- ❌ **"Todo resuelto"** en un único commit o sin deuda conocida
-
----
-
-## ✅ Qué sí pretende mostrar
-
-- ✅ **Base seria de laboratorio** con convenciones documentadas y extensibles
-- ✅ **Implementaciones funcionales reales** en los casos 01–03 dentro del stack PHP
-- ✅ **Forma de pensar y construir** — el proceso importa tanto como el resultado
-- ✅ **Foco en resolución y continuidad** — no solo en tecnología por sí misma
-
----
-
-> 💡 **Tip para revisores:**
-> La señal más fuerte no es el código — es la documentación.
-> Un profesional que puede explicar qué problema resuelve, por qué importa y cuáles son los trade-offs
-> demuestra algo que los años de sintaxis no garantizan.
+- hay criterio para modelar problemas reales;
+- existe capacidad de documentar y explicar decisiones tecnicas;
+- Docker se usa para reproducibilidad, no solo como adorno;
+- la narrativa del repo es coherente con un perfil orientado a modernizacion, performance y operacion.
