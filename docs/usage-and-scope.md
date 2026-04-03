@@ -1,8 +1,8 @@
-# Alcance y uso esperado
+# 📐 Alcance y uso esperado
 
 > Que cubre esta version del laboratorio y que queda fuera conscientemente.
 
-## Uso esperado
+## ✅ Uso esperado
 
 | Uso | Descripcion |
 | --- | --- |
@@ -11,7 +11,7 @@
 | Base de demos serias | Levantar un caso concreto con Docker y explicar el before/after |
 | Marco de crecimiento | Usar la estructura para seguir profundizando casos y stacks |
 
-## Lo que si incluye hoy esta version
+## 📦 Lo que si incluye hoy esta version
 
 | Area | Estado actual |
 | --- | --- |
@@ -22,7 +22,7 @@
 | Familia documental profesional en la raiz | si |
 | Paridad funcional completa entre todos los lenguajes | no |
 
-## Limites conscientes
+## 🚫 Limites conscientes
 
 | Fuera de alcance | Por que |
 | --- | --- |
@@ -31,11 +31,11 @@
 | Igual nivel de madurez en todos los stacks | Se prefirio crecer con honestidad y no con demos vacias |
 | Un unico `docker compose up` para todo el universo | Haria el repo mas pesado, menos claro y peor para diagnostico |
 
-## Regla operativa importante
+## 🐳 Regla operativa importante
 
 Para los casos ya implementados, Docker Compose es la ruta oficialmente soportada. El `Makefile` es una ayuda, no el contrato principal de ejecucion.
 
-## Como leer el alcance correctamente
+## 🧭 Como leer el alcance correctamente
 
 - Si un caso esta marcado como `OPERATIVO`, deberia poder ejecutarse de forma limpia.
 - Si un caso esta marcado como `DOCUMENTADO / SCAFFOLD`, aun no debes leerlo como solucion completa.

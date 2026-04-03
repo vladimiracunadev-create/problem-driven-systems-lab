@@ -1,8 +1,8 @@
-# Posicionamiento y objetivo
+# 🎯 Posicionamiento y objetivo
 
 > Este repositorio existe para demostrar evidencia de criterio tecnico transferible: la capacidad de diagnosticar y resolver problemas reales de software mas alla del lenguaje exacto que una vacante pida.
 
-## Idea central
+## 💡 Idea central
 
 En muchos procesos tecnicos se sobrevalora la coincidencia exacta de sintaxis y se subestima algo mas importante:
 
@@ -13,7 +13,7 @@ En muchos procesos tecnicos se sobrevalora la coincidencia exacta de sintaxis y 
 
 Este laboratorio responde a ese vacio con un enfoque problem-driven.
 
-## Linea profesional que representa
+## 🧭 Linea profesional que representa
 
 Este repo se alinea con una historia tecnica mas amplia centrada en:
 
@@ -23,7 +23,7 @@ Este repo se alinea con una historia tecnica mas amplia centrada en:
 - continuidad operacional y delivery reproducible;
 - Docker como base practica de ejecucion y comparacion.
 
-## Que demuestra hoy
+## 📡 Que demuestra hoy
 
 | Capacidad | Evidencia |
 | --- | --- |
@@ -33,7 +33,7 @@ Este repo se alinea con una historia tecnica mas amplia centrada en:
 | Criterio documental | Existe documentacion por audiencia y runbook operativo |
 | Honestidad de madurez | Se separa lo operativo de lo documental o scaffold |
 
-## A quien le sirve
+## 👥 A quien le sirve
 
 | Perfil | Que obtiene |
 | --- | --- |
@@ -42,7 +42,7 @@ Este repo se alinea con una historia tecnica mas amplia centrada en:
 | Arquitecto o tech lead | Casos de rendimiento, observabilidad y modernizacion con narrativa clara |
 | Persona en aprendizaje | Un mapa util para estudiar problemas de produccion sin perder contexto |
 
-## Lo que no intenta vender
+## 🚫 Lo que no intenta vender
 
 - anos ficticios en tecnologias donde no existe experiencia profunda;
 - claims de paridad multi-stack que el codigo aun no respalda;

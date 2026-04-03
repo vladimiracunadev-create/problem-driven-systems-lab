@@ -43,7 +43,11 @@ La raiz del repositorio contiene los documentos para lectura ejecutiva, tecnica 
 
 ### 3. Capa de portal
 
-`compose.root.yml` levanta un portal ligero en PHP que resume el laboratorio, los documentos clave y el estado actual de los casos.
+`compose.root.yml` levanta un portal ligero con:
+
+- `index.html` como portada principal para personas tecnicas y no tecnicas;
+- `catalog.php` como endpoint de metadatos para la UI;
+- `index.php` como redireccion de compatibilidad.
 
 ### 4. Capa de casos
 
@@ -57,7 +61,7 @@ Cada caso contiene `php`, `node`, `python`, `java` y `dotnet` con Docker aislado
 
 ```mermaid
 flowchart LR
-    A["shared/catalog/cases.json"] --> B["portal/app/index.php"]
+    A["shared/catalog/cases.json"] --> B["portal/app/catalog.php"]
     A --> C["scripts/generate_case_catalog.php"]
     C --> D["docs/case-catalog.md"]
     D --> E["README.md y docs"]

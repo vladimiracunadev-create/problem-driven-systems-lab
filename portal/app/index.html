@@ -1,0 +1,606 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Problem-Driven Systems Lab</title>
+  <style>
+    :root {
+      --bg: #f4efe4;
+      --ink: #152033;
+      --muted: #54627a;
+      --card: rgba(255, 252, 247, 0.9);
+      --line: rgba(21, 32, 51, 0.12);
+      --accent: #c7562a;
+      --accent-soft: #fff0e8;
+      --accent-2: #0f766e;
+      --accent-2-soft: #e7fbf6;
+      --shadow: 0 18px 40px rgba(21, 32, 51, 0.08);
+      --ok: #0f766e;
+      --warn: #b45309;
+      --idle: #64748b;
+      --radius: 22px;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at top left, rgba(199, 86, 42, 0.14), transparent 24%),
+        radial-gradient(circle at right, rgba(15, 118, 110, 0.1), transparent 28%),
+        linear-gradient(180deg, #faf6ee 0%, #f4efe4 54%, #f0e8db 100%);
+      font-family: "Aptos", "Segoe UI", sans-serif;
+    }
+    .wrap {
+      max-width: 1260px;
+      margin: 0 auto;
+      padding: 32px 20px 72px;
+    }
+    .hero, .panel, .doc-card, .case-card, .meta-card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+    .hero {
+      padding: 34px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::after {
+      content: "";
+      position: absolute;
+      inset: auto -80px -100px auto;
+      width: 240px;
+      height: 240px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(199, 86, 42, 0.18), transparent 70%);
+      pointer-events: none;
+    }
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 14px;
+      border-radius: 999px;
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-weight: 700;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+      font-size: 12px;
+    }
+    h1, h2, h3, h4, p { margin: 0; }
+    h1 {
+      margin-top: 18px;
+      font-size: clamp(2.6rem, 4vw, 4.8rem);
+      line-height: .94;
+      letter-spacing: -0.05em;
+      max-width: 760px;
+    }
+    p {
+      color: var(--muted);
+      line-height: 1.7;
+    }
+    .hero-copy {
+      margin-top: 16px;
+      max-width: 760px;
+      font-size: 1.06rem;
+    }
+    .hero-grid, .stats, .docs-grid, .meta-grid, .case-grid {
+      display: grid;
+      gap: 16px;
+    }
+    .hero-grid {
+      grid-template-columns: 1.5fr 1fr;
+      margin-top: 28px;
+    }
+    .stats {
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      margin-top: 24px;
+    }
+    .stat {
+      padding: 18px 20px;
+      border-radius: 18px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.66);
+    }
+    .stat small {
+      display: block;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      font-size: 11px;
+      margin-bottom: 8px;
+    }
+    .stat strong {
+      display: block;
+      font-size: 2rem;
+      line-height: 1;
+    }
+    .panel, .doc-card, .case-card, .meta-card {
+      padding: 22px;
+    }
+    .section-head {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 12px;
+      margin: 34px 0 16px;
+    }
+    .section-head p { max-width: 760px; }
+    .docs-grid, .meta-grid {
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    }
+    .doc-card h3, .meta-card h3 {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 1.02rem;
+    }
+    .doc-link {
+      display: inline-flex;
+      margin-top: 14px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(21, 32, 51, 0.04);
+      border: 1px solid var(--line);
+      color: var(--ink);
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 600;
+    }
+    .language-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: 18px 0 10px;
+    }
+    .lang-btn {
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.68);
+      color: var(--ink);
+      padding: 12px 16px;
+      border-radius: 999px;
+      cursor: pointer;
+      font: inherit;
+      font-weight: 700;
+      transition: transform .18s ease, background .18s ease, border-color .18s ease;
+    }
+    .lang-btn.active {
+      background: var(--accent-soft);
+      border-color: rgba(199, 86, 42, 0.28);
+      color: var(--accent);
+      transform: translateY(-1px);
+    }
+    .language-note {
+      margin-top: 8px;
+      color: var(--muted);
+    }
+    .case-grid {
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      margin-top: 16px;
+    }
+    .case-card {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .case-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: start;
+    }
+    .case-title {
+      display: flex;
+      gap: 12px;
+      align-items: start;
+    }
+    .case-icon {
+      display: inline-flex;
+      width: 48px;
+      height: 48px;
+      align-items: center;
+      justify-content: center;
+      border-radius: 16px;
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-size: 1.3rem;
+      flex: 0 0 auto;
+    }
+    .case-title strong {
+      display: block;
+      font-size: 1rem;
+      line-height: 1.2;
+    }
+    .case-title span {
+      display: block;
+      color: var(--muted);
+      margin-top: 4px;
+      font-size: .9rem;
+    }
+    .status {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 12px;
+      border-radius: 999px;
+      background: var(--accent-2-soft);
+      color: var(--accent-2);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .05em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+    .why {
+      padding: 14px;
+      border-radius: 16px;
+      background: rgba(15, 118, 110, 0.06);
+      border: 1px solid rgba(15, 118, 110, 0.12);
+    }
+    .why strong {
+      display: block;
+      margin-bottom: 6px;
+      color: var(--accent-2);
+      font-size: .92rem;
+    }
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: rgba(21, 32, 51, 0.05);
+      border: 1px solid var(--line);
+      color: var(--ink);
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      min-height: 40px;
+      padding: 0 14px;
+      border-radius: 12px;
+      text-decoration: none;
+      border: 1px solid var(--line);
+      font-weight: 700;
+      color: var(--ink);
+      background: rgba(255,255,255,0.7);
+      cursor: pointer;
+      font: inherit;
+    }
+    .btn.primary {
+      background: var(--ink);
+      color: white;
+      border-color: var(--ink);
+    }
+    .command {
+      margin: 0;
+      padding: 14px 16px;
+      border-radius: 16px;
+      background: #132034;
+      color: #edf3fb;
+      overflow: auto;
+      font-family: "Cascadia Code", "Consolas", monospace;
+      font-size: 12px;
+      line-height: 1.55;
+    }
+    .probe {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 14px;
+      border-radius: 16px;
+      background: rgba(21, 32, 51, 0.05);
+      border: 1px solid var(--line);
+    }
+    .probe-status {
+      font-weight: 700;
+      color: var(--idle);
+    }
+    .probe-status.ok { color: var(--ok); }
+    .probe-status.warn { color: var(--warn); }
+    .empty {
+      padding: 26px;
+      border-radius: 20px;
+      border: 1px dashed rgba(21, 32, 51, 0.16);
+      background: rgba(255,255,255,0.54);
+      color: var(--muted);
+    }
+    .topics {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 14px;
+    }
+    .topic {
+      display: inline-flex;
+      align-items: center;
+      padding: 7px 10px;
+      border-radius: 999px;
+      background: rgba(199, 86, 42, 0.08);
+      border: 1px solid rgba(199, 86, 42, 0.14);
+      color: var(--accent);
+      font-size: 12px;
+      font-weight: 700;
+    }
+    @media (max-width: 920px) {
+      .hero-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <section class="hero">
+      <span class="eyebrow">🧪 Problem-Driven • Docker-First • Multi-stack</span>
+      <h1>Elige un lenguaje y mira solo los casos realmente operativos</h1>
+      <p class="hero-copy" id="hero-copy">
+        Cargando el catalogo operativo del laboratorio...
+      </p>
+
+      <div class="stats" id="stats"></div>
+
+      <div class="hero-grid">
+        <article class="panel">
+          <h2>💡 Que hace este producto</h2>
+          <p style="margin-top:12px;">
+            No es una coleccion de "hola mundo". Es un laboratorio para demostrar como se entienden y resuelven problemas reales
+            de rendimiento, observabilidad, resiliencia, arquitectura y riesgo operacional.
+          </p>
+          <div class="chips" style="margin-top:16px;">
+            <span class="chip">👔 util para reclutadores</span>
+            <span class="chip">🏗️ util para lideres tecnicos</span>
+            <span class="chip">🛠️ util para demos y evaluacion</span>
+            <span class="chip">🐳 ejecutable con Docker</span>
+          </div>
+        </article>
+
+        <article class="panel">
+          <h2>📌 Por que importa</h2>
+          <p style="margin-top:12px;">
+            El valor no esta en decir "conozco un lenguaje", sino en mostrar evidencia reproducible:
+            que problema se modela, como se levanta, que se puede observar y por que esa solucion importa para un negocio.
+          </p>
+        </article>
+      </div>
+    </section>
+
+    <section>
+      <div class="section-head">
+        <div>
+          <h2>📚 Rutas recomendadas</h2>
+          <p>Documentos pensados para distintos tipos de lector, desde reclutadores hasta personas tecnicas que quieren ejecutar el entorno.</p>
+        </div>
+      </div>
+      <div class="docs-grid" id="docs-grid"></div>
+    </section>
+
+    <section>
+      <div class="section-head">
+        <div>
+          <h2>🔎 Casos operativos por lenguaje</h2>
+          <p>Elige un stack y veras solo los casos que hoy tienen implementacion real en ese lenguaje, con links al servicio, health check, README y Compose.</p>
+        </div>
+      </div>
+      <div class="language-bar" id="language-bar"></div>
+      <p class="language-note" id="language-note"></p>
+      <div class="case-grid" id="case-grid"></div>
+    </section>
+
+    <section>
+      <div class="section-head">
+        <div>
+          <h2>🏷️ GitHub About y Topics</h2>
+          <p>Texto orientado a discovery, entendimiento rapido del producto y posicionamiento mas claro del repositorio.</p>
+        </div>
+      </div>
+      <div class="meta-grid">
+        <article class="meta-card">
+          <h3>📝 About recomendado</h3>
+          <p id="about-text" style="margin-top:12px;"></p>
+        </article>
+        <article class="meta-card">
+          <h3>🏷️ Topics recomendados</h3>
+          <div class="topics" id="topics"></div>
+        </article>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const state = {
+      data: null,
+      selectedLanguage: 'php',
+    };
+
+    const statsEl = document.getElementById('stats');
+    const docsGridEl = document.getElementById('docs-grid');
+    const languageBarEl = document.getElementById('language-bar');
+    const languageNoteEl = document.getElementById('language-note');
+    const caseGridEl = document.getElementById('case-grid');
+    const heroCopyEl = document.getElementById('hero-copy');
+    const aboutTextEl = document.getElementById('about-text');
+    const topicsEl = document.getElementById('topics');
+
+    const renderStats = () => {
+      const { stats } = state.data;
+      statsEl.innerHTML = [
+        ['Casos totales', stats.cases_total],
+        ['Casos operativos', stats.cases_operational],
+        ['Stacks operativos', stats.stacks_operational],
+      ].map(([label, value]) => `
+        <article class="stat">
+          <small>${label}</small>
+          <strong>${value}</strong>
+        </article>
+      `).join('');
+    };
+
+    const renderDocs = () => {
+      docsGridEl.innerHTML = state.data.documents.map((doc) => `
+        <article class="doc-card">
+          <h3>${doc.icon} ${doc.title}</h3>
+          <p style="margin-top:12px;">Abre este documento para profundizar la parte del sistema que mas te importe.</p>
+          <a class="doc-link" href="${doc.url}" target="_blank" rel="noreferrer">Abrir en GitHub</a>
+        </article>
+      `).join('');
+    };
+
+    const renderLanguages = () => {
+      languageBarEl.innerHTML = state.data.languages.map((language) => `
+        <button class="lang-btn ${language.key === state.selectedLanguage ? 'active' : ''}" data-language="${language.key}">
+          ${language.label}
+        </button>
+      `).join('');
+
+      languageBarEl.querySelectorAll('.lang-btn').forEach((button) => {
+        button.addEventListener('click', () => {
+          state.selectedLanguage = button.dataset.language;
+          renderLanguages();
+          renderCases();
+        });
+      });
+    };
+
+    const probeService = async (url, targetEl) => {
+      targetEl.textContent = 'Comprobando...';
+      targetEl.className = 'probe-status';
+
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 2800);
+
+      try {
+        await fetch(url, {
+          method: 'GET',
+          mode: 'no-cors',
+          cache: 'no-store',
+          signal: controller.signal,
+        });
+        targetEl.textContent = 'Servicio alcanzable';
+        targetEl.className = 'probe-status ok';
+      } catch (error) {
+        targetEl.textContent = 'Sin respuesta ahora';
+        targetEl.className = 'probe-status warn';
+      } finally {
+        clearTimeout(timeout);
+      }
+    };
+
+    const renderCases = () => {
+      const language = state.data.languages.find((item) => item.key === state.selectedLanguage);
+      languageNoteEl.textContent = `${language.headline} ${language.note}`;
+
+      if (!language.available) {
+        caseGridEl.innerHTML = `
+          <div class="empty">
+            <strong>No hay casos operativos aun en ${language.label}.</strong>
+            <p style="margin-top:8px;">La carpeta existe y el roadmap la contempla, pero el repositorio no la vende como implementacion profunda todavia.</p>
+          </div>
+        `;
+        return;
+      }
+
+      caseGridEl.innerHTML = language.cases.map((item) => `
+        <article class="case-card" data-health-url="${item.runtime.health_url}">
+          <div class="case-head">
+            <div class="case-title">
+              <span class="case-icon">${item.icon}</span>
+              <div>
+                <strong>${item.id} - ${item.title}</strong>
+                <span>${item.category} · ${item.runtime.label}</span>
+              </div>
+            </div>
+            <span class="status">${item.status}</span>
+          </div>
+
+          <p>${item.summary}</p>
+
+          <div class="why">
+            <strong>Por que importa</strong>
+            <p>${item.business_outcome}</p>
+          </div>
+
+          <div class="chips">
+            <span class="chip">🌐 ${item.runtime.base_url}</span>
+            <span class="chip">❤️ ${item.runtime.health_url}</span>
+          </div>
+
+          <div class="actions">
+            <a class="btn primary" href="${item.runtime.base_url}" target="_blank" rel="noreferrer">Abrir servicio</a>
+            <a class="btn" href="${item.runtime.health_url}" target="_blank" rel="noreferrer">Health</a>
+            <a class="btn" href="${item.runtime.readme_url}" target="_blank" rel="noreferrer">README</a>
+            <a class="btn" href="${item.runtime.compose_url}" target="_blank" rel="noreferrer">Compose</a>
+          </div>
+
+          <pre class="command">${item.runtime.up_command}</pre>
+
+          <div class="probe">
+            <div>
+              <strong>Feedback rapido</strong>
+              <p style="margin-top:4px;">Verificacion ligera desde el navegador contra el endpoint de health.</p>
+            </div>
+            <div>
+              <div class="probe-status">Pendiente</div>
+              <button class="btn" type="button">Reintentar</button>
+            </div>
+          </div>
+        </article>
+      `).join('');
+
+      caseGridEl.querySelectorAll('.case-card').forEach((card) => {
+        const statusEl = card.querySelector('.probe-status');
+        const buttonEl = card.querySelector('button');
+        const healthUrl = card.dataset.healthUrl;
+        const runProbe = () => probeService(healthUrl, statusEl);
+        buttonEl.addEventListener('click', runProbe);
+        runProbe();
+      });
+    };
+
+    const renderMeta = () => {
+      heroCopyEl.textContent = `${state.data.lab.tagline} ${state.data.lab.audience_message}`;
+      aboutTextEl.textContent = state.data.recommended_github_about;
+      topicsEl.innerHTML = state.data.recommended_github_topics.map((topic) => `
+        <span class="topic">${topic}</span>
+      `).join('');
+    };
+
+    const boot = async () => {
+      const response = await fetch('catalog.php', { cache: 'no-store' });
+      state.data = await response.json();
+      renderStats();
+      renderDocs();
+      renderLanguages();
+      renderCases();
+      renderMeta();
+    };
+
+    boot().catch((error) => {
+      heroCopyEl.textContent = 'No se pudo cargar el catalogo operativo del portal.';
+      caseGridEl.innerHTML = `
+        <div class="empty">
+          <strong>Fallo al cargar el catalogo.</strong>
+          <p style="margin-top:8px;">Revisa que el portal tenga acceso a \`shared/catalog/cases.json\` y que PHP pueda leerlo correctamente.</p>
+        </div>
+      `;
+      console.error(error);
+    });
+  </script>
+</body>
+</html>

@@ -1,8 +1,8 @@
-# Guia para Principiantes
+# 🌱 Guia para Principiantes
 
 Si es tu primera vez en este repositorio, esta es la ruta mas simple para entenderlo sin perderte.
 
-## En 6 pasos
+## 1️⃣ En 6 pasos
 
 1. Lee [README.md](../README.md) para entender la idea general.
 2. Revisa [docs/positioning-and-objective.md](positioning-and-objective.md) para ver que problema profesional resuelve este laboratorio.
@@ -11,7 +11,7 @@ Si es tu primera vez en este repositorio, esta es la ruta mas simple para entend
 5. Usa [RUNBOOK.md](../RUNBOOK.md) si algo no levanta como esperas.
 6. Recorre el caso que mas te interese y luego vuelve al resto del catalogo.
 
-## Terminos clave
+## 🧠 Terminos clave
 
 | Termino | Significado en este repo |
 | --- | --- |
@@ -20,7 +20,7 @@ Si es tu primera vez en este repositorio, esta es la ruta mas simple para entend
 | Documentado / Scaffold | Caso modelado y estructurado, pero aun no resuelto a fondo |
 | Compare | Archivo `compose.compare.yml` para comparar stacks del mismo caso |
 
-## Mejores puntos de entrada
+## 🚪 Mejores puntos de entrada
 
 | Caso | Por que empezar ahi |
 | --- | --- |
@@ -28,6 +28,6 @@ Si es tu primera vez en este repositorio, esta es la ruta mas simple para entend
 | [02](../cases/02-n-plus-one-and-db-bottlenecks/README.md) | Muestra un problema de DB muy comun y facil de reconocer |
 | [03](../cases/03-poor-observability-and-useless-logs/README.md) | Muestra rapidamente por que la observabilidad importa |
 
-## Consejo practico
+## 💡 Consejo practico
 
 No intentes levantar todo al mismo tiempo para "ver si funciona". En este laboratorio conviene trabajar un caso por vez. Asi se entiende mejor el problema y se evita ruido innecesario.

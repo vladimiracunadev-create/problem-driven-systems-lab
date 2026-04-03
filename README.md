@@ -1,4 +1,4 @@
-# Problem-Driven Systems Lab
+# 🧪 Problem-Driven Systems Lab
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker&logoColor=white)](compose.root.yml)
@@ -11,17 +11,18 @@
 
 Portafolio tecnico orientado a problemas reales de software: rendimiento, observabilidad, resiliencia, arquitectura y continuidad operacional. Este repositorio forma parte del ecosistema publico de Vladimir Acuna y aterriza una linea consistente de trabajo: modernizacion de sistemas vivos, Docker como ruta oficial de ejecucion, documentacion por audiencia y soluciones honestas a problemas de produccion.
 
-## Executive Summary
+## 🎯 Executive Summary
 
 - El repositorio modela 12 problemas reales, desde sintoma hasta solucion y valor de negocio.
 - Los casos `01`, `02` y `03` ya cuentan con implementacion operativa real en PHP.
 - El caso `03` ya cuenta tambien con implementaciones operativas en Node.js y Python.
 - Docker es la via oficial para ejecutar los casos implementados de forma limpia y reproducible.
 - El catalogo del portal y `docs/case-catalog.md` ahora se sostienen desde metadatos compartidos.
+- El portal raiz ofrece una portada HTML con selector de lenguaje y acceso rapido a los casos operativos por stack.
 - La madurez se comunica con honestidad: `OPERATIVO`, `DOCUMENTADO / SCAFFOLD` o `PLANIFICADO`.
 - El objetivo no es competir por sintaxis ni vender seniority vacia, sino evidenciar criterio transferible.
 
-## Que demuestra este laboratorio
+## 📡 Que demuestra este laboratorio
 
 | Area | Evidencia |
 | --- | --- |
@@ -31,7 +32,7 @@ Portafolio tecnico orientado a problemas reales de software: rendimiento, observ
 | Documentacion profesional | El repo ya tiene rutas para reclutadores, operacion, seguridad, contribucion e instalacion |
 | Honestidad tecnica | Se distingue claramente entre casos operativos y scaffolds documentados |
 
-## Taxonomia de madurez actual
+## 🏷️ Taxonomia de madurez actual
 
 | Nivel | Que significa hoy en este repo |
 | --- | --- |
@@ -45,7 +46,7 @@ Estado actual:
 - `OPERATIVO` adicional en stacks no PHP: [caso 03](cases/03-poor-observability-and-useless-logs/README.md) en Node.js y Python.
 - `DOCUMENTADO / SCAFFOLD`: casos `04` al `12`, y stacks no profundizados de los casos `01` al `03`.
 
-## Por donde empezar
+## 🧭 Por donde empezar
 
 | Perfil | Ruta recomendada | Objetivo |
 | --- | --- | --- |
@@ -55,7 +56,7 @@ Estado actual:
 | Principiante | [docs/BEGINNERS_GUIDE.md](docs/BEGINNERS_GUIDE.md) | Entender la estructura antes de entrar al codigo |
 | Seguridad / operacion | [SECURITY.md](SECURITY.md) -> [RUNBOOK.md](RUNBOOK.md) | Validar postura operativa, limites y reportes |
 
-## Inicio rapido
+## 🚀 Inicio rapido
 
 Ruta oficial para ambientes implementados:
 
@@ -85,7 +86,7 @@ make case-up CASE=03-poor-observability-and-useless-logs STACK=php
 > [!IMPORTANT]
 > En este repositorio `make` es una capa de conveniencia. La ruta realmente soportada y mas portable es `docker compose` directo. En Windows puro, esto importa porque el `Makefile` actual usa `/bin/bash`.
 
-## Casos prioritarios
+## 🔎 Casos prioritarios
 
 | Caso | Estado | Valor principal |
 | --- | --- | --- |
@@ -95,7 +96,7 @@ make case-up CASE=03-poor-observability-and-useless-logs STACK=php
 
 El catalogo completo esta en [docs/case-catalog.md](docs/case-catalog.md).
 
-## Documentacion profesional del repositorio
+## 📚 Documentacion profesional del repositorio
 
 | Documento | Para que sirve |
 | --- | --- |
@@ -113,7 +114,7 @@ El catalogo completo esta en [docs/case-catalog.md](docs/case-catalog.md).
 | [docs/usage-and-scope.md](docs/usage-and-scope.md) | Limites reales de esta version |
 | [docs/recruiter-guide.md](docs/recruiter-guide.md) | Guia extendida para lectores no tecnicos |
 
-## Ecosistema relacionado
+## 🌐 Ecosistema relacionado
 
 Este laboratorio no existe aislado. Se alinea con un ecosistema publico mas amplio:
 
@@ -123,20 +124,20 @@ Este laboratorio no existe aislado. Se alinea con un ecosistema publico mas ampl
 
 La linea comun entre estos activos es consistente: repos reproducibles, documentacion por audiencia, observabilidad, continuidad operacional y modernizacion de plataformas reales.
 
-## Lo que este repo si es
+## ✅ Lo que este repo si es
 
 - Un laboratorio serio para demostrar criterio tecnico transferible.
 - Una base reproducible para conversar de rendimiento, observabilidad y arquitectura.
 - Un portafolio documentado que privilegia problemas reales por sobre features aisladas.
 
-## Lo que este repo no intenta vender
+## 🚫 Lo que este repo no intenta vender
 
 - Paridad funcional completa en todos los stacks desde la primera iteracion.
 - Benchmarks absolutos entre lenguajes.
 - "Todo listo" en doce casos al mismo nivel de profundidad.
 - Seniority inflada con claims sin evidencia.
 
-## Estructura general
+## 🧱 Estructura general
 
 ```text
 problem-driven-systems-lab/
@@ -157,6 +158,6 @@ problem-driven-systems-lab/
 `- cases/
 ```
 
-## Licencia
+## ⚖️ Licencia
 
 El repositorio se publica bajo [MIT](LICENSE). Revisa tambien [docs/usage-and-scope.md](docs/usage-and-scope.md) para entender sus limites de uso y la postura honesta del proyecto.

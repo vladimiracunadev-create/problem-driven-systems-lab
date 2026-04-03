@@ -7,7 +7,7 @@
 El laboratorio esta organizado como un sistema de cuatro capas:
 
 1. una capa editorial y operativa en la raiz;
-2. un portal local ligero en PHP;
+2. un portal local ligero con una portada HTML y un backend PHP minimo para metadatos;
 3. una biblioteca de casos problem-driven;
 4. implementaciones por stack aisladas con Docker.
 
@@ -17,7 +17,7 @@ Desde esta iteracion, el catalogo del laboratorio deja de duplicarse manualmente
 
 ```mermaid
 flowchart TD
-    A["README.md + docs raiz"] --> B["Portal local PHP<br/>compose.root.yml"]
+    A["README.md + docs raiz"] --> B["Portal local<br/>index.html + catalog.php"]
     A --> C["Casos problem-driven<br/>cases/01 ... cases/12"]
     D["shared/catalog/cases.json"] --> B
     D --> E["scripts/generate_case_catalog.php"]
@@ -40,7 +40,9 @@ flowchart TD
 ### 2. Portal local
 
 - `compose.root.yml` levanta solo la landing local
-- `portal/app/index.php` consume metadatos compartidos
+- `portal/app/index.html` presenta una entrada clara para personas tecnicas y no tecnicas
+- `portal/app/catalog.php` entrega el catalogo operativo al frontend
+- `portal/app/index.php` mantiene compatibilidad por redireccion
 - el portal no intenta ejecutar todo el laboratorio; solo orienta y resume
 
 ### 3. Casos
@@ -63,7 +65,7 @@ Cada caso contiene carpetas `php`, `node`, `python`, `java` y `dotnet`, con Dock
 
 La fuente de verdad del catalogo ahora vive en [`shared/catalog/cases.json`](shared/catalog/cases.json).
 
-- El portal lee esos metadatos para pintar tarjetas y estados.
+- El portal lee esos metadatos para pintar tarjetas, estados y rutas por lenguaje.
 - [`scripts/generate_case_catalog.php`](scripts/generate_case_catalog.php) genera [`docs/case-catalog.md`](docs/case-catalog.md).
 - La CI puede verificar que el catalogo generado siga sincronizado.
 

@@ -41,6 +41,10 @@ for path in "${required_root[@]}"; do
   test -e "$path"
 done
 
+test -f portal/app/index.html
+test -f portal/app/index.php
+test -f portal/app/catalog.php
+
 for case_dir in cases/*; do
   test -d "$case_dir"
   test -f "$case_dir/README.md"
