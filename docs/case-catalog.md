@@ -9,9 +9,9 @@
 | ⚡ | [01 - API lenta bajo carga](../cases/01-api-latency-under-load/README.md) | Rendimiento | `OPERATIVO` | `php` | PHP + PostgreSQL + worker + Prometheus + Grafana | Reduce latencia visible y evita sobredimensionar infraestructura a ciegas. |
 | 🔄 | [02 - N+1 queries y cuellos de botella en base de datos](../cases/02-n-plus-one-and-db-bottlenecks/README.md) | Rendimiento | `OPERATIVO` | `php` | PHP + PostgreSQL | Reduce round-trips, costo por request y desgaste innecesario sobre la base de datos. |
 | 🔭 | [03 - Observabilidad deficiente y logs inutiles](../cases/03-poor-observability-and-useless-logs/README.md) | Observabilidad | `OPERATIVO` | `php`, `node`, `python` | PHP + Node.js + Python con logs estructurados, trazas y metricas | Reduce MTTR y convierte incidentes vagos en fallas diagnosticables con evidencia. |
-| ⏱️ | [04 - Cadena de timeouts y tormentas de reintentos](../cases/04-timeout-chain-and-retry-storms/README.md) | Resiliencia | `DOCUMENTADO / SCAFFOLD` | — | estructura y docs listas | Ayuda a reducir fallas en cascada y a disenar limites mas sanos de timeout, retry y backoff. |
-| 🧠 | [05 - Presion de memoria y fugas de recursos](../cases/05-memory-pressure-and-resource-leaks/README.md) | Rendimiento | `DOCUMENTADO / SCAFFOLD` | — | estructura y docs listas | Sirve para razonar estabilidad, limites de recursos y degradacion progresiva antes del colapso. |
-| 🚚 | [06 - Pipeline roto y entrega fragil](../cases/06-broken-pipeline-and-fragile-delivery/README.md) | Entrega | `DOCUMENTADO / SCAFFOLD` | — | estructura y docs listas | Ayuda a reducir riesgo en despliegues y a fortalecer rollback, promotion y entrega continua. |
+| ⏱️ | [04 - Cadena de timeouts y tormentas de reintentos](../cases/04-timeout-chain-and-retry-storms/README.md) | Resiliencia | `OPERATIVO` | `php` | PHP 8.3 con retries legacy vs timeout corto, backoff, circuit breaker y fallback | Ayuda a reducir fallas en cascada y a disenar limites mas sanos de timeout, retry y backoff. |
+| 🧠 | [05 - Presion de memoria y fugas de recursos](../cases/05-memory-pressure-and-resource-leaks/README.md) | Rendimiento | `OPERATIVO` | `php` | PHP 8.3 con estado retenido, presion progresiva y comparacion legacy vs optimized | Sirve para razonar estabilidad, limites de recursos y degradacion progresiva antes del colapso. |
+| 🚚 | [06 - Pipeline roto y entrega fragil](../cases/06-broken-pipeline-and-fragile-delivery/README.md) | Entrega | `OPERATIVO` | `php` | PHP 8.3 con deploy legacy vs controlled, preflight y rollback | Ayuda a reducir riesgo en despliegues y a fortalecer rollback, promotion y entrega continua. |
 | 🏗️ | [07 - Modernizacion incremental de monolito](../cases/07-incremental-monolith-modernization/README.md) | Arquitectura | `DOCUMENTADO / SCAFFOLD` | — | estructura y docs listas | Permite discutir modernizacion sin caer en reescrituras irresponsables o slogans de moda. |
 | 🧩 | [08 - Extraccion de modulo critico sin romper operacion](../cases/08-critical-module-extraction-without-breaking-operations/README.md) | Arquitectura | `DOCUMENTADO / SCAFFOLD` | — | estructura y docs listas | Ayuda a pensar extracciones modulares sin sacrificar continuidad operacional ni trazabilidad. |
 | 🌐 | [09 - Integracion externa inestable](../cases/09-unstable-external-integration/README.md) | Resiliencia | `DOCUMENTADO / SCAFFOLD` | — | estructura y docs listas | Permite razonar protecciones frente a dependencias externas que no controlamos. |
@@ -38,6 +38,24 @@
 - Stacks operativos: `php`, `node`, `python`
 - Impacto de negocio: Reduce MTTR y convierte incidentes vagos en fallas diagnosticables con evidencia.
 - Que demuestra: Compara checkout-legacy contra checkout-observable para ver que cambia cuando existe correlacion real.
+
+### ⏱️ [04 - Cadena de timeouts y tormentas de reintentos](../cases/04-timeout-chain-and-retry-storms/README.md)
+
+- Stacks operativos: `php`
+- Impacto de negocio: Ayuda a reducir fallas en cascada y a disenar limites mas sanos de timeout, retry y backoff.
+- Que demuestra: Contrasta /quote-legacy y /quote-resilient sobre el mismo proveedor simulado.
+
+### 🧠 [05 - Presion de memoria y fugas de recursos](../cases/05-memory-pressure-and-resource-leaks/README.md)
+
+- Stacks operativos: `php`
+- Impacto de negocio: Sirve para razonar estabilidad, limites de recursos y degradacion progresiva antes del colapso.
+- Que demuestra: Compara /batch-legacy y /batch-optimized con estado acumulado entre requests.
+
+### 🚚 [06 - Pipeline roto y entrega fragil](../cases/06-broken-pipeline-and-fragile-delivery/README.md)
+
+- Stacks operativos: `php`
+- Impacto de negocio: Ayuda a reducir riesgo en despliegues y a fortalecer rollback, promotion y entrega continua.
+- Que demuestra: Contrasta /deploy-legacy y /deploy-controlled sobre los mismos escenarios de riesgo.
 
 ## 🧭 Rutas de evaluacion
 

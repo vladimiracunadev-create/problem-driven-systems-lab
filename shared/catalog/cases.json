@@ -1,11 +1,11 @@
 {
   "lab": {
     "name": "Problem-Driven Systems Lab",
-    "tagline": "Laboratorio Docker-first orientado a rendimiento, observabilidad, resiliencia, arquitectura y operacion.",
-    "hero_title": "Elige una audiencia o un lenguaje y evalua el laboratorio con evidencia real",
-    "audience_message": "Pensado para reclutadores, lideres tecnicos, clientes internos y personas que necesitan entender rapido que hace el producto y por que importa."
+    "tagline": "Laboratorio de ingeniería enfocado en resolver problemas reales de rendimiento, observabilidad, resiliencia y arquitectura.",
+    "hero_title": "Evalúa el laboratorio con evidencia real: elige una audiencia o un stack tecnológico",
+    "audience_message": "Diseñado para especialistas en selección, líderes técnicos y equipos de ingeniería que buscan validar criterio técnico con escenarios reproducibles."
   },
-  "recommended_github_about": "Problem-driven systems lab with Docker-first cases for performance, observability, resilience, architecture, and operational risk across PHP, Node.js, Python, Java, and .NET.",
+  "recommended_github_about": "Laboratorio de sistemas distribuido con 12 casos reales Docker-first para diagnosticar y resolver problemas críticos de rendimiento, observabilidad, resiliencia y arquitectura.",
   "recommended_github_topics": [
     "problem-driven",
     "docker",
@@ -79,7 +79,7 @@
       "icon": "🧭",
       "label": "CTO / Head of Engineering",
       "headline": "Evaluar criterio sistemico, arquitectura y trade-offs.",
-      "description": "Revisa arquitectura, runbook y los casos 01-03 para ver como se pasa de sintomas a evidencia y remediacion operativa.",
+      "description": "Revisa arquitectura, runbook y los casos 01-06 en PHP para ver como se pasa de sintomas a evidencia y remediacion operativa.",
       "document_path": "ARCHITECTURE.md",
       "goal": "Entender si el producto demuestra pensamiento de plataforma, observabilidad y reduccion de riesgo."
     },
@@ -106,8 +106,8 @@
     {
       "key": "php",
       "label": "PHP",
-      "headline": "Stack principal hoy para profundidad funcional.",
-      "note": "Muestra los casos mas maduros y mejor instrumentados del laboratorio."
+      "headline": "Stack principal hoy para profundidad funcional y comparacion before/after.",
+      "note": "Muestra los seis casos mas maduros y mejor instrumentados del laboratorio."
     },
     {
       "key": "node",
@@ -265,14 +265,35 @@
       "slug": "timeout-chain-and-retry-storms",
       "title": "Cadena de timeouts y tormentas de reintentos",
       "category": "Resiliencia",
-      "status": "DOCUMENTADO / SCAFFOLD",
-      "level_detail": "estructura y docs listas",
+      "status": "OPERATIVO",
+      "level_detail": "PHP 8.3 con retries legacy vs timeout corto, backoff, circuit breaker y fallback",
       "summary": "Una integracion lenta o inestable dispara reintentos, bloqueos y cascadas de fallas entre servicios.",
       "case_readme_path": "cases/04-timeout-chain-and-retry-storms/README.md",
       "business_outcome": "Ayuda a reducir fallas en cascada y a disenar limites mas sanos de timeout, retry y backoff.",
-      "recruiter_pitch": "Modela una categoria de incidente muy frecuente en plataformas distribuidas aunque aun no este operativa en todos los stacks.",
-      "operational_stacks": [],
-      "runtime_entries": {}
+      "recruiter_pitch": "Demuestra resiliencia aplicada mostrando como una dependencia lenta se convierte en incidente mayor cuando el servicio propio reintenta sin control.",
+      "proof_points": [
+        "Contrasta /quote-legacy y /quote-resilient sobre el mismo proveedor simulado.",
+        "Hace visible el costo de retries agresivos, timeouts repetidos y respuestas degradadas con fallback.",
+        "Expone dependency/state, incidents y diagnostics/summary para leer el comportamiento del circuit breaker."
+      ],
+      "look_for": [
+        "Si legacy tarda mas y consume mas intentos ante el mismo escenario provider_down.",
+        "Si resilient abre circuito, usa fallback y contiene la degradacion.",
+        "Si diagnostics/summary deja claro cuando la carga se amplifica y cuando queda contenida."
+      ],
+      "honesty_note": "No reemplaza una integracion real ni una malla completa de servicios. Si reproduce la logica operacional relevante de timeouts, retry storm, circuit breaker y fallback.",
+      "operational_stacks": [
+        "php"
+      ],
+      "runtime_entries": {
+        "php": {
+          "port": 814,
+          "compose_path": "cases/04-timeout-chain-and-retry-storms/php/compose.yml",
+          "readme_path": "cases/04-timeout-chain-and-retry-storms/php/README.md",
+          "health_path": "/health",
+          "root_path": "/"
+        }
+      }
     },
     {
       "id": "05",
@@ -280,14 +301,35 @@
       "slug": "memory-pressure-and-resource-leaks",
       "title": "Presion de memoria y fugas de recursos",
       "category": "Rendimiento",
-      "status": "DOCUMENTADO / SCAFFOLD",
-      "level_detail": "estructura y docs listas",
+      "status": "OPERATIVO",
+      "level_detail": "PHP 8.3 con estado retenido, presion progresiva y comparacion legacy vs optimized",
       "summary": "El sistema consume memoria, descriptores o conexiones de forma progresiva hasta degradar o caerse.",
       "case_readme_path": "cases/05-memory-pressure-and-resource-leaks/README.md",
       "business_outcome": "Sirve para razonar estabilidad, limites de recursos y degradacion progresiva antes del colapso.",
-      "recruiter_pitch": "Visibiliza criterio sobre leaks, limites operativos y sintomas que suelen pasar inadvertidos hasta produccion.",
-      "operational_stacks": [],
-      "runtime_entries": {}
+      "recruiter_pitch": "Visibiliza un problema silencioso y muy real: procesos que no fallan de inmediato, pero acumulan estado hasta necesitar reinicios o terminar cayendo.",
+      "proof_points": [
+        "Compara /batch-legacy y /batch-optimized con estado acumulado entre requests.",
+        "Hace visible retained_kb, descriptor_pressure y pressure_level en el tiempo.",
+        "Expone state, runs y diagnostics/summary para seguir la degradacion progresiva."
+      ],
+      "look_for": [
+        "Si retained_kb sube en legacy tras varias ejecuciones y se mantiene acotado en optimized.",
+        "Si pressure_level cambia de healthy a warning o critical en el modo defectuoso.",
+        "Si peak_request_kb y retained_after_kb cuentan una historia coherente del leak."
+      ],
+      "honesty_note": "No pretende copiar al milimetro el modelo de memoria de cada runtime. Si deja visible la senal operacional importante: crecimiento silencioso, degradacion progresiva y necesidad de limpieza.",
+      "operational_stacks": [
+        "php"
+      ],
+      "runtime_entries": {
+        "php": {
+          "port": 815,
+          "compose_path": "cases/05-memory-pressure-and-resource-leaks/php/compose.yml",
+          "readme_path": "cases/05-memory-pressure-and-resource-leaks/php/README.md",
+          "health_path": "/health",
+          "root_path": "/"
+        }
+      }
     },
     {
       "id": "06",
@@ -295,14 +337,35 @@
       "slug": "broken-pipeline-and-fragile-delivery",
       "title": "Pipeline roto y entrega fragil",
       "category": "Entrega",
-      "status": "DOCUMENTADO / SCAFFOLD",
-      "level_detail": "estructura y docs listas",
+      "status": "OPERATIVO",
+      "level_detail": "PHP 8.3 con deploy legacy vs controlled, preflight y rollback",
       "summary": "El software funciona en desarrollo, pero falla al desplegar, promover cambios o revertir incidentes con seguridad.",
       "case_readme_path": "cases/06-broken-pipeline-and-fragile-delivery/README.md",
       "business_outcome": "Ayuda a reducir riesgo en despliegues y a fortalecer rollback, promotion y entrega continua.",
-      "recruiter_pitch": "Conecta calidad de delivery con continuidad operacional en vez de tratar CI/CD como un check cosmetico.",
-      "operational_stacks": [],
-      "runtime_entries": {}
+      "recruiter_pitch": "Conecta continuidad operacional con calidad de entrega mostrando que el riesgo no esta solo en el codigo, sino tambien en drift, secretos, smoke tests y rollback.",
+      "proof_points": [
+        "Contrasta /deploy-legacy y /deploy-controlled sobre los mismos escenarios de riesgo.",
+        "Hace visible cuando un pipeline falla tarde y deja el ambiente degradado versus cuando bloquea en preflight o revierte.",
+        "Expone environments, deployments y diagnostics/summary para seguir salud por ambiente."
+      ],
+      "look_for": [
+        "Si controlled bloquea missing_secret o config_drift antes de tocar staging o prod.",
+        "Si failing_smoke deja rollback automatico en controlled y ambiente degradado en legacy.",
+        "Si el historial por ambiente muestra diferencia real entre detectar tarde y contener temprano."
+      ],
+      "honesty_note": "No reemplaza un CI/CD real ni una plataforma de IaC completa. Si reproduce la logica de delivery que importa: validaciones previas, canary, smoke tests y rollback.",
+      "operational_stacks": [
+        "php"
+      ],
+      "runtime_entries": {
+        "php": {
+          "port": 816,
+          "compose_path": "cases/06-broken-pipeline-and-fragile-delivery/php/compose.yml",
+          "readme_path": "cases/06-broken-pipeline-and-fragile-delivery/php/README.md",
+          "health_path": "/health",
+          "root_path": "/"
+        }
+      }
     },
     {
       "id": "07",

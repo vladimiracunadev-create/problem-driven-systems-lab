@@ -9,12 +9,12 @@
 [![.NET](https://img.shields.io/badge/.NET-8-512BD4?logo=dotnet&logoColor=white)](cases/)
 [![Status](https://img.shields.io/badge/Estado-Activo-blue)](ROADMAP.md)
 
-Portafolio tecnico orientado a problemas reales de software: rendimiento, observabilidad, resiliencia, arquitectura y continuidad operacional. Este repositorio forma parte del ecosistema publico de Vladimir Acuna y baja esa narrativa a escenarios ejecutables, documentados y honestos sobre su madurez real.
+Portafolio técnico orientado a problemas reales de software: rendimiento, observabilidad, resiliencia, arquitectura y continuidad operacional. Este repositorio forma parte del ecosistema público de Vladimir Acuña y traduce esa narrativa en escenarios ejecutables, documentados y honestos sobre su madurez real.
 
 ## 🎯 Executive Summary
 
-- El laboratorio modela 12 problemas reales, pero comunica con honestidad cuales ya tienen profundidad operativa hoy.
-- Los casos `01`, `02` y `03` son operativos en PHP.
+- El laboratorio modela **12 problemas reales de ingeniería**, comunicando con transparencia cuáles cuentan con profundidad operativa hoy.
+- Los casos `01` al `06` son operativos en PHP.
 - El caso `03` tambien es operativo en Node.js y Python.
 - Docker es la via oficial de ejecucion limpia y reproducible.
 - [`shared/catalog/cases.json`](shared/catalog/cases.json) es la fuente de verdad del portal, de la documentacion generada y de la narrativa operativa.
@@ -51,9 +51,9 @@ Si prefieres una sola puerta de entrada local, levanta el portal con `docker com
 
 Estado actual:
 
-- `OPERATIVO`: casos [01](cases/01-api-latency-under-load/README.md), [02](cases/02-n-plus-one-and-db-bottlenecks/README.md) y [03](cases/03-poor-observability-and-useless-logs/README.md) en PHP.
+- `OPERATIVO`: casos [01](cases/01-api-latency-under-load/README.md), [02](cases/02-n-plus-one-and-db-bottlenecks/README.md), [03](cases/03-poor-observability-and-useless-logs/README.md), [04](cases/04-timeout-chain-and-retry-storms/README.md), [05](cases/05-memory-pressure-and-resource-leaks/README.md) y [06](cases/06-broken-pipeline-and-fragile-delivery/README.md) en PHP.
 - `OPERATIVO` adicional fuera de PHP: [caso 03](cases/03-poor-observability-and-useless-logs/README.md) en Node.js y Python.
-- `DOCUMENTADO / SCAFFOLD`: casos `04` al `12`, y los stacks todavia no profundizados de los casos `01` al `03`.
+- `DOCUMENTADO / SCAFFOLD`: casos `07` al `12`, y los stacks todavia no profundizados fuera de las variantes ya operativas.
 
 ## 🔎 Casos prioritarios
 
@@ -62,6 +62,9 @@ Estado actual:
 | [01 - API lenta bajo carga](cases/01-api-latency-under-load/README.md) | `OPERATIVO` | Latencia legacy vs optimized, contencion real sobre DB, worker concurrente y observabilidad con Grafana |
 | [02 - N+1 y cuellos de botella DB](cases/02-n-plus-one-and-db-bottlenecks/README.md) | `OPERATIVO` | N+1 reproducible, costo por request medido y lectura consolidada contra la misma base relacional |
 | [03 - Observabilidad deficiente](cases/03-poor-observability-and-useless-logs/README.md) | `OPERATIVO` | Diferencia clara entre logs pobres y telemetria util en PHP, Node.js y Python |
+| [04 - Timeout chain y retry storms](cases/04-timeout-chain-and-retry-storms/README.md) | `OPERATIVO` | Comparacion entre retries agresivos y resiliencia con circuit breaker y fallback |
+| [05 - Presion de memoria y fugas](cases/05-memory-pressure-and-resource-leaks/README.md) | `OPERATIVO` | Degradacion progresiva por estado retenido frente a limpieza y limites de recursos |
+| [06 - Pipeline roto y delivery fragil](cases/06-broken-pipeline-and-fragile-delivery/README.md) | `OPERATIVO` | Diferencia entre detectar tarde, bloquear en preflight y hacer rollback seguro |
 
 El catalogo completo se genera desde metadatos y vive en [docs/case-catalog.md](docs/case-catalog.md).
 
@@ -88,6 +91,9 @@ docker compose -f compose.root.yml up -d --build
 docker compose -f cases/01-api-latency-under-load/php/compose.yml up -d --build
 docker compose -f cases/02-n-plus-one-and-db-bottlenecks/php/compose.yml up -d --build
 docker compose -f cases/03-poor-observability-and-useless-logs/php/compose.yml up -d --build
+docker compose -f cases/04-timeout-chain-and-retry-storms/php/compose.yml up -d --build
+docker compose -f cases/05-memory-pressure-and-resource-leaks/php/compose.yml up -d --build
+docker compose -f cases/06-broken-pipeline-and-fragile-delivery/php/compose.yml up -d --build
 docker compose -f cases/03-poor-observability-and-useless-logs/node/compose.yml up -d --build
 docker compose -f cases/03-poor-observability-and-useless-logs/python/compose.yml up -d --build
 ```
