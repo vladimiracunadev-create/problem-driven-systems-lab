@@ -1,34 +1,57 @@
-# Cadena de timeouts y tormentas de reintentos — PHP 8
+# ⏱️ Caso 04 - PHP 8.3 resiliente vs legacy
 
-## Objetivo de esta variante
-Representar este caso desde el stack **PHP 8**, manteniendo foco en el problema y no solo en la sintaxis.
+> Implementación operativa del caso 04 para contrastar retries agresivos contra una variante que contiene la falla.
 
-## Qué debería mostrar esta carpeta
-- una base dockerizada,
-- un punto de entrada mínimo,
-- espacio para instrumentación, pruebas o scripts,
-- notas de diseño específicas del stack.
+## 🎯 Qué resuelve
 
-## Qué NO debería hacer
-- mezclar dependencias de otros stacks,
-- levantar todo el laboratorio,
-- esconder decisiones importantes fuera del repositorio.
+Modela una API de cotización que depende de un proveedor externo de carriers:
 
-## Puertos de referencia
-- Puerto local sugerido: `814`
+- `quote-legacy` repite timeouts varias veces y amplifica la carga saliente;
+- `quote-resilient` usa timeout corto, backoff, circuit breaker y fallback cacheado.
 
-## Comando esperado
+## 💼 Por qué importa
+
+Este caso deja visible un patrón muy real: una dependencia lenta no solo agrega latencia, también puede degradar al servicio llamador cuando los retries no tienen límites sanos.
+
+## 🧱 Servicio
+
+- `app` -> API PHP 8.3 con escenarios de proveedor estable, lento, caído o intermitente.
+
+## 🚀 Arranque
+
 ```bash
 docker compose -f compose.yml up -d --build
 ```
 
-## Notas del stack
-En PHP 8 conviene estudiar este caso considerando:
-- ergonomía del runtime,
-- patrones habituales del ecosistema,
-- observabilidad disponible,
-- costos de complejidad,
-- límites y trade-offs específicos.
+## 🔎 Endpoints
 
-## Estado inicial
-Esta carpeta deja una base mínima documentada y ampliable para que el caso evolucione hacia un escenario más realista.
+```bash
+curl http://localhost:814/
+curl http://localhost:814/health
+curl "http://localhost:814/quote-legacy?scenario=provider_down&customer_id=42&items=3"
+curl "http://localhost:814/quote-resilient?scenario=provider_down&customer_id=42&items=3"
+curl http://localhost:814/dependency/state
+curl http://localhost:814/incidents?limit=10
+curl http://localhost:814/diagnostics/summary
+curl http://localhost:814/metrics
+curl http://localhost:814/metrics-prometheus
+curl http://localhost:814/reset-lab
+```
+
+## 🧪 Escenarios útiles
+
+- `provider_down` -> ideal para ver tormenta de retries y fallback.
+- `flaky_provider` -> muestra retry útil versus retry agresivo.
+- `burst_then_recover` -> permite ver recuperación parcial con distinto costo.
+- `slow_provider` -> enfatiza la necesidad de deadlines explícitos.
+
+## 🧭 Qué observar
+
+- cuántos intentos y retries hace cada modo;
+- si el circuito se abre y evita seguir golpeando la dependencia;
+- cuándo aparece respuesta degradada con fallback en vez de cascada de fallas;
+- cómo cambia la latencia total entre `legacy` y `resilient`.
+
+## ⚖️ Nota de honestidad
+
+No reemplaza una integración real ni una malla de servicios. Sí reproduce el comportamiento operativo que importa aquí: timeouts, retries, circuit breaker, fallback y el costo de una mala postura de resiliencia.

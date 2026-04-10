@@ -7,7 +7,7 @@ Si es tu primera vez en este repositorio, esta es la ruta mas simple para entend
 1. Lee [README.md](../README.md) para entender la idea general.
 2. Revisa [docs/positioning-and-objective.md](positioning-and-objective.md) para ver que problema profesional resuelve este laboratorio.
 3. Mira [docs/case-catalog.md](case-catalog.md) para identificar los casos operativos.
-4. Sigue [INSTALL.md](../INSTALL.md) y levanta uno de los casos `01`, `02` o `03`.
+4. Sigue [INSTALL.md](../INSTALL.md) y levanta uno de los casos `01` al `06`.
 5. Usa [RUNBOOK.md](../RUNBOOK.md) si algo no levanta como esperas.
 6. Recorre el caso que mas te interese y luego vuelve al resto del catalogo.
 
@@ -27,6 +27,8 @@ Si es tu primera vez en este repositorio, esta es la ruta mas simple para entend
 | [01](../cases/01-api-latency-under-load/README.md) | Tiene rendimiento, base de datos, worker y observabilidad |
 | [02](../cases/02-n-plus-one-and-db-bottlenecks/README.md) | Muestra un problema de DB muy comun y facil de reconocer |
 | [03](../cases/03-poor-observability-and-useless-logs/README.md) | Muestra rapidamente por que la observabilidad importa |
+| [04](../cases/04-timeout-chain-and-retry-storms/README.md) | Sirve para entender retries, circuit breaker y degradacion controlada |
+| [06](../cases/06-broken-pipeline-and-fragile-delivery/README.md) | Hace visible por que deploy, preflight y rollback importan |
 
 ## 💡 Consejo practico
 

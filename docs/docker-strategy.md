@@ -38,7 +38,7 @@ El laboratorio no se levanta como un unico sistema enorme. Se trabaja por capas:
 
 ## Regla practica actual
 
-- Los casos `01`, `02` y `03` deben poder levantarse con Docker de forma limpia.
+- Los casos `01` al `06` deben poder levantarse con Docker de forma limpia.
 - Cada `compose.yml` debe incluir solo la infraestructura que el problema realmente necesita.
 - La presencia de `compose.compare.yml` no implica que todos los stacks tengan la misma profundidad funcional.
 
@@ -47,6 +47,9 @@ El laboratorio no se levanta como un unico sistema enorme. Se trabaja por capas:
 - Caso `01`: necesita `app + db + worker + observabilidad` porque el problema es contencion real bajo carga.
 - Caso `02`: necesita `app + db` porque el N+1 debe verse sobre relaciones reales.
 - Caso `03`: usa solo `app` porque el foco esta en logs, trazas y diagnostico, no en una DB externa.
+- Caso `04`: usa solo `app` porque el foco esta en timeouts, retries, circuit breaker y fallback.
+- Caso `05`: usa solo `app` porque el foco esta en presion de memoria y recursos acumulados.
+- Caso `06`: usa solo `app` porque el foco esta en pipeline, ambientes y rollback.
 
 ## Nota sobre el Makefile
 

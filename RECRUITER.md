@@ -17,8 +17,9 @@ Este laboratorio no busca impresionar con cantidad de carpetas. Su valor esta en
 
 | Area | Evidencia visible |
 | --- | --- |
-| Rendimiento | Casos `01` y `02` resuelven problemas reales de latencia y acceso a datos en PHP |
+| Rendimiento | Casos `01`, `02` y `05` resuelven latencia, acceso a datos y degradacion progresiva en PHP |
 | Observabilidad | Caso `03` muestra la diferencia entre logs inutiles y telemetria diagnostica |
+| Resiliencia / delivery | Casos `04` y `06` muestran resiliencia ante dependencias y despliegues seguros |
 | Docker / operacion | Cada caso implementado tiene `compose.yml` propio y una ruta limpia de arranque |
 | Documentacion | Existe una familia de documentos por audiencia: instalacion, runbook, seguridad, soporte, contribucion |
 | Honestidad tecnica | El repo distingue entre casos `OPERATIVO` y `DOCUMENTADO / SCAFFOLD` |
@@ -27,7 +28,7 @@ Este laboratorio no busca impresionar con cantidad de carpetas. Su valor esta en
 
 1. Abre [README.md](README.md) para entender la historia general del laboratorio.
 2. Revisa [docs/positioning-and-objective.md](docs/positioning-and-objective.md) para ver que problema profesional resuelve este repo.
-3. Mira uno de estos casos: [01](cases/01-api-latency-under-load/README.md), [02](cases/02-n-plus-one-and-db-bottlenecks/README.md) o [03](cases/03-poor-observability-and-useless-logs/README.md).
+3. Mira uno de estos casos: [01](cases/01-api-latency-under-load/README.md), [04](cases/04-timeout-chain-and-retry-storms/README.md), [05](cases/05-memory-pressure-and-resource-leaks/README.md) o [06](cases/06-broken-pipeline-and-fragile-delivery/README.md).
 4. Abre [docs/case-catalog.md](docs/case-catalog.md) para ver el estado del resto del laboratorio.
 5. Revisa [RUNBOOK.md](RUNBOOK.md) para confirmar que la operacion esta pensada con criterio realista.
 

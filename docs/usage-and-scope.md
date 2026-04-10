@@ -16,7 +16,7 @@
 | Area | Estado actual |
 | --- | --- |
 | 12 casos definidos y documentados | si |
-| Casos `01`, `02` y `03` operativos en PHP | si |
+| Casos `01` al `06` operativos en PHP | si |
 | Docker por caso y por stack como ruta oficial | si |
 | Portal raiz para navegar el laboratorio | si |
 | Familia documental profesional en la raiz | si |

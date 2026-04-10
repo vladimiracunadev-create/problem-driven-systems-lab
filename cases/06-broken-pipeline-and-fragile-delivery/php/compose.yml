@@ -4,5 +4,15 @@ services:
       context: .
       dockerfile: Dockerfile
     container_name: pdsl-06-php-app
+    environment:
+      APP_STACK: PHP 8.3
+    command: ["php", "-S", "0.0.0.0:8080", "-t", "/app", "/app/index.php"]
     ports:
       - "816:8080"
+    healthcheck:
+      test: ["CMD", "php", "-r", "echo 'ok';"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+    mem_limit: 256m
+    cpus: 0.75

@@ -28,7 +28,7 @@ Este repo se alinea con una historia tecnica mas amplia centrada en:
 | Capacidad | Evidencia |
 | --- | --- |
 | Modelado de problemas reales | Los 12 casos parten desde sintomas y valor de negocio |
-| Resolucion aplicada | Casos `01`, `02` y `03` ya son operativos en PHP |
+| Resolucion aplicada | Casos `01` al `06` ya son operativos en PHP |
 | Diseno reproducible | Cada caso implementado tiene `compose.yml` propio |
 | Criterio documental | Existe documentacion por audiencia y runbook operativo |
 | Honestidad de madurez | Se separa lo operativo de lo documental o scaffold |

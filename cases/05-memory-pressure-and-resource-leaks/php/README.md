@@ -1,34 +1,56 @@
-# Presión de memoria y fugas de recursos — PHP 8
+# 🧠 Caso 05 - PHP 8.3 con presión de memoria comparada
 
-## Objetivo de esta variante
-Representar este caso desde el stack **PHP 8**, manteniendo foco en el problema y no solo en la sintaxis.
+> Implementación operativa del caso 05 para mostrar cómo una fuga silenciosa degrada un proceso largo frente a una variante que controla su estado.
 
-## Qué debería mostrar esta carpeta
-- una base dockerizada,
-- un punto de entrada mínimo,
-- espacio para instrumentación, pruebas o scripts,
-- notas de diseño específicas del stack.
+## 🎯 Qué resuelve
 
-## Qué NO debería hacer
-- mezclar dependencias de otros stacks,
-- levantar todo el laboratorio,
-- esconder decisiones importantes fuera del repositorio.
+Modela un proceso de lotes que recibe documentos y payloads de tamaño variable:
 
-## Puertos de referencia
-- Puerto local sugerido: `815`
+- `batch-legacy` retiene buffers, hace crecer cache y deja subir la presión de recursos;
+- `batch-optimized` limita el cache, limpia estado y mantiene el proceso dentro de umbrales sanos.
 
-## Comando esperado
+## 💼 Por qué importa
+
+Este caso sirve para evidenciar un problema común en incidentes largos: no siempre hay una excepción clara. Muchas veces el servicio solo se va degradando hasta que alguien lo reinicia.
+
+## 🧱 Servicio
+
+- `app` -> API PHP 8.3 con estado local acumulado por modo y métricas de presión.
+
+## 🚀 Arranque
+
 ```bash
 docker compose -f compose.yml up -d --build
 ```
 
-## Notas del stack
-En PHP 8 conviene estudiar este caso considerando:
-- ergonomía del runtime,
-- patrones habituales del ecosistema,
-- observabilidad disponible,
-- costos de complejidad,
-- límites y trade-offs específicos.
+## 🔎 Endpoints
 
-## Estado inicial
-Esta carpeta deja una base mínima documentada y ampliable para que el caso evolucione hacia un escenario más realista.
+```bash
+curl http://localhost:815/
+curl http://localhost:815/health
+curl "http://localhost:815/batch-legacy?scenario=mixed_pressure&documents=24&payload_kb=64"
+curl "http://localhost:815/batch-optimized?scenario=mixed_pressure&documents=24&payload_kb=64"
+curl http://localhost:815/state
+curl http://localhost:815/runs?limit=10
+curl http://localhost:815/diagnostics/summary
+curl http://localhost:815/metrics
+curl http://localhost:815/metrics-prometheus
+curl http://localhost:815/reset-lab
+```
+
+## 🧪 Escenarios útiles
+
+- `cache_growth` -> enfatiza retención de buffers y copias.
+- `descriptor_drift` -> enfatiza recursos que no se cierran.
+- `mixed_pressure` -> combina ambas tensiones para mostrar degradación más realista.
+
+## 🧭 Qué observar
+
+- cómo sube `retained_kb` en `legacy` tras varias ejecuciones;
+- si `descriptor_pressure` se mantiene acotado en `optimized`;
+- cuándo `pressure_level` pasa de `healthy` a `warning` o `critical`;
+- la diferencia entre `peak_request_kb` y el estado retenido acumulado.
+
+## ⚖️ Nota de honestidad
+
+PHP no mantiene exactamente el mismo modelo de proceso largo que otros runtimes. Aun así, el laboratorio reproduce la señal operativa importante: crecimiento silencioso de estado, degradación progresiva y necesidad de límites y limpieza.

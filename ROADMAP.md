@@ -4,12 +4,12 @@
 
 ## Fotografia actual
 
-- Casos `01`, `02` y `03` operativos en PHP.
+- Casos `01` al `06` operativos en PHP.
 - Caso `03` operativo tambien en Node.js y Python.
 - Docker por caso y por stack definido como ruta oficial.
 - Familia documental profesional incorporada en la raiz del repo.
 - Catalogo y portal conectados por metadatos compartidos.
-- Casos `04` al `12` documentados y listos para profundizacion funcional.
+- Casos `07` al `12` documentados y listos para profundizacion funcional.
 
 ## Fase 1 - Base estructural
 
@@ -45,6 +45,9 @@ Avance actual:
 - Caso `01`: PHP + PostgreSQL + worker + Prometheus + Grafana.
 - Caso `02`: PHP + PostgreSQL con N+1 legacy vs lectura optimizada.
 - Caso `03`: PHP + Node.js + Python con logs pobres vs telemetria util y trazabilidad.
+- Caso `04`: PHP con timeout chain, retry storm, circuit breaker y fallback.
+- Caso `05`: PHP con presion progresiva de memoria/recursos y comparacion legacy vs optimized.
+- Caso `06`: PHP con pipeline legacy vs controlled, preflight y rollback.
 
 ## Fase 3 - Valor de portafolio
 

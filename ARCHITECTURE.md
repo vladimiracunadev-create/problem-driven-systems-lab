@@ -73,6 +73,9 @@ Cada caso contiene carpetas `php`, `node`, `python`, `java` y `dotnet`, con Dock
 | `01` | operativo | PHP + PostgreSQL + worker + Prometheus + Grafana |
 | `02` | operativo | PHP + PostgreSQL |
 | `03` | operativo | PHP + Node.js + Python con telemetria y trazabilidad local |
+| `04` | operativo | PHP con timeout corto, retry storm comparado, circuit breaker y fallback |
+| `05` | operativo | PHP con presion progresiva de memoria/recursos y comparacion legacy vs optimized |
+| `06` | operativo | PHP con pipeline legacy vs controlled, preflight y rollback |
 
 ## 🔁 Flujo de datos y sincronizacion
 

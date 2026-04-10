@@ -1,34 +1,57 @@
-# Pipeline roto y entrega frágil — PHP 8
+# 🚚 Caso 06 - PHP 8.3 con delivery comparado
 
-## Objetivo de esta variante
-Representar este caso desde el stack **PHP 8**, manteniendo foco en el problema y no solo en la sintaxis.
+> Implementación operativa del caso 06 para mostrar la diferencia entre un pipeline frágil y un flujo de entrega con validaciones y rollback.
 
-## Qué debería mostrar esta carpeta
-- una base dockerizada,
-- un punto de entrada mínimo,
-- espacio para instrumentación, pruebas o scripts,
-- notas de diseño específicas del stack.
+## 🎯 Qué resuelve
 
-## Qué NO debería hacer
-- mezclar dependencias de otros stacks,
-- levantar todo el laboratorio,
-- esconder decisiones importantes fuera del repositorio.
+Modela despliegues hacia `dev`, `staging` y `prod` con escenarios operativos frecuentes:
 
-## Puertos de referencia
-- Puerto local sugerido: `816`
+- `deploy-legacy` detecta problemas tarde y puede dejar el ambiente degradado;
+- `deploy-controlled` valida antes de tocar el ambiente, despliega en canary y puede hacer rollback.
 
-## Comando esperado
+## 💼 Por qué importa
+
+No todos los incidentes de entrega vienen del código. Secretos faltantes, drift de configuración o migraciones mal validadas también rompen sistemas que "en dev andaban bien".
+
+## 🧱 Servicio
+
+- `app` -> API PHP 8.3 con estado por ambiente, historial de despliegues y métricas de rollback/bloqueos.
+
+## 🚀 Arranque
+
 ```bash
 docker compose -f compose.yml up -d --build
 ```
 
-## Notas del stack
-En PHP 8 conviene estudiar este caso considerando:
-- ergonomía del runtime,
-- patrones habituales del ecosistema,
-- observabilidad disponible,
-- costos de complejidad,
-- límites y trade-offs específicos.
+## 🔎 Endpoints
 
-## Estado inicial
-Esta carpeta deja una base mínima documentada y ampliable para que el caso evolucione hacia un escenario más realista.
+```bash
+curl http://localhost:816/
+curl http://localhost:816/health
+curl "http://localhost:816/deploy-legacy?environment=staging&release=2026.04.1&scenario=missing_secret"
+curl "http://localhost:816/deploy-controlled?environment=staging&release=2026.04.1&scenario=missing_secret"
+curl http://localhost:816/environments
+curl http://localhost:816/deployments?limit=10
+curl http://localhost:816/diagnostics/summary
+curl http://localhost:816/metrics
+curl http://localhost:816/metrics-prometheus
+curl http://localhost:816/reset-lab
+```
+
+## 🧪 Escenarios útiles
+
+- `missing_secret` -> el deploy falla por un secreto faltante.
+- `config_drift` -> el ambiente no coincide con la configuración esperada.
+- `failing_smoke` -> el problema aparece después del cambio de tráfico.
+- `migration_risk` -> la migración no debía aplicarse sin validación previa.
+
+## 🧭 Qué observar
+
+- si el problema se detecta antes o después de tocar el ambiente;
+- cuándo el flujo controlado logra hacer rollback automático;
+- cómo cambia la salud de `staging` o `prod` entre ambos modos;
+- cuántas fallas quedan contenidas como `blocked` versus `failed`.
+
+## ⚖️ Nota de honestidad
+
+No reemplaza un CI/CD real ni IaC completa. Sí reproduce la lógica que importa para conversar de delivery: preflight, canary, smoke test, rollback y drift entre ambientes.
