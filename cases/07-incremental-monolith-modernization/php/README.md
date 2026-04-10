@@ -1,34 +1,56 @@
-# Modernización incremental de monolito — PHP 8
+# 🏗️ Caso 07 - PHP 8.3 con modernización incremental comparada
 
-## Objetivo de esta variante
-Representar este caso desde el stack **PHP 8**, manteniendo foco en el problema y no solo en la sintaxis.
+> Implementación operativa del caso 07 para contrastar un cambio sobre un monolito acoplado contra una ruta strangler con migración gradual.
 
-## Qué debería mostrar esta carpeta
-- una base dockerizada,
-- un punto de entrada mínimo,
-- espacio para instrumentación, pruebas o scripts,
-- notas de diseño específicas del stack.
+## 🎯 Qué resuelve
 
-## Qué NO debería hacer
-- mezclar dependencias de otros stacks,
-- levantar todo el laboratorio,
-- esconder decisiones importantes fuera del repositorio.
+Modela cambios sobre un dominio crítico con dos enfoques:
 
-## Puertos de referencia
-- Puerto local sugerido: `817`
+- `change-legacy` toca demasiados módulos y mantiene alto el blast radius;
+- `change-strangler` usa ACL, contratos y migración progresiva por consumidor.
 
-## Comando esperado
+## 💼 Por qué importa
+
+La modernización incremental no es solo una preferencia arquitectónica: es una forma de bajar riesgo real mientras el negocio sigue operando.
+
+## 🧱 Servicio
+
+- `app` -> API PHP 8.3 con progreso por consumidor, cobertura del módulo extraído y métricas de blast radius.
+
+## 🚀 Arranque
+
 ```bash
 docker compose -f compose.yml up -d --build
 ```
 
-## Notas del stack
-En PHP 8 conviene estudiar este caso considerando:
-- ergonomía del runtime,
-- patrones habituales del ecosistema,
-- observabilidad disponible,
-- costos de complejidad,
-- límites y trade-offs específicos.
+## 🔎 Endpoints
 
-## Estado inicial
-Esta carpeta deja una base mínima documentada y ampliable para que el caso evolucione hacia un escenario más realista.
+```bash
+curl http://localhost:817/
+curl http://localhost:817/health
+curl "http://localhost:817/change-legacy?scenario=shared_schema&consumer=web"
+curl "http://localhost:817/change-strangler?scenario=shared_schema&consumer=web"
+curl http://localhost:817/migration/state
+curl http://localhost:817/flows?limit=10
+curl http://localhost:817/diagnostics/summary
+curl http://localhost:817/metrics
+curl http://localhost:817/metrics-prometheus
+curl http://localhost:817/reset-lab
+```
+
+## 🧪 Escenarios útiles
+
+- `billing_change` -> cambio frecuente con alto acoplamiento en legacy.
+- `shared_schema` -> evidencia por qué el ACL importa en una transición.
+- `parallel_work` -> muestra el costo de coordinar todo el monolito frente a una frontera más clara.
+
+## 🧭 Qué observar
+
+- cuántos módulos toca cada enfoque;
+- cómo cambia el `blast_radius_score`;
+- si sube el progreso por consumidor cuando se usa la ruta incremental;
+- cómo evolucionan contratos y cobertura del módulo extraído.
+
+## ⚖️ Nota de honestidad
+
+No reemplaza un monolito real ni un programa completo de replatforming. Sí reproduce lo importante para discutir modernización segura: acoplamiento, ACL, migración por consumidor y reducción gradual del radio de impacto.

@@ -79,7 +79,7 @@
       "icon": "🧭",
       "label": "CTO / Head of Engineering",
       "headline": "Evaluar criterio sistemico, arquitectura y trade-offs.",
-      "description": "Revisa arquitectura, runbook y los casos 01-06 en PHP para ver como se pasa de sintomas a evidencia y remediacion operativa.",
+      "description": "Revisa arquitectura, runbook y los casos 01-12 en PHP para ver como se pasa de sintomas a evidencia y remediacion operativa.",
       "document_path": "ARCHITECTURE.md",
       "goal": "Entender si el producto demuestra pensamiento de plataforma, observabilidad y reduccion de riesgo."
     },
@@ -107,7 +107,7 @@
       "key": "php",
       "label": "PHP",
       "headline": "Stack principal hoy para profundidad funcional y comparacion before/after.",
-      "note": "Muestra los seis casos mas maduros y mejor instrumentados del laboratorio."
+      "note": "Muestra los doce casos operativos mas maduros del laboratorio en su stack principal."
     },
     {
       "key": "node",
@@ -373,14 +373,35 @@
       "slug": "incremental-monolith-modernization",
       "title": "Modernizacion incremental de monolito",
       "category": "Arquitectura",
-      "status": "DOCUMENTADO / SCAFFOLD",
-      "level_detail": "estructura y docs listas",
+      "status": "OPERATIVO",
+      "level_detail": "PHP 8.3 con cambio legacy vs strangler, cobertura progresiva y blast radius observable",
       "summary": "El sistema legacy sigue siendo critico, pero su evolucion se vuelve lenta, riesgosa y costosa.",
       "case_readme_path": "cases/07-incremental-monolith-modernization/README.md",
-      "business_outcome": "Permite discutir modernizacion sin caer en reescrituras irresponsables o slogans de moda.",
+      "business_outcome": "Permite modernizar un monolito sin convertir cada cambio en una reescritura riesgosa.",
       "recruiter_pitch": "Muestra foco en evolucion segura de sistemas vivos y no solo en greenfield idealizado.",
-      "operational_stacks": [],
-      "runtime_entries": {}
+      "proof_points": [
+        "Contrasta /change-legacy y /change-strangler sobre shared_schema, billing_change y trabajo paralelo.",
+        "Hace visible blast_radius_score, risk_score y progreso de migracion por consumidor.",
+        "Expone migration/state, flows y diagnostics/summary para seguir cobertura extraida, contratos y releases."
+      ],
+      "look_for": [
+        "Si shared_schema falla en legacy y queda contenido en strangler.",
+        "Si consumers, contract_tests y extracted_module_coverage suben al ejecutar la ruta incremental.",
+        "Si diagnostics/summary muestra menos riesgo por cambio y menor radio de impacto."
+      ],
+      "honesty_note": "No reemplaza un programa real de modernizacion con multiples servicios y equipos. Si reproduce la parte operativa relevante: blast radius, migracion por consumidor, contratos y avance incremental.",
+      "operational_stacks": [
+        "php"
+      ],
+      "runtime_entries": {
+        "php": {
+          "port": 817,
+          "compose_path": "cases/07-incremental-monolith-modernization/php/compose.yml",
+          "readme_path": "cases/07-incremental-monolith-modernization/php/README.md",
+          "health_path": "/health",
+          "root_path": "/"
+        }
+      }
     },
     {
       "id": "08",
@@ -388,14 +409,35 @@
       "slug": "critical-module-extraction-without-breaking-operations",
       "title": "Extraccion de modulo critico sin romper operacion",
       "category": "Arquitectura",
-      "status": "DOCUMENTADO / SCAFFOLD",
-      "level_detail": "estructura y docs listas",
+      "status": "OPERATIVO",
+      "level_detail": "PHP 8.3 con extraccion big bang vs compatible, proxy y cutover gradual",
       "summary": "Se necesita desacoplar una parte clave del sistema, pero esa parte participa en flujos sensibles y no admite quiebres.",
       "case_readme_path": "cases/08-critical-module-extraction-without-breaking-operations/README.md",
-      "business_outcome": "Ayuda a pensar extracciones modulares sin sacrificar continuidad operacional ni trazabilidad.",
+      "business_outcome": "Permite extraer un modulo critico sin cortar checkout, partners ni backoffice.",
       "recruiter_pitch": "Subraya criterio de refactor y separacion de dominios sobre sistemas ya en operacion.",
-      "operational_stacks": [],
-      "runtime_entries": {}
+      "proof_points": [
+        "Contrasta /pricing-bigbang y /pricing-compatible sobre los mismos consumidores sensibles.",
+        "Hace visible compatibility_proxy_hits, contract_tests y progreso de cutover por consumidor.",
+        "Expone extraction/state, flows y diagnostics/summary para seguir compatibilidad y shadow traffic."
+      ],
+      "look_for": [
+        "Si rule_drift o partner_contract rompen en big bang y quedan contenidos en compatible.",
+        "Si el progreso por consumidor sube sin perder contrato publico.",
+        "Si diagnostics/summary deja clara la diferencia entre corte brusco y extraccion segura."
+      ],
+      "honesty_note": "No simula un rollout distribuido completo ni feature flags globales. Si deja visible la logica clave: proxy de compatibilidad, contratos y cutover gradual.",
+      "operational_stacks": [
+        "php"
+      ],
+      "runtime_entries": {
+        "php": {
+          "port": 818,
+          "compose_path": "cases/08-critical-module-extraction-without-breaking-operations/php/compose.yml",
+          "readme_path": "cases/08-critical-module-extraction-without-breaking-operations/php/README.md",
+          "health_path": "/health",
+          "root_path": "/"
+        }
+      }
     },
     {
       "id": "09",
@@ -403,14 +445,35 @@
       "slug": "unstable-external-integration",
       "title": "Integracion externa inestable",
       "category": "Resiliencia",
-      "status": "DOCUMENTADO / SCAFFOLD",
-      "level_detail": "estructura y docs listas",
+      "status": "OPERATIVO",
+      "level_detail": "PHP 8.3 con integracion directa vs adapter endurecido, cache y cuota observable",
       "summary": "Una API, servicio o proveedor externo introduce latencia, errores intermitentes o reglas cambiantes que afectan el sistema propio.",
       "case_readme_path": "cases/09-unstable-external-integration/README.md",
       "business_outcome": "Permite razonar protecciones frente a dependencias externas que no controlamos.",
       "recruiter_pitch": "Aterriza resiliencia realista frente a terceros, no solo manejo local de excepciones.",
-      "operational_stacks": [],
-      "runtime_entries": {}
+      "proof_points": [
+        "Contrasta /catalog-legacy y /catalog-hardened sobre drift de esquema, rate limit y maintenance window.",
+        "Hace visible budget restante, schema mappings y uso de snapshot cacheado.",
+        "Expone integration/state, sync-events y diagnostics/summary para seguir el desacople frente al tercero."
+      ],
+      "look_for": [
+        "Si rate_limited deja 429 en legacy y continuidad con cache en hardened.",
+        "Si schema_drift sube el adapter_version o los schema_mappings en vez de romper el flujo.",
+        "Si quarantine_events y budget muestran mejor postura operacional en la variante endurecida."
+      ],
+      "honesty_note": "No reemplaza una integracion real con DLQ ni proveedores externos verdaderos. Si reproduce contratos variables, cuota, cache y adaptacion defensiva.",
+      "operational_stacks": [
+        "php"
+      ],
+      "runtime_entries": {
+        "php": {
+          "port": 819,
+          "compose_path": "cases/09-unstable-external-integration/php/compose.yml",
+          "readme_path": "cases/09-unstable-external-integration/php/README.md",
+          "health_path": "/health",
+          "root_path": "/"
+        }
+      }
     },
     {
       "id": "10",
@@ -418,15 +481,35 @@
       "slug": "expensive-architecture-for-simple-needs",
       "title": "Arquitectura cara para un problema simple",
       "category": "Arquitectura",
-      "status": "DOCUMENTADO / SCAFFOLD",
-      "level_detail": "estructura y docs listas",
+      "status": "OPERATIVO",
+      "level_detail": "PHP 8.3 con comparacion complex vs right-sized, costo y lead time visibles",
       "summary": "La solucion tecnica consume mas servicios, complejidad y costo del que el problema de negocio realmente necesita.",
       "case_readme_path": "cases/10-expensive-architecture-for-simple-needs/README.md",
       "business_outcome": "Ayuda a tomar decisiones tecnologicas mas proporcionales al problema de negocio.",
-      "recruiter_pitch": "Muestra criterio para decir no a complejidad innecesaria cuando la situacion pide simplicidad."
-      ,
-      "operational_stacks": [],
-      "runtime_entries": {}
+      "recruiter_pitch": "Muestra criterio para decir no a complejidad innecesaria cuando la situacion pide simplicidad.",
+      "proof_points": [
+        "Contrasta /feature-complex y /feature-right-sized con costo mensual, servicios tocados y lead time.",
+        "Hace visible el backlog de simplificacion y la cantidad de coordinacion requerida.",
+        "Expone architecture/state, decisions y diagnostics/summary para leer el trade-off entre complejidad y valor."
+      ],
+      "look_for": [
+        "Si complex toca mas servicios y sube costo incluso en escenarios simples.",
+        "Si right-sized reduce lead time y coordinacion sin perder resolucion del caso.",
+        "Si seasonal_peak muestra que la sobrearquitectura tambien aumenta superficie de falla."
+      ],
+      "honesty_note": "No modela una organizacion real ni un FinOps completo. Si deja visible la tension entre complejidad innecesaria, costo operativo y adecuacion real al problema.",
+      "operational_stacks": [
+        "php"
+      ],
+      "runtime_entries": {
+        "php": {
+          "port": 8110,
+          "compose_path": "cases/10-expensive-architecture-for-simple-needs/php/compose.yml",
+          "readme_path": "cases/10-expensive-architecture-for-simple-needs/php/README.md",
+          "health_path": "/health",
+          "root_path": "/"
+        }
+      }
     },
     {
       "id": "11",
@@ -434,14 +517,35 @@
       "slug": "heavy-reporting-blocks-operations",
       "title": "Reportes pesados que bloquean la operacion",
       "category": "Operaciones",
-      "status": "DOCUMENTADO / SCAFFOLD",
-      "level_detail": "estructura y docs listas",
+      "status": "OPERATIVO",
+      "level_detail": "PHP 8.3 con reporting legacy vs aislado y efecto directo sobre escrituras",
       "summary": "Consultas y procesos de reporting compiten con la operacion transaccional y degradan el sistema completo.",
       "case_readme_path": "cases/11-heavy-reporting-blocks-operations/README.md",
       "business_outcome": "Permite discutir aislamiento de cargas, reporting y proteccion de flujos operativos.",
       "recruiter_pitch": "Conecta datos y operacion en un problema cotidiano que suele aparecer tarde y costar caro.",
-      "operational_stacks": [],
-      "runtime_entries": {}
+      "proof_points": [
+        "Contrasta /report-legacy y /report-isolated sobre la misma presion operativa.",
+        "Hace visible primary_load, lock_pressure, replica_lag_s y queue_depth.",
+        "Expone /order-write, reporting/state y diagnostics/summary para comprobar si la operacion conserva aire."
+      ],
+      "look_for": [
+        "Si mixed_peak deja 503 en report-legacy y mantiene ordenes vivas cuando se usa la ruta aislada.",
+        "Si reporting/state cambia de healthy a warning o critical tras el export pesado.",
+        "Si order-write cuenta una historia coherente del choque entre analitica y transaccionalidad."
+      ],
+      "honesty_note": "No reemplaza una replica real ni un data warehouse. Si reproduce el problema operativo importante: reporting sobre el primario versus aislamiento de cargas.",
+      "operational_stacks": [
+        "php"
+      ],
+      "runtime_entries": {
+        "php": {
+          "port": 8111,
+          "compose_path": "cases/11-heavy-reporting-blocks-operations/php/compose.yml",
+          "readme_path": "cases/11-heavy-reporting-blocks-operations/php/README.md",
+          "health_path": "/health",
+          "root_path": "/"
+        }
+      }
     },
     {
       "id": "12",
@@ -449,14 +553,35 @@
       "slug": "single-point-of-knowledge-and-operational-risk",
       "title": "Punto unico de conocimiento y riesgo operacional",
       "category": "Operaciones",
-      "status": "DOCUMENTADO / SCAFFOLD",
-      "level_detail": "estructura y docs listas",
+      "status": "OPERATIVO",
+      "level_detail": "PHP 8.3 con incidentes legacy vs conocimiento distribuido, runbooks y bus factor",
       "summary": "Una persona, modulo o procedimiento concentra tanto conocimiento que el sistema se vuelve fragil ante ausencias o rotacion.",
       "case_readme_path": "cases/12-single-point-of-knowledge-and-operational-risk/README.md",
       "business_outcome": "Ayuda a discutir continuidad operacional, documentacion y reduccion de dependencia critica en personas.",
       "recruiter_pitch": "Aterriza riesgo operacional y sostenibilidad del conocimiento como parte de la calidad del sistema.",
-      "operational_stacks": [],
-      "runtime_entries": {}
+      "proof_points": [
+        "Contrasta /incident-legacy y /incident-distributed sobre owner_absent, night_shift y tribal_script.",
+        "Hace visible mttr_min, blocker_count, handoff_quality y bus_factor_min.",
+        "Expone /share-knowledge, knowledge/state y diagnostics/summary para ver como cambia la continuidad al distribuir conocimiento."
+      ],
+      "look_for": [
+        "Si owner_absent bloquea legacy y queda resuelto en distributed.",
+        "Si runbook, pairing y drill suben cobertura y mejoran readiness por dominio.",
+        "Si metrics y diagnostics/summary dejan claro que el riesgo tambien vive en personas y procedimientos."
+      ],
+      "honesty_note": "No reemplaza una organizacion real ni un programa formal de on-call. Si reproduce el riesgo central: memoria tribal, bus factor y continuidad operacional.",
+      "operational_stacks": [
+        "php"
+      ],
+      "runtime_entries": {
+        "php": {
+          "port": 8112,
+          "compose_path": "cases/12-single-point-of-knowledge-and-operational-risk/php/compose.yml",
+          "readme_path": "cases/12-single-point-of-knowledge-and-operational-risk/php/README.md",
+          "health_path": "/health",
+          "root_path": "/"
+        }
+      }
     }
   ]
 }

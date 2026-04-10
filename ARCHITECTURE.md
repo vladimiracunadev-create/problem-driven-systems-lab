@@ -76,6 +76,12 @@ Cada caso contiene carpetas `php`, `node`, `python`, `java` y `dotnet`, con Dock
 | `04` | operativo | PHP con timeout corto, retry storm comparado, circuit breaker y fallback |
 | `05` | operativo | PHP con presion progresiva de memoria/recursos y comparacion legacy vs optimized |
 | `06` | operativo | PHP con pipeline legacy vs controlled, preflight y rollback |
+| `07` | operativo | PHP con modernizacion incremental, strangler y progreso por consumidor |
+| `08` | operativo | PHP con extraccion big bang vs compatible, proxy y cutover gradual |
+| `09` | operativo | PHP con integracion externa endurecida mediante adapter, cache y budget |
+| `10` | operativo | PHP con comparacion complex vs right-sized, costo y lead time visibles |
+| `11` | operativo | PHP con reporting legacy vs aislado y presion observable sobre la operacion |
+| `12` | operativo | PHP con runbooks, bus factor y continuidad operacional observable |
 
 ## 🔁 Flujo de datos y sincronizacion
 

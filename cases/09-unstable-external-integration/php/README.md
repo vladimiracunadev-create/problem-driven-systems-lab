@@ -1,34 +1,61 @@
-# Integración externa inestable — PHP 8
+# 🌐 Caso 09 - PHP 8.3 con adapter y cache defensiva
 
-## Objetivo de esta variante
-Representar este caso desde el stack **PHP 8**, manteniendo foco en el problema y no solo en la sintaxis.
+> Implementación operativa del caso 09 para contrastar una integración externa directa contra una variante endurecida.
 
-## Qué debería mostrar esta carpeta
-- una base dockerizada,
-- un punto de entrada mínimo,
-- espacio para instrumentación, pruebas o scripts,
-- notas de diseño específicas del stack.
+## 🎯 Qué resuelve
 
-## Qué NO debería hacer
-- mezclar dependencias de otros stacks,
-- levantar todo el laboratorio,
-- esconder decisiones importantes fuera del repositorio.
+Modela un consumo de catálogo externo donde el proveedor puede:
 
-## Puertos de referencia
-- Puerto local sugerido: `819`
+- cambiar esquema sin aviso;
+- limitar cuota;
+- responder con payload parcial;
+- entrar en mantenimiento.
 
-## Comando esperado
+La variante `catalog-hardened` agrega adapter, validación y snapshot cacheado.
+
+## 💼 Por qué importa
+
+Este caso deja visible que la resiliencia frente a terceros no depende solo del timeout. También importa la estabilidad del contrato, la cuota y la posibilidad de operar con información ya conocida.
+
+## 🧱 Servicio
+
+- `app` -> API PHP 8.3 con proveedor externo simulado, quota budget, adapter de contrato y cache local.
+
+## 🚀 Arranque
+
 ```bash
 docker compose -f compose.yml up -d --build
 ```
 
-## Notas del stack
-En PHP 8 conviene estudiar este caso considerando:
-- ergonomía del runtime,
-- patrones habituales del ecosistema,
-- observabilidad disponible,
-- costos de complejidad,
-- límites y trade-offs específicos.
+## 🔎 Endpoints
 
-## Estado inicial
-Esta carpeta deja una base mínima documentada y ampliable para que el caso evolucione hacia un escenario más realista.
+```bash
+curl http://localhost:819/
+curl http://localhost:819/health
+curl "http://localhost:819/catalog-legacy?scenario=rate_limited&sku=SKU-100"
+curl "http://localhost:819/catalog-hardened?scenario=rate_limited&sku=SKU-100"
+curl http://localhost:819/integration/state
+curl http://localhost:819/sync-events?limit=10
+curl http://localhost:819/diagnostics/summary
+curl http://localhost:819/metrics
+curl http://localhost:819/metrics-prometheus
+curl http://localhost:819/reset-lab
+```
+
+## 🧪 Escenarios útiles
+
+- `schema_drift` -> muestra normalización de contrato versus ruptura directa.
+- `rate_limited` -> deja visible el valor del ahorro de cuota y el cache.
+- `partial_payload` -> contrasta validación y degradación segura.
+- `maintenance_window` -> muestra continuidad con snapshot local.
+
+## 🧭 Qué observar
+
+- si el flujo puede seguir con cache cuando el tercero no está disponible;
+- cuándo aparecen nuevos schema mappings en el adapter;
+- cómo cambia el budget restante de cuota;
+- si la integración directa dispara eventos de cuarentena y errores más rápido.
+
+## ⚖️ Nota de honestidad
+
+No reemplaza una integración real con colas, DLQ ni proveedores de terceros. Sí reproduce las decisiones operativas que importan aquí: adapter, contrato defensivo, cache y amortiguación frente a cambios externos.

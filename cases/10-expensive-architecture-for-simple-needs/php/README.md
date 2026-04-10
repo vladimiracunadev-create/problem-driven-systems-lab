@@ -1,34 +1,57 @@
-# Arquitectura cara para un problema simple — PHP 8
+# 💸 Caso 10 - PHP 8.3 con comparación complex vs right-sized
 
-## Objetivo de esta variante
-Representar este caso desde el stack **PHP 8**, manteniendo foco en el problema y no solo en la sintaxis.
+> Implementación operativa del caso 10 para contrastar sobrearquitectura contra una solución proporcional.
 
-## Qué debería mostrar esta carpeta
-- una base dockerizada,
-- un punto de entrada mínimo,
-- espacio para instrumentación, pruebas o scripts,
-- notas de diseño específicas del stack.
+## 🎯 Qué resuelve
 
-## Qué NO debería hacer
-- mezclar dependencias de otros stacks,
-- levantar todo el laboratorio,
-- esconder decisiones importantes fuera del repositorio.
+Modela decisiones de arquitectura sobre necesidades acotadas:
 
-## Puertos de referencia
-- Puerto local sugerido: `8110`
+- `feature-complex` reparte el problema entre demasiados servicios y coordinaciones;
+- `feature-right-sized` resuelve el mismo caso con menos piezas, menos costo y menos demora.
 
-## Comando esperado
+## 💼 Por qué importa
+
+Este caso deja visible que decir “no” a complejidad innecesaria también es una habilidad de arquitectura. El riesgo no es solo pagar más: también se retrasa delivery y se abren más puntos de falla.
+
+## 🧱 Servicio
+
+- `app` -> API PHP 8.3 con comparación de costo mensual, servicios tocados, lead time y coordinación requerida.
+
+## 🚀 Arranque
+
 ```bash
 docker compose -f compose.yml up -d --build
 ```
 
-## Notas del stack
-En PHP 8 conviene estudiar este caso considerando:
-- ergonomía del runtime,
-- patrones habituales del ecosistema,
-- observabilidad disponible,
-- costos de complejidad,
-- límites y trade-offs específicos.
+## 🔎 Endpoints
 
-## Estado inicial
-Esta carpeta deja una base mínima documentada y ampliable para que el caso evolucione hacia un escenario más realista.
+```bash
+curl http://localhost:8110/
+curl http://localhost:8110/health
+curl "http://localhost:8110/feature-complex?scenario=basic_crud&accounts=120"
+curl "http://localhost:8110/feature-right-sized?scenario=basic_crud&accounts=120"
+curl http://localhost:8110/architecture/state
+curl http://localhost:8110/decisions?limit=10
+curl http://localhost:8110/diagnostics/summary
+curl http://localhost:8110/metrics
+curl http://localhost:8110/metrics-prometheus
+curl http://localhost:8110/reset-lab
+```
+
+## 🧪 Escenarios útiles
+
+- `basic_crud` -> deja claro el descalce entre complejidad y necesidad real.
+- `small_campaign` -> muestra costo extra por una solución innecesariamente distribuida.
+- `audit_needed` -> ayuda a ver que auditable no significa obligatoriamente complejo.
+- `seasonal_peak` -> hace visible cómo la coordinación excesiva puede fallar en momentos críticos.
+
+## 🧭 Qué observar
+
+- cómo cambia el costo mensual entre ambos enfoques;
+- cuántos servicios toca realmente cada variante;
+- cuánto sube el lead time por coordinación extra;
+- si el backlog de simplificación baja cuando se toma una decisión proporcional.
+
+## ⚖️ Nota de honestidad
+
+No pretende reemplazar un análisis financiero real ni una plataforma distribuida completa. Sí reproduce el trade-off central: complejidad operacional y costo versus adecuación real al problema de negocio.

@@ -8,8 +8,8 @@
 | --- | --- | --- |
 | 1 | Portal local (`http://localhost:8080`) | Entender rapido que hace el producto, que audiencias cubre y que stacks estan operativos |
 | 2 | [README.md](../README.md) | Ver proposito, taxonomia de madurez y entrada rapida |
-| 3 | [docs/case-catalog.md](case-catalog.md) | Diferenciar con honestidad entre casos operativos y scaffolds |
-| 4 | [caso 01](../cases/01-api-latency-under-load/README.md), [caso 04](../cases/04-timeout-chain-and-retry-storms/README.md), [caso 05](../cases/05-memory-pressure-and-resource-leaks/README.md) o [caso 06](../cases/06-broken-pipeline-and-fragile-delivery/README.md) | Confirmar que existe implementacion real y no solo descripcion |
+| 3 | [docs/case-catalog.md](case-catalog.md) | Diferenciar con honestidad entre variantes operativas y stacks aun en evolucion |
+| 4 | [caso 01](../cases/01-api-latency-under-load/README.md), [caso 04](../cases/04-timeout-chain-and-retry-storms/README.md), [caso 07](../cases/07-incremental-monolith-modernization/README.md), [caso 10](../cases/10-expensive-architecture-for-simple-needs/README.md) o [caso 12](../cases/12-single-point-of-knowledge-and-operational-risk/README.md) | Confirmar que existe implementacion real y no solo descripcion |
 | 5 | [RUNBOOK.md](../RUNBOOK.md) | Ver que la operacion tambien fue pensada |
 
 ## 🔎 Senales que vale la pena observar
@@ -24,7 +24,7 @@
 
 ## 🚫 Que no deberia esperarse
 
-- doce casos al mismo nivel de implementacion hoy;
+- paridad completa de los doce casos en todos los stacks;
 - paridad funcional completa entre los cinco lenguajes;
 - una promesa de benchmark absoluto entre runtimes.
 

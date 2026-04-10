@@ -1,34 +1,59 @@
-# Punto único de conocimiento y riesgo operacional — PHP 8
+# 👤 Caso 12 - PHP 8.3 con comparación legacy vs conocimiento distribuido
 
-## Objetivo de esta variante
-Representar este caso desde el stack **PHP 8**, manteniendo foco en el problema y no solo en la sintaxis.
+> Implementación operativa del caso 12 para contrastar dependencia de conocimiento tribal contra una postura más resiliente.
 
-## Qué debería mostrar esta carpeta
-- una base dockerizada,
-- un punto de entrada mínimo,
-- espacio para instrumentación, pruebas o scripts,
-- notas de diseño específicas del stack.
+## 🎯 Qué resuelve
 
-## Qué NO debería hacer
-- mezclar dependencias de otros stacks,
-- levantar todo el laboratorio,
-- esconder decisiones importantes fuera del repositorio.
+Modela incidentes donde importa quién sabe qué:
 
-## Puertos de referencia
-- Puerto local sugerido: `8112`
+- `incident-legacy` depende demasiado de una persona o de un procedimiento no compartido;
+- `incident-distributed` combina runbooks, backups y drills;
+- `share-knowledge` permite subir madurez del dominio para ver el cambio real.
 
-## Comando esperado
+## 💼 Por qué importa
+
+Este caso deja visible que la continuidad operacional también es una propiedad del conocimiento. Un sistema “estable” puede seguir siendo frágil si solo una persona sabe cómo operarlo bajo presión.
+
+## 🧱 Servicio
+
+- `app` -> API PHP 8.3 con dominios operativos, puntajes de runbook, backups, drills y simulación de incidentes.
+
+## 🚀 Arranque
+
 ```bash
 docker compose -f compose.yml up -d --build
 ```
 
-## Notas del stack
-En PHP 8 conviene estudiar este caso considerando:
-- ergonomía del runtime,
-- patrones habituales del ecosistema,
-- observabilidad disponible,
-- costos de complejidad,
-- límites y trade-offs específicos.
+## 🔎 Endpoints
 
-## Estado inicial
-Esta carpeta deja una base mínima documentada y ampliable para que el caso evolucione hacia un escenario más realista.
+```bash
+curl http://localhost:8112/
+curl http://localhost:8112/health
+curl "http://localhost:8112/incident-legacy?scenario=owner_absent&domain=deployments"
+curl "http://localhost:8112/incident-distributed?scenario=owner_absent&domain=deployments"
+curl "http://localhost:8112/share-knowledge?domain=deployments&activity=runbook"
+curl http://localhost:8112/knowledge/state
+curl http://localhost:8112/incidents?limit=10
+curl http://localhost:8112/diagnostics/summary
+curl http://localhost:8112/metrics
+curl http://localhost:8112/metrics-prometheus
+curl http://localhost:8112/reset-lab
+```
+
+## 🧪 Escenarios útiles
+
+- `owner_absent` -> revela el bus factor real.
+- `night_shift` -> muestra la diferencia entre memoria tribal y operación preparada.
+- `recent_change` -> enfatiza contexto compartido después de cambios recientes.
+- `tribal_script` -> hace visible el riesgo de procedimientos críticos fuera de runbooks.
+
+## 🧭 Qué observar
+
+- cómo cambia el `mttr_min` entre ambos enfoques;
+- cuántos bloqueos aparecen cuando falta la persona clave;
+- si sube `handoff_quality` al compartir conocimiento;
+- cómo mejora el dominio después de `runbook`, `pairing` o `drill`.
+
+## ⚖️ Nota de honestidad
+
+No sustituye una organización real, on-call ni gestión formal de conocimiento. Sí reproduce el riesgo operativo importante: depender de memoria tribal versus construir continuidad compartida.

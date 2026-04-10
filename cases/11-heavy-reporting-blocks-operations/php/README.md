@@ -1,34 +1,59 @@
-# Reportes pesados que bloquean la operación — PHP 8
+# 📊 Caso 11 - PHP 8.3 con reporting legacy vs aislado
 
-## Objetivo de esta variante
-Representar este caso desde el stack **PHP 8**, manteniendo foco en el problema y no solo en la sintaxis.
+> Implementación operativa del caso 11 para contrastar reporting pesado sobre el primario contra una ruta que protege la operación.
 
-## Qué debería mostrar esta carpeta
-- una base dockerizada,
-- un punto de entrada mínimo,
-- espacio para instrumentación, pruebas o scripts,
-- notas de diseño específicas del stack.
+## 🎯 Qué resuelve
 
-## Qué NO debería hacer
-- mezclar dependencias de otros stacks,
-- levantar todo el laboratorio,
-- esconder decisiones importantes fuera del repositorio.
+Modela la competencia entre reporting y operación:
 
-## Puertos de referencia
-- Puerto local sugerido: `8111`
+- `report-legacy` ejecuta carga analítica sobre el mismo núcleo transaccional;
+- `report-isolated` empuja presión a cola, replica o snapshot;
+- `order-write` deja ver cómo la operación siente esa diferencia.
 
-## Comando esperado
+## 💼 Por qué importa
+
+Este caso deja visible un problema muy real: el reporte puede “funcionar” y aun así romper negocio si sube locks, degrada escrituras y deja sin aire a la operación.
+
+## 🧱 Servicio
+
+- `app` -> API PHP 8.3 con estado persistido de carga en primario, presión de locks, lag de replica y cola de reporting.
+
+## 🚀 Arranque
+
 ```bash
 docker compose -f compose.yml up -d --build
 ```
 
-## Notas del stack
-En PHP 8 conviene estudiar este caso considerando:
-- ergonomía del runtime,
-- patrones habituales del ecosistema,
-- observabilidad disponible,
-- costos de complejidad,
-- límites y trade-offs específicos.
+## 🔎 Endpoints
 
-## Estado inicial
-Esta carpeta deja una base mínima documentada y ampliable para que el caso evolucione hacia un escenario más realista.
+```bash
+curl http://localhost:8111/
+curl http://localhost:8111/health
+curl "http://localhost:8111/report-legacy?scenario=end_of_month&rows=600000"
+curl "http://localhost:8111/report-isolated?scenario=end_of_month&rows=600000"
+curl "http://localhost:8111/order-write?orders=25"
+curl http://localhost:8111/reporting/state
+curl http://localhost:8111/activity?limit=10
+curl http://localhost:8111/diagnostics/summary
+curl http://localhost:8111/metrics
+curl http://localhost:8111/metrics-prometheus
+curl http://localhost:8111/reset-lab
+```
+
+## 🧪 Escenarios útiles
+
+- `end_of_month` -> deja visible el clásico choque entre cierre financiero y operación.
+- `finance_audit` -> muestra necesidad de consistencia sin bloquear todo.
+- `ad_hoc_export` -> expone reportes no planificados pidiendo recursos en mal momento.
+- `mixed_peak` -> combina alta operación con reporting pesado.
+
+## 🧭 Qué observar
+
+- si suben `primary_load` y `lock_pressure` tras cada reporte;
+- cuánto se degrada `order-write` después de un export pesado;
+- cómo cambia `replica_lag_s` y `queue_depth` en la ruta aislada;
+- cuándo el sistema pasa de `healthy` a `warning` o `critical`.
+
+## ⚖️ Nota de honestidad
+
+No sustituye una plataforma real con replicas, warehouse o jobs distribuidos. Sí reproduce la decisión operacional clave: aislar cargas analíticas para no romper el camino transaccional.

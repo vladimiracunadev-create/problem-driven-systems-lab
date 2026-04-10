@@ -19,7 +19,8 @@ Este laboratorio no busca impresionar con cantidad de carpetas. Su valor esta en
 | --- | --- |
 | Rendimiento | Casos `01`, `02` y `05` resuelven latencia, acceso a datos y degradacion progresiva en PHP |
 | Observabilidad | Caso `03` muestra la diferencia entre logs inutiles y telemetria diagnostica |
-| Resiliencia / delivery | Casos `04` y `06` muestran resiliencia ante dependencias y despliegues seguros |
+| Resiliencia / delivery | Casos `04`, `06` y `09` muestran resiliencia ante dependencias, terceros y despliegues seguros |
+| Arquitectura / operaciones | Casos `07`, `08`, `10`, `11` y `12` cubren modernizacion, extraccion segura, costo proporcional y continuidad operacional |
 | Docker / operacion | Cada caso implementado tiene `compose.yml` propio y una ruta limpia de arranque |
 | Documentacion | Existe una familia de documentos por audiencia: instalacion, runbook, seguridad, soporte, contribucion |
 | Honestidad tecnica | El repo distingue entre casos `OPERATIVO` y `DOCUMENTADO / SCAFFOLD` |
@@ -50,7 +51,7 @@ Este laboratorio no busca impresionar con cantidad de carpetas. Su valor esta en
 
 ## Lo que todavia no intenta vender
 
-- doce casos ya profundizados al mismo nivel;
+- paridad profunda de los doce casos en todos los stacks;
 - equivalencia funcional completa entre PHP, Node, Python, Java y .NET;
 - un producto SaaS terminado o una plataforma productiva cerrada.
 

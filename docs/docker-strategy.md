@@ -38,7 +38,7 @@ El laboratorio no se levanta como un unico sistema enorme. Se trabaja por capas:
 
 ## Regla practica actual
 
-- Los casos `01` al `06` deben poder levantarse con Docker de forma limpia.
+- Los casos `01` al `12` deben poder levantarse con Docker de forma limpia en PHP.
 - Cada `compose.yml` debe incluir solo la infraestructura que el problema realmente necesita.
 - La presencia de `compose.compare.yml` no implica que todos los stacks tengan la misma profundidad funcional.
 
@@ -50,6 +50,12 @@ El laboratorio no se levanta como un unico sistema enorme. Se trabaja por capas:
 - Caso `04`: usa solo `app` porque el foco esta en timeouts, retries, circuit breaker y fallback.
 - Caso `05`: usa solo `app` porque el foco esta en presion de memoria y recursos acumulados.
 - Caso `06`: usa solo `app` porque el foco esta en pipeline, ambientes y rollback.
+- Caso `07`: usa solo `app` porque el foco esta en modernizacion incremental y cambio seguro.
+- Caso `08`: usa solo `app` porque el foco esta en extraccion compatible y cutover gradual.
+- Caso `09`: usa solo `app` porque el foco esta en contrato externo, cache y cuota.
+- Caso `10`: usa solo `app` porque el foco esta en complejidad, costo y proporcionalidad.
+- Caso `11`: usa solo `app` porque el foco esta en competencia entre reporting y operacion.
+- Caso `12`: usa solo `app` porque el foco esta en continuidad operacional y distribucion de conocimiento.
 
 ## Nota sobre el Makefile
 

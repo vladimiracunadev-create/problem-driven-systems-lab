@@ -7,7 +7,7 @@ Si es tu primera vez en este repositorio, esta es la ruta mas simple para entend
 1. Lee [README.md](../README.md) para entender la idea general.
 2. Revisa [docs/positioning-and-objective.md](positioning-and-objective.md) para ver que problema profesional resuelve este laboratorio.
 3. Mira [docs/case-catalog.md](case-catalog.md) para identificar los casos operativos.
-4. Sigue [INSTALL.md](../INSTALL.md) y levanta uno de los casos `01` al `06`.
+4. Sigue [INSTALL.md](../INSTALL.md) y levanta uno de los casos `01` al `12` en PHP.
 5. Usa [RUNBOOK.md](../RUNBOOK.md) si algo no levanta como esperas.
 6. Recorre el caso que mas te interese y luego vuelve al resto del catalogo.
 
@@ -17,7 +17,7 @@ Si es tu primera vez en este repositorio, esta es la ruta mas simple para entend
 | --- | --- |
 | Problem-driven | El problema manda; el stack se elige para resolverlo |
 | Operativo | Caso ya implementado con evidencia real y Docker funcional |
-| Documentado / Scaffold | Caso modelado y estructurado, pero aun no resuelto a fondo |
+| Documentado / Scaffold | Caso o stack con base modelada, pero aun no profundizado como la variante principal |
 | Compare | Archivo `compose.compare.yml` para comparar stacks del mismo caso |
 
 ## 🚪 Mejores puntos de entrada

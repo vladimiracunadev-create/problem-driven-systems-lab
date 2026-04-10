@@ -1,34 +1,58 @@
-# Extracción de módulo crítico sin romper operación — PHP 8
+# 🧩 Caso 08 - PHP 8.3 con extracción compatible
 
-## Objetivo de esta variante
-Representar este caso desde el stack **PHP 8**, manteniendo foco en el problema y no solo en la sintaxis.
+> Implementación operativa del caso 08 para contrastar una extracción big bang contra una ruta segura con proxy, contratos y cutover por consumidor.
 
-## Qué debería mostrar esta carpeta
-- una base dockerizada,
-- un punto de entrada mínimo,
-- espacio para instrumentación, pruebas o scripts,
-- notas de diseño específicas del stack.
+## 🎯 Qué resuelve
 
-## Qué NO debería hacer
-- mezclar dependencias de otros stacks,
-- levantar todo el laboratorio,
-- esconder decisiones importantes fuera del repositorio.
+Modela la separación de un módulo crítico de pricing:
 
-## Puertos de referencia
-- Puerto local sugerido: `818`
+- `pricing-bigbang` intenta moverlo de una vez y expone incompatibilidades;
+- `pricing-compatible` conserva el contrato público y migra consumidores gradualmente.
 
-## Comando esperado
+## 💼 Por qué importa
+
+Este caso deja visible un patrón muy frecuente: el riesgo de una extracción no está solo en el código nuevo, sino en romper compatibilidad operativa mientras el sistema sigue vendiendo.
+
+## 🧱 Servicio
+
+- `app` -> API PHP 8.3 con consumidores sensibles, proxy de compatibilidad y estado de cutover persistido localmente.
+
+## 🚀 Arranque
+
 ```bash
 docker compose -f compose.yml up -d --build
 ```
 
-## Notas del stack
-En PHP 8 conviene estudiar este caso considerando:
-- ergonomía del runtime,
-- patrones habituales del ecosistema,
-- observabilidad disponible,
-- costos de complejidad,
-- límites y trade-offs específicos.
+## 🔎 Endpoints
 
-## Estado inicial
-Esta carpeta deja una base mínima documentada y ampliable para que el caso evolucione hacia un escenario más realista.
+```bash
+curl http://localhost:818/
+curl http://localhost:818/health
+curl "http://localhost:818/pricing-bigbang?scenario=rule_drift&consumer=checkout"
+curl "http://localhost:818/pricing-compatible?scenario=rule_drift&consumer=checkout"
+curl "http://localhost:818/cutover/advance?consumer=checkout"
+curl http://localhost:818/extraction/state
+curl http://localhost:818/flows?limit=10
+curl http://localhost:818/diagnostics/summary
+curl http://localhost:818/metrics
+curl http://localhost:818/metrics-prometheus
+curl http://localhost:818/reset-lab
+```
+
+## 🧪 Escenarios útiles
+
+- `rule_drift` -> muestra contratos que cambian entre consumidores.
+- `shared_write` -> hace visible el peligro de estados compartidos.
+- `peak_sale` -> enfatiza por qué no conviene cortar compatibilidad en una ventana crítica.
+- `partner_contract` -> muestra integración externa dependiente del contrato legado.
+
+## 🧭 Qué observar
+
+- cuánto blast radius deja cada estrategia;
+- si suben los contract tests y el progreso por consumidor;
+- cuándo el proxy de compatibilidad absorbe el riesgo;
+- cómo cambia el riesgo de corte entre una extracción total y una gradual.
+
+## ⚖️ Nota de honestidad
+
+No representa un rollout real con múltiples servicios ni feature flags distribuidos. Sí reproduce lo importante aquí: contratos, compatibilidad, cutover progresivo y protección operacional del cambio.

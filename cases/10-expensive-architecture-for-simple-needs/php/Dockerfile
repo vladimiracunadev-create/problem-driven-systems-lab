@@ -1,5 +1,5 @@
-FROM php:8.2-apache
-WORKDIR /var/www/html
-COPY app/ /var/www/html/
-RUN sed -i 's/80/8080/g' /etc/apache2/ports.conf /etc/apache2/sites-available/000-default.conf
+FROM php:8.3-cli-alpine
+WORKDIR /app
+COPY app/ /app/
 EXPOSE 8080
+CMD ["php", "-S", "0.0.0.0:8080", "-t", "/app", "/app/index.php"]

@@ -14,7 +14,7 @@ Portafolio técnico orientado a problemas reales de software: rendimiento, obser
 ## 🎯 Executive Summary
 
 - El laboratorio modela **12 problemas reales de ingeniería**, comunicando con transparencia cuáles cuentan con profundidad operativa hoy.
-- Los casos `01` al `06` son operativos en PHP.
+- Los casos `01` al `12` son operativos en PHP.
 - El caso `03` tambien es operativo en Node.js y Python.
 - Docker es la via oficial de ejecucion limpia y reproducible.
 - [`shared/catalog/cases.json`](shared/catalog/cases.json) es la fuente de verdad del portal, de la documentacion generada y de la narrativa operativa.
@@ -51,9 +51,9 @@ Si prefieres una sola puerta de entrada local, levanta el portal con `docker com
 
 Estado actual:
 
-- `OPERATIVO`: casos [01](cases/01-api-latency-under-load/README.md), [02](cases/02-n-plus-one-and-db-bottlenecks/README.md), [03](cases/03-poor-observability-and-useless-logs/README.md), [04](cases/04-timeout-chain-and-retry-storms/README.md), [05](cases/05-memory-pressure-and-resource-leaks/README.md) y [06](cases/06-broken-pipeline-and-fragile-delivery/README.md) en PHP.
+- `OPERATIVO`: casos [01](cases/01-api-latency-under-load/README.md), [02](cases/02-n-plus-one-and-db-bottlenecks/README.md), [03](cases/03-poor-observability-and-useless-logs/README.md), [04](cases/04-timeout-chain-and-retry-storms/README.md), [05](cases/05-memory-pressure-and-resource-leaks/README.md), [06](cases/06-broken-pipeline-and-fragile-delivery/README.md), [07](cases/07-incremental-monolith-modernization/README.md), [08](cases/08-critical-module-extraction-without-breaking-operations/README.md), [09](cases/09-unstable-external-integration/README.md), [10](cases/10-expensive-architecture-for-simple-needs/README.md), [11](cases/11-heavy-reporting-blocks-operations/README.md) y [12](cases/12-single-point-of-knowledge-and-operational-risk/README.md) en PHP.
 - `OPERATIVO` adicional fuera de PHP: [caso 03](cases/03-poor-observability-and-useless-logs/README.md) en Node.js y Python.
-- `DOCUMENTADO / SCAFFOLD`: casos `07` al `12`, y los stacks todavia no profundizados fuera de las variantes ya operativas.
+- `DOCUMENTADO / SCAFFOLD`: stacks todavia no profundizados fuera de las variantes ya operativas y la estructura base de los otros runtimes.
 
 ## 🔎 Casos prioritarios
 
@@ -67,6 +67,7 @@ Estado actual:
 | [06 - Pipeline roto y delivery fragil](cases/06-broken-pipeline-and-fragile-delivery/README.md) | `OPERATIVO` | Diferencia entre detectar tarde, bloquear en preflight y hacer rollback seguro |
 
 El catalogo completo se genera desde metadatos y vive en [docs/case-catalog.md](docs/case-catalog.md).
+Los casos [07](cases/07-incremental-monolith-modernization/README.md) a [12](cases/12-single-point-of-knowledge-and-operational-risk/README.md) tambien estan operativos en PHP y extienden la narrativa hacia modernizacion, extraccion segura, integraciones externas, costo de arquitectura, reporting y continuidad operacional.
 
 ## 🖥️ Portal y experiencia de producto
 
@@ -94,6 +95,12 @@ docker compose -f cases/03-poor-observability-and-useless-logs/php/compose.yml u
 docker compose -f cases/04-timeout-chain-and-retry-storms/php/compose.yml up -d --build
 docker compose -f cases/05-memory-pressure-and-resource-leaks/php/compose.yml up -d --build
 docker compose -f cases/06-broken-pipeline-and-fragile-delivery/php/compose.yml up -d --build
+docker compose -f cases/07-incremental-monolith-modernization/php/compose.yml up -d --build
+docker compose -f cases/08-critical-module-extraction-without-breaking-operations/php/compose.yml up -d --build
+docker compose -f cases/09-unstable-external-integration/php/compose.yml up -d --build
+docker compose -f cases/10-expensive-architecture-for-simple-needs/php/compose.yml up -d --build
+docker compose -f cases/11-heavy-reporting-blocks-operations/php/compose.yml up -d --build
+docker compose -f cases/12-single-point-of-knowledge-and-operational-risk/php/compose.yml up -d --build
 docker compose -f cases/03-poor-observability-and-useless-logs/node/compose.yml up -d --build
 docker compose -f cases/03-poor-observability-and-useless-logs/python/compose.yml up -d --build
 ```
@@ -137,7 +144,7 @@ El sistema se organiza como una capa editorial en raiz, un portal ligero de eval
 
 - Paridad funcional completa en todos los stacks desde la primera iteracion.
 - Benchmarks absolutos entre lenguajes.
-- Doce casos al mismo nivel de profundidad hoy.
+- Paridad profunda de los doce casos en todos los stacks hoy.
 - Seniority inflada con claims sin evidencia.
 
 ## ⚖️ Licencia
