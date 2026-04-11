@@ -21,6 +21,7 @@ Este laboratorio no busca impresionar con cantidad de carpetas. Su valor esta en
 | Observabilidad | Caso `03` muestra la diferencia entre logs inutiles y telemetria diagnostica |
 | Resiliencia / delivery | Casos `04`, `06` y `09` muestran resiliencia ante dependencias, terceros y despliegues seguros |
 | Arquitectura / operaciones | Casos `07`, `08`, `10`, `11` y `12` cubren modernizacion, extraccion segura, costo proporcional y continuidad operacional |
+| Interfaz Nativa (Dashboards) | Los 12 casos exponen una **UI Web Interactiva** para poder visualizar y accionar el problema desde cualquier navegador |
 | Docker / operacion | Cada caso implementado tiene `compose.yml` propio y una ruta limpia de arranque |
 | Documentacion | Existe una familia de documentos por audiencia: instalacion, runbook, seguridad, soporte, contribucion |
 | Honestidad tecnica | El repo distingue entre casos `OPERATIVO` y `DOCUMENTADO / SCAFFOLD` |

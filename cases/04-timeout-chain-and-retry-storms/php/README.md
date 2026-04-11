@@ -9,6 +9,10 @@ Modela una API de cotización que depende de un proveedor externo de carriers:
 - `quote-legacy` repite timeouts varias veces y amplifica la carga saliente;
 - `quote-resilient` usa timeout corto, backoff, circuit breaker y fallback cacheado.
 
+## 💻 Interfaz Visual Nativa
+
+Al abrir la ruta raíz en tu navegador (`Accept: text/html`), este caso inyecta automáticamente un **Dashboard visual interactivo** renderizado en Vanilla JS/CSS. Esto permite observar las métricas y efectos simulados en tiempo real sin perder la capacidad de responder a consultas JSON de CLI o Postman.
+
 ## 💼 Por qué importa
 
 Este caso deja visible un patrón muy real: una dependencia lenta no solo agrega latencia, también puede degradar al servicio llamador cuando los retries no tienen límites sanos.

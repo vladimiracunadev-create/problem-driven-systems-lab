@@ -9,6 +9,10 @@ Modela la separación de un módulo crítico de pricing:
 - `pricing-bigbang` intenta moverlo de una vez y expone incompatibilidades;
 - `pricing-compatible` conserva el contrato público y migra consumidores gradualmente.
 
+## 💻 Interfaz Visual Nativa
+
+Al abrir la ruta raíz en tu navegador (`Accept: text/html`), este caso inyecta automáticamente un **Dashboard visual interactivo** renderizado en Vanilla JS/CSS. Esto permite observar las métricas y efectos simulados en tiempo real sin perder la capacidad de responder a consultas JSON de CLI o Postman.
+
 ## 💼 Por qué importa
 
 Este caso deja visible un patrón muy frecuente: el riesgo de una extracción no está solo en el código nuevo, sino en romper compatibilidad operativa mientras el sistema sigue vendiendo.

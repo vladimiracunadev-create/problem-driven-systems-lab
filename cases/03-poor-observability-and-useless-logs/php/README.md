@@ -16,6 +16,10 @@ El mismo flujo se expone en dos modos:
 - `checkout-legacy` -> logs pobres, sin correlacion y con poco contexto.
 - `checkout-observable` -> logs estructurados, correlation IDs, metricas y trazas utiles.
 
+## 💻 Interfaz Visual Nativa
+
+Al abrir la ruta raíz en tu navegador (`Accept: text/html`), este caso inyecta automáticamente un **Dashboard visual interactivo** renderizado en Vanilla JS/CSS. Esto permite observar las métricas y efectos simulados en tiempo real sin perder la capacidad de responder a consultas JSON de CLI o Postman.
+
 ## 💼 Por que importa
 
 La mejora no es estetica. Este caso muestra por que la observabilidad reduce MTTR: transforma un incidente vago en una falla diagnosticable con evidencia accionable.

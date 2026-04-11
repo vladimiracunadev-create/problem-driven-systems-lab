@@ -9,6 +9,10 @@ Modela cambios sobre un dominio crítico con dos enfoques:
 - `change-legacy` toca demasiados módulos y mantiene alto el blast radius;
 - `change-strangler` usa ACL, contratos y migración progresiva por consumidor.
 
+## 💻 Interfaz Visual Nativa
+
+Al abrir la ruta raíz en tu navegador (`Accept: text/html`), este caso inyecta automáticamente un **Dashboard visual interactivo** renderizado en Vanilla JS/CSS. Esto permite observar las métricas y efectos simulados en tiempo real sin perder la capacidad de responder a consultas JSON de CLI o Postman.
+
 ## 💼 Por qué importa
 
 La modernización incremental no es solo una preferencia arquitectónica: es una forma de bajar riesgo real mientras el negocio sigue operando.

@@ -10,6 +10,10 @@ Modela la competencia entre reporting y operación:
 - `report-isolated` empuja presión a cola, replica o snapshot;
 - `order-write` deja ver cómo la operación siente esa diferencia.
 
+## 💻 Interfaz Visual Nativa
+
+Al abrir la ruta raíz en tu navegador (`Accept: text/html`), este caso inyecta automáticamente un **Dashboard visual interactivo** renderizado en Vanilla JS/CSS. Esto permite observar las métricas y efectos simulados en tiempo real sin perder la capacidad de responder a consultas JSON de CLI o Postman.
+
 ## 💼 Por qué importa
 
 Este caso deja visible un problema muy real: el reporte puede “funcionar” y aun así romper negocio si sube locks, degrada escrituras y deja sin aire a la operación.

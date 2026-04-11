@@ -9,6 +9,10 @@ Modela un proceso de lotes que recibe documentos y payloads de tamaño variable:
 - `batch-legacy` retiene buffers, hace crecer cache y deja subir la presión de recursos;
 - `batch-optimized` limita el cache, limpia estado y mantiene el proceso dentro de umbrales sanos.
 
+## 💻 Interfaz Visual Nativa
+
+Al abrir la ruta raíz en tu navegador (`Accept: text/html`), este caso inyecta automáticamente un **Dashboard visual interactivo** renderizado en Vanilla JS/CSS. Esto permite observar las métricas y efectos simulados en tiempo real sin perder la capacidad de responder a consultas JSON de CLI o Postman.
+
 ## 💼 Por qué importa
 
 Este caso sirve para evidenciar un problema común en incidentes largos: no siempre hay una excepción clara. Muchas veces el servicio solo se va degradando hasta que alguien lo reinicia.

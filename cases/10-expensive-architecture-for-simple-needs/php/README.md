@@ -9,6 +9,10 @@ Modela decisiones de arquitectura sobre necesidades acotadas:
 - `feature-complex` reparte el problema entre demasiados servicios y coordinaciones;
 - `feature-right-sized` resuelve el mismo caso con menos piezas, menos costo y menos demora.
 
+## 💻 Interfaz Visual Nativa
+
+Al abrir la ruta raíz en tu navegador (`Accept: text/html`), este caso inyecta automáticamente un **Dashboard visual interactivo** renderizado en Vanilla JS/CSS. Esto permite observar las métricas y efectos simulados en tiempo real sin perder la capacidad de responder a consultas JSON de CLI o Postman.
+
 ## 💼 Por qué importa
 
 Este caso deja visible que decir “no” a complejidad innecesaria también es una habilidad de arquitectura. El riesgo no es solo pagar más: también se retrasa delivery y se abren más puntos de falla.

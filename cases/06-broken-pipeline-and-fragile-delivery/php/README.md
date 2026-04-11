@@ -9,6 +9,10 @@ Modela despliegues hacia `dev`, `staging` y `prod` con escenarios operativos fre
 - `deploy-legacy` detecta problemas tarde y puede dejar el ambiente degradado;
 - `deploy-controlled` valida antes de tocar el ambiente, despliega en canary y puede hacer rollback.
 
+## 💻 Interfaz Visual Nativa
+
+Al abrir la ruta raíz en tu navegador (`Accept: text/html`), este caso inyecta automáticamente un **Dashboard visual interactivo** renderizado en Vanilla JS/CSS. Esto permite observar las métricas y efectos simulados en tiempo real sin perder la capacidad de responder a consultas JSON de CLI o Postman.
+
 ## 💼 Por qué importa
 
 No todos los incidentes de entrega vienen del código. Secretos faltantes, drift de configuración o migraciones mal validadas también rompen sistemas que "en dev andaban bien".

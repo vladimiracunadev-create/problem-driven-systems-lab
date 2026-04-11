@@ -2,7 +2,7 @@
 
 > Como y cuando usar Docker en este laboratorio.
 
-## Resumen ejecutivo
+## 🎯 Resumen ejecutivo
 
 Docker no es opcional en los casos implementados. Es la ruta oficial para:
 
@@ -11,7 +11,7 @@ Docker no es opcional en los casos implementados. Es la ruta oficial para:
 - ejecutar demos serias sin configuracion manual extensa;
 - comparar stacks sin contaminar el resto del laboratorio.
 
-## Regla de diseno
+## 📏 Regla de diseno
 
 El laboratorio no se levanta como un unico sistema enorme. Se trabaja por capas:
 
@@ -22,7 +22,7 @@ El laboratorio no se levanta como un unico sistema enorme. Se trabaja por capas:
 | `cases/<caso>/<stack>/compose.yml` | Un escenario concreto y aislado |
 | `cases/<caso>/compose.compare.yml` | Comparacion entre stacks del mismo caso |
 
-## Por que este enfoque es mejor aqui
+## 💡 Por que este enfoque es mejor aqui
 
 | Beneficio | Impacto |
 | --- | --- |
@@ -31,13 +31,13 @@ El laboratorio no se levanta como un unico sistema enorme. Se trabaja por capas:
 | Mejor diagnostico | Cada problema se observa con menos interferencia |
 | Portafolio mas claro | Puedes mostrar un caso concreto sin cargar todo el mundo |
 
-## Lo que se evita conscientemente
+## 🚫 Lo que se evita conscientemente
 
 - un `docker compose up` gigante para todos los lenguajes y futuras variantes al mismo tiempo;
 - dependencias cruzadas entre escenarios que deberian ser aislados;
 - infraestructura innecesaria solo para "verse enterprise".
 
-## Regla practica actual
+## 🛠️ Regla practica actual
 
 - `compose.root.yml` debe dejar visible el laboratorio PHP completo desde `localhost:8080`.
 - Los casos `01` al `12` deben poder levantarse con Docker de forma limpia tambien por separado.
@@ -46,7 +46,7 @@ El laboratorio no se levanta como un unico sistema enorme. Se trabaja por capas:
 
 Ademas, la familia PHP comparte ahora un runtime comun en `docker/php/Dockerfile`. Eso reduce drift entre casos sin obligar a meter todos los problemas en un solo contenedor.
 
-## Ejemplos concretos
+## 🔎 Ejemplos concretos
 
 - Caso `01`: necesita `app + db + worker + observabilidad` porque el problema es contencion real bajo carga.
 - Caso `02`: necesita `app + db` porque el N+1 debe verse sobre relaciones reales.
@@ -61,6 +61,6 @@ Ademas, la familia PHP comparte ahora un runtime comun en `docker/php/Dockerfile
 - Caso `11`: usa solo `app` porque el foco esta en competencia entre reporting y operacion.
 - Caso `12`: usa solo `app` porque el foco esta en continuidad operacional y distribucion de conocimiento.
 
-## Nota sobre el Makefile
+## 📝 Nota sobre el Makefile
 
 El `Makefile` es util como atajo, pero no reemplaza la estrategia oficial. Si trabajas en Windows puro, prefiere `docker compose` directo.
