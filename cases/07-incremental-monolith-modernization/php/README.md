@@ -17,6 +17,13 @@ Al abrir la ruta raíz en tu navegador (`Accept: text/html`), este caso inyecta 
 
 La modernización incremental no es solo una preferencia arquitectónica: es una forma de bajar riesgo real mientras el negocio sigue operando.
 
+## 🔬 Análisis Técnico de la Implementación (PHP)
+
+Extraer código espagueti de un monolito a menudo se enfoca en Frameworks o DBs, pero ignora la progresión lógica. Este caso prueba los límites operacionales dentro del mismo PHP.
+
+*   **Impacto Expandido (`legacy`):** Un simple cambio se modela impactando una red completa. Sin barreras, `$blastRadius` y `$elapsedBaseMs` se multiplican drásticamente y un fallo en un contrato arcaico transversal (`shared_schema`) bloquea todo el monolito con un estricto *Status 500*.
+*   **Progresión por Consumidor (`strangler`):** Introduce una frontera dura simulando un *Anti-Corruption Layer (ACL)*. La mutación en PHP no ocurre en masa; utiliza métricas discretas sobre diccionarios transaccionales (`$state['migration']['consumers'][$consumer] = min(100, $currentProgress + 25)`). Esto codifica que el progreso (cutover) se realiza invocador-por-invocador mientras eleva paulatinamente variables de aseguramiento (`contract_tests` y `extracted_module_coverage`), permitiendo retrotraer a PHP si un consumidor específico no tolera el esquema nuevo sin infectar al núcleo.
+
 ## 🧱 Servicio
 
 - `app` -> API PHP 8.3 con progreso por consumidor, cobertura del módulo extraído y métricas de blast radius.

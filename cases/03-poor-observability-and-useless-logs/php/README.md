@@ -24,6 +24,13 @@ Al abrir la ruta raíz en tu navegador (`Accept: text/html`), este caso inyecta 
 
 La mejora no es estetica. Este caso muestra por que la observabilidad reduce MTTR: transforma un incidente vago en una falla diagnosticable con evidencia accionable.
 
+## 🔬 Análisis Técnico de la Implementación (PHP)
+
+La telemetría efectiva no es un accesorio, es una obligación arquitectónica. Este caso demuestra cómo se codifica nativamente esta capacidad sin depender de agentes mágicos.
+
+*   **Logs Opacos (`legacy`):** Invoca simples funciones del tipo `appendLegacyLog('processing customer=' . $customerId)`, perdiendo la cardinalidad. Los campos se concatenan como *strings* libres, haciendo imposible buscar después en un JSON parsing, y fallando en atar eventos que pertenecen a un mismo ciclo de vida HTTP request.
+*   **Logs Estructurados (`observable`):** Implanta el patrón de *Correlation IDs*. Utiliza `bin2hex(random_bytes(4))` al iniciar la petición en PHP para asignar un `$traceId` y `$requestId`. Durante la ejecución, se utiliza el array `appendStructuredLog(['level'=>'info', 'event'=>'checkout_started', 'trace_id'=>$traceId, ...])`. Al guardarse (o enviarse a stdout en un sistema real mediante `json_encode`), esto permite que recolectores como Promtail o Datadog reconstruyan la traza exacta independientemente de cómo se intercalen otros procesos uñecos en el framework FPM.
+
 ## 🧱 Servicio
 
 - `app` -> API PHP 8.3 con logs legacy y observable, metricas y trazas locales.

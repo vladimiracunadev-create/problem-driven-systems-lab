@@ -21,6 +21,13 @@ Al abrir la ruta raíz en tu navegador (`Accept: text/html`), este caso inyecta 
 
 Este caso deja una evidencia muy clara: el problema no es "usar o no usar ORM" en abstracto, sino el patron de acceso a datos. Cuando las relaciones se cargan dentro de bucles, el costo por request crece rapido y desgasta innecesariamente la base.
 
+## 🔬 Análisis Técnico de la Implementación (PHP)
+
+El problema del **N+1** en PHP no es exclusivo de los ORMs pesados (como Eloquent o Doctrine), y este caso demuestra cómo implementaciones manuales también lo sufren si no se tiene una estrategia racional de consolidación.
+
+*   **Punto de Falla (`legacy`):** La API recupera un conjunto base de registros y entra en un bucle `foreach ($orders as &$order)`. Dentro de la clausura de iteración, dispara indiscriminadamente sentencias preparadas individuales `timedQuery(...)` a fin de enriquecer atributos relacionales como _customer_, _items_, y _categories_.
+*   **Corrección Nativa (`optimized`):** El código PHP emplea `array_map` para aislar tempranamente un arreglo de identificadores base (`$ids`). Posteriormente elabora una inyección controlada utilizando una expansión dinámica con signos de interrogación `( ?, ?, ? )` mediante uso de implosiones (`implode(',', array_fill(0, count($ids), '?'))`). Esto permite empujar el N resultante en un solo _roundtrip_, retornando a PHP los arreglos brutos que solo deben ser empaquetados lógico/visuales en memoria O(n).
+
 ## 🧱 Servicios
 
 - `app` -> API PHP 8.3 con endpoints legacy y optimized.

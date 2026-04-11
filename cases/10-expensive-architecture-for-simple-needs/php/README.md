@@ -17,6 +17,13 @@ Al abrir la ruta raíz en tu navegador (`Accept: text/html`), este caso inyecta 
 
 Este caso deja visible que decir “no” a complejidad innecesaria también es una habilidad de arquitectura. El riesgo no es solo pagar más: también se retrasa delivery y se abren más puntos de falla.
 
+## 🔬 Análisis Técnico de la Implementación (PHP)
+
+Demostrar "sobre-arquitectura" en un solo framework requiere modelar el costo de la redención y coordinación de recursos.
+
+*   **Red de Microservicios Simulada (`complex`):** PHP evalúa la carga simulando cómo los límites de red afectan el tiempo. Utiliza factores de escala, calculando el costo en delays multiplicando (`$servicesTouched * 22 ms + jitter`). Expone que por más veloz que sea la ejecución de PHP de manera asincrónica pura, la *Coreografía* de la metadata compleja (`coordination: 7`) inevitablemente degrada el *Problem-Fit Score* e infla el costo mensual simulado que consume presupuesto por request.
+*   **Diseño Proporcional (`right_sized`):** Muestra que frente a la misma aserción estructural (`basic_crud`), una aproximación monolítica o unificada (con un footprint de apenas 2 o 3 servicios) baja la complejidad de código base en PHP permitiendo que la respuesta sincrónica caiga enormemente en *Lead Time* (calculado en las simulaciones pasando la solicitud base con un factor costo bajo). La solución proporcional rinde hasta un 75% menos de MTTR al achicar radicalmente las invocaciones `usleep` derivadas del I/O inter-servicios.
+
 ## 🧱 Servicio
 
 - `app` -> API PHP 8.3 con comparación de costo mensual, servicios tocados, lead time y coordinación requerida.

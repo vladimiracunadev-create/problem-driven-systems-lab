@@ -18,6 +18,13 @@ Al abrir la ruta raíz en tu navegador (`Accept: text/html`), este caso inyecta 
 
 Este caso deja visible que la continuidad operacional también es una propiedad del conocimiento. Un sistema “estable” puede seguir siendo frágil si solo una persona sabe cómo operarlo bajo presión.
 
+## 🔬 Análisis Técnico de la Implementación (PHP)
+
+El bus-factor y el conocimiento silencioso son factores medibles (Risk Scores) independientemente de qué lenguaje se escoge para desarrollar el software.
+
+*   **Factor "Héroe" (`legacy`):** Cuando la persona crítica no está presente (`owner_absent`) o se cae de noche (`night_shift`), el código obliga un volcado a HTTP 503 / 502 pre-configurado donde el _Mean Time to Recovery_ (MTTR) escala por ineficiencia de *Handoff* (>95 mins) forzando interrupciones operativas costosas en el ecosistema.
+*   **Distribución del Conocimiento (`distributed`):** Emplea una función polinómica (`readinessScore(...)`) calculando ponderaciones a tiempo real desde arrays nativos en base al `runbook_score` (`*0.45`), `drill_score` (`*0.25`) y backups de talento (`*18`). Al golpear este endpoint bajo incidentes, el algoritmo amolda dinámicamente un MTTR degradado o salva la request con un HTTP 200 transparente siempre y cuando evalúe que la madurez de la información excede los límites exigidos, mitigando sistemáticamente bloqueos en cascada en caso de la ausencia del líder técnico en PHP.
+
 ## 🧱 Servicio
 
 - `app` -> API PHP 8.3 con dominios operativos, puntajes de runbook, backups, drills y simulación de incidentes.

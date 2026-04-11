@@ -19,6 +19,13 @@ Al abrir la ruta raíz en tu navegador (`Accept: text/html`), este caso inyecta 
 
 Este caso sirve para mostrar como se pasa de una API que "parece funcionar" a una implementacion que deja evidencia medible de por que degrada y como se corrige sin adivinar infraestructura.
 
+## 🔬 Análisis Técnico de la Implementación (PHP)
+
+A nivel de código dentro del ecosistema PHP, este caso expone el riesgo del acoplamiento entre la latencia de la base de datos y la capacidad de despacho del runtime:
+
+*   **Implementación `legacy`:** Depende de iteraciones sobre un `fetchAll()` mediante ciclos `foreach`, donde internamente la función `timedQuery()` levanta consultas `SELECT` por cada usuario usando `PDOStatement->fetch()`. Esto bloquea el hilo de PHP induciendo una alta latencia de entrada/salida (*I/O bound*) mientras el recurso relacional es severamente penalizado.
+*   **Aproximación `optimized`:** Se libera a PHP del procesamiento iterativo de grafos reemplazándolo con una sola consulta hacia una tabla `customer_daily_summary` enlazada por `JOIN`. PHP se enfoca solo en resolver un arreglo nativo con el resultado consolidado del motor SQL o procesar una subconsulta `IN (...)` generada dinámicamente (`placeholderList(count($ids))`). Esto drásticamente aumenta el _throughput_ asíncrono y los *QPS* (Queries Per Second) reales soportables por la API sin inflar la memoria o el CPU del Worker FPM.
+
 ## 🧱 Servicios
 
 - `app` -> API PHP 8 con rutas legacy y optimized.

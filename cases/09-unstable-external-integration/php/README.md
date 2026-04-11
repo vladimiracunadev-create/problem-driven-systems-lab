@@ -21,6 +21,13 @@ Al abrir la ruta raíz en tu navegador (`Accept: text/html`), este caso inyecta 
 
 Este caso deja visible que la resiliencia frente a terceros no depende solo del timeout. También importa la estabilidad del contrato, la cuota y la posibilidad de operar con información ya conocida.
 
+## 🔬 Análisis Técnico de la Implementación (PHP)
+
+Las APIs de terceros fallan en formas más sutiles que un simple socket caído (Ej: cambian su JSON sin aviso, devuelven campos nulos o agotan la cuota).
+
+*   **Llamado Vulnerable (`legacy`):** Ejecuta costos directos. Agota agresivamente el `$rate_limit_budget` (costando x3 frente a la variante protegida) y permite vulnerabilidades estructurales donde un cambio de esquema o un mantenimiento ajeno de un tercero provoca una propagación en cadena hasta nuestra UI (`legacy_status: 502/503/429`).
+*   **Aislado Robusto (`hardened`):** Introduce en PHP la simulación de *Adapter* y *TTL Caching*. Conserva en almacenes persistentes o arrays locales (apoyado mediante funciones como `json_encode` estructuradas en el backend) una instancia del `productSnapshot($sku)` sano. Ante caídas u omisiones (`schema_drift`), en vez de fallar catastróficamente, PHP devuelve un "Status 200 degradado" reconstruido localmente, ahorrando peticiones HTTP (absorbe el *Quota Limit*) e inmunizándonos del `maintenance_window` ajeno.
+
 ## 🧱 Servicio
 
 - `app` -> API PHP 8.3 con proveedor externo simulado, quota budget, adapter de contrato y cache local.

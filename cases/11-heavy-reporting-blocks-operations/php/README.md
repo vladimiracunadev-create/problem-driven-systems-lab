@@ -18,6 +18,13 @@ Al abrir la ruta raíz en tu navegador (`Accept: text/html`), este caso inyecta 
 
 Este caso deja visible un problema muy real: el reporte puede “funcionar” y aun así romper negocio si sube locks, degrada escrituras y deja sin aire a la operación.
 
+## 🔬 Análisis Técnico de la Implementación (PHP)
+
+En PHP clásico (sin ext-async), los despachos intensivos compiten fatalmente por los mismos subprocesos que manejan los requests de operaciones vitales y los *locks* de base de datos.
+
+*   **Bloqueo por Reportes (`legacy`):** La API recibe la orden de un conteo masivo (`rows > 150000`). Se incrementa brutalmente la métrica residente `$reporting['primary_load']` simulando la extracción *Online* y añadiendo una penalización directa a `$reporting['lock_pressure']`. Si una llamada operacional paralela (escritura) encuentra este semáforo en nivel `critical`, PHP aborta con un Status `503 Service Unavailable`, bloqueando las ventas de negocio a raíz de un reporte transaccional.
+*   **Asilamiento de Procesos (`isolated`):** PHP desvía el esfuerzo emulando inyección a colas de mensajería (modificando `$reporting['queue_depth']`) e interrogando espejos (incrementando `$reporting['replica_lag_s']`). El costo de procesamiento pesado en el FPM Worker se diluye y la carga del "Primary DB" respira. Todo funciona de manera deferida, asegurando que el *Availability* principal retorne siempre HTTP 200 sin sufrir los Locks de lectura excesiva.
+
 ## 🧱 Servicio
 
 - `app` -> API PHP 8.3 con estado persistido de carga en primario, presión de locks, lag de replica y cola de reporting.

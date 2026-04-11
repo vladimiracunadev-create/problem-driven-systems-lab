@@ -17,6 +17,13 @@ Al abrir la ruta raíz en tu navegador (`Accept: text/html`), este caso inyecta 
 
 Este caso sirve para evidenciar un problema común en incidentes largos: no siempre hay una excepción clara. Muchas veces el servicio solo se va degradando hasta que alguien lo reinicia.
 
+## 🔬 Análisis Técnico de la Implementación (PHP)
+
+A diferencia de lenguajes como Node.js, PHP "nace para morir" bajo el modelo clásico FPM, donde se recogen los recursos al final del request. Sin embargo, en arquitecturas modernas con procesos persistentes en background (*Daemons, Workers, Octane*), una mala fuga es mortal.
+
+*   **Problema Silencioso (`legacy`):** El script usa funciones como `str_repeat()` simulando descargas masivas de memoria, y luego empila dichos bloques con redundancia en arreglos globales, por ejemplo, guardando también su versión binaria vía `base64_encode()`. Debido a la naturaleza iterativa, las retenciones se acumulan, creando *Memory Drift* (`retained_kb` subiendo sin control) y la saturación de descriptores abiertos, degradando silenciosamente el loop principal sin tirar Throwables iniciales.
+*   **Ciclo Optimizado (`optimized`):** Al detectar buffers pesados, el código extrae firmas seguras sin retener la estructura masiva, por ejemplo usando truncamientos o `hash('sha256', $payload)`. Aún retiene estado, pero opera sobre un tope forzoso de elementos descartando iteraciones arcaicas al vuelo (`array_shift` si el count > N). Esto establece topes máximos y forzosos garantizando una presión de memoria plana (*O(1)* respecto a capacidad cacheada) independientemente del tiempo que viva el worker.
+
 ## 🧱 Servicio
 
 - `app` -> API PHP 8.3 con estado local acumulado por modo y métricas de presión.

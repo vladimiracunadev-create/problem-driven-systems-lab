@@ -17,6 +17,13 @@ Al abrir la ruta raíz en tu navegador (`Accept: text/html`), este caso inyecta 
 
 Este caso deja visible un patrón muy real: una dependencia lenta no solo agrega latencia, también puede degradar al servicio llamador cuando los retries no tienen límites sanos.
 
+## 🔬 Análisis Técnico de la Implementación (PHP)
+
+El diseño de resiliencia requiere manejo de tiempo explícito en PHP, algo que los frameworks a veces ocultan tras simples try/catch.
+
+*   **Punto Crítico (`legacy`):** La política `legacy` confía ciegamente en constantes de tiempo altas y bucles de reintento directo sin freno (`max_attempts: 4`, `timeout_ms: 360`, `backoff_base_ms: 0`). Si el proveedor cae (`provider_down`), PHP se bloquea (simulado con retardos altos vía `usleep`), estrangulando inmediatamente los *workers* FPM disponibles bajo carga y produciendo una falla en cascada hacia el cliente.
+*   **Resguardo Nativo (`resilient`):** Utiliza controles avanzados como cálculo de Backoff Exponencial y evaluación real de Circuit Breaker empleando cronologías nativas (`strtotime($provider['opened_until']) > time()`). Adicionalmente incorpora "Jitter" algorítmico utilizando `random_int(15, 45)` sumado a la base de tiempo para desvincular reintentos simultáneos ("Thundering Herd") antes de aplicar un *Fallback* seguro cacheado, protegiendo así los recursos del backend principal.
+
 ## 🧱 Servicio
 
 - `app` -> API PHP 8.3 con escenarios de proveedor estable, lento, caído o intermitente.

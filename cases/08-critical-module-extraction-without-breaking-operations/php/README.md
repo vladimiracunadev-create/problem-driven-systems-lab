@@ -17,6 +17,13 @@ Al abrir la ruta raíz en tu navegador (`Accept: text/html`), este caso inyecta 
 
 Este caso deja visible un patrón muy frecuente: el riesgo de una extracción no está solo en el código nuevo, sino en romper compatibilidad operativa mientras el sistema sigue vendiendo.
 
+## 🔬 Análisis Técnico de la Implementación (PHP)
+
+Al extraer módulos en PHP no basta con aislar las clases, hay que proteger la operabilidad en vivo (el *Cutover*).
+
+*   **Big-Bang (`legacy`):** Mover el módulo "de una vez" provoca que cualquier asimetría de reglas (`rule_drift`), concurrencia agresiva (`peak_sale`) o partición de escritura (`shared_write`) quiebre agresivamente la compatibilidad pública, disparando errores fatales (409/500/502).
+*   **Extracción Compatible (`strangler / proxy`):** Se introduce una estructura puente en PHP en la que se manipulan flujos *Shadow Traffic*. A medida que `advanceCutover()` se ejecuta, no se enruta a ciegas; el "proxy compatible" eleva gradualmente (`$step = 25`) el enrutado de consumo, absorbiendo picos y diferencias estructurales y preservando un `status_code 200` garantizado por el contrato frontal, independientemente de qué motor de fondo (viejo o nuevo) esté resolviendo la aserción tras bambalinas.
+
 ## 🧱 Servicio
 
 - `app` -> API PHP 8.3 con consumidores sensibles, proxy de compatibilidad y estado de cutover persistido localmente.
