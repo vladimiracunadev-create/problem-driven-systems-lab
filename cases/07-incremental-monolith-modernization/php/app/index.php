@@ -80,16 +80,43 @@ function runChangeFlow(string $mode, string $scenario, string $consumer): array
     $elapsedBaseMs = ($modulesTouched * 38) + ($mode === 'legacy' ? 120 : 60);
     usleep(($elapsedBaseMs + random_int(20, 60)) * 1000);
 
-    if ($mode === 'strangler') {
-        $currentProgress = (int) ($state['migration']['consumers'][$consumer] ?? 0);
-        $state['migration']['consumers'][$consumer] = min(100, $currentProgress + 25);
-        $state['migration']['extracted_module_coverage'] = min(92, (int) $state['migration']['extracted_module_coverage'] + 6);
-        $state['migration']['contract_tests'] = min(180, (int) $state['migration']['contract_tests'] + 4);
-        $state['migration']['last_release'] = 'strangler-' . gmdate('Ymd-His');
-        writeState($state);
+    $httpStatus = 200;
+    $errorMessage = null;
+
+    try {
+        if ($mode === 'legacy') {
+            // Simulación Física: "God Class" acoplado
+            $monolithApp = new \stdClass();
+            $monolithApp->billingEngine = new \stdClass();
+            
+            if ($scenario === 'shared_schema') {
+                unset($monolithApp->sharedSessionDb); // Un equipo migró la DB y borró la referencia vieja
+                // El equipo de Billing que no fue coordinado, asume que todavía existe
+                $crash = $monolithApp->sharedSessionDb->fetchData() ?? false; // Rompe la compilación!
+            } elseif ($scenario === 'parallel_conflict') {
+                throw new \RuntimeException("Git Merge Error: Las ramas de Feature colisionan sobre la God Class compartida.");
+            }
+        } elseif ($mode === 'strangler') {
+            // Anti-Corruption Layer defiende al módulo
+            if ($scenario === 'shared_schema') {
+                 // Componentes separados usando Facade / Adapter
+                 $billingAdapter = new \stdClass();
+                 $billingAdapter->fetchData = function() { return 'Safe Session Data'; };
+                 $state['migration']['anti_corruption_layer_enabled'] = true;
+            }
+
+            $currentProgress = (int) ($state['migration']['consumers'][$consumer] ?? 0);
+            $state['migration']['consumers'][$consumer] = min(100, $currentProgress + 25);
+            $state['migration']['extracted_module_coverage'] = min(92, (int) $state['migration']['extracted_module_coverage'] + 6);
+            $state['migration']['contract_tests'] = min(180, (int) $state['migration']['contract_tests'] + 4);
+            $state['migration']['last_release'] = 'strangler-' . gmdate('Ymd-His');
+            writeState($state);
+        }
+    } catch (\Throwable $e) {
+        $httpStatus = 502;
+        $errorMessage = "Fatal Regresión en el Monolito: " . $e->getMessage();
     }
 
-    $httpStatus = $mode === 'legacy' ? (int) $scenarioMeta['legacy_status'] : (int) $scenarioMeta['strangler_status'];
     $outcome = $httpStatus >= 400 ? 'failure' : 'success';
     $statusText = $httpStatus >= 400 ? 'failed' : 'completed';
 
@@ -98,9 +125,9 @@ function runChangeFlow(string $mode, string $scenario, string $consumer): array
         'scenario' => $scenario,
         'consumer' => $consumer,
         'status' => $statusText,
-        'message' => $mode === 'legacy'
-            ? 'Legacy toca demasiados modulos y concentra mas riesgo por cambio.'
-            : 'Strangler reduce blast radius, sube cobertura y mueve el consumidor de forma gradual.',
+        'message' => $mode === 'legacy' && $httpStatus >= 400
+            ? $errorMessage ?? 'Legacy toca demasiados modulos y concentra mas riesgo por cambio.'
+            : 'Strangler reduce blast radius usando Facades, sube cobertura y mueve el consumidor de forma gradual.',
         'change_id' => $deploymentId,
         'modules_touched' => $modulesTouched,
         'blast_radius_score' => $blastRadius,
@@ -110,9 +137,7 @@ function runChangeFlow(string $mode, string $scenario, string $consumer): array
     ];
 
     if ($httpStatus >= 400) {
-        $payload['error'] = $scenario === 'shared_schema'
-            ? 'El cambio impacto dependencias no aisladas del monolito.'
-            : 'El cambio no pudo avanzar sin bloquear otros equipos o consumidores.';
+        $payload['error'] = 'Crash grave de Acoplamiento capturado por Controlador PHP.';
     }
 
     return [

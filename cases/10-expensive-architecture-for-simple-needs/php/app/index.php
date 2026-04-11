@@ -62,8 +62,32 @@ function runFeatureFlow(string $mode, string $scenario, int $accounts): array
     $coordinationPoints = (int) $scenarioMeta['coordination'];
     $problemFitScore = (int) $scenarioMeta['fit'];
     $httpStatus = (int) $scenarioMeta['status'];
-
-    usleep((int) (($servicesTouched * 22) + random_int(25, 65)) * 1000);
+    $errorMessage = null;
+    try {
+        // En lugar de un delay falso, hacemos que el CPU y la Memoria realmente sufran iterando DTOs
+        if ($mode === 'complex') {
+            $dummyEntities = array_fill(0, min(8000, max(100, $accounts * 15)), ['id' => random_int(100, 999)]);
+            for ($hop = 0; $hop < $servicesTouched; $hop++) {
+                // Serialización pura: Simulando pase de datos por red inter-servicios
+                $json = json_encode($dummyEntities);
+                $dummyEntities = json_decode($json, true);
+                // Simulación de hidratación excesiva de ORMs
+                $dummyEntities = array_map(fn($v) => (object)$v, $dummyEntities);
+            }
+            $val = $dummyEntities[0]->id;
+            
+            if ($scenario === 'seasonal_peak') {
+                throw new \RuntimeException("Gateway Timeout: Demasiados hops serializando en modo complejo bajo pico.");
+            }
+        } else {
+            // Enfoque Right-Sized
+            $directData = array_fill(0, min(8000, max(100, $accounts * 15)), ['id' => random_int(100, 999)]);
+            $val = $directData[0]['id']; // Extracción lineal plana (O(1))
+        }
+    } catch (\Throwable $e) {
+        $httpStatus = 502;
+        $errorMessage = "Error Crítico PHP: " . $e->getMessage();
+    }
 
     $state['architecture']['decision_log_count'] = (int) $state['architecture']['decision_log_count'] + 1;
     if ($mode === 'right_sized') {
@@ -79,9 +103,9 @@ function runFeatureFlow(string $mode, string $scenario, int $accounts): array
         'scenario' => $scenario,
         'accounts' => $accounts,
         'status' => $httpStatus >= 400 ? 'failed' : 'completed',
-        'message' => $mode === 'complex'
-            ? 'La solucion distribuye una necesidad simple entre demasiados servicios, equipos y hops operativos.'
-            : 'Right-sized resuelve la necesidad con menos piezas, menor costo y menos coordinacion.',
+        'message' => $mode === 'complex' && $httpStatus >= 400
+            ? $errorMessage
+            : ($mode === 'complex' ? 'La solucion encarece innecesariamente con CPU overhead.' : 'Right-sized resuelve la necesidad directo con O(1).'),
         'flow_id' => $flowId,
         'services_touched' => $servicesTouched,
         'monthly_cost_usd' => $monthlyCost,

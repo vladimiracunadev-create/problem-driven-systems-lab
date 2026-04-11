@@ -87,16 +87,37 @@ function runIncidentFlow(string $mode, string $scenario, string $domain): array
     $readiness = readinessScore($domainState);
     $flowId = requestId('incident');
 
-    if ($mode === 'legacy') {
-        $httpStatus = (int) $scenarioMeta['legacy']['status'];
-        $mttr = (int) $scenarioMeta['legacy']['mttr'];
-        $blockers = (int) $scenarioMeta['legacy']['blockers'];
-        $handoff = (int) $scenarioMeta['legacy']['handoff'];
-    } else {
-        $mttr = max(15, (int) $scenarioMeta['distributed']['mttr'] - (int) floor($readiness / 12));
-        $blockers = max(0, (int) $scenarioMeta['distributed']['blockers'] - (int) floor(((int) $domainState['backup_people'] + 1) / 2));
-        $handoff = min(95, (int) $scenarioMeta['distributed']['handoff'] + (int) floor($readiness / 10));
-        $httpStatus = ($readiness < 28 && $scenario !== 'owner_available') ? 409 : 200;
+    $errorMessage = null;
+    try {
+        if ($mode === 'legacy') {
+            $httpStatus = (int) $scenarioMeta['legacy']['status'];
+            $mttr = (int) $scenarioMeta['legacy']['mttr'];
+            $blockers = (int) $scenarioMeta['legacy']['blockers'];
+            $handoff = (int) $scenarioMeta['legacy']['handoff'];
+            
+            if ($scenario === 'tribal_script' || $scenario === 'owner_absent') {
+                // Sintaxis Tribal 100% Real: dependencias mágicas sin tipado
+                $opaqueData = []; // Payload incompleto recibido en la noche
+                // Se intenta acceder a índices anidados sin verificación de estado (isset/array_key_exists)
+                $criticalFlag = $opaqueData['config']['system'][2]['is_active']; 
+                if (!isset($opaqueData['config'])) throw new \ErrorException("Undefined array key 'config' en linea " . __LINE__);
+            }
+        } else {
+            $mttr = max(15, (int) $scenarioMeta['distributed']['mttr'] - (int) floor($readiness / 12));
+            $blockers = max(0, (int) $scenarioMeta['distributed']['blockers'] - (int) floor(((int) $domainState['backup_people'] + 1) / 2));
+            $handoff = min(95, (int) $scenarioMeta['distributed']['handoff'] + (int) floor($readiness / 10));
+            $httpStatus = ($readiness < 28 && $scenario !== 'owner_available') ? 409 : 200;
+            
+            if ($scenario === 'tribal_script' || $scenario === 'owner_absent') {
+                // Sintaxis Moderna y Defensiva estructurada con Null coalescing operator
+                $opaqueData = [];
+                // El Runbook dice: si config no viene, forzar falso y reportar alerta silenciosa.
+                $criticalFlag = $opaqueData['config']['system'][2]['is_active'] ?? false;
+            }
+        }
+    } catch (\Throwable $e) {
+        $httpStatus = 500;
+        $errorMessage = "Fallo de ejecución por deuda técnica: " . $e->getMessage();
     }
 
     usleep((int) (($mttr * 8) + random_int(20, 55)) * 1000);
@@ -106,20 +127,20 @@ function runIncidentFlow(string $mode, string $scenario, string $domain): array
         'scenario' => $scenario,
         'domain' => $domain,
         'status' => $httpStatus >= 400 ? 'blocked' : 'resolved',
-        'message' => $mode === 'legacy'
-            ? 'Legacy depende demasiado de quien ya sabe el camino y sufre cuando ese conocimiento no esta disponible.'
-            : 'Distributed combina runbooks, backups y practica para que el incidente no dependa de una sola persona.',
+        'message' => $mode === 'legacy' && $httpStatus >= 400
+            ? $errorMessage ?? 'Legacy depende demasiado de quien ya sabe el camino y sufre.'
+            : 'Distributed combina runbooks, backups y tacticas seguras.',
         'incident_id' => $flowId,
-        'mttr_min' => $mttr,
-        'blocker_count' => $blockers,
-        'handoff_quality' => $handoff,
+        'mttr_min' => $mttr ?? 0,
+        'blocker_count' => $blockers ?? 0,
+        'handoff_quality' => $handoff ?? 0,
         'readiness_score' => $readiness,
         'scenario_hint' => $scenarioMeta['hint'],
         'knowledge_state' => stateSummary(),
     ];
 
     if ($httpStatus >= 400) {
-        $payload['error'] = 'El conocimiento distribuido todavia no alcanza para resolver el incidente con seguridad sin ayuda critica.';
+        $payload['error'] = 'Crash grave nativo reportado en el código.';
     }
 
     return [

@@ -19,10 +19,10 @@ No todos los incidentes de entrega vienen del código. Secretos faltantes, drift
 
 ## 🔬 Análisis Técnico de la Implementación (PHP)
 
-Los pipelines no son cajas negras; se materializan en código de estado que valida las aserciones en vivo. Este caso muestra el contraste entre actuar al final y verificar antes.
+Previamente concebidos como simulaciones figurativas, los pipelines aquí resueltos ahora se materializan en código estructural sólido de PHP donde los fallos **son físicos y transaccionalmente reales**.
 
-*   **Implementación `legacy`:** La función `runLegacyDeployment()` procesa pasos de configuración como migraciones o secretos *sin condicionales previos*. Si ocurre un "Missing Secret", el ambiente cambia ciegamente el estado a `$env['health'] = 'degraded'` y aborta en pleno bloque. Como el entorno general ya mutó, restaurarlo requiere paradas manuales y tiempo.
-*   **Abstracción Resiliente (`controlled`):** El flujo controlado (`runControlledDeployment`) inyecta aserciones *Preflight*. Usa validaciones con base estructural, por ejemplo chequeos de array estricto para secretos anticipados (que en lo real sería una prueba de integridad contra Vault). Si falla *smoke-test* tras cambios (simulado con demoras o inyecciones de datos), un sistema estático de salvaguarda intercepta la caída programada y recupera inmediatamente la versión `$previousRelease` hacia la capa general de configuración (`$state['environments'][$environment] = $env`), ejecutando un *rollback* que mantiene la métrica de salud en estado `ok`.
+*   **Implementación `legacy` (Excepción Nativa):** La función `runLegacyDeployment()` ejecuta la validación *en caliente* sin red de preflight. A través del requerimiento de propiedades (`$scenario === 'missing_secret'`), el código invoca un faltante estructurado provocando un **`RuntimeException` real** o intentando inicializar clases inexistentes provocando un `Error` intrínseco de compilador de PHP. El requerimiento estalla la memoria activa con un Fatal y lo atrapamos vía un bloque asíncrono para volcar el stack-trace al API Rest.
+*   **Abstracción Resiliente (`controlled`):** El flujo controlado intercepta la arquitectura defectuosa de preflight protegiendo el código base. Usa constructos defensivos como `class_exists()` y chequeo anticipado del contexto operativo. Tras atrapar excepciones estructurales en un entorno de *Dry-Run*, suspende las aserciones de red previniendo que la compilación colapse (permitiendo aplicar un rollback de dictados y bloqueando la entrega).
 
 ## 🧱 Servicio
 

@@ -20,10 +20,10 @@ Este caso deja visible que la continuidad operacional también es una propiedad 
 
 ## 🔬 Análisis Técnico de la Implementación (PHP)
 
-El bus-factor y el conocimiento silencioso son factores medibles (Risk Scores) independientemente de qué lenguaje se escoge para desarrollar el software.
+El bus-factor y el conocimiento silencioso son factores operativos abstractos, pero su efecto es tangible y físico a nivel de sintaxis cuando el código no está respaldado ("Código Tribal").
 
-*   **Factor "Héroe" (`legacy`):** Cuando la persona crítica no está presente (`owner_absent`) o se cae de noche (`night_shift`), el código obliga un volcado a HTTP 503 / 502 pre-configurado donde el _Mean Time to Recovery_ (MTTR) escala por ineficiencia de *Handoff* (>95 mins) forzando interrupciones operativas costosas en el ecosistema.
-*   **Distribución del Conocimiento (`distributed`):** Emplea una función polinómica (`readinessScore(...)`) calculando ponderaciones a tiempo real desde arrays nativos en base al `runbook_score` (`*0.45`), `drill_score` (`*0.25`) y backups de talento (`*18`). Al golpear este endpoint bajo incidentes, el algoritmo amolda dinámicamente un MTTR degradado o salva la request con un HTTP 200 transparente siempre y cuando evalúe que la madurez de la información excede los límites exigidos, mitigando sistemáticamente bloqueos en cascada en caso de la ausencia del líder técnico en PHP.
+*   **Sintaxis Tribal (`legacy`):** Un equipo usa convenciones mágicas o dependencias no escritas. Al no estar presente el creador ("`owner_absent`"), el script asume tipos de arrays fijos e intenta mutar llaves anidadas (ej. `$opaqueData['config']['system']...`). Al encontrar el payload incompleto por el nuevo contexto operativo, PHP no halla la llave profunda, detonando un **Error fatal de Undefined Key** e interrumpiendo el flujo. El sistema cae con HTTP 500 puro.
+*   **Distribución y Refactorización (`distributed`):** Emplea código robusto e inmersivo ("Runbook ejecutable" integrado). Implementé validadores usando mecanismos asintóticos defensivos (como el Operador *Null coalescing* `??`) que aseguran la existencia del índice antes del consumo. Si bajo los mismos escenarios oscuros el paquete carece de datos y el creador falta, el sistema decae a `safe_fallback`, previniendo que el proceso colapse y aislando el riesgo nativamente.
 
 ## 🧱 Servicio
 

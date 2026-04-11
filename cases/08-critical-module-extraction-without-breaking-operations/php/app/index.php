@@ -103,9 +103,8 @@ function runExtractionFlow(string $mode, string $scenario, string $consumer): ar
     $scenarioMeta = scenarioCatalog()[$scenario];
     $state = readState();
     $flowId = requestId('extract');
-    $httpStatus = $mode === 'bigbang'
-        ? (int) $scenarioMeta['bigbang_status']
-        : (int) $scenarioMeta['compatible_status'];
+    
+    // Asignaciones base (proxy hits si todo sale bien)
     $blastRadius = $mode === 'bigbang'
         ? (int) $scenarioMeta['bigbang_blast']
         : (int) $scenarioMeta['compatible_blast'];
@@ -113,15 +112,39 @@ function runExtractionFlow(string $mode, string $scenario, string $consumer): ar
 
     usleep((($mode === 'bigbang' ? 240 : 140) + random_int(20, 60)) * 1000);
 
-    if ($mode === 'compatible') {
-        $current = (int) ($state['extraction']['consumers'][$consumer] ?? 0);
-        $state['extraction']['consumers'][$consumer] = min(100, $current + (int) $scenarioMeta['compatible_progress']);
-        $state['extraction']['contract_tests'] = min(180, (int) $state['extraction']['contract_tests'] + 6);
-        $state['extraction']['compatibility_proxy_hits'] = (int) $state['extraction']['compatibility_proxy_hits'] + $compatibilityHits;
-        $state['extraction']['shadow_traffic_percent'] = min(95, (int) $state['extraction']['shadow_traffic_percent'] + 8);
-        $state['extraction']['cutover_events'] = (int) $state['extraction']['cutover_events'] + 1;
-        $state['extraction']['last_release'] = 'compat-' . gmdate('Ymd-His');
-        writeState($state);
+    $httpStatus = 200;
+    $errorMessage = null;
+
+    try {
+        if ($mode === 'bigbang') {
+            if ($scenario === 'rule_drift') {
+                $payload = ['cost_usd' => 150]; // Inyección desde el consumidor no migrado
+                // El modulo extraido asume un contrato nuevo (usando 'price')
+                $finalPrice = $payload['price'] * 1.21; // Desatará Warning: Undefined array key
+                if (!isset($payload['price'])) throw new \InvalidArgumentException("Modulo extraído asume key 'price', payload traía key 'cost_usd'. Contrato roto.");
+            } elseif ($scenario === 'shared_write' || $scenario === 'peak_sale' || $scenario === 'partner_contract') {
+                throw new \RuntimeException("Modulo crasheó: " . $scenarioMeta['hint']);
+            }
+        } elseif ($mode === 'compatible') {
+             // El proxy compatible analiza y adapta en caliente (Adapter Pattern)
+            if ($scenario === 'rule_drift') {
+                $payload = ['cost_usd' => 150];
+                $payload['price'] = $payload['cost_usd']; // Proxy alinea el contrato
+                $finalPrice = $payload['price'] * 1.21; // Operacion segura
+            }
+
+            $current = (int) ($state['extraction']['consumers'][$consumer] ?? 0);
+            $state['extraction']['consumers'][$consumer] = min(100, $current + (int) $scenarioMeta['compatible_progress']);
+            $state['extraction']['contract_tests'] = min(180, (int) $state['extraction']['contract_tests'] + 6);
+            $state['extraction']['compatibility_proxy_hits'] = (int) $state['extraction']['compatibility_proxy_hits'] + $compatibilityHits;
+            $state['extraction']['shadow_traffic_percent'] = min(95, (int) $state['extraction']['shadow_traffic_percent'] + 8);
+            $state['extraction']['cutover_events'] = (int) $state['extraction']['cutover_events'] + 1;
+            $state['extraction']['last_release'] = 'compat-' . gmdate('Ymd-His');
+            writeState($state);
+        }
+    } catch (\Throwable $e) {
+        $httpStatus = $scenario === 'shared_write' ? 409 : ($scenario === 'peak_sale' ? 502 : 500);
+        $errorMessage = "Excepción en código " . get_class($e) . " -> " . $e->getMessage();
     }
 
     $summary = stateSummary();
@@ -131,9 +154,9 @@ function runExtractionFlow(string $mode, string $scenario, string $consumer): ar
         'scenario' => $scenario,
         'consumer' => $consumer,
         'status' => $httpStatus >= 400 ? 'failed' : 'completed',
-        'message' => $mode === 'bigbang'
-            ? 'Big bang intenta cortar el modulo de una vez y amplifica el riesgo sobre consumidores sensibles.'
-            : 'Compatible usa proxy, contratos y cutover por consumidor para mover el modulo sin romper operacion.',
+        'message' => $mode === 'bigbang' && $httpStatus >= 400
+            ? $errorMessage
+            : 'Compatible usa proxy, intercepta las llamadas, transforma contratos y hace cutover gradual sin romper código.',
         'flow_id' => $flowId,
         'blast_radius_score' => $blastRadius,
         'compatibility_proxy_hits' => $compatibilityHits,
@@ -143,7 +166,7 @@ function runExtractionFlow(string $mode, string $scenario, string $consumer): ar
     ];
 
     if ($httpStatus >= 400) {
-        $payload['error'] = 'La extraccion corto compatibilidad antes de completar contratos, proxy y validacion por consumidor.';
+        $payload['error'] = 'La extracción explotó de forma dura. Excepción capturada en log.';
     }
 
     return [

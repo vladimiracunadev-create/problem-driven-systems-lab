@@ -54,27 +54,43 @@ function runReportFlow(string $mode, string $scenario, int $rows): array
     $primaryBefore = (int) $reporting['primary_load'];
     $lockBefore = (int) $reporting['lock_pressure'];
 
-    if ($mode === 'legacy') {
-        $reporting['primary_load'] = min(100, $primaryBefore + (int) $scenarioMeta['legacy_load'] + (int) floor($rows / 150000));
-        $reporting['lock_pressure'] = min(100, $lockBefore + (int) $scenarioMeta['legacy_lock'] + (int) floor($rows / 200000));
-        $reporting['snapshot_freshness_min'] = max(0, (int) $reporting['snapshot_freshness_min'] - 2);
-        $reporting['queue_depth'] = max(0, (int) $reporting['queue_depth'] - 2);
-    } else {
-        $reporting['primary_load'] = min(100, $primaryBefore + 8 + (int) floor($rows / 300000));
-        $reporting['lock_pressure'] = min(100, $lockBefore + 6 + (int) floor($rows / 400000));
-        $reporting['queue_depth'] = min(120, (int) $reporting['queue_depth'] + (int) $scenarioMeta['isolated_queue']);
-        $reporting['replica_lag_s'] = min(180, (int) $reporting['replica_lag_s'] + (int) $scenarioMeta['isolated_lag']);
-        $reporting['snapshot_freshness_min'] = min(60, max(4, (int) floor($reporting['replica_lag_s'] / 3)));
+    $critical = false;
+    $httpStatus = 200;
+    $errorMessage = null;
+
+    try {
+        $lockFile = sys_get_temp_dir() . '/db_mock_table.lock';
+        $fp = fopen($lockFile, 'c+');
+
+        if ($mode === 'legacy') {
+            flock($fp, LOCK_EX); // Toma lock exclusivo
+            $reporting['primary_load'] = min(100, $primaryBefore + (int) $scenarioMeta['legacy_load'] + (int) floor($rows / 150000));
+            // Suspendemos I/O real emulando un volcado DML masivo que bloquea la tabla "física" real
+            usleep((int) (1200 + min(3000, floor($rows / 1000))) * 1000);
+            flock($fp, LOCK_UN);
+        } else {
+            // Isolated read
+            usleep(150 * 1000); 
+            $reporting['queue_depth'] = min(120, (int) $reporting['queue_depth'] + (int) $scenarioMeta['isolated_queue']);
+            $reporting['replica_lag_s'] = min(180, (int) $reporting['replica_lag_s'] + (int) $scenarioMeta['isolated_lag']);
+        }
+        fclose($fp);
+    } catch (\Throwable $e) {
+        $critical = true;
+        $httpStatus = 503;
+        $errorMessage = "Error I/O: " . $e->getMessage();
     }
 
     $reporting['total_exports'] = (int) $reporting['total_exports'] + 1;
     $reporting['last_report_at'] = gmdate('c');
     writeState($state);
 
-    usleep((int) (120 + min(450, floor($rows / 2500))) * 1000);
     $summary = stateSummary();
-    $critical = $mode === 'legacy' && $summary['pressure_level'] === 'critical';
-    $httpStatus = $critical ? 503 : 200;
+    if ($mode === 'legacy' && $summary['pressure_level'] === 'critical') {
+        $critical = true;
+        $httpStatus = 503;
+        $errorMessage = 'Critical Pressure Reached';
+    }
     $outcome = $httpStatus >= 400 ? 'failure' : 'success';
     $opsImpactMs = (int) round(($summary['primary_load'] * 3.1) + ($summary['lock_pressure'] * 2.4));
 
@@ -83,9 +99,9 @@ function runReportFlow(string $mode, string $scenario, int $rows): array
         'scenario' => $scenario,
         'rows' => $rows,
         'status' => $httpStatus >= 400 ? 'failed' : 'completed',
-        'message' => $mode === 'legacy'
-            ? 'Legacy ejecuta el reporte directo sobre la operacion transaccional y aumenta carga y locks sobre el primario.'
-            : 'Isolated empuja carga a una ruta de reporting con cola y replica para proteger la operacion principal.',
+        'message' => $mode === 'legacy' && $httpStatus >= 400
+            ? $errorMessage
+            : ($mode === 'legacy' ? 'El lock bloqueó I/O físico durante segundos.' : 'Isolated liberó el lock y mandó tarea a background.'),
         'flow_id' => $flowId,
         'primary_load_before' => $primaryBefore,
         'primary_load_after' => $summary['primary_load'],
@@ -99,7 +115,7 @@ function runReportFlow(string $mode, string $scenario, int $rows): array
     ];
 
     if ($httpStatus >= 400) {
-        $payload['error'] = 'El reporte bloqueo demasiado el primario y ya compromete la operacion transaccional.';
+        $payload['error'] = 'El mecanismo de lock bloqueó duramente los escritores concurrentes.';
     }
 
     return [
@@ -126,14 +142,31 @@ function runWriteFlow(int $orders): array
     $primaryLoad = (int) $reporting['primary_load'];
     $lockPressure = (int) $reporting['lock_pressure'];
     $latencyMs = (int) round(35 + ($orders * 2.1) + ($primaryLoad * 1.6) + ($lockPressure * 1.3));
-    $httpStatus = ($primaryLoad >= 90 || $lockPressure >= 75) ? 503 : 200;
+    
+    $httpStatus = 200;
+    
+    // Test físico: intentamos bloquear la tabla para transacciones
+    $lockFile = sys_get_temp_dir() . '/db_mock_table.lock';
+    $fp = fopen($lockFile, 'c+');
+    if (!flock($fp, LOCK_EX | LOCK_NB)) {
+        // Otro proceso tiene el Lock Exclusivo (probablemente Reporting)
+        $httpStatus = 503;
+    } else {
+        if ($primaryLoad >= 90 || $lockPressure >= 75) {
+            $httpStatus = 503;
+        } else {
+            usleep(min(500000, $latencyMs * 1000));
+        }
+        flock($fp, LOCK_UN);
+    }
+    fclose($fp);
+
     $outcome = $httpStatus >= 400 ? 'failure' : 'success';
 
     $reporting['primary_load'] = min(100, $primaryLoad + max(1, (int) ceil($orders / 8)));
     $reporting['total_operational_writes'] = (int) $reporting['total_operational_writes'] + $orders;
     writeState($state);
 
-    usleep(min(500000, $latencyMs * 1000));
     $summary = stateSummary();
     $payload = [
         'mode' => 'operations',

@@ -19,10 +19,10 @@ La modernización incremental no es solo una preferencia arquitectónica: es una
 
 ## 🔬 Análisis Técnico de la Implementación (PHP)
 
-Extraer código espagueti de un monolito a menudo se enfoca en Frameworks o DBs, pero ignora la progresión lógica. Este caso prueba los límites operacionales dentro del mismo PHP.
+Previamente una simulación de variables, este caso ahora implementa topología real de memoria de PHP exponiendo el caos que genera el acoplamiento global.
 
-*   **Impacto Expandido (`legacy`):** Un simple cambio se modela impactando una red completa. Sin barreras, `$blastRadius` y `$elapsedBaseMs` se multiplican drásticamente y un fallo en un contrato arcaico transversal (`shared_schema`) bloquea todo el monolito con un estricto *Status 500*.
-*   **Progresión por Consumidor (`strangler`):** Introduce una frontera dura simulando un *Anti-Corruption Layer (ACL)*. La mutación en PHP no ocurre en masa; utiliza métricas discretas sobre diccionarios transaccionales (`$state['migration']['consumers'][$consumer] = min(100, $currentProgress + 25)`). Esto codifica que el progreso (cutover) se realiza invocador-por-invocador mientras eleva paulatinamente variables de aseguramiento (`contract_tests` y `extracted_module_coverage`), permitiendo retrotraer a PHP si un consumidor específico no tolera el esquema nuevo sin infectar al núcleo.
+*   **Impacto Expandido (`legacy`):** Un simple cambio se modela impactando una red completa instanciando una `God Class` (`$monolithApp = new \stdClass()`). Sin barreras, al simular que un módulo migra soltando la dependencia compartida (`unset()`), cualquier otro módulo nativo que la llame a fondo arroja un `Crash` real de PHP interrumpiendo la compilación. El acoplamiento es físico.
+*   **Progresión por Consumidor (`strangler`):** Introduce una frontera dura programática aislando la inyección mediante un *Anti-Corruption Layer (ACL)*. Utilizando Facades/Adapters (`$billingAdapter = new \stdClass(); $billingAdapter->fetchData = ...`), evitamos la colisión de ramas y dependencias faltantes en PHP, tolerando el esquema nuevo sin infectar al núcleo.
 
 ## 🧱 Servicio
 

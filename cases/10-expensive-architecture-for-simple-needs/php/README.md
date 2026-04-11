@@ -19,10 +19,10 @@ Este caso deja visible que decir “no” a complejidad innecesaria también es 
 
 ## 🔬 Análisis Técnico de la Implementación (PHP)
 
-Demostrar "sobre-arquitectura" en un solo framework requiere modelar el costo de la redención y coordinación de recursos.
+Demostrar "sobre-arquitectura" y diseño DTO desmedido tiene repercusiones físicas puras sobre la Unidad de Procesamiento (CPU) y la Memoria de PHP. Se abandonó el uso de matemática de retrasos para demostrar fallos mecánicos verdaderos por desgaste de RAM.
 
-*   **Red de Microservicios Simulada (`complex`):** PHP evalúa la carga simulando cómo los límites de red afectan el tiempo. Utiliza factores de escala, calculando el costo en delays multiplicando (`$servicesTouched * 22 ms + jitter`). Expone que por más veloz que sea la ejecución de PHP de manera asincrónica pura, la *Coreografía* de la metadata compleja (`coordination: 7`) inevitablemente degrada el *Problem-Fit Score* e infla el costo mensual simulado que consume presupuesto por request.
-*   **Diseño Proporcional (`right_sized`):** Muestra que frente a la misma aserción estructural (`basic_crud`), una aproximación monolítica o unificada (con un footprint de apenas 2 o 3 servicios) baja la complejidad de código base en PHP permitiendo que la respuesta sincrónica caiga enormemente en *Lead Time* (calculado en las simulaciones pasando la solicitud base con un factor costo bajo). La solución proporcional rinde hasta un 75% menos de MTTR al achicar radicalmente las invocaciones `usleep` derivadas del I/O inter-servicios.
+*   **Red de Microservicios Simulada (`complex`):** Recrea el overhead inter-servicios de una arquitectura inflada. En lugar de retrasos artificiales, PHP genera un array masivo de miles de entidades e itera profundamente (`for ($hop = 0; $hop < $servicesTouched; $hop++)`), provocando deliberadamente una serialización severa con `json_encode` y mapeo por objetos (`(object)$v`) en cada vuelta. Este ciclo devora los recursos forzando a PHP a estancarse y levantar una excepción real en los picos (`Gateway Timeout`).
+*   **Diseño Proporcional (`right_sized`):** Muestra que frente a la misma aserción estructural, el código monolítico estructurado omite todo el mapeo DTO intermedio y localiza el vector directamente (`$val = $directData[0]['id']`). Logra amortizar la misma respuesta de milisegundos con una asintótica algorítmica `O(1)`, validando por qué es mejor evitar particiones excesivas.
 
 ## 🧱 Servicio
 

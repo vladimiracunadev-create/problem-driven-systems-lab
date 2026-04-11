@@ -20,10 +20,10 @@ Este caso deja visible un problema muy real: el reporte puede “funcionar” y 
 
 ## 🔬 Análisis Técnico de la Implementación (PHP)
 
-En PHP clásico (sin ext-async), los despachos intensivos compiten fatalmente por los mismos subprocesos que manejan los requests de operaciones vitales y los *locks* de base de datos.
+Previamente un cálculo matemático, en esta versión el choque entre Reportes y Escrituras se produce mediante la colisión física de transacciones en los hilos del FPM de PHP.
 
-*   **Bloqueo por Reportes (`legacy`):** La API recibe la orden de un conteo masivo (`rows > 150000`). Se incrementa brutalmente la métrica residente `$reporting['primary_load']` simulando la extracción *Online* y añadiendo una penalización directa a `$reporting['lock_pressure']`. Si una llamada operacional paralela (escritura) encuentra este semáforo en nivel `critical`, PHP aborta con un Status `503 Service Unavailable`, bloqueando las ventas de negocio a raíz de un reporte transaccional.
-*   **Asilamiento de Procesos (`isolated`):** PHP desvía el esfuerzo emulando inyección a colas de mensajería (modificando `$reporting['queue_depth']`) e interrogando espejos (incrementando `$reporting['replica_lag_s']`). El costo de procesamiento pesado en el FPM Worker se diluye y la carga del "Primary DB" respira. Todo funciona de manera deferida, asegurando que el *Availability* principal retorne siempre HTTP 200 sin sufrir los Locks de lectura excesiva.
+*   **Bloqueo Físico de Storage (`legacy`):** Cuando la API recibe la orden de ejecutar un reporte masivo, PHP solicita un bloqueo exclusivo al sistema operativo (utilizando Lock transaccional con `flock($file, LOCK_EX)`). Como el motor no libera el puntero hasta terminar un I/O largo simulado (`usleep`), cualquier request entrante en la ruta operacional (`order-write`) choca abruptamente contra `flock($file, LOCK_EX | LOCK_NB)`, la cual fracasa estrepitosamente despachando un real `503 Service Unavailable`. El reporte mató a la tienda.
+*   **Aislamiento de Procesos (`isolated`):** PHP desvía el esfuerzo aboliendo el bloqueo concurrente contra las Tablas transaccionales. El FPM procesa un I/O no bloqueante en su propio contenedor (queue ficticio) incrementando lag y profundidad asíncrona, dejando que el `order-write` transaccional fluya en pocos ms sin toparse nunca con los Locks de lectura excesiva de Reporting.
 
 ## 🧱 Servicio
 

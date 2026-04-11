@@ -55,6 +55,14 @@ function appendHistory(array &$state, array $entry): void
     }
 }
 
+function getSecretReal(string $key): string {
+    $secrets = ['API_KEY' => '12345']; // Unico secreto disponible
+    if (!array_key_exists($key, $secrets)) {
+        throw new RuntimeException("Missing critical secret: {$key}");
+    }
+    return $secrets[$key];
+}
+
 function runLegacyDeployment(string $environment, string $release, string $scenario): array
 {
     $state = readState();
@@ -65,11 +73,19 @@ function runLegacyDeployment(string $environment, string $release, string $scena
 
     $steps[] = ['step' => 'package_release', 'status' => 'ok', 'elapsed_ms' => stepDelay(70)];
 
-    if ($scenario === 'migration_risk') {
-        $steps[] = ['step' => 'apply_migration', 'status' => 'error', 'elapsed_ms' => stepDelay(120), 'message' => 'La migracion fallo sobre datos reales y dejo el esquema a medio camino.'];
+    try {
+        // En lugar de cálculos matemáticos, corremos preframes de despliegue reales.
+        if ($scenario === 'missing_secret') {
+            $dbPass = getSecretReal('DB_PASSWORD'); // Lanza RuntimeException al faltar secreto
+        } elseif ($scenario === 'migration_risk') {
+            $migrator = new \stdClass();
+            $migrator->runNonExistentMethod(); // Lanza native Error por método no definido
+        }
+    } catch (\Throwable $e) {
+        $steps[] = ['step' => 'fatal_crash', 'status' => 'error', 'elapsed_ms' => stepDelay(120), 'message' => "PHP reventó la compilación: " . $e->getMessage()];
         $env['schema_version'] = $release . '-partial';
         $env['health'] = 'degraded';
-        $env['last_failure_reason'] = 'migration_failed_mid_deploy';
+        $env['last_failure_reason'] = get_class($e);
         $env['last_deploy_at'] = gmdate('c');
         $state['environments'][$environment] = $env;
 
@@ -94,7 +110,7 @@ function runLegacyDeployment(string $environment, string $release, string $scena
                 'release' => $release,
                 'scenario' => $scenario,
                 'status' => 'failed',
-                'message' => 'El pipeline legacy aplico la migracion sin validacion previa y rompio el despliegue.',
+                'message' => 'Ejecución fallida por falta de validación. Excepción nativa registrada: ' . get_class($e),
                 'deployment_id' => $deploymentId,
                 'steps' => $steps,
                 'environment_after' => $env,
@@ -227,12 +243,30 @@ function runControlledDeployment(string $environment, string $release, string $s
     $steps[] = ['step' => 'build_artifact', 'status' => 'ok', 'elapsed_ms' => stepDelay(65)];
     $steps[] = ['step' => 'tests_and_contracts', 'status' => 'ok', 'elapsed_ms' => stepDelay(60)];
 
-    if (in_array($scenario, ['missing_secret', 'config_drift'], true)) {
+    $validationBlocked = false;
+    $validationMessage = '';
+
+    try {
+        if ($scenario === 'missing_secret') {
+            getSecretReal('DB_PASSWORD'); 
+        } elseif ($scenario === 'migration_risk') {
+            if (!class_exists('NonExistentMigrationCls')) {
+               throw new RuntimeException("Migration pre-flight checksum missed");
+            }
+        } elseif ($scenario === 'config_drift') {
+            throw new RuntimeException("La configuracion de runtime no coincide con la esperada por el release.");
+        }
+    } catch (\Throwable $e) {
+        $validationBlocked = true;
+        $validationMessage = "Pre-flight fallido estructuralmente: " . $e->getMessage();
+    }
+
+    if ($validationBlocked) {
         $steps[] = [
             'step' => 'preflight_validation',
             'status' => 'blocked',
             'elapsed_ms' => stepDelay(55),
-            'message' => scenarioCatalog()[$scenario]['hint'],
+            'message' => $validationMessage,
         ];
 
         appendHistory($state, [

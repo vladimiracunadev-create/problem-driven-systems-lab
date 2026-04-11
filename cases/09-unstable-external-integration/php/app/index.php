@@ -101,11 +101,43 @@ function runCatalogFlow(string $mode, string $scenario, string $sku): array
     $quotaSaved = $mode === 'hardened' ? (int) $scenarioMeta['quota_saved'] : 0;
     $cachedResponse = $mode === 'hardened' ? (int) $scenarioMeta['cached_response'] : 0;
     $schemaProtected = $mode === 'hardened' ? (int) $scenarioMeta['schema_protected'] : 0;
-    $httpStatus = $mode === 'legacy'
-        ? (int) $scenarioMeta['legacy_status']
-        : (int) $scenarioMeta['hardened_status'];
+    $httpStatus = 200;
+    $errorMessage = null;
 
-    usleep((($mode === 'legacy' ? 190 : 120) + random_int(20, 55)) * 1000);
+    try {
+        if ($mode === 'legacy') {
+            // Legacy usa funciones base síncronas bloqueantes sin salvaguardas (como file_get_contents puro)
+            if ($scenario === 'maintenance_window' || $scenario === 'rate_limited') {
+                // Simulamos la caída de file_get_contents sin context timeout
+                throw new \RuntimeException("file_get_contents(http://proveedor.externo/v1/sku): Failed to open stream: Connection timed out");
+            } elseif ($scenario === 'schema_drift' || $scenario === 'partial_payload') {
+                // El proveedor cambió el esquema, PHP no lo valida y trata de procesar
+                $brokenJson = '{"sku":"' . $sku . '", "cost": 45}'; 
+                $data = json_decode($brokenJson, true);
+                $price = $data['price_usd'] * 1.5; // Arrojará Warning nativo
+                if (!isset($data['price_usd'])) throw new \UnexpectedValueException("Undefined array key 'price_usd'. Schema drift no mitigado.");
+            }
+        } elseif ($mode === 'hardened') {
+            // Hardened asume configuración de cURL con CURLOPT_TIMEOUT y catch
+            if ($scenario === 'maintenance_window' || $scenario === 'rate_limited') {
+                try {
+                    throw new \RuntimeException("cURL error 28: Operation timed out after 1000 milliseconds");
+                } catch (\Throwable $e) {
+                    $cachedResponse = 1; // Fallback automático a archivo local/Redis
+                }
+            } elseif ($scenario === 'schema_drift' || $scenario === 'partial_payload') {
+                $brokenJson = '{"sku":"' . $sku . '", "cost": 45}'; 
+                $data = json_decode($brokenJson, true);
+                // Adapter Pattern en vivo
+                $data['price_usd'] = $data['price_usd'] ?? $data['cost'] ?? 0.0;
+                $price = $data['price_usd'] * 1.5;
+                $schemaProtected = 1;
+            }
+        }
+    } catch (\Throwable $e) {
+        $httpStatus = $scenario === 'rate_limited' ? 429 : ($scenario === 'maintenance_window' ? 503 : 502);
+        $errorMessage = "Error bloqueante de Sistema: " . $e->getMessage();
+    }
 
     $integration['rate_limit_budget'] = max(0, min(12, $budgetBefore - $quotaCost + $quotaSaved));
     $integration['cache']['age_seconds'] = $cachedResponse === 1
@@ -138,9 +170,9 @@ function runCatalogFlow(string $mode, string $scenario, string $sku): array
         'scenario' => $scenario,
         'sku' => $sku,
         'status' => $httpStatus >= 400 ? 'failed' : 'completed',
-        'message' => $mode === 'legacy'
-            ? 'Legacy depende del proveedor en linea y absorbe directamente drift, cuota y payload defectuoso.'
-            : 'Hardened agrega adapter, cache y protecciones para mantener continuidad frente a cambios externos.',
+        'message' => $mode === 'legacy' && $httpStatus >= 400
+            ? $errorMessage
+            : 'Hardened agrega adapter, cache local estático usando try/catch protegiendo el pipeline.',
         'flow_id' => $flowId,
         'cached_response' => (bool) $cachedResponse,
         'schema_protected' => (bool) $schemaProtected,
@@ -153,7 +185,7 @@ function runCatalogFlow(string $mode, string $scenario, string $sku): array
     ];
 
     if ($httpStatus >= 400) {
-        $payload['error'] = 'La integracion directa quedo expuesta al cambio del proveedor sin amortiguacion suficiente.';
+        $payload['error'] = 'La integración estalló nativamente en PHP por falta de try/catch de red.';
     }
 
     return [

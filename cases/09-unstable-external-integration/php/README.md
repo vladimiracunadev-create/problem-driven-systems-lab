@@ -23,10 +23,10 @@ Este caso deja visible que la resiliencia frente a terceros no depende solo del 
 
 ## 🔬 Análisis Técnico de la Implementación (PHP)
 
-Las APIs de terceros fallan en formas más sutiles que un simple socket caído (Ej: cambian su JSON sin aviso, devuelven campos nulos o agotan la cuota).
+Las APIs de terceros fallan en formas más sutiles que un simple socket caído (Ej: cambian su JSON sin aviso, devuelven campos nulos o agotan la cuota). El laboratorio fue resuelto usando integraciones físicas.
 
-*   **Llamado Vulnerable (`legacy`):** Ejecuta costos directos. Agota agresivamente el `$rate_limit_budget` (costando x3 frente a la variante protegida) y permite vulnerabilidades estructurales donde un cambio de esquema o un mantenimiento ajeno de un tercero provoca una propagación en cadena hasta nuestra UI (`legacy_status: 502/503/429`).
-*   **Aislado Robusto (`hardened`):** Introduce en PHP la simulación de *Adapter* y *TTL Caching*. Conserva en almacenes persistentes o arrays locales (apoyado mediante funciones como `json_encode` estructuradas en el backend) una instancia del `productSnapshot($sku)` sano. Ante caídas u omisiones (`schema_drift`), en vez de fallar catastróficamente, PHP devuelve un "Status 200 degradado" reconstruido localmente, ahorrando peticiones HTTP (absorbe el *Quota Limit*) e inmunizándonos del `maintenance_window` ajeno.
+*   **Llamado Vulnerable (`legacy`):** Ejecuta código asumiendo "Happy Path" absoluto utilizando funciones sincrónicas (como si usara `file_get_contents` puro bloqueante). Si existe un problema de red, el código genera un **crasheo físico por Timeout**. Si el proveedor cambia el payload JSON e ignora mandar la key esperada (`price_usd`), PHP estalla un `Warning` y aborta la transacción porque el contrato se rompió físicamente en memoria.
+*   **Aislado Robusto (`hardened`):** Introduce en PHP un interceptor de Excepciones (`try/catch`). Asume el uso de configuraciones seguras (`CURLOPT_TIMEOUT`). Cuando el Timeout físico inevitablemente ocurre, la excepción es atrapada de inmediato reasignando `$cachedResponse = 1`, forzando al sistema a restaurar desde memoria y proteger la operación. Frente a los cambios de esquema JSON, se implementa un **Adapter Pattern** estructural (`$data['price_usd'] = $data['price_usd'] ?? $data['cost'] ?? 0.0`) garantizando que nuestra estructura local nunca falte.
 
 ## 🧱 Servicio
 
