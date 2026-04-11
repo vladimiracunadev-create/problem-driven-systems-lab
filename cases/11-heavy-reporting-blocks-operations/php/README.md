@@ -20,10 +20,10 @@ Este caso deja visible un problema muy real: el reporte puede “funcionar” y 
 
 ## 🔬 Análisis Técnico de la Implementación (PHP)
 
-Previamente un cálculo matemático, en esta versión el choque entre Reportes y Escrituras se produce mediante la colisión física de transacciones en los hilos del FPM de PHP.
+El choque entre procesos de reporte y operaciones vitales se produce mediante la colisión física de recursos en el sistema de archivos, simulando el comportamiento de bloqueos de tabla en una base de datos.
 
-*   **Bloqueo Físico de Storage (`legacy`):** Cuando la API recibe la orden de ejecutar un reporte masivo, PHP solicita un bloqueo exclusivo al sistema operativo (utilizando Lock transaccional con `flock($file, LOCK_EX)`). Como el motor no libera el puntero hasta terminar un I/O largo simulado (`usleep`), cualquier request entrante en la ruta operacional (`order-write`) choca abruptamente contra `flock($file, LOCK_EX | LOCK_NB)`, la cual fracasa estrepitosamente despachando un real `503 Service Unavailable`. El reporte mató a la tienda.
-*   **Aislamiento de Procesos (`isolated`):** PHP desvía el esfuerzo aboliendo el bloqueo concurrente contra las Tablas transaccionales. El FPM procesa un I/O no bloqueante en su propio contenedor (queue ficticio) incrementando lag y profundidad asíncrona, dejando que el `order-write` transaccional fluya en pocos ms sin toparse nunca con los Locks de lectura excesiva de Reporting.
+*   **Bloqueo Físico de Storage (`legacy`):** La API de reportes solicita un bloqueo exclusivo al kernel mediante la función **`flock($fp, LOCK_EX)`**. Mientras PHP ejecuta un I/O largo (simulado con `usleep()`), el descriptor de archivo queda retenido. Cualquier petición concurrente en la ruta operacional (`order-write`) intenta obtener el bloqueo mediante **`flock($fp, LOCK_EX | LOCK_NB)`**. Al fallar la adquisición inmediata del lock no bloqueante, el script despacha un **`503 Service Unavailable`**, demostrando cómo una tarea analítica de larga duración puede estrangular el flujo transaccional de ventas debido a una mala gestión de concurrencia.
+*   **Aislamiento y Concurrencia (`isolated`):** PHP evita el bloqueo del hilo transaccional delegando la carga. La versión aislada utiliza un buffer de persistencia asíncrono (simulado) y omite el requerimiento de bloqueo exclusivo sobre el recurso primario. Esto permite que el FPM procese escrituras en milisegundos sin toparse con el estado ocupado del descriptor de archivo, garantizando que el *Availability* de la tienda no se vea comprometido por el procesamiento de bultos analíticos.
 
 ## 🧱 Servicio
 

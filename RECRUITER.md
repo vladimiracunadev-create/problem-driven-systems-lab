@@ -17,14 +17,14 @@ Este laboratorio no busca impresionar con cantidad de carpetas. Su valor esta en
 
 | Area | Evidencia visible |
 | --- | --- |
-| Rendimiento | Casos `01`, `02` y `05` resuelven latencia, acceso a datos y degradacion progresiva en PHP |
-| Observabilidad | Caso `03` muestra la diferencia entre logs inutiles y telemetria diagnostica |
-| Resiliencia / delivery | Casos `04`, `06` y `09` muestran resiliencia ante dependencias, terceros y despliegues seguros |
-| Arquitectura / operaciones | Casos `07`, `08`, `10`, `11` y `12` cubren modernizacion, extraccion segura, costo proporcional y continuidad operacional |
-| Interfaz Nativa (Dashboards) | Los 12 casos exponen una **UI Web Interactiva** para poder visualizar y accionar el problema desde cualquier navegador |
-| Docker / operacion | Cada caso implementado tiene `compose.yml` propio y una ruta limpia de arranque |
-| Documentacion | Existe una familia de documentos por audiencia: instalacion, runbook, seguridad, soporte, contribucion |
-| Honestidad tecnica | El repo distingue entre casos `OPERATIVO` y `DOCUMENTADO / SCAFFOLD` |
+| Rendimiento Real | Casos `01`, `02` y `05` resuelven latencia, N+1 y saturación física de memoria (OOM/Drift) |
+| Observabilidad Experta | Caso `03` implementa trazabilidad nativa, logs estructurados y jerarquías de excepciones |
+| Resiliencia Determinista | Casos `04`, `06` y `09` demuestran resiliencia real ante timeouts físicos y errores de compilador |
+| Arquitectura y Fallos de I/O | Casos `07` a `12` cubren bloqueos de escritura (`flock`), deuda de conocimiento y modernización física |
+| Interfaz Nativa (Dashboards) | Los 12 casos exponen una **UI Web Interactiva** para visualizar el fallo en vivo desde cualquier navegador |
+| Docker / Infraestructura | Cada caso implementa `compose.yml` propio para entornos de ingeniería aislados |
+| Documentación Pro | Análisis técnicos profundos con funciones de lenguaje, algoritmos y patrones de diseño |
+| Honestidad Técnica | Distinción explícita de madurez: de simuladores teóricos a piezas de ingeniería verificables |
 
 ## ⚡ Que mirar en 5 minutos
 

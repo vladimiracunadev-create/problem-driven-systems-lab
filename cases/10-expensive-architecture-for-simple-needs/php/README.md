@@ -19,10 +19,10 @@ Este caso deja visible que decir “no” a complejidad innecesaria también es 
 
 ## 🔬 Análisis Técnico de la Implementación (PHP)
 
-Demostrar "sobre-arquitectura" y diseño DTO desmedido tiene repercusiones físicas puras sobre la Unidad de Procesamiento (CPU) y la Memoria de PHP. Se abandonó el uso de matemática de retrasos para demostrar fallos mecánicos verdaderos por desgaste de RAM.
+La sobre-arquitectura y el abuso de patrones DTO tienen repercusiones físicas sobre la latencia y el procesamiento de PHP. Este caso modela el desgaste de CPU mediante operaciones de serialización masiva.
 
-*   **Red de Microservicios Simulada (`complex`):** Recrea el overhead inter-servicios de una arquitectura inflada. En lugar de retrasos artificiales, PHP genera un array masivo de miles de entidades e itera profundamente (`for ($hop = 0; $hop < $servicesTouched; $hop++)`), provocando deliberadamente una serialización severa con `json_encode` y mapeo por objetos (`(object)$v`) en cada vuelta. Este ciclo devora los recursos forzando a PHP a estancarse y levantar una excepción real en los picos (`Gateway Timeout`).
-*   **Diseño Proporcional (`right_sized`):** Muestra que frente a la misma aserción estructural, el código monolítico estructurado omite todo el mapeo DTO intermedio y localiza el vector directamente (`$val = $directData[0]['id']`). Logra amortizar la misma respuesta de milisegundos con una asintótica algorítmica `O(1)`, validando por qué es mejor evitar particiones excesivas.
+*   **Complejidad Innecesaria (`complex`):** Recrea el overhead inter-servicios mediante un algoritmo de **hidratación profunda**. El script genera arreglos masivos de miles de entidades e itera profundamente ejecutando ciclos de `json_encode` y `json_decode` seguidos de conversiones a objeto `(object)$v` en cada salto de "coordinación". Esta redundancia algorítmica de complejidad **`O(N * Hops)`** devora los tiempos de CPU del worker y aumenta el footprint de memoria, provocando latencias artificiales que escalan linealmente con el número de capas, simulando los retardos de red de una arquitectura fragmentada.
+*   **Diseño Proporcional (`right_sized`):** Aplica una estrategia de acceso directo a datos con **complejidad asintótica `O(1)`**. Omite el mapeo redundante de objetos y las transformaciones JSON innecesarias, extrayendo el valor directamente desde la fuente en memoria: `$val = $directData[0]['id']`. Esto permite que PHP despache la misma aserción de negocio utilizando una fracción mínima de recursos, optimizando el *Lead Time* y reduciendo el costo operacional por request.
 
 ## 🧱 Servicio
 

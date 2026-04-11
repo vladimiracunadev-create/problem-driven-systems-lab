@@ -23,10 +23,10 @@ Este caso deja visible que la resiliencia frente a terceros no depende solo del 
 
 ## 🔬 Análisis Técnico de la Implementación (PHP)
 
-Las APIs de terceros fallan en formas más sutiles que un simple socket caído (Ej: cambian su JSON sin aviso, devuelven campos nulos o agotan la cuota). El laboratorio fue resuelto usando integraciones físicas.
+Las APIs de terceros fallan en formas sutiles que van más allá de un socket caído. Este caso implementa integraciones físicas usando interceptores de error y normalización de esquemas.
 
-*   **Llamado Vulnerable (`legacy`):** Ejecuta código asumiendo "Happy Path" absoluto utilizando funciones sincrónicas (como si usara `file_get_contents` puro bloqueante). Si existe un problema de red, el código genera un **crasheo físico por Timeout**. Si el proveedor cambia el payload JSON e ignora mandar la key esperada (`price_usd`), PHP estalla un `Warning` y aborta la transacción porque el contrato se rompió físicamente en memoria.
-*   **Aislado Robusto (`hardened`):** Introduce en PHP un interceptor de Excepciones (`try/catch`). Asume el uso de configuraciones seguras (`CURLOPT_TIMEOUT`). Cuando el Timeout físico inevitablemente ocurre, la excepción es atrapada de inmediato reasignando `$cachedResponse = 1`, forzando al sistema a restaurar desde memoria y proteger la operación. Frente a los cambios de esquema JSON, se implementa un **Adapter Pattern** estructural (`$data['price_usd'] = $data['price_usd'] ?? $data['cost'] ?? 0.0`) garantizando que nuestra estructura local nunca falte.
+*   **Llamado Vulnerable (`legacy`):** Ejecuta código asumiendo "Happy Path" absoluto. Al no implementar límites de tiempo explícitos (`timeouts`), el proceso PHP-FPM queda bloqueado en una llamada sincrónica hasta que se agote el `max_execution_time`. Adicionalmente, si el proveedor omite una llave esperada en su JSON (ej: `price_usd`), el script falla al intentar acceder al índice inexistente, provocando un crasheo de la transacción por ruptura de contrato físico en memoria.
+*   **Aislado Robusto (`hardened`):** Introduce un interceptor de excepciones **`try/catch (\Throwable $e)`** y simula la configuración defensiva de `CURLOPT_TIMEOUT`. Cuando ocurre un timeout físico, la excepción es atrapada para disparar un flujo de **Degradación Segura**, recuperando la última respuesta conocida del sistema. Para la estabilidad del esquema, implementa un **Adapter** que utiliza el operador de fusión de nulidad (`??`) para asegurar la existencia de propiedades críticas: `$data['price'] = $data['price_usd'] ?? $data['cost'] ?? 0.0`. Esto garantiza que la lógica de negocio consuma siempre un objeto válido, independientemente de la inestabilidad del tercero.
 
 ## 🧱 Servicio
 

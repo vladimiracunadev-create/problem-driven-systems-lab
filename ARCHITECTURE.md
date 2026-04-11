@@ -68,7 +68,10 @@ Cada carpeta en `cases/` representa un problema real. La unidad principal del re
 Cada caso contiene carpetas `php`, `node`, `python`, `java` y `dotnet`, con Docker aislado. La paridad funcional depende del estado real del caso.
 
 **Interfaz Visual Inyectada (Native UI):**
-Los 12 casos operativos en PHP poseen un mecanismo de detección de clientes (`Accept: text/html`). Esto significa que si el caso se consulta desde la API (Postman/cURL), la arquitectura responde puramente con JSON para facilitar el testing automatizado. Sin embargo, si el endpoint se accede desde un entorno de escritorio/navegador, **se inyecta una UI nativa construida en Vanilla JS/CSS (`ui.php`)** que actúa de dashboard visual, sin requerir pesados frameworks de Node.js o infraestructura extra.
+Los 12 casos operativos en PHP poseen un mecanismo de detección de clientes (`Accept: text/html`). Si el endpoint se accede desde un navegador, **se inyecta una UI nativa construida en Vanilla JS/CSS (`ui.php`)** que actúa de dashboard visual, sin requerir pesados frameworks de Node.js o infraestructura extra.
+
+**Alta Fidelidad Técnica (Fail-by-Design):**
+El laboratorio ha evolucionado de simulaciones matemáticas a **escenarios de fallo operativo reales**. El motor PHP ahora implementa bloqueos físicos de disco (`flock`), saturación de CPU por serialización recursiva, desbordamiento de buffers de memoria y jerarquías de excepciones nativas (`Throwable`). Esto permite que el repositorio no solo cuente una historia, sino que actúe como una prueba de estrés real sobre el runtime corporativo de PHP.
 
 ## 📦 Casos operativos actuales
 

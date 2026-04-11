@@ -19,10 +19,10 @@ Este caso deja visible un patrón muy frecuente: el riesgo de una extracción no
 
 ## 🔬 Análisis Técnico de la Implementación (PHP)
 
-Previamente un ejercicio matemático, ahora este caso implementa verdaderos cruces de contratos mediante Arrays y Exceptions en vivo, emulando la comunicación entre código arcaico y módulos extraídos.
+Este caso implementa cruces de contratos mediante manipulaciones de arreglos asociativos y excepciones en vivo, emulando la comunicación asimétrica entre código arcaico y módulos extraídos.
 
-*   **Big-Bang (`legacy`):** Mover el módulo "de una vez" y redireccionar ciegamente sin un Adapter rompe la firma de la interfaz. Si un cliente no migrado envía un payload Legacy (por ejemplo `cost_usd` en lugar de la nueva key `price`), la función moderna dispara inmediatamente un **Warning nativo de "Undefined Array Key"**. Implementé un estricto validador que detecta esto y lo propaga destructivamente usando `InvalidArgumentException`.
-*   **Extracción Compatible (`strangler / proxy`):** Se introduce una estructura puente en PHP implementando el Patrón Adapter (*Adapter Pattern*). Antes de llegar al procesador de negocio, interceptamos el payload asimétrico, y de forma silenciosa e instantánea usamos constructos modernos de PHP (`$data['price'] = $data['cost_usd'] ?? 0;`) mitigando la caída. El proxy absorbe las diferencias y protege a la capa, sin romper producción, manteniendo tu API viva (200 OK) mientras gradualmente refactorizas tus clientes.
+*   **Big-Bang (`legacy`):** Representa un redireccionamiento crudo sin capa de compatibilidad. Si un cliente envía un payload con llaves legadas (ej: `cost_usd` en lugar de la nueva clave `price`), el motor moderno de PHP dispara un **Warning** de "Undefined Array Key" al intentar acceder al índice inexistente. El sistema detecta esta colisión y lanza un **`InvalidArgumentException`**, simulando una ruptura total del contrato que detiene la operación de precios y bloquea el checkout.
+*   **Extracción Compatible (`strangler / proxy`):** Implementa el **Adapter Pattern** a nivel de estructura de datos. Antes de procesar la lógica de negocio, un interceptor normaliza el input utilizando el operador de fusión de nulidad (`??`): `$data['price'] = $data['price'] ?? $data['cost_usd'] ?? $data['legacy_val']`. Este algoritmo de mapeo elástico permite que PHP absorba las asimetrías de los esquemas sin romper la firma de la función, asegurando un `status_code 200` y permitiendo una migración de clientes ("Shadow Traffic" style) sin afectar la disponibilidad del servicio.
 
 ## 🧱 Servicio
 

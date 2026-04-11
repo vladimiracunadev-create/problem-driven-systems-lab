@@ -19,10 +19,10 @@ La modernización incremental no es solo una preferencia arquitectónica: es una
 
 ## 🔬 Análisis Técnico de la Implementación (PHP)
 
-Previamente una simulación de variables, este caso ahora implementa topología real de memoria de PHP exponiendo el caos que genera el acoplamiento global.
+Este caso implementa la topología de memoria y dependencias de PHP para exponer el caos del acoplamiento global frente a una estrategia de estrangulamiento controlada.
 
-*   **Impacto Expandido (`legacy`):** Un simple cambio se modela impactando una red completa instanciando una `God Class` (`$monolithApp = new \stdClass()`). Sin barreras, al simular que un módulo migra soltando la dependencia compartida (`unset()`), cualquier otro módulo nativo que la llame a fondo arroja un `Crash` real de PHP interrumpiendo la compilación. El acoplamiento es físico.
-*   **Progresión por Consumidor (`strangler`):** Introduce una frontera dura programática aislando la inyección mediante un *Anti-Corruption Layer (ACL)*. Utilizando Facades/Adapters (`$billingAdapter = new \stdClass(); $billingAdapter->fetchData = ...`), evitamos la colisión de ramas y dependencias faltantes en PHP, tolerando el esquema nuevo sin infectar al núcleo.
+*   **Impacto Expandido (`legacy`):** El monolito se modela como una **God Class** instanciada mediante `stdClass`. El acoplamiento es físico: al simular que un equipo migra una dependencia y libera el puntero (`unset($monolithApp->sharedSessionDb)`), cualquier otro módulo que intente invocar métodos sobre dicho objeto lanza un **Fatal Error** inmediato. Esto demuestra el radio de explosión atomizado donde un cambio local interrumpe la ejecución de todo el proceso PHP-FPM debido a la falta de interfaces defensivas.
+*   **Progresión por Consumidor (`strangler`):** Aplica los patrones **Facade** y **Adapter**. Se introduce un objeto mediador (`billingAdapter`) que encapsula la lógica de acceso a datos, implementando un **Anti-Corruption Layer (ACL)**. El progreso de la migración se gestiona de forma granular por invocador (`$state['migration']['consumers'][$consumer]`), permitiendo que PHP desvíe el tráfico hacia el nuevo módulo solo para consumidores validados mediante tests de contrato, manteniendo la compatibilidad hacia atrás y eliminando las regresiones en cadena.
 
 ## 🧱 Servicio
 

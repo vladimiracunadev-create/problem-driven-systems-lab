@@ -13,10 +13,10 @@ Portafolio técnico orientado a problemas reales de software: rendimiento, obser
 
 ## 🎯 Executive Summary
 
-- El laboratorio modela **12 problemas reales de ingeniería**, comunicando con transparencia cuáles cuentan con profundidad operativa hoy.
-- Los casos `01` al `12` son operativos en PHP y ahora incluyen una **Interfaz Gráfica (UI) nativa y moderna** al abrir sus endpoints desde el navegador, preservando el JSON original para herramientas programáticas.
-- El caso `03` tambien es operativo en Node.js y Python.
-- Docker es la via oficial de ejecucion limpia y reproducible.
+- El laboratorio modela **12 problemas reales de ingeniería**, utilizando fallos de alta fidelidad inyectados (I/O, Memoria, Excepciones) en lugar de simulaciones abstractas.
+- Los casos `01` al `12` son piezas de ingeniería operativa en PHP que incluyen una **Interfaz Gráfica (UI) nativa y moderna** para diagnósticos visuales.
+- Implementa patrones profesionales (**Adapter, Strangler, Circuit Breaker**) resolviendo cuellos de botella reales en el runtime de PHP.
+- Docker es la vía oficial de ejecución limpia y reproducible.
 - [`shared/catalog/cases.json`](shared/catalog/cases.json) es la fuente de verdad del portal, de la documentacion generada y de la narrativa operativa.
 - El portal raiz ahora sirve como hub de evaluacion: rutas por audiencia, seleccion por lenguaje, proof cards y probes server-side.
 

@@ -19,10 +19,10 @@ Este caso deja visible un patrón muy real: una dependencia lenta no solo agrega
 
 ## 🔬 Análisis Técnico de la Implementación (PHP)
 
-El diseño de resiliencia requiere manejo de tiempo explícito en PHP, algo que los frameworks a veces ocultan tras simples try/catch.
+El diseño de resiliencia requiere manejo de tiempo explícito y algoritmos de retroceso probabilístico para evitar la saturación de recursos síncronos en PHP-FPM.
 
-*   **Punto Crítico (`legacy`):** La política `legacy` confía ciegamente en constantes de tiempo altas y bucles de reintento directo sin freno (`max_attempts: 4`, `timeout_ms: 360`, `backoff_base_ms: 0`). Si el proveedor cae (`provider_down`), PHP se bloquea (simulado con retardos altos vía `usleep`), estrangulando inmediatamente los *workers* FPM disponibles bajo carga y produciendo una falla en cascada hacia el cliente.
-*   **Resguardo Nativo (`resilient`):** Utiliza controles avanzados como cálculo de Backoff Exponencial y evaluación real de Circuit Breaker empleando cronologías nativas (`strtotime($provider['opened_until']) > time()`). Adicionalmente incorpora "Jitter" algorítmico utilizando `random_int(15, 45)` sumado a la base de tiempo para desvincular reintentos simultáneos ("Thundering Herd") antes de aplicar un *Fallback* seguro cacheado, protegiendo así los recursos del backend principal.
+*   **Punto Crítico (`legacy`):** La política `legacy` utiliza un bucle persistente de reintentos con un `timeout_ms` fijo y elevado, sin tiempo de espera entre intentos (`backoff_base_ms: 0`). Bajo una falla de dependencia, esto provoca que PHP mantenga el descriptor de socket abierto y el proceso bloqueado durante segundos mediante `usleep()` acumulativo, agotando rápidamente el pool de workers disponibles y amplificando la carga hacia el proveedor (tormenta de reintentos).
+*   **Resguardo Nativo (`resilient`):** Implementa el algoritmo de **Exponential Backoff con Jitter**. La función `calculateBackoffMs()` utiliza la expresión aritmética `($baseMs * (2 ** max(0, $attempt - 1))) + random_int(15, 45)`, donde `2 ** n` escala el tiempo exponencialmente y `random_int()` añade entropía para desfasar los picos de reintento. Adicionalmente, el **Circuit Breaker** se valida de forma atómica comparando el timestamp actual con la ventana de apertura mediante `strtotime($provider['opened_until']) > time()`, permitiendo que PHP aborte la ejecución *antes* de iniciar el I/O si el sistema se sabe degradado, protegiendo así el Lead Time del usuario.
 
 ## 🧱 Servicio
 

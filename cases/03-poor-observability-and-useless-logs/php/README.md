@@ -26,10 +26,10 @@ La mejora no es estetica. Este caso muestra por que la observabilidad reduce MTT
 
 ## 🔬 Análisis Técnico de la Implementación (PHP)
 
-La telemetría efectiva no es un accesorio, es una obligación arquitectónica. Este caso demuestra cómo se codifica nativamente esta capacidad sin depender de agentes mágicos.
+La telemetría efectiva no es un accesorio, es una implementación estructural de herencia y trazabilidad. Este caso demuestra cómo se codifica nativamente esta capacidad utilizando PHP 8.3 puro.
 
-*   **Logs Opacos (`legacy`):** Invoca simples funciones del tipo `appendLegacyLog('processing customer=' . $customerId)`, perdiendo la cardinalidad. Los campos se concatenan como *strings* libres, haciendo imposible buscar después en un JSON parsing, y fallando en atar eventos que pertenecen a un mismo ciclo de vida HTTP request.
-*   **Logs Estructurados (`observable`):** Implanta el patrón de *Correlation IDs*. Utiliza `bin2hex(random_bytes(4))` al iniciar la petición en PHP para asignar un `$traceId` y `$requestId`. Durante la ejecución, se utiliza el array `appendStructuredLog(['level'=>'info', 'event'=>'checkout_started', 'trace_id'=>$traceId, ...])`. Al guardarse (o enviarse a stdout en un sistema real mediante `json_encode`), esto permite que recolectores como Promtail o Datadog reconstruyan la traza exacta independientemente de cómo se intercalen otros procesos uñecos en el framework FPM.
+*   **Logs Opacos (`legacy`):** Utiliza un flujo procedural de concatenación de strings mediante `appendLegacyLog('processing customer=' . $customerId)`. Este enfoque destruye la cardinalidad al no usar tipos de datos estructurados, imposibilitando el parsing algorítmico. Además, falla al no propagar un estado compartido, lo que ignora el "blast radius" de errores intercalados en el FPM Worker.
+*   **Logs Estructurados y Trazabilidad (`observable`):** Implanta una arquitectura de **Correlation IDs** generados mediante `bin2hex(random_bytes(4))`, asegurando entropía criptográfica para el `$traceId` y `$requestId`. El motor de ejecución utiliza una clase de excepción personalizada `WorkflowFailure` que captura el estado interno (step, dependency, events) en el momento exacto del fallo. Para el volcado de datos, se utiliza `json_encode()` sobre arreglos asociativos, garantizando que el log sea una estructura de datos `O(1)` consultable por motores de búsqueda, permitiendo reconstruir la traza completa uniendo eventos bajo el mismo `$traceId` independientemente del paralelismo de red.
 
 ## 🧱 Servicio
 

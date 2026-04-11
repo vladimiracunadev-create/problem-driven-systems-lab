@@ -19,10 +19,10 @@ No todos los incidentes de entrega vienen del código. Secretos faltantes, drift
 
 ## 🔬 Análisis Técnico de la Implementación (PHP)
 
-Previamente concebidos como simulaciones figurativas, los pipelines aquí resueltos ahora se materializan en código estructural sólido de PHP donde los fallos **son físicos y transaccionalmente reales**.
+Previamente concebidos como simulaciones figurativas, los pipelines aquí resueltos ahora se materializan en código estructural sólido de PHP donde los fallos **son transaccionalmente reales y detectables mediante jerarquía de excepciones**.
 
-*   **Implementación `legacy` (Excepción Nativa):** La función `runLegacyDeployment()` ejecuta la validación *en caliente* sin red de preflight. A través del requerimiento de propiedades (`$scenario === 'missing_secret'`), el código invoca un faltante estructurado provocando un **`RuntimeException` real** o intentando inicializar clases inexistentes provocando un `Error` intrínseco de compilador de PHP. El requerimiento estalla la memoria activa con un Fatal y lo atrapamos vía un bloque asíncrono para volcar el stack-trace al API Rest.
-*   **Abstracción Resiliente (`controlled`):** El flujo controlado intercepta la arquitectura defectuosa de preflight protegiendo el código base. Usa constructos defensivos como `class_exists()` y chequeo anticipado del contexto operativo. Tras atrapar excepciones estructurales en un entorno de *Dry-Run*, suspende las aserciones de red previniendo que la compilación colapse (permitiendo aplicar un rollback de dictados y bloqueando la entrega).
+*   **Implementación `legacy` (Excepción Nativa):** La función `runLegacyDeployment()` ejecuta cambios de estado sin validación de pre-requisitos. Al invocar un escenario de error (`missing_secret`), el código intenta acceder a propiedades inexistentes o instanciar clases ausentes, lo que dispara un **`RuntimeException`** o un **`Error`** nativo de PHP. Estos son capturados mediante un bloque genérico `catch (\Throwable $e)`, permitiendo que el laboratorio exponga el `getTraceAsString()` real y demuestre cómo una falla no controlada deja el sistema en un estado inconsistente (`health: degraded`).
+*   **Abstracción Resiliente (`controlled`):** Introduce una arquitectura de **Pruebas de Integridad Preflight**. Antes de mutar el estado global, utiliza constructos defensivos como `class_exists()` y `isset()` sobre diccionarios de configuración. Si estas aserciones fallan, el flujo se interrumpe *antes* de afectar la operación, permitiendo un rollback atómico (`$env = $previousRelease`) que garantiza la continuidad del servicio con un `status_code 200` y métricas de salud intactas.
 
 ## 🧱 Servicio
 
