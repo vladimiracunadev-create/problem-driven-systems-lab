@@ -3,6 +3,13 @@
 [![Estado](https://img.shields.io/badge/Estado-PHP%20operativo-green)](php/README.md)
 [![Categoría](https://img.shields.io/badge/Categoría-Operaciones-blueviolet)](../../README.md)
 
+> [!IMPORTANT]
+> **📖 [Ver Análisis Técnico Senior de esta solución (PHP)](php/README.md)**
+>
+> Este documento es un resumen ejecutiva. La evidencia de ingeniería, los algoritmos y la remediación profunda se encuentran en el link de arriba.
+
+---
+
 ## 🔍 Qué problema representa
 
 La analítica y el reporting compiten contra el flujo transaccional sobre los mismos recursos, y consultas pesadas terminan castigando también las escrituras del negocio.

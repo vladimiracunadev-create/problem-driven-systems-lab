@@ -3,6 +3,13 @@
 [![Estado](https://img.shields.io/badge/Estado-PHP%20operativo-green)](php/README.md)
 [![Categoría](https://img.shields.io/badge/Categoría-Rendimiento-red)](../../README.md)
 
+> [!IMPORTANT]
+> **📖 [Ver Análisis Técnico Senior de esta solución (PHP)](php/README.md)**
+>
+> Este documento es un resumen ejecutivo. La evidencia de ingeniería, los algoritmos y la remediación profunda se encuentran en el link de arriba.
+
+---
+
 ## 🔍 Qué problema representa
 
 El proceso acumula memoria y recursos de forma silenciosa hasta degradar el servicio o hacerlo caer mucho después de que empezó el problema.

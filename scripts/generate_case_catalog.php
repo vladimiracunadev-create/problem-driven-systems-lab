@@ -42,7 +42,7 @@ $lines[] = '> Lista completa de los 12 casos del laboratorio generada desde `sha
 $lines[] = '';
 $lines[] = '## 📊 Estado actual';
 $lines[] = '';
-$lines[] = '| Icono | Caso | Categoria | Estado | Stacks operativos | Nivel actual | Impacto de negocio |';
+$lines[] = '| Icono | Caso | Categoria | Análisis Técnico (PHP) | Estado | Stacks operativos | Impacto de negocio |';
 $lines[] = '| --- | --- | --- | --- | --- | --- | --- |';
 
 foreach ($cases as $case) {
@@ -61,16 +61,22 @@ foreach ($cases as $case) {
         $stacksMarkdown = implode(', ', array_map(static fn (string $stack): string => "`{$stack}`", $stacks));
     }
 
+    $phpTechnicalLink = '—';
+    if (isset($case['runtime_entries']['php']['readme_path'])) {
+        $phpPath = $case['runtime_entries']['php']['readme_path'];
+        $phpTechnicalLink = sprintf('[👉 Senior Analysis](../%s)', $phpPath);
+    }
+
     $lines[] = sprintf(
-        '| %s | [%s - %s](../%s) | %s | `%s` | %s | %s | %s |',
+        '| %s | [%s - %s](../%s) | %s | %s | `%s` | %s | %s |',
         $icon,
         $id,
         $title,
         $caseReadmePath,
         $category,
+        $phpTechnicalLink,
         $status,
         $stacksMarkdown,
-        $levelDetail,
         $businessOutcome
     );
 }

@@ -3,6 +3,13 @@
 [![Estado](https://img.shields.io/badge/Estado-PHP%20operativo-green)](php/README.md)
 [![Categoría](https://img.shields.io/badge/Categoría-Resiliencia-blueviolet)](../../README.md)
 
+> [!IMPORTANT]
+> **📖 [Ver Análisis Técnico Senior de esta solución (PHP)](php/README.md)**
+>
+> Este documento es un resumen ejecutiva. La evidencia de ingeniería, los algoritmos y la remediación profunda se encuentran en el link de arriba.
+
+---
+
 ## 🔍 Qué problema representa
 
 Una dependencia externa cambia contrato, limita cuota o entra en mantenimiento, y el sistema propio queda demasiado expuesto porque consume al tercero como si fuera estable.

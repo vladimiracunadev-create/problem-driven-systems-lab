@@ -3,6 +3,13 @@
 [![Estado](https://img.shields.io/badge/Estado-PHP%20operativo-green)](php/README.md)
 [![Categoría](https://img.shields.io/badge/Categoría-Resiliencia-orange)](../../README.md)
 
+> [!IMPORTANT]
+> **📖 [Ver Análisis Técnico Senior de esta solución (PHP)](php/README.md)**
+>
+> Este documento es un resumen ejecutivo. La evidencia de ingeniería, los algoritmos y la remediación profunda se encuentran en el link de arriba.
+
+---
+
 ## 🔍 Qué problema representa
 
 Una integración lenta o inestable dispara retries agresivos, bloquea threads o workers y termina propagando fallas hacia otros servicios.

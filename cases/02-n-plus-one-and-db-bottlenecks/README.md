@@ -3,6 +3,11 @@
 [![Estado](https://img.shields.io/badge/Estado-Implementado%20PHP-success)](php/)
 [![Categoría](https://img.shields.io/badge/Categoría-Rendimiento-red)](../../README.md)
 
+> [!IMPORTANT]
+> **📖 [Ver Análisis Técnico Senior de esta solución (PHP)](php/README.md)**
+>
+> Este documento es un resumen ejecutivo. La evidencia de ingeniería, los algoritmos y la remediación profunda se encuentran en el link de arriba.
+
 ---
 
 ## 🔍 Qué problema representa
