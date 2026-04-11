@@ -14,11 +14,15 @@ Portafolio técnico orientado a problemas reales de software: rendimiento, obser
 ## 🎯 Executive Summary
 
 - El laboratorio modela **12 problemas reales de ingeniería**, comunicando con transparencia cuáles cuentan con profundidad operativa hoy.
-- Los casos `01` al `12` son operativos en PHP.
+- Los casos `01` al `12` son operativos en PHP y ahora incluyen una **Interfaz Gráfica (UI) nativa y moderna** al abrir sus endpoints desde el navegador, preservando el JSON original para herramientas programáticas.
 - El caso `03` tambien es operativo en Node.js y Python.
 - Docker es la via oficial de ejecucion limpia y reproducible.
 - [`shared/catalog/cases.json`](shared/catalog/cases.json) es la fuente de verdad del portal, de la documentacion generada y de la narrativa operativa.
 - El portal raiz ahora sirve como hub de evaluacion: rutas por audiencia, seleccion por lenguaje, proof cards y probes server-side.
+
+## 💻 Interfaz Visual Integrada
+
+El laboratorio no es solo una "API JSON ciega". Los 12 casos en PHP ahora interceptan solicitudes HTTP de navegadores (mediante cabeceras `Accept`) y devuelven **Dashboards Interactivos**. Esto permite a reclutadores, líderes y desarrolladores *ver* cómo se bloquea una base de datos, cómo aumentan las latencias, y probar escenarios en vivo usando estéticas modernas sin afectar el núcleo programático.
 
 ## 💡 Que demuestra este producto
 
@@ -39,7 +43,7 @@ Portafolio técnico orientado a problemas reales de software: rendimiento, obser
 | Developer / DevOps | [INSTALL.md](INSTALL.md) → [RUNBOOK.md](RUNBOOK.md) | El entorno levanta limpio y los casos operativos cuentan una historia tecnica verificable |
 | Beginner | [docs/BEGINNERS_GUIDE.md](docs/BEGINNERS_GUIDE.md) | La estructura y la taxonomia de madurez son comprensibles antes de entrar al codigo |
 
-Si prefieres una sola puerta de entrada local, levanta el portal con `docker compose -f compose.root.yml up -d --build` y abre `http://localhost:8080`.
+Si quieres una sola puerta de entrada local con los 12 casos PHP disponibles, levanta `docker compose -f compose.root.yml up -d --build` y abre `http://localhost:8080`.
 
 ## 🏷️ Madurez actual
 
@@ -83,11 +87,15 @@ Esto lo vuelve mucho mas claro para reclutadores, lideres y personas que quieren
 ## 🚀 Inicio rapido
 
 ```bash
-# Portal del laboratorio
+# Laboratorio completo en PHP + portal
 
 docker compose -f compose.root.yml up -d --build
 
-# Casos operativos hoy
+# Portal liviano solamente
+
+docker compose -f compose.portal.yml up -d --build
+
+# Casos aislados si quieres revisar uno por uno
 
 docker compose -f cases/01-api-latency-under-load/php/compose.yml up -d --build
 docker compose -f cases/02-n-plus-one-and-db-bottlenecks/php/compose.yml up -d --build
@@ -126,7 +134,7 @@ Tambien existen atajos con `make`, pero la ruta soportada y mas portable sigue s
 
 ## 🏗️ Arquitectura en una frase
 
-El sistema se organiza como una capa editorial en raiz, un portal ligero de evaluacion, una biblioteca de casos problem-driven y stacks aislados por Docker. La arquitectura completa esta documentada en [ARCHITECTURE.md](ARCHITECTURE.md) y [docs/architecture.md](docs/architecture.md).
+El sistema se organiza como una capa editorial en raiz, un portal de evaluacion con entrada completa PHP o modo liviano, una biblioteca de casos problem-driven y stacks aislados por Docker. La arquitectura completa esta documentada en [ARCHITECTURE.md](ARCHITECTURE.md) y [docs/architecture.md](docs/architecture.md).
 
 ## 🌐 Ecosistema relacionado
 

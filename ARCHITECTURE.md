@@ -7,7 +7,7 @@
 El laboratorio se organiza hoy como un sistema de cuatro capas:
 
 1. una capa editorial y operativa en la raiz;
-2. un portal local ligero para evaluacion guiada;
+2. un portal local ligero para evaluacion guiada y una entrada completa del laboratorio PHP;
 3. un catalogo maestro en metadatos compartidos;
 4. casos problem-driven con stacks aislados por Docker.
 
@@ -52,19 +52,23 @@ Esto elimina la duplicacion manual que antes existia entre el portal, la documen
 
 ### 3. Portal local de evaluacion
 
-- `compose.root.yml` levanta solo la landing local
+- `compose.root.yml` levanta el portal y los 12 casos PHP operativos en una sola entrada
+- `compose.portal.yml` mantiene el modo liviano solo para la landing local
 - `portal/app/index.html` presenta la interfaz principal
 - `portal/app/catalog.php` transforma el catalogo compartido en payload para la UI
 - `portal/app/probe.php` verifica health checks reales y devuelve status code, latencia y timestamp
 - `portal/app/index.php` mantiene compatibilidad por redireccion
 
-El portal no intenta levantar todo el laboratorio. Su rol es orientar, explicar y verificar lo que ya esta corriendo.
+El portal sigue siendo la cara principal del laboratorio, pero ahora tambien puede convivir con el arranque completo PHP para dejar visible el sistema de punta a punta desde `localhost:8080`.
 
-### 4. Casos y stacks
+### 4. Casos, Stacks e Interfaces de Usuario
 
 Cada carpeta en `cases/` representa un problema real. La unidad principal del repositorio no es el lenguaje, sino el problema.
 
-Cada caso contiene carpetas `php`, `node`, `python`, `java` y `dotnet`, con Docker aislado. La paridad funcional depende del estado real del caso, no del simple hecho de que exista la carpeta.
+Cada caso contiene carpetas `php`, `node`, `python`, `java` y `dotnet`, con Docker aislado. La paridad funcional depende del estado real del caso.
+
+**Interfaz Visual Inyectada (Native UI):**
+Los 12 casos operativos en PHP poseen un mecanismo de detección de clientes (`Accept: text/html`). Esto significa que si el caso se consulta desde la API (Postman/cURL), la arquitectura responde puramente con JSON para facilitar el testing automatizado. Sin embargo, si el endpoint se accede desde un entorno de escritorio/navegador, **se inyecta una UI nativa construida en Vanilla JS/CSS (`ui.php`)** que actúa de dashboard visual, sin requerir pesados frameworks de Node.js o infraestructura extra.
 
 ## 📦 Casos operativos actuales
 
@@ -98,9 +102,12 @@ Con esto se reduce mucho el riesgo de drift entre lo que el repo dice, lo que mu
 
 | Pieza | Rol |
 | --- | --- |
-| `compose.root.yml` | portal del laboratorio |
+| `compose.root.yml` | portal + 12 casos PHP en una sola entrada |
+| `compose.portal.yml` | portal liviano sin levantar los casos |
 | `cases/<caso>/<stack>/compose.yml` | escenario concreto y aislado |
 | `cases/<caso>/compose.compare.yml` | comparacion entre stacks del mismo caso |
+
+La familia PHP ahora comparte un runtime comun en `docker/php/Dockerfile`, mientras cada caso conserva su propio `compose.yml`, sus puertos y sus dependencias especificas.
 
 Regla de oro: Docker aqui sirve para reproducibilidad y comparacion, no para inflar complejidad.
 

@@ -396,11 +396,12 @@
         </article>
 
         <article class="panel">
-          <h2>📌 Evidencia técnica</h2>
+          <h2>📌 Sistema PHP completo</h2>
           <p style="margin-top:12px;">
-            Cada caso operativo deja una historia verificable: que problema modela, como se levanta, que endpoint mirar,
-            que evidencia esperar y por que esa solucion importa para negocio y operacion.
+            Si quieres ver hoy todo el laboratorio operativo en PHP con una sola orden, levanta <code>compose.root.yml</code>.
+            El portal queda en <code>localhost:8080</code> y las cards de abajo validan en vivo cada caso mediante probes server-side.
           </p>
+          <pre class="command" style="margin-top:16px;">docker compose -f compose.root.yml up -d --build</pre>
         </article>
       </div>
     </section>

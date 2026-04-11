@@ -286,6 +286,13 @@ $workerName = envOr('WORKER_NAME', 'report-refresh');
 try {
     $pdo = db();
 
+    // ── Browser UI ───────────────────────────────────────────────────────────
+    if (($uri === '/' || $uri === '') && str_contains($_SERVER['HTTP_ACCEPT'] ?? '', 'text/html')) {
+        require __DIR__ . '/ui.php';
+        exit;
+    }
+    // ─────────────────────────────────────────────────────────────────────────
+
     if ($uri === '/' || $uri === '') {
         $payload = [
             'lab' => 'Problem-Driven Systems Lab',

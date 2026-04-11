@@ -1,3 +1,19 @@
+x-php-build: &php-build
+  context: .
+  dockerfile: docker/php/Dockerfile
+
+x-php-app: &php-app
+  environment:
+    APP_STACK: PHP 8.3
+  command: ["php", "-S", "0.0.0.0:8080", "-t", "/app", "/app/index.php"]
+  healthcheck:
+    test: ["CMD", "php", "-r", "echo 'ok';"]
+    interval: 10s
+    timeout: 3s
+    retries: 3
+  mem_limit: 256m
+  cpus: 0.75
+
 services:
   portal-php8:
     build:
@@ -14,3 +30,284 @@ services:
       PDSL_PROBE_HOST: "host.docker.internal"
     extra_hosts:
       - "host.docker.internal:host-gateway"
+
+  case01-db:
+    image: postgres:16-alpine
+    container_name: pdsl-01-php-db
+    environment:
+      POSTGRES_DB: problemlab
+      POSTGRES_USER: problemlab
+      POSTGRES_PASSWORD: problemlab
+    volumes:
+      - ./cases/01-api-latency-under-load/php/db/init:/docker-entrypoint-initdb.d:ro
+      - pgdata_case01:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U problemlab -d problemlab"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    mem_limit: 1024m
+    cpus: 1.50
+    networks:
+      case01:
+        aliases:
+          - db
+
+  case01-app:
+    <<: *php-app
+    build:
+      <<: *php-build
+      args:
+        APP_DIR: cases/01-api-latency-under-load/php/app
+    container_name: pdsl-01-php-app
+    environment:
+      APP_STACK: PHP 8.3
+      DB_HOST: db
+      DB_PORT: "5432"
+      DB_NAME: problemlab
+      DB_USER: problemlab
+      DB_PASSWORD: problemlab
+      WORKER_NAME: report-refresh
+    ports:
+      - "811:8080"
+    depends_on:
+      case01-db:
+        condition: service_healthy
+    mem_limit: 512m
+    cpus: 1.00
+    networks:
+      case01:
+        aliases:
+          - app
+          - php-app
+
+  case01-worker:
+    build:
+      <<: *php-build
+      args:
+        APP_DIR: cases/01-api-latency-under-load/php/app
+    container_name: pdsl-01-php-worker
+    environment:
+      DB_HOST: db
+      DB_PORT: "5432"
+      DB_NAME: problemlab
+      DB_USER: problemlab
+      DB_PASSWORD: problemlab
+      WORKER_NAME: report-refresh
+      WORKER_LOOKBACK_DAYS: "45"
+      WORKER_INTERVAL_SECONDS: "20"
+    command: ["php", "/app/worker.php"]
+    depends_on:
+      case01-db:
+        condition: service_healthy
+    mem_limit: 256m
+    cpus: 0.75
+    networks:
+      case01:
+
+  case01-postgres-exporter:
+    image: prometheuscommunity/postgres-exporter:v0.15.0
+    container_name: pdsl-01-postgres-exporter
+    environment:
+      DATA_SOURCE_NAME: postgresql://problemlab:problemlab@db:5432/problemlab?sslmode=disable
+    ports:
+      - "9187:9187"
+    depends_on:
+      case01-db:
+        condition: service_healthy
+    networks:
+      case01:
+        aliases:
+          - postgres-exporter
+
+  case01-prometheus:
+    image: prom/prometheus:v2.52.0
+    container_name: pdsl-01-prometheus
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.retention.time=3d
+    volumes:
+      - ./cases/01-api-latency-under-load/shared/observability/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_case01:/prometheus
+    ports:
+      - "9091:9090"
+    depends_on:
+      - case01-app
+      - case01-postgres-exporter
+    networks:
+      case01:
+
+  case01-grafana:
+    image: grafana/grafana:11.0.0
+    container_name: pdsl-01-grafana
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_USERS_ALLOW_SIGN_UP: "false"
+    volumes:
+      - ./cases/01-api-latency-under-load/shared/observability/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./cases/01-api-latency-under-load/shared/observability/grafana/dashboards:/var/lib/grafana/dashboards:ro
+      - grafana_case01:/var/lib/grafana
+    ports:
+      - "3001:3000"
+    depends_on:
+      - case01-prometheus
+    networks:
+      case01:
+
+  case02-db:
+    image: postgres:16-alpine
+    container_name: pdsl-02-php-db
+    environment:
+      POSTGRES_DB: problemlab
+      POSTGRES_USER: problemlab
+      POSTGRES_PASSWORD: problemlab
+    volumes:
+      - ./cases/02-n-plus-one-and-db-bottlenecks/php/db/init:/docker-entrypoint-initdb.d:ro
+      - pgdata_case02:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U problemlab -d problemlab"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    mem_limit: 768m
+    cpus: 1.25
+    networks:
+      case02:
+        aliases:
+          - db
+
+  case02-app:
+    <<: *php-app
+    build:
+      <<: *php-build
+      args:
+        APP_DIR: cases/02-n-plus-one-and-db-bottlenecks/php/app
+    container_name: pdsl-02-php-app
+    environment:
+      APP_STACK: PHP 8.3
+      DB_HOST: db
+      DB_PORT: "5432"
+      DB_NAME: problemlab
+      DB_USER: problemlab
+      DB_PASSWORD: problemlab
+    ports:
+      - "812:8080"
+    depends_on:
+      case02-db:
+        condition: service_healthy
+    mem_limit: 512m
+    cpus: 1.00
+    networks:
+      case02:
+
+  case03-app:
+    <<: *php-app
+    build:
+      <<: *php-build
+      args:
+        APP_DIR: cases/03-poor-observability-and-useless-logs/php/app
+    container_name: pdsl-03-php-app
+    ports:
+      - "813:8080"
+
+  case04-app:
+    <<: *php-app
+    build:
+      <<: *php-build
+      args:
+        APP_DIR: cases/04-timeout-chain-and-retry-storms/php/app
+    container_name: pdsl-04-php-app
+    ports:
+      - "814:8080"
+
+  case05-app:
+    <<: *php-app
+    build:
+      <<: *php-build
+      args:
+        APP_DIR: cases/05-memory-pressure-and-resource-leaks/php/app
+    container_name: pdsl-05-php-app
+    ports:
+      - "815:8080"
+
+  case06-app:
+    <<: *php-app
+    build:
+      <<: *php-build
+      args:
+        APP_DIR: cases/06-broken-pipeline-and-fragile-delivery/php/app
+    container_name: pdsl-06-php-app
+    ports:
+      - "816:8080"
+
+  case07-app:
+    <<: *php-app
+    build:
+      <<: *php-build
+      args:
+        APP_DIR: cases/07-incremental-monolith-modernization/php/app
+    container_name: pdsl-07-php-app
+    ports:
+      - "817:8080"
+
+  case08-app:
+    <<: *php-app
+    build:
+      <<: *php-build
+      args:
+        APP_DIR: cases/08-critical-module-extraction-without-breaking-operations/php/app
+    container_name: pdsl-08-php-app
+    ports:
+      - "818:8080"
+
+  case09-app:
+    <<: *php-app
+    build:
+      <<: *php-build
+      args:
+        APP_DIR: cases/09-unstable-external-integration/php/app
+    container_name: pdsl-09-php-app
+    ports:
+      - "819:8080"
+
+  case10-app:
+    <<: *php-app
+    build:
+      <<: *php-build
+      args:
+        APP_DIR: cases/10-expensive-architecture-for-simple-needs/php/app
+    container_name: pdsl-10-php-app
+    ports:
+      - "8110:8080"
+
+  case11-app:
+    <<: *php-app
+    build:
+      <<: *php-build
+      args:
+        APP_DIR: cases/11-heavy-reporting-blocks-operations/php/app
+    container_name: pdsl-11-php-app
+    ports:
+      - "8111:8080"
+    mem_limit: 320m
+
+  case12-app:
+    <<: *php-app
+    build:
+      <<: *php-build
+      args:
+        APP_DIR: cases/12-single-point-of-knowledge-and-operational-risk/php/app
+    container_name: pdsl-12-php-app
+    ports:
+      - "8112:8080"
+
+volumes:
+  pgdata_case01:
+  prometheus_case01:
+  grafana_case01:
+  pgdata_case02:
+
+networks:
+  case01:
+  case02:

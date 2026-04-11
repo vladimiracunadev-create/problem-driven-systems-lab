@@ -191,6 +191,13 @@ $uri = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/';
 parse_str(parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_QUERY) ?? '', $query);
 
 try {
+    // ── Browser UI ───────────────────────────────────────────────────────────
+    if (($uri === '/' || $uri === '') && str_contains($_SERVER['HTTP_ACCEPT'] ?? '', 'text/html')) {
+        require __DIR__ . '/ui.php';
+        exit;
+    }
+    // ─────────────────────────────────────────────────────────────────────────
+
     if ($uri === '/' || $uri === '') {
         $payload = [
             'lab' => 'Problem-Driven Systems Lab',

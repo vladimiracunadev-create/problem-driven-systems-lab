@@ -1,0 +1,16 @@
+services:
+  portal-php8:
+    build:
+      context: ./portal
+      dockerfile: Dockerfile
+    container_name: pdsl-portal-php8
+    ports:
+      - "${PORTAL_PORT:-8080}:80"
+    volumes:
+      - ./portal/app:/var/www/html
+      - ./shared/catalog:/workspace/shared/catalog:ro
+    environment:
+      APP_NAME: "Problem-Driven Systems Lab"
+      PDSL_PROBE_HOST: "host.docker.internal"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"

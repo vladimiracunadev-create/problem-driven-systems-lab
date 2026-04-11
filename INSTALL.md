@@ -2,7 +2,7 @@
 
 > Estado: activo
 > Ruta oficial: Docker Compose
-> Uso recomendado: levantar el portal y los casos implementados de forma limpia y reproducible
+> Uso recomendado: levantar el laboratorio PHP completo o un caso puntual de forma limpia y reproducible
 
 ## 📋 Requisitos
 
@@ -25,10 +25,27 @@ git clone https://github.com/vladimiracunadev-create/problem-driven-systems-lab.
 cd problem-driven-systems-lab
 ```
 
-## 🧭 Portal del laboratorio
+## 🧭 Laboratorio PHP completo
 
 ```bash
 docker compose -f compose.root.yml up -d --build
+```
+
+URL esperada:
+
+- Portal: `http://localhost:8080`
+- Casos PHP: `http://localhost:811` a `http://localhost:819` y `http://localhost:8110` a `http://localhost:8112`
+
+Para apagar:
+
+```bash
+docker compose -f compose.root.yml down
+```
+
+## 🪶 Portal liviano solamente
+
+```bash
+docker compose -f compose.portal.yml up -d --build
 ```
 
 URL esperada:
@@ -38,10 +55,10 @@ URL esperada:
 Para apagar:
 
 ```bash
-docker compose -f compose.root.yml down
+docker compose -f compose.portal.yml down
 ```
 
-## ✅ Casos operativos actuales
+## ✅ Casos operativos actuales por separado
 
 ### Caso 01
 
@@ -126,5 +143,6 @@ docker compose -f cases/03-poor-observability-and-useless-logs/php/compose.yml d
 ## ⚖️ Alcance honesto de la instalacion
 
 - La ruta oficialmente soportada hoy es Docker para los casos implementados.
-- Los casos `04` al `12` siguen siendo principalmente documentales o scaffold.
-- La instalacion no pretende montar un "mega entorno" unico; la idea es aislar escenarios para entenderlos mejor.
+- Los casos `01` al `12` en PHP ya pueden levantarse juntos con `compose.root.yml`.
+- La instalacion completa actual es PHP-first; Node.js quedara para una etapa posterior y coexistira como otra familia de runtime.
+- Seguir levantando un caso aislado sigue siendo la mejor ruta cuando quieres diagnostico fino o menos consumo.

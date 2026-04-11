@@ -29,7 +29,7 @@
 | Benchmark absoluto entre lenguajes | El objetivo es resolver problemas, no coronar runtimes |
 | Entorno productivo completo | Es un laboratorio controlado y portable |
 | Igual nivel de madurez en todos los stacks | Se prefirio crecer con honestidad y no con demos vacias |
-| Un unico `docker compose up` para todo el universo | Haria el repo mas pesado, menos claro y peor para diagnostico |
+| Un unico `docker compose up` para todos los lenguajes y futuras variantes | Haria el repo mas pesado, menos claro y peor para diagnostico |
 
 ## 🐳 Regla operativa importante
 

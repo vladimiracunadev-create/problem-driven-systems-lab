@@ -9,21 +9,24 @@
 
 ## 🔍 Contexto
 
-Se necesitaba un punto de entrada central al laboratorio que permita navegar el proyecto, entender su propósito y aterrizar visualmente, **sin necesidad de levantar todos los casos**.
+Se necesitaba un punto de entrada central al laboratorio que permita navegar el proyecto, entender su propósito y aterrizar visualmente.
 
-Incluir el portal dentro de un `docker compose` global hubiera acoplado el punto de entrada con todos los entornos del laboratorio.
+En la primera etapa, ese objetivo se resolvió con un portal liviano separado de los casos. En la etapa actual, PHP ya cuenta con 12 casos operativos y se volvió útil tener tambien una entrada completa del laboratorio para validar el sistema entero desde `localhost`.
 
 ---
 
 ## ✅ Decisión
 
-Crear un **portal raíz liviano en PHP 8** (`portal/`) con su propio `compose.root.yml`, separado completamente de los casos.
+Mantener el **portal raíz liviano en PHP 8** (`portal/`) como pieza separada, pero distinguir ahora dos entradas:
 
-El portal:
-- Muestra la landing local del laboratorio
-- Explica la arquitectura general
-- Enlaza a los casos
-- No ejecuta ni depende de ningún caso
+- `compose.root.yml` para el laboratorio PHP completo, incluyendo portal y casos `01` al `12`;
+- `compose.portal.yml` para el portal liviano cuando solo se quiere navegar la portada o revisar metadatos.
+
+El portal sigue:
+- mostrando la landing local del laboratorio;
+- explicando la arquitectura general;
+- enlazando a los casos;
+- funcionando tambien en modo liviano, sin necesidad de levantar todos los casos.
 
 ---
 
@@ -31,7 +34,7 @@ El portal:
 
 | Consecuencia | Detalle |
 |-------------|---------|
-| ✅ Navegación local simple | Se levanta con un solo comando sin levantar nada más |
-| ✅ Menor consumo de recursos | No hay servicios de casos corriendo sin necesidad |
-| ✅ Menos acoplamiento | El portal no depende de que los casos estén disponibles |
-| ⚠️ Un servicio adicional que mantener | El portal PHP necesita actualizarse si cambia la arquitectura general |
+| ✅ Navegación local simple | Hay una entrada completa (`compose.root.yml`) y una liviana (`compose.portal.yml`) |
+| ✅ Menor consumo cuando conviene | El portal puede seguir levantándose sin los casos si solo quieres revisar la portada |
+| ✅ Mejor demostración de producto | El modo completo deja visible todo el laboratorio PHP desde una sola URL |
+| ⚠️ Más topologías a documentar | Ahora hay que mantener clara la diferencia entre entrada completa y entrada liviana |

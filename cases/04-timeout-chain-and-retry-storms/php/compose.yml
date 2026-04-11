@@ -1,8 +1,10 @@
 services:
   app:
     build:
-      context: .
-      dockerfile: Dockerfile
+      context: ../../..
+      dockerfile: docker/php/Dockerfile
+      args:
+        APP_DIR: cases/04-timeout-chain-and-retry-storms/php/app
     container_name: pdsl-04-php-app
     environment:
       APP_STACK: PHP 8.3

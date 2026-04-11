@@ -17,6 +17,8 @@ problem-driven-systems-lab/
 |- CHANGELOG.md
 |- ROADMAP.md
 |- compose.root.yml
+|- compose.portal.yml
+|- docker/
 |- .github/workflows/ci.yml
 |- portal/
 |- docs/
@@ -43,7 +45,11 @@ La raiz contiene documentos para lectura ejecutiva, tecnica y operacional. Esta 
 
 ### 3. Capa de portal
 
-`compose.root.yml` levanta un portal ligero con:
+`compose.root.yml` levanta hoy el portal y los 12 casos PHP operativos en una sola entrada.
+
+`compose.portal.yml` conserva el modo ligero solo para portal.
+
+La capa visual sigue viviendo en `portal/`, con:
 
 - `index.html` como portada principal para personas tecnicas y no tecnicas;
 - `catalog.php` como endpoint de metadatos para la UI;
@@ -75,9 +81,12 @@ flowchart LR
 
 | Pieza | Rol |
 | --- | --- |
-| `compose.root.yml` | portal del laboratorio |
+| `compose.root.yml` | portal + laboratorio PHP completo |
+| `compose.portal.yml` | portal liviano |
 | `cases/<caso>/<stack>/compose.yml` | escenario concreto y aislado |
 | `cases/<caso>/compose.compare.yml` | comparacion entre stacks del mismo caso |
+
+La familia PHP reutiliza ahora un runtime comun en `docker/php/Dockerfile`, mientras cada caso mantiene su `compose.yml` y sus dependencias particulares.
 
 ## ✅ Estado operativo real
 
@@ -86,6 +95,15 @@ flowchart LR
 | `01` | `php` |
 | `02` | `php` |
 | `03` | `php`, `node`, `python` |
+| `04` | `php` |
+| `05` | `php` |
+| `06` | `php` |
+| `07` | `php` |
+| `08` | `php` |
+| `09` | `php` |
+| `10` | `php` |
+| `11` | `php` |
+| `12` | `php` |
 
 ## 🧭 Regla principal
 

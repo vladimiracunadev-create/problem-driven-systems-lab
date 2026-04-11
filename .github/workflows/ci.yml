@@ -30,9 +30,19 @@ jobs:
       matrix:
         compose_file:
           - compose.root.yml
+          - compose.portal.yml
           - cases/01-api-latency-under-load/php/compose.yml
           - cases/02-n-plus-one-and-db-bottlenecks/php/compose.yml
           - cases/03-poor-observability-and-useless-logs/php/compose.yml
+          - cases/04-timeout-chain-and-retry-storms/php/compose.yml
+          - cases/05-memory-pressure-and-resource-leaks/php/compose.yml
+          - cases/06-broken-pipeline-and-fragile-delivery/php/compose.yml
+          - cases/07-incremental-monolith-modernization/php/compose.yml
+          - cases/08-critical-module-extraction-without-breaking-operations/php/compose.yml
+          - cases/09-unstable-external-integration/php/compose.yml
+          - cases/10-expensive-architecture-for-simple-needs/php/compose.yml
+          - cases/11-heavy-reporting-blocks-operations/php/compose.yml
+          - cases/12-single-point-of-knowledge-and-operational-risk/php/compose.yml
           - cases/03-poor-observability-and-useless-logs/node/compose.yml
           - cases/03-poor-observability-and-useless-logs/python/compose.yml
     steps:
@@ -48,7 +58,7 @@ jobs:
       matrix:
         include:
           - name: portal
-            compose_file: compose.root.yml
+            compose_file: compose.portal.yml
             probe_url: http://127.0.0.1:8080/
           - name: case01-php
             compose_file: cases/01-api-latency-under-load/php/compose.yml
@@ -59,6 +69,33 @@ jobs:
           - name: case03-php
             compose_file: cases/03-poor-observability-and-useless-logs/php/compose.yml
             probe_url: http://127.0.0.1:813/health
+          - name: case04-php
+            compose_file: cases/04-timeout-chain-and-retry-storms/php/compose.yml
+            probe_url: http://127.0.0.1:814/health
+          - name: case05-php
+            compose_file: cases/05-memory-pressure-and-resource-leaks/php/compose.yml
+            probe_url: http://127.0.0.1:815/health
+          - name: case06-php
+            compose_file: cases/06-broken-pipeline-and-fragile-delivery/php/compose.yml
+            probe_url: http://127.0.0.1:816/health
+          - name: case07-php
+            compose_file: cases/07-incremental-monolith-modernization/php/compose.yml
+            probe_url: http://127.0.0.1:817/health
+          - name: case08-php
+            compose_file: cases/08-critical-module-extraction-without-breaking-operations/php/compose.yml
+            probe_url: http://127.0.0.1:818/health
+          - name: case09-php
+            compose_file: cases/09-unstable-external-integration/php/compose.yml
+            probe_url: http://127.0.0.1:819/health
+          - name: case10-php
+            compose_file: cases/10-expensive-architecture-for-simple-needs/php/compose.yml
+            probe_url: http://127.0.0.1:8110/health
+          - name: case11-php
+            compose_file: cases/11-heavy-reporting-blocks-operations/php/compose.yml
+            probe_url: http://127.0.0.1:8111/health
+          - name: case12-php
+            compose_file: cases/12-single-point-of-knowledge-and-operational-risk/php/compose.yml
+            probe_url: http://127.0.0.1:8112/health
           - name: case03-node
             compose_file: cases/03-poor-observability-and-useless-logs/node/compose.yml
             probe_url: http://127.0.0.1:823/health
@@ -95,10 +132,8 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Build and boot portal plus case01
-        run: |
-          docker compose -f compose.root.yml up -d --build
-          docker compose -f cases/01-api-latency-under-load/php/compose.yml up -d --build
+      - name: Build and boot laboratorio PHP completo
+        run: docker compose -f compose.root.yml up -d --build
 
       - name: Wait for case01 health
         shell: bash
@@ -109,14 +144,12 @@ jobs:
             fi
             sleep 2
           done
-          docker compose -f cases/01-api-latency-under-load/php/compose.yml logs
+          docker compose -f compose.root.yml logs
           exit 1
 
       - name: Validate portal probe endpoint
         run: curl -fsS "http://127.0.0.1:8080/probe.php?case_id=01&stack=php"
 
-      - name: Shutdown portal and case01
+      - name: Shutdown laboratorio PHP completo
         if: always()
-        run: |
-          docker compose -f cases/01-api-latency-under-load/php/compose.yml down -v
-          docker compose -f compose.root.yml down -v
+        run: docker compose -f compose.root.yml down -v

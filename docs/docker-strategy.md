@@ -17,7 +17,8 @@ El laboratorio no se levanta como un unico sistema enorme. Se trabaja por capas:
 
 | Patron | Uso |
 | --- | --- |
-| `compose.root.yml` | Portal del laboratorio |
+| `compose.root.yml` | Portal + 12 casos PHP en una sola entrada |
+| `compose.portal.yml` | Portal liviano solamente |
 | `cases/<caso>/<stack>/compose.yml` | Un escenario concreto y aislado |
 | `cases/<caso>/compose.compare.yml` | Comparacion entre stacks del mismo caso |
 
@@ -25,22 +26,25 @@ El laboratorio no se levanta como un unico sistema enorme. Se trabaja por capas:
 
 | Beneficio | Impacto |
 | --- | --- |
-| Menor consumo | Solo levantas lo que necesitas |
+| Menor consumo | Puedes elegir entre el laboratorio PHP completo o un caso puntual |
 | Menos ruido | No mezclas logs ni servicios de otros casos |
 | Mejor diagnostico | Cada problema se observa con menos interferencia |
 | Portafolio mas claro | Puedes mostrar un caso concreto sin cargar todo el mundo |
 
 ## Lo que se evita conscientemente
 
-- un `docker compose up` gigante para todos los casos;
+- un `docker compose up` gigante para todos los lenguajes y futuras variantes al mismo tiempo;
 - dependencias cruzadas entre escenarios que deberian ser aislados;
 - infraestructura innecesaria solo para "verse enterprise".
 
 ## Regla practica actual
 
-- Los casos `01` al `12` deben poder levantarse con Docker de forma limpia en PHP.
+- `compose.root.yml` debe dejar visible el laboratorio PHP completo desde `localhost:8080`.
+- Los casos `01` al `12` deben poder levantarse con Docker de forma limpia tambien por separado.
 - Cada `compose.yml` debe incluir solo la infraestructura que el problema realmente necesita.
 - La presencia de `compose.compare.yml` no implica que todos los stacks tengan la misma profundidad funcional.
+
+Ademas, la familia PHP comparte ahora un runtime comun en `docker/php/Dockerfile`. Eso reduce drift entre casos sin obligar a meter todos los problemas en un solo contenedor.
 
 ## Ejemplos concretos
 

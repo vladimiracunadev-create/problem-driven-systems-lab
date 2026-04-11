@@ -17,6 +17,8 @@ required_root=(
   SUPPORT.md
   Makefile
   compose.root.yml
+  compose.portal.yml
+  docker/php/Dockerfile
   docs
   cases
   shared/catalog
