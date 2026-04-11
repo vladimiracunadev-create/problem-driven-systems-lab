@@ -59,7 +59,7 @@ Estado actual:
 - `OPERATIVO` adicional fuera de PHP: [caso 03](cases/03-poor-observability-and-useless-logs/README.md) en Node.js y Python.
 - `DOCUMENTADO / SCAFFOLD`: stacks todavia no profundizados fuera de las variantes ya operativas y la estructura base de los otros runtimes.
 
-## 🔎 Casos prioritarios
+## 🔎 Catálogo de Casos Resolutivos
 
 | Caso | Estado | Que deja como prueba |
 | --- | --- | --- |
@@ -69,9 +69,14 @@ Estado actual:
 | [04 - Timeout chain y retry storms](cases/04-timeout-chain-and-retry-storms/README.md) | `OPERATIVO` | Comparacion entre retries agresivos y resiliencia con circuit breaker y fallback |
 | [05 - Presion de memoria y fugas](cases/05-memory-pressure-and-resource-leaks/README.md) | `OPERATIVO` | Degradacion progresiva por estado retenido frente a limpieza y limites de recursos |
 | [06 - Pipeline roto y delivery fragil](cases/06-broken-pipeline-and-fragile-delivery/README.md) | `OPERATIVO` | Diferencia entre detectar tarde, bloquear en preflight y hacer rollback seguro |
+| [07 - Modernización del Monolito](cases/07-incremental-monolith-modernization/README.md) | `OPERATIVO` | Refactorización incremental mediante patrón strangler fig y progreso validado por consumidor |
+| [08 - Extracción Crítica Módulo](cases/08-critical-module-extraction-without-breaking-operations/README.md) | `OPERATIVO` | Extracción big bang vs extract-and-proxy, permitiendo un cutover progresivo gradual |
+| [09 - Integración Externa Inestable](cases/09-unstable-external-integration/README.md) | `OPERATIVO` | Aislamiento mediante patrón adapter, validación estricta y caché protectora |
+| [10 - Arquitectura Sobre-Dimensionada](cases/10-expensive-architecture-for-simple-needs/README.md) | `OPERATIVO` | Comparación de diseño complejo/costoso vs simplificado, midiendo visibilidad de costo y lead time |
+| [11 - Reportes Pesando la Operación](cases/11-heavy-reporting-blocks-operations/README.md) | `OPERATIVO` | Impacto de read vs write locks: mitigado mediante réplicas, isolation routes o materialized views |
+| [12 - Single Point of Knowledge](cases/12-single-point-of-knowledge-and-operational-risk/README.md) | `OPERATIVO` | Visualización en vivo de riesgo operacional y dependencias personales vs prácticas con Playbooks y distribución |
 
-El catalogo completo se genera desde metadatos y vive en [docs/case-catalog.md](docs/case-catalog.md).
-Los casos [07](cases/07-incremental-monolith-modernization/README.md) a [12](cases/12-single-point-of-knowledge-and-operational-risk/README.md) tambien estan operativos en PHP y extienden la narrativa hacia modernizacion, extraccion segura, integraciones externas, costo de arquitectura, reporting y continuidad operacional.
+El catalogo completo detallado se genera desde metadatos automatizados y vive en [docs/case-catalog.md](docs/case-catalog.md). Cada caso se sirve mediante un robusto servidor en PHP listo para consumir tanto por UI Web como por API.
 
 ## 🖥️ Portal y experiencia de producto
 
