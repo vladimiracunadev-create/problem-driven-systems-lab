@@ -92,44 +92,39 @@ Esto lo vuelve mucho mas claro para reclutadores, lideres y personas que quieren
 
 ## 🚀 Inicio rapido
 
-```bash
-# Laboratorio completo en PHP + portal
+### Convención de stacks por lenguaje
 
+Cada lenguaje tiene su propio compose en la raíz del repositorio. Un comando levanta los 12 casos de ese lenguaje. Los stacks son independientes y pueden correr en paralelo sin colisión de puertos.
+
+| Archivo | Lenguaje | Puertos | Estado |
+| --- | --- | --- | --- |
+| [`compose.root.yml`](compose.root.yml) | PHP 8.3 | 811–819, 8110–8112 | `OPERATIVO` |
+| [`compose.python.yml`](compose.python.yml) | Python 3.12 | 831–839, 8310–8312 | `OPERATIVO` |
+| `compose.nodejs.yml` | Node.js | 841–849, 8410–8412 | `PLANIFICADO` |
+| `compose.java.yml` | Java / JVM | 851–859, 8510–8512 | `PLANIFICADO` |
+| `compose.dotnet.yml` | .NET 8 | 861–869, 8610–8612 | `PLANIFICADO` |
+
+```bash
+# PHP: todos los casos + portal + DB + Prometheus + Grafana
 docker compose -f compose.root.yml up -d --build
 
+# Python: todos los casos (stdlib pura, sin dependencias externas)
+docker compose -f compose.python.yml up -d --build
+
 # Portal liviano solamente
-
 docker compose -f compose.portal.yml up -d --build
+```
 
-# Casos aislados si quieres revisar uno por uno
+### Ejecucion aislada de un solo caso
 
+Cada caso mantiene su propio `compose.yml` interno para desarrollo o revisión individual:
+
+```bash
+# PHP aislado (ejemplo caso 01)
 docker compose -f cases/01-api-latency-under-load/php/compose.yml up -d --build
-docker compose -f cases/02-n-plus-one-and-db-bottlenecks/php/compose.yml up -d --build
-docker compose -f cases/03-poor-observability-and-useless-logs/php/compose.yml up -d --build
-docker compose -f cases/04-timeout-chain-and-retry-storms/php/compose.yml up -d --build
-docker compose -f cases/05-memory-pressure-and-resource-leaks/php/compose.yml up -d --build
-docker compose -f cases/06-broken-pipeline-and-fragile-delivery/php/compose.yml up -d --build
-docker compose -f cases/07-incremental-monolith-modernization/php/compose.yml up -d --build
-docker compose -f cases/08-critical-module-extraction-without-breaking-operations/php/compose.yml up -d --build
-docker compose -f cases/09-unstable-external-integration/php/compose.yml up -d --build
-docker compose -f cases/10-expensive-architecture-for-simple-needs/php/compose.yml up -d --build
-docker compose -f cases/11-heavy-reporting-blocks-operations/php/compose.yml up -d --build
-docker compose -f cases/12-single-point-of-knowledge-and-operational-risk/php/compose.yml up -d --build
-docker compose -f cases/03-poor-observability-and-useless-logs/node/compose.yml up -d --build
 
-# Casos Python (puertos 831-842, un solo contenedor cada uno)
+# Python aislado (ejemplo caso 01)
 docker compose -f cases/01-api-latency-under-load/python/compose.yml up -d --build
-docker compose -f cases/02-n-plus-one-and-db-bottlenecks/python/compose.yml up -d --build
-docker compose -f cases/03-poor-observability-and-useless-logs/python/compose.yml up -d --build
-docker compose -f cases/04-timeout-chain-and-retry-storms/python/compose.yml up -d --build
-docker compose -f cases/05-memory-pressure-and-resource-leaks/python/compose.yml up -d --build
-docker compose -f cases/06-broken-pipeline-and-fragile-delivery/python/compose.yml up -d --build
-docker compose -f cases/07-incremental-monolith-modernization/python/compose.yml up -d --build
-docker compose -f cases/08-critical-module-extraction-without-breaking-operations/python/compose.yml up -d --build
-docker compose -f cases/09-unstable-external-integration/python/compose.yml up -d --build
-docker compose -f cases/10-expensive-architecture-for-simple-needs/python/compose.yml up -d --build
-docker compose -f cases/11-heavy-reporting-blocks-operations/python/compose.yml up -d --build
-docker compose -f cases/12-single-point-of-knowledge-and-operational-risk/python/compose.yml up -d --build
 ```
 
 Tambien existen atajos con `make`, pero la ruta soportada y mas portable sigue siendo `docker compose` directo.
