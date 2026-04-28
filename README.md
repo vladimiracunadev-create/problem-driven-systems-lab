@@ -55,26 +55,27 @@ Si quieres una sola puerta de entrada local con los 12 casos PHP disponibles, le
 
 Estado actual:
 
-- `OPERATIVO`: casos [01](cases/01-api-latency-under-load/README.md), [02](cases/02-n-plus-one-and-db-bottlenecks/README.md), [03](cases/03-poor-observability-and-useless-logs/README.md), [04](cases/04-timeout-chain-and-retry-storms/README.md), [05](cases/05-memory-pressure-and-resource-leaks/README.md), [06](cases/06-broken-pipeline-and-fragile-delivery/README.md), [07](cases/07-incremental-monolith-modernization/README.md), [08](cases/08-critical-module-extraction-without-breaking-operations/README.md), [09](cases/09-unstable-external-integration/README.md), [10](cases/10-expensive-architecture-for-simple-needs/README.md), [11](cases/11-heavy-reporting-blocks-operations/README.md) y [12](cases/12-single-point-of-knowledge-and-operational-risk/README.md) en PHP.
-- `OPERATIVO` adicional fuera de PHP: [caso 03](cases/03-poor-observability-and-useless-logs/README.md) en Node.js y Python.
-- `DOCUMENTADO / SCAFFOLD`: stacks todavia no profundizados fuera de las variantes ya operativas y la estructura base de los otros runtimes.
+- `OPERATIVO` en PHP: todos los casos [01](cases/01-api-latency-under-load/README.md) al [12](cases/12-single-point-of-knowledge-and-operational-risk/README.md), con UI nativa, Prometheus, Grafana y fallos de alta fidelidad.
+- `OPERATIVO` en Python: los 12 casos, con logica funcional equivalente a PHP, stdlib pura y autocontenidos en un solo contenedor.
+- `OPERATIVO` adicional: [caso 03](cases/03-poor-observability-and-useless-logs/README.md) en Node.js.
+- `DOCUMENTADO / SCAFFOLD`: stacks adicionales (Java, .NET, Node.js casos 01-02 y 04-12) con estructura base y documentacion lista.
 
 ## 🔎 Catálogo de Casos Resolutivos
 
-| Caso | Análisis Técnico (PHP) | Resumen del Problema | Que deja como prueba |
-| --- | --- | --- | --- |
-| [01 - API lenta bajo carga](cases/01-api-latency-under-load/README.md) | [👉 Senior Analysis](cases/01-api-latency-under-load/php/README.md) | `OPERATIVO` | Latencia legacy vs optimized, contencion real sobre DB y métricas Grafana |
-| [02 - N+1 y cuellos de botella DB](cases/02-n-plus-one-and-db-bottlenecks/README.md) | [👉 Senior Analysis](cases/02-n-plus-one-and-db-bottlenecks/php/README.md) | `OPERATIVO` | N+1 reproducible, costo por request medido y lectura consolidada |
-| [03 - Observabilidad deficiente](cases/03-poor-observability-and-useless-logs/README.md) | [👉 Senior Analysis](cases/03-poor-observability-and-useless-logs/php/README.md) | `OPERATIVO` | Diferencia clara entre logs pobres y telemetría útil |
-| [04 - Timeout chain y retry storms](cases/04-timeout-chain-and-retry-storms/README.md) | [👉 Senior Analysis](cases/04-timeout-chain-and-retry-storms/php/README.md) | `OPERATIVO` | Comparación entre retries agresivos y resiliencia con circuit breaker |
-| [05 - Presion de memoria y fugas](cases/05-memory-pressure-and-resource-leaks/README.md) | [👉 Senior Analysis](cases/05-memory-pressure-and-resource-leaks/php/README.md) | `OPERATIVO` | Degradación progresiva por estado retenido frente a limpieza de recursos |
-| [06 - Pipeline roto y delivery fragil](cases/06-broken-pipeline-and-fragile-delivery/README.md) | [👉 Senior Analysis](cases/06-broken-pipeline-and-fragile-delivery/php/README.md) | `OPERATIVO` | Diferencia entre detectar tarde y bloquear en preflight/rollback |
-| [07 - Modernización del Monolito](cases/07-incremental-monolith-modernization/README.md) | [👉 Senior Analysis](cases/07-incremental-monolith-modernization/php/README.md) | `OPERATIVO` | Refactorización incremental mediante patrón strangler fig |
-| [08 - Extracción Crítica Módulo](cases/08-critical-module-extraction-without-breaking-operations/README.md) | [👉 Senior Analysis](cases/08-critical-module-extraction-without-breaking-operations/php/README.md) | `OPERATIVO` | Extracción big bang vs extract-and-proxy con cutover gradual |
-| [09 - Integración Externa Inestable](cases/09-unstable-external-integration/README.md) | [👉 Senior Analysis](cases/09-unstable-external-integration/php/README.md) | `OPERATIVO` | Aislamiento mediante patrón adapter y validación estricta |
-| [10 - Arquitectura Sobre-Dimensionada](cases/10-expensive-architecture-for-simple-needs/README.md) | [👉 Senior Analysis](cases/10-expensive-architecture-for-simple-needs/php/README.md) | `OPERATIVO` | Comparación de diseño complejo vs simplificado con costo visible |
-| [11 - Reportes Pesando la Operación](cases/11-heavy-reporting-blocks-operations/README.md) | [👉 Senior Analysis](cases/11-heavy-reporting-blocks-operations/php/README.md) | `OPERATIVO` | Impacto de read/write locks bloqueantes mitigado por aislamiento |
-| [12 - Single Point of Knowledge](cases/12-single-point-of-knowledge-and-operational-risk/README.md) | [👉 Senior Analysis](cases/12-single-point-of-knowledge-and-operational-risk/php/README.md) | `OPERATIVO` | Riesgo operacional y bus factor mitigado por Playbooks integrados |
+| Caso | Análisis Técnico (PHP) | Python | Resumen del Problema | Que deja como prueba |
+| --- | --- | --- | --- | --- |
+| [01 - API lenta bajo carga](cases/01-api-latency-under-load/README.md) | [👉 Senior Analysis](cases/01-api-latency-under-load/php/README.md) | [🐍 Python](cases/01-api-latency-under-load/python/README.md) | `OPERATIVO` | Latencia legacy vs optimized, contencion real sobre DB y métricas Grafana |
+| [02 - N+1 y cuellos de botella DB](cases/02-n-plus-one-and-db-bottlenecks/README.md) | [👉 Senior Analysis](cases/02-n-plus-one-and-db-bottlenecks/php/README.md) | [🐍 Python](cases/02-n-plus-one-and-db-bottlenecks/python/README.md) | `OPERATIVO` | N+1 reproducible, costo por request medido y lectura consolidada |
+| [03 - Observabilidad deficiente](cases/03-poor-observability-and-useless-logs/README.md) | [👉 Senior Analysis](cases/03-poor-observability-and-useless-logs/php/README.md) | [🐍 Python](cases/03-poor-observability-and-useless-logs/python/README.md) | `OPERATIVO` | Diferencia clara entre logs pobres y telemetría útil |
+| [04 - Timeout chain y retry storms](cases/04-timeout-chain-and-retry-storms/README.md) | [👉 Senior Analysis](cases/04-timeout-chain-and-retry-storms/php/README.md) | [🐍 Python](cases/04-timeout-chain-and-retry-storms/python/README.md) | `OPERATIVO` | Comparación entre retries agresivos y resiliencia con circuit breaker |
+| [05 - Presion de memoria y fugas](cases/05-memory-pressure-and-resource-leaks/README.md) | [👉 Senior Analysis](cases/05-memory-pressure-and-resource-leaks/php/README.md) | [🐍 Python](cases/05-memory-pressure-and-resource-leaks/python/README.md) | `OPERATIVO` | Degradación progresiva por estado retenido frente a limpieza de recursos |
+| [06 - Pipeline roto y delivery fragil](cases/06-broken-pipeline-and-fragile-delivery/README.md) | [👉 Senior Analysis](cases/06-broken-pipeline-and-fragile-delivery/php/README.md) | [🐍 Python](cases/06-broken-pipeline-and-fragile-delivery/python/README.md) | `OPERATIVO` | Diferencia entre detectar tarde y bloquear en preflight/rollback |
+| [07 - Modernización del Monolito](cases/07-incremental-monolith-modernization/README.md) | [👉 Senior Analysis](cases/07-incremental-monolith-modernization/php/README.md) | [🐍 Python](cases/07-incremental-monolith-modernization/python/README.md) | `OPERATIVO` | Refactorización incremental mediante patrón strangler fig |
+| [08 - Extracción Crítica Módulo](cases/08-critical-module-extraction-without-breaking-operations/README.md) | [👉 Senior Analysis](cases/08-critical-module-extraction-without-breaking-operations/php/README.md) | [🐍 Python](cases/08-critical-module-extraction-without-breaking-operations/python/README.md) | `OPERATIVO` | Extracción big bang vs extract-and-proxy con cutover gradual |
+| [09 - Integración Externa Inestable](cases/09-unstable-external-integration/README.md) | [👉 Senior Analysis](cases/09-unstable-external-integration/php/README.md) | [🐍 Python](cases/09-unstable-external-integration/python/README.md) | `OPERATIVO` | Aislamiento mediante patrón adapter y validación estricta |
+| [10 - Arquitectura Sobre-Dimensionada](cases/10-expensive-architecture-for-simple-needs/README.md) | [👉 Senior Analysis](cases/10-expensive-architecture-for-simple-needs/php/README.md) | [🐍 Python](cases/10-expensive-architecture-for-simple-needs/python/README.md) | `OPERATIVO` | Comparación de diseño complejo vs simplificado con costo visible |
+| [11 - Reportes Pesando la Operación](cases/11-heavy-reporting-blocks-operations/README.md) | [👉 Senior Analysis](cases/11-heavy-reporting-blocks-operations/php/README.md) | [🐍 Python](cases/11-heavy-reporting-blocks-operations/python/README.md) | `OPERATIVO` | Impacto de read/write locks bloqueantes mitigado por aislamiento |
+| [12 - Single Point of Knowledge](cases/12-single-point-of-knowledge-and-operational-risk/README.md) | [👉 Senior Analysis](cases/12-single-point-of-knowledge-and-operational-risk/php/README.md) | [🐍 Python](cases/12-single-point-of-knowledge-and-operational-risk/python/README.md) | `OPERATIVO` | Riesgo operacional y bus factor mitigado por Playbooks integrados |
 
 El catalogo completo detallado se genera desde metadatos automatizados y vive en [docs/case-catalog.md](docs/case-catalog.md). Cada caso se sirve mediante un robusto servidor en PHP listo para consumir tanto por UI Web como por API.
 
@@ -115,7 +116,20 @@ docker compose -f cases/10-expensive-architecture-for-simple-needs/php/compose.y
 docker compose -f cases/11-heavy-reporting-blocks-operations/php/compose.yml up -d --build
 docker compose -f cases/12-single-point-of-knowledge-and-operational-risk/php/compose.yml up -d --build
 docker compose -f cases/03-poor-observability-and-useless-logs/node/compose.yml up -d --build
+
+# Casos Python (puertos 831-842, un solo contenedor cada uno)
+docker compose -f cases/01-api-latency-under-load/python/compose.yml up -d --build
+docker compose -f cases/02-n-plus-one-and-db-bottlenecks/python/compose.yml up -d --build
 docker compose -f cases/03-poor-observability-and-useless-logs/python/compose.yml up -d --build
+docker compose -f cases/04-timeout-chain-and-retry-storms/python/compose.yml up -d --build
+docker compose -f cases/05-memory-pressure-and-resource-leaks/python/compose.yml up -d --build
+docker compose -f cases/06-broken-pipeline-and-fragile-delivery/python/compose.yml up -d --build
+docker compose -f cases/07-incremental-monolith-modernization/python/compose.yml up -d --build
+docker compose -f cases/08-critical-module-extraction-without-breaking-operations/python/compose.yml up -d --build
+docker compose -f cases/09-unstable-external-integration/python/compose.yml up -d --build
+docker compose -f cases/10-expensive-architecture-for-simple-needs/python/compose.yml up -d --build
+docker compose -f cases/11-heavy-reporting-blocks-operations/python/compose.yml up -d --build
+docker compose -f cases/12-single-point-of-knowledge-and-operational-risk/python/compose.yml up -d --build
 ```
 
 Tambien existen atajos con `make`, pero la ruta soportada y mas portable sigue siendo `docker compose` directo.
@@ -155,9 +169,8 @@ El sistema se organiza como una capa editorial en raiz, un portal de evaluacion 
 
 ## 🚫 Lo que este repo no vende
 
-- Paridad funcional completa en todos los stacks desde la primera iteracion.
+- Paridad funcional completa en todos los stacks (Java, .NET, Node.js casos 04-12 siguen en scaffold).
 - Benchmarks absolutos entre lenguajes.
-- Paridad profunda de los doce casos en todos los stacks hoy.
 - Seniority inflada con claims sin evidencia.
 
 ## ⚖️ Licencia
