@@ -62,7 +62,7 @@ Estado actual:
 
 ## 🔎 Catálogo de Casos Resolutivos
 
-| Caso | Análisis Técnico (PHP) | Python | Resumen del Problema | Que deja como prueba |
+| Caso | Análisis Técnico (PHP) | Análisis Técnico (Python) | Resumen del Problema | Que deja como prueba |
 | --- | --- | --- | --- | --- |
 | [01 - API lenta bajo carga](cases/01-api-latency-under-load/README.md) | [👉 Senior Analysis](cases/01-api-latency-under-load/php/README.md) | [🐍 Python](cases/01-api-latency-under-load/python/README.md) | `OPERATIVO` | Latencia legacy vs optimized, contencion real sobre DB y métricas Grafana |
 | [02 - N+1 y cuellos de botella DB](cases/02-n-plus-one-and-db-bottlenecks/README.md) | [👉 Senior Analysis](cases/02-n-plus-one-and-db-bottlenecks/php/README.md) | [🐍 Python](cases/02-n-plus-one-and-db-bottlenecks/python/README.md) | `OPERATIVO` | N+1 reproducible, costo por request medido y lectura consolidada |
