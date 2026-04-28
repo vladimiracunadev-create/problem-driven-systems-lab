@@ -59,8 +59,6 @@ services:
     container_name: pdsl-01-postgres-exporter-compare
     environment:
       DATA_SOURCE_NAME: postgresql://problemlab:problemlab@db:5432/problemlab?sslmode=disable
-    ports:
-      - "9187:9187"
     depends_on:
       db:
         condition: service_healthy
