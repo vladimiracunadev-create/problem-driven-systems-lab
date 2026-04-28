@@ -6,8 +6,8 @@
 
 | Icono | Caso | Categoria | Análisis Técnico (PHP) | Estado | Stacks operativos | Impacto de negocio |
 | --- | --- | --- | --- | --- | --- | --- |
-| ⚡ | [01 - API lenta bajo carga](../cases/01-api-latency-under-load/README.md) | Rendimiento | [👉 Senior Analysis](../cases/01-api-latency-under-load/php/README.md) | `OPERATIVO` | `php` | Reduce latencia visible y evita sobredimensionar infraestructura a ciegas. |
-| 🔄 | [02 - N+1 queries y cuellos de botella en base de datos](../cases/02-n-plus-one-and-db-bottlenecks/README.md) | Rendimiento | [👉 Senior Analysis](../cases/02-n-plus-one-and-db-bottlenecks/php/README.md) | `OPERATIVO` | `php` | Reduce round-trips, costo por request y desgaste innecesario sobre la base de datos. |
+| ⚡ | [01 - API lenta bajo carga](../cases/01-api-latency-under-load/README.md) | Rendimiento | [👉 Senior Analysis](../cases/01-api-latency-under-load/php/README.md) | `OPERATIVO` | `php`, `python` | Reduce latencia visible y evita sobredimensionar infraestructura a ciegas. |
+| 🔄 | [02 - N+1 queries y cuellos de botella en base de datos](../cases/02-n-plus-one-and-db-bottlenecks/README.md) | Rendimiento | [👉 Senior Analysis](../cases/02-n-plus-one-and-db-bottlenecks/php/README.md) | `OPERATIVO` | `php`, `python` | Reduce round-trips, costo por request y desgaste innecesario sobre la base de datos. |
 | 🔭 | [03 - Observabilidad deficiente y logs inutiles](../cases/03-poor-observability-and-useless-logs/README.md) | Observabilidad | [👉 Senior Analysis](../cases/03-poor-observability-and-useless-logs/php/README.md) | `OPERATIVO` | `php`, `node`, `python` | Reduce MTTR y convierte incidentes vagos en fallas diagnosticables con evidencia. |
 | ⏱️ | [04 - Cadena de timeouts y tormentas de reintentos](../cases/04-timeout-chain-and-retry-storms/README.md) | Resiliencia | [👉 Senior Analysis](../cases/04-timeout-chain-and-retry-storms/php/README.md) | `OPERATIVO` | `php` | Ayuda a reducir fallas en cascada y a disenar limites mas sanos de timeout, retry y backoff. |
 | 🧠 | [05 - Presion de memoria y fugas de recursos](../cases/05-memory-pressure-and-resource-leaks/README.md) | Rendimiento | [👉 Senior Analysis](../cases/05-memory-pressure-and-resource-leaks/php/README.md) | `OPERATIVO` | `php` | Sirve para razonar estabilidad, limites de recursos y degradacion progresiva antes del colapso. |
@@ -23,13 +23,13 @@
 
 ### ⚡ [01 - API lenta bajo carga](../cases/01-api-latency-under-load/README.md)
 
-- Stacks operativos: `php`
+- Stacks operativos: `php`, `python`
 - Impacto de negocio: Reduce latencia visible y evita sobredimensionar infraestructura a ciegas.
 - Que demuestra: Compara /report-legacy y /report-optimized con latencia, p95 y queries promedio.
 
 ### 🔄 [02 - N+1 queries y cuellos de botella en base de datos](../cases/02-n-plus-one-and-db-bottlenecks/README.md)
 
-- Stacks operativos: `php`
+- Stacks operativos: `php`, `python`
 - Impacto de negocio: Reduce round-trips, costo por request y desgaste innecesario sobre la base de datos.
 - Que demuestra: Contrasta /orders-legacy y /orders-optimized sobre la misma base relacional y los mismos datos semilla.
 

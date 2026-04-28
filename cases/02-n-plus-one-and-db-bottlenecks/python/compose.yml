@@ -6,3 +6,8 @@ services:
     container_name: pdsl-02-python-app
     ports:
       - "832:8080"
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://127.0.0.1:8080/health', timeout=2).read()\""]
+      interval: 10s
+      timeout: 3s
+      retries: 5

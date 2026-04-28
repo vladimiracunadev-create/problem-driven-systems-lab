@@ -1,34 +1,51 @@
-# Modernización incremental de monolito — Python
+# Caso 07 — Python: Modernizacion incremental de monolito
 
-## Objetivo de esta variante
-Representar este caso desde el stack **Python**, manteniendo foco en el problema y no solo en la sintaxis.
+Implementacion Python del caso **Incremental monolith modernization**.
 
-## Qué debería mostrar esta carpeta
-- una base dockerizada,
-- un punto de entrada mínimo,
-- espacio para instrumentación, pruebas o scripts,
-- notas de diseño específicas del stack.
+Logica funcional identica al stack PHP: mismo flujo de cambio de precios con acoplamiento de god class (legacy) vs patron strangler fig con ACL y migracion incremental de consumidores (strangler), mismas rutas.
 
-## Qué NO debería hacer
-- mezclar dependencias de otros stacks,
-- levantar todo el laboratorio,
-- esconder decisiones importantes fuera del repositorio.
+## Equivalencia funcional con PHP
 
-## Puertos de referencia
-- Puerto local sugerido: `837`
+| Aspecto | PHP | Python |
+|---|---|---|
+| Rutas HTTP | `/change-legacy`, `/change-strangler`, `/migration/state`, `/flows`, `/diagnostics/summary`, `/metrics`, `/metrics-prometheus`, `/reset-lab` | Identicas |
+| Modo legacy | God class con acoplamiento directo a todos los modulos internos | Identico |
+| Modo strangler | ACL desacopla el dominio; consumidores migran incrementalmente | Identico |
+| Migracion | `consumers_migrated` / `consumers_total` con porcentaje de avance | Identico |
+| Estado persistido | `/tmp/pdsl-case07-php/` | `/tmp/pdsl-case07-python/` |
+| Puerto | 817 | 837 |
 
-## Comando esperado
+## Arranque
+
 ```bash
 docker compose -f compose.yml up -d --build
 ```
 
-## Notas del stack
-En Python conviene estudiar este caso considerando:
-- ergonomía del runtime,
-- patrones habituales del ecosistema,
-- observabilidad disponible,
-- costos de complejidad,
-- límites y trade-offs específicos.
+Puerto local: `837`.
 
-## Estado inicial
-Esta carpeta deja una base mínima documentada y ampliable para que el caso evolucione hacia un escenario más realista.
+## Endpoints
+
+```bash
+curl http://localhost:837/
+curl http://localhost:837/health
+curl "http://localhost:837/change-legacy?product_id=P-001&new_price=99.99&reason=promo"
+curl "http://localhost:837/change-strangler?product_id=P-001&new_price=99.99&reason=promo"
+curl http://localhost:837/migration/state
+curl "http://localhost:837/flows?limit=10"
+curl http://localhost:837/diagnostics/summary
+curl http://localhost:837/metrics
+curl http://localhost:837/metrics-prometheus
+curl http://localhost:837/reset-lab
+```
+
+## Que observar
+
+- Legacy: `modules_touched` lista todos los modulos afectados por cada cambio de precio (god class coupling).
+- Strangler: `acl_translations` muestra las traducciones del ACL; `consumers_migrated` incrementa con cada llamada.
+- `/migration/state` refleja el progreso: `consumers_migrated`, `consumers_total`, `migration_pct`.
+- `/diagnostics/summary` compara `avg_modules_touched` (legacy) vs `avg_acl_translations` (strangler).
+- `/flows` historial de operaciones con `mode`, `product_id`, `modules_touched`, `elapsed_ms`.
+
+## Patron implementado
+
+El modo strangler implementa el patron **Strangler Fig**: los nuevos consumidores del dominio de precios se comunican a traves de un ACL (Anti-Corruption Layer) que traduce el modelo legacy al modelo nuevo. Cada llamada a `change-strangler` migra un consumidor adicional, simulando la transicion incremental del 0% al 100%.

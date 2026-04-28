@@ -1,34 +1,58 @@
-# Pipeline roto y entrega frágil — Python
+# Caso 06 — Python: Pipeline roto y entrega fragil
 
-## Objetivo de esta variante
-Representar este caso desde el stack **Python**, manteniendo foco en el problema y no solo en la sintaxis.
+Implementacion Python del caso **Broken pipeline and fragile delivery**.
 
-## Qué debería mostrar esta carpeta
-- una base dockerizada,
-- un punto de entrada mínimo,
-- espacio para instrumentación, pruebas o scripts,
-- notas de diseño específicas del stack.
+Logica funcional identica al stack PHP: mismo flujo de despliegue con 3 entornos (dev/staging/prod), mismos escenarios de fallo, misma diferencia entre deteccion tardia (legacy) y bloqueo temprano (controlled), mismas rutas.
 
-## Qué NO debería hacer
-- mezclar dependencias de otros stacks,
-- levantar todo el laboratorio,
-- esconder decisiones importantes fuera del repositorio.
+## Equivalencia funcional con PHP
 
-## Puertos de referencia
-- Puerto local sugerido: `836`
+| Aspecto | PHP | Python |
+|---|---|---|
+| Rutas HTTP | `/deploy-legacy`, `/deploy-controlled`, `/environments`, `/deployments`, `/diagnostics/summary`, `/metrics`, `/metrics-prometheus`, `/reset-lab` | Identicas |
+| Modo legacy | Falla despues de `switch_traffic`; rollback manual necesario | Identico |
+| Modo controlled | Bloquea en `preflight` o hace auto-rollback antes de afectar trafico | Identico |
+| Entornos | dev, staging, prod con `health`, `current_release`, `last_good_release` | Identicos |
+| Escenarios | ok, missing_secret, config_drift, failing_smoke, migration_risk | Identicos |
+| Estado persistido | `/tmp/pdsl-case06-php/` | `/tmp/pdsl-case06-python/` |
+| Puerto | 816 | 836 |
 
-## Comando esperado
+## Arranque
+
 ```bash
 docker compose -f compose.yml up -d --build
 ```
 
-## Notas del stack
-En Python conviene estudiar este caso considerando:
-- ergonomía del runtime,
-- patrones habituales del ecosistema,
-- observabilidad disponible,
-- costos de complejidad,
-- límites y trade-offs específicos.
+Puerto local: `836`.
 
-## Estado inicial
-Esta carpeta deja una base mínima documentada y ampliable para que el caso evolucione hacia un escenario más realista.
+## Endpoints
+
+```bash
+curl http://localhost:836/
+curl http://localhost:836/health
+curl "http://localhost:836/deploy-legacy?scenario=missing_secret&release=v2.1.0&env=prod"
+curl "http://localhost:836/deploy-controlled?scenario=missing_secret&release=v2.1.0&env=prod"
+curl http://localhost:836/environments
+curl "http://localhost:836/deployments?limit=10"
+curl http://localhost:836/diagnostics/summary
+curl http://localhost:836/metrics
+curl http://localhost:836/metrics-prometheus
+curl http://localhost:836/reset-lab
+```
+
+## Escenarios disponibles
+
+| Scenario | Comportamiento |
+|---|---|
+| `ok` | Despliegue completo sin fallos. |
+| `missing_secret` | Secreto de configuracion ausente. Legacy: falla post-trafico. Controlled: bloqueado en preflight. |
+| `config_drift` | Divergencia de configuracion entre entornos. Legacy: falla en smoke test post-trafico. Controlled: detectado en preflight. |
+| `failing_smoke` | Smoke test falla tras el cambio de trafico. Legacy: rollback manual. Controlled: auto-rollback. |
+| `migration_risk` | Migracion de base de datos con riesgo de incompatibilidad. Legacy: falla en produccion. Controlled: bloqueado en staging. |
+
+## Que observar
+
+- Legacy: `stage_failed` siempre es `switch_traffic` o posterior; el entorno queda en estado degradado.
+- Controlled: `stage_failed` es `preflight` o el rollback ocurre antes de afectar trafico real.
+- `/environments` muestra el `health` de cada entorno: `healthy`, `degraded`, `rollback`.
+- `/diagnostics/summary` compara `avg_stage_of_failure` entre ambos modos y `rollback_rate`.
+- `/deployments` historial con `scenario`, `mode`, `success`, `stage_failed`, `elapsed_ms`.

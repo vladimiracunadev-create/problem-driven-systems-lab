@@ -54,9 +54,19 @@ El stack PHP es la implementación **funcional completa** de este caso. Incluye:
 | `prometheus` | Scraping de métricas de la app y la base de datos |
 | `grafana` | Dashboard inicial del caso con paneles de latencia y DB |
 
-### 🔧 Node.js / Python / Java / .NET (espacio de crecimiento)
+### Python 3.12 (implementacion operativa portable)
 
-Los demás stacks tienen estructura dockerizada lista, pero **no representan paridad funcional completa** con el caso PHP en esta versión. Son la base para profundizar en futuras iteraciones.
+El stack Python ahora resuelve el caso con libreria estandar y SQLite local:
+
+- `report-legacy` reproduce agregacion transaccional + N+1.
+- `report-optimized` usa tabla resumen y menos round-trips.
+- `batch/status`, `job-runs`, `metrics` y `diagnostics/summary` dejan evidencia comparable.
+
+PHP sigue siendo la version mas profunda con PostgreSQL, exporter, Prometheus y Grafana. Python queda operativo para comparar el criterio de solucion sin romper el stack principal.
+
+### Node.js / Java / .NET (espacio de crecimiento)
+
+Los demas stacks tienen estructura dockerizada lista, pero todavia no representan paridad funcional completa con PHP y Python en este caso.
 
 ---
 
@@ -165,7 +175,7 @@ Este caso deja estructura para medir y comparar:
 │   ├── compose.yml
 │   └── README.md
 ├── 🟢 node/                        ← Base de crecimiento
-├── 🐍 python/                      ← Base de crecimiento
+├── 🐍 python/                      ← Implementacion operativa portable
 ├── ☕ java/                         ← Base de crecimiento
 └── 🔵 dotnet/                      ← Base de crecimiento
 ```

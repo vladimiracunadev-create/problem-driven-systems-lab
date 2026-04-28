@@ -1,34 +1,59 @@
-# Presión de memoria y fugas de recursos — Python
+# Caso 05 — Python: Presion de memoria y fugas de recursos
 
-## Objetivo de esta variante
-Representar este caso desde el stack **Python**, manteniendo foco en el problema y no solo en la sintaxis.
+Implementacion Python del caso **Memory pressure and resource leaks**.
 
-## Qué debería mostrar esta carpeta
-- una base dockerizada,
-- un punto de entrada mínimo,
-- espacio para instrumentación, pruebas o scripts,
-- notas de diseño específicas del stack.
+Logica funcional identica al stack PHP: mismo flujo de procesamiento por lotes, misma simulacion de retencion de buffers vs liberacion controlada, mismos umbrales de presion, mismas rutas.
 
-## Qué NO debería hacer
-- mezclar dependencias de otros stacks,
-- levantar todo el laboratorio,
-- esconder decisiones importantes fuera del repositorio.
+## Equivalencia funcional con PHP
 
-## Puertos de referencia
-- Puerto local sugerido: `835`
+| Aspecto | PHP | Python |
+|---|---|---|
+| Rutas HTTP | `/batch-legacy`, `/batch-optimized`, `/state`, `/runs`, `/diagnostics/summary`, `/metrics`, `/metrics-prometheus`, `/reset-lab` | Identicas |
+| Modo legacy | Retiene todos los buffers base64 en memoria durante el batch | Identico |
+| Modo optimized | Libera buffers tras procesar cada item; guarda solo hash sha256 | Identico |
+| Umbrales | Warning: 8192 KB / 60 descriptores. Critical: 16384 KB / 120 descriptores | Identicos |
+| HTTP 503 | Cuando legacy alcanza presion critica | Identico |
+| Estado persistido | `/tmp/pdsl-case05-php/` | `/tmp/pdsl-case05-python/` |
+| Puerto | 815 | 835 |
 
-## Comando esperado
+## Arranque
+
 ```bash
 docker compose -f compose.yml up -d --build
 ```
 
-## Notas del stack
-En Python conviene estudiar este caso considerando:
-- ergonomía del runtime,
-- patrones habituales del ecosistema,
-- observabilidad disponible,
-- costos de complejidad,
-- límites y trade-offs específicos.
+Puerto local: `835`.
 
-## Estado inicial
-Esta carpeta deja una base mínima documentada y ampliable para que el caso evolucione hacia un escenario más realista.
+## Endpoints
+
+```bash
+curl http://localhost:835/
+curl http://localhost:835/health
+curl "http://localhost:835/batch-legacy?items=50&size_kb=128"
+curl "http://localhost:835/batch-optimized?items=50&size_kb=128"
+curl http://localhost:835/state
+curl "http://localhost:835/runs?limit=10"
+curl http://localhost:835/diagnostics/summary
+curl http://localhost:835/metrics
+curl http://localhost:835/metrics-prometheus
+curl http://localhost:835/reset-lab
+```
+
+## Parametros de carga
+
+| Parametro | Descripcion | Default |
+|---|---|---|
+| `items` | Numero de items a procesar en el batch | 20 |
+| `size_kb` | Tamano del buffer simulado por item (KB) | 64 |
+
+## Que observar
+
+- `retained_kb` en `/state` crece linealmente con cada llamada a `batch-legacy` y nunca baja.
+- `retained_kb` en `batch-optimized` permanece cerca de 0 (decae tras cada batch).
+- Cuando `retained_kb` supera 16384 KB, `batch-legacy` devuelve HTTP 503 con `pressure: critical`.
+- `/diagnostics/summary` muestra `avg_retained_kb` y `pressure_events` por modo.
+- `/runs` historial de ejecuciones con `items_processed`, `retained_kb`, `elapsed_ms`.
+
+## Diferencias de implementacion respecto a PHP
+
+Ninguna diferencia funcional. La simulacion de presion de memoria en Python usa listas de strings base64 en lugar de arrays PHP; el comportamiento observable (escalada de `retained_kb`, umbrales, 503) es identico.

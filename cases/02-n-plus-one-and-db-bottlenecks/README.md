@@ -70,7 +70,15 @@ El stack PHP ya implementa este caso con una base relacional real y dos rutas co
 - `orders-optimized` -> consolida pedidos y detalles con lecturas agrupadas
 - `/metrics`, `/metrics-prometheus` y `/diagnostics/summary` -> dejan evidencia medible de la diferencia
 
-### 🔧 Node.js / Python / Java / .NET
+### Python 3.12
+
+El stack Python ahora implementa el caso con dataset local en SQLite y rutas equivalentes:
+
+- `orders-legacy` -> carga relaciones dentro de bucles y expone el costo N+1.
+- `orders-optimized` -> consolida pedidos y detalles con lecturas agrupadas.
+- `/metrics`, `/metrics-prometheus` y `/diagnostics/summary` -> dejan evidencia medible de queries y latencia.
+
+### Node.js / Java / .NET
 
 Se mantienen como base de crecimiento para llevar el mismo caso a paridad multi-stack en una fase posterior.
 
@@ -99,7 +107,7 @@ Se mantienen como base de crecimiento para llevar el mismo caso a paridad multi-
 |-------|--------|
 | 🐘 PHP 8 | ✅ Implementado (Docker + PostgreSQL) |
 | 🟢 Node.js | 🔧 Estructura lista |
-| 🐍 Python | 🔧 Estructura lista |
+| 🐍 Python | ✅ Implementado (Docker + SQLite local + metricas) |
 | ☕ Java | 🔧 Estructura lista |
 | 🔵 .NET 8 | 🔧 Estructura lista |
 

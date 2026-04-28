@@ -118,8 +118,8 @@
     {
       "key": "python",
       "label": "Python",
-      "headline": "Stack operativo real en observabilidad comparada.",
-      "note": "Permite contrastar la misma narrativa operacional en otro runtime."
+      "headline": "Stack operativo real en los tres primeros casos criticos.",
+      "note": "Permite contrastar rendimiento, N+1 y observabilidad en otro runtime sin abandonar la narrativa problem-first."
     },
     {
       "key": "java",
@@ -142,7 +142,7 @@
       "title": "API lenta bajo carga",
       "category": "Rendimiento",
       "status": "OPERATIVO",
-      "level_detail": "PHP + PostgreSQL + worker + Prometheus + Grafana",
+      "level_detail": "PHP + PostgreSQL + worker + Prometheus + Grafana; Python con SQLite local, worker y metricas",
       "summary": "La aplicacion responde bien con pocos usuarios, pero degrada su latencia y estabilidad al aumentar la concurrencia.",
       "case_readme_path": "cases/01-api-latency-under-load/README.md",
       "business_outcome": "Reduce latencia visible y evita sobredimensionar infraestructura a ciegas.",
@@ -159,13 +159,21 @@
       ],
       "honesty_note": "No busca benchmarkear lenguajes. Busca demostrar diagnostico y remediacion real del problema de latencia bajo carga.",
       "operational_stacks": [
-        "php"
+        "php",
+        "python"
       ],
       "runtime_entries": {
         "php": {
           "port": 811,
           "compose_path": "cases/01-api-latency-under-load/php/compose.yml",
           "readme_path": "cases/01-api-latency-under-load/php/README.md",
+          "health_path": "/health",
+          "root_path": "/"
+        },
+        "python": {
+          "port": 831,
+          "compose_path": "cases/01-api-latency-under-load/python/compose.yml",
+          "readme_path": "cases/01-api-latency-under-load/python/README.md",
           "health_path": "/health",
           "root_path": "/"
         }
@@ -178,7 +186,7 @@
       "title": "N+1 queries y cuellos de botella en base de datos",
       "category": "Rendimiento",
       "status": "OPERATIVO",
-      "level_detail": "PHP + PostgreSQL",
+      "level_detail": "PHP + PostgreSQL; Python con SQLite local y metricas de queries",
       "summary": "La aplicacion ejecuta demasiadas consultas por solicitud o usa el acceso a datos de forma ineficiente, generando saturacion de base de datos.",
       "case_readme_path": "cases/02-n-plus-one-and-db-bottlenecks/README.md",
       "business_outcome": "Reduce round-trips, costo por request y desgaste innecesario sobre la base de datos.",
@@ -195,13 +203,21 @@
       ],
       "honesty_note": "No intenta representar un ORM especifico. Reproduce un patron muy real de round-trips repetidos y relaciones cargadas dentro de bucles.",
       "operational_stacks": [
-        "php"
+        "php",
+        "python"
       ],
       "runtime_entries": {
         "php": {
           "port": 812,
           "compose_path": "cases/02-n-plus-one-and-db-bottlenecks/php/compose.yml",
           "readme_path": "cases/02-n-plus-one-and-db-bottlenecks/php/README.md",
+          "health_path": "/health",
+          "root_path": "/"
+        },
+        "python": {
+          "port": 832,
+          "compose_path": "cases/02-n-plus-one-and-db-bottlenecks/python/compose.yml",
+          "readme_path": "cases/02-n-plus-one-and-db-bottlenecks/python/README.md",
           "health_path": "/health",
           "root_path": "/"
         }
