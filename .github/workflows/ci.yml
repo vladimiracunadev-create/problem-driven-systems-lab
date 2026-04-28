@@ -135,11 +135,11 @@ jobs:
       - name: Build and boot laboratorio PHP completo
         run: docker compose -f compose.root.yml up -d --build
 
-      - name: Wait for case01 health
+      - name: Wait for case01 health via hub
         shell: bash
         run: |
           for attempt in {1..50}; do
-            if curl -fsS "http://127.0.0.1:811/health" > /dev/null; then
+            if curl -fsS "http://127.0.0.1:8100/01/health" > /dev/null; then
               exit 0
             fi
             sleep 2
