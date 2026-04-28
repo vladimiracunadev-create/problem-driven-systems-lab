@@ -31,8 +31,8 @@ Cada lenguaje tiene su propio archivo compose en la raíz. Un solo comando levan
 
 | Archivo | Lenguaje | Puertos | Estado |
 | --- | --- | --- | --- |
-| [`compose.root.yml`](compose.root.yml) | PHP 8.3 | 811–819, 8110–8112 | `OPERATIVO` |
-| [`compose.python.yml`](compose.python.yml) | Python 3.12 | 831–839, 8310–8312 | `OPERATIVO` |
+| [`compose.root.yml`](compose.root.yml) | PHP 8.3 | `8080` portal · `8100` PHP hub · `9091` Prometheus · `3001` Grafana | `OPERATIVO` |
+| [`compose.python.yml`](compose.python.yml) | Python 3.12 | `8200` Python hub | `OPERATIVO` |
 | `compose.nodejs.yml` | Node.js | 841–849, 8410–8412 | `PLANIFICADO` |
 | `compose.java.yml` | Java / JVM | 851–859, 8510–8512 | `PLANIFICADO` |
 | `compose.dotnet.yml` | .NET 8 | 861–869, 8610–8612 | `PLANIFICADO` |
@@ -46,7 +46,8 @@ docker compose -f compose.root.yml up -d --build
 URLs esperadas:
 
 - Portal: `http://localhost:8080`
-- Casos PHP: `http://localhost:811` a `http://localhost:819` y `http://localhost:8110` a `http://localhost:8112`
+- PHP hub (todos los casos): `http://localhost:8100/01/` … `http://localhost:8100/12/`
+- Prometheus: `http://localhost:9091` · Grafana: `http://localhost:3001`
 
 Para apagar:
 
@@ -102,8 +103,8 @@ docker compose -f cases/01-api-latency-under-load/python/compose.yml up -d --bui
 
 URLs esperadas:
 
-- PHP: `http://localhost:811` — Prometheus: `http://localhost:9091` — Grafana: `http://localhost:3001`
-- Python: `http://localhost:831`
+- PHP via hub: `http://localhost:8100/01/` — Prometheus: `http://localhost:9091` — Grafana: `http://localhost:3001`
+- Python via hub: `http://localhost:8200/01/`
 
 ### Caso 02
 
@@ -114,8 +115,8 @@ docker compose -f cases/02-n-plus-one-and-db-bottlenecks/python/compose.yml up -
 
 URLs esperadas:
 
-- PHP: `http://localhost:812`
-- Python: `http://localhost:832`
+- PHP via hub: `http://localhost:8100/02/`
+- Python via hub: `http://localhost:8200/02/`
 
 ### Caso 03 (disponible en tres lenguajes)
 
@@ -127,9 +128,9 @@ docker compose -f cases/03-poor-observability-and-useless-logs/python/compose.ym
 
 URLs esperadas:
 
-- PHP: `http://localhost:813`
-- Node.js: `http://localhost:823`
-- Python: `http://localhost:833`
+- PHP via hub: `http://localhost:8100/03/`
+- Node.js (aislado): `http://localhost:823`
+- Python via hub: `http://localhost:8200/03/`
 
 ## 🛠️ Atajos con Makefile
 

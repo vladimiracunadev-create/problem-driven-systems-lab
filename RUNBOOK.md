@@ -9,9 +9,9 @@
 
 | Escenario | Comando | Puertos |
 | --- | --- | --- |
-| PHP — 12 casos + portal + DB + observabilidad | `docker compose -f compose.root.yml up -d --build` | 811–819, 8110–8112 |
-| Python — 12 casos, stdlib pura | `docker compose -f compose.python.yml up -d --build` | 831–839, 8310–8312 |
-| Portal liviano | `docker compose -f compose.portal.yml up -d --build` | 8080 |
+| PHP — portal + hub + DB + observabilidad | `docker compose -f compose.root.yml up -d --build` | `8080` portal · `8100` hub · `9091` Prometheus · `3001` Grafana |
+| Python — dispatcher unificado | `docker compose -f compose.python.yml up -d --build` | `8200` hub |
+| Portal liviano | `docker compose -f compose.portal.yml up -d --build` | `8080` |
 
 Ambos stacks pueden correr en paralelo sin colisión de puertos.
 
@@ -41,23 +41,21 @@ Ambos stacks pueden correr en paralelo sin colisión de puertos.
 | Componente | URL | Senal esperada |
 | --- | --- | --- |
 | Portal | `http://localhost:8080` | Landing local disponible |
-| Caso 01 PHP | `http://localhost:811/health` | Respuesta saludable |
-| Caso 01 Grafana | `http://localhost:3001` | Login accesible |
-| Caso 01 Prometheus | `http://localhost:9091` | Targets visibles |
-| Caso 02 PHP | `http://localhost:812/health` | Respuesta saludable |
-| Caso 03 PHP | `http://localhost:813/health` | Respuesta saludable |
-| Casos 04–09 PHP | `http://localhost:814` … `http://localhost:819/health` | Respuesta saludable |
-| Casos 10–12 PHP | `http://localhost:8110` … `http://localhost:8112/health` | Respuesta saludable |
+| PHP hub — índice | `http://localhost:8100/` | Lista de casos JSON |
+| Caso 01 PHP | `http://localhost:8100/01/health` | Respuesta saludable |
+| Caso 02 PHP | `http://localhost:8100/02/health` | Respuesta saludable |
+| Casos 03–12 PHP | `http://localhost:8100/03/health` … `http://localhost:8100/12/health` | Respuesta saludable |
+| Prometheus | `http://localhost:9091` | Targets visibles |
+| Grafana | `http://localhost:3001` | Login accesible |
 
 ### Python (compose.python.yml)
 
 | Componente | URL | Senal esperada |
 | --- | --- | --- |
-| Caso 01 Python | `http://localhost:831/health` | Respuesta saludable |
-| Caso 02 Python | `http://localhost:832/health` | Respuesta saludable |
-| Caso 03 Python | `http://localhost:833/health` | Respuesta saludable |
-| Casos 04–09 Python | `http://localhost:834` … `http://localhost:839/health` | Respuesta saludable |
-| Casos 10–12 Python | `http://localhost:8310` … `http://localhost:8312/health` | Respuesta saludable |
+| Python hub — índice | `http://localhost:8200/` | Lista de casos JSON |
+| Caso 01 Python | `http://localhost:8200/01/health` | Respuesta saludable |
+| Caso 02 Python | `http://localhost:8200/02/health` | Respuesta saludable |
+| Casos 03–12 Python | `http://localhost:8200/03/health` … `http://localhost:8200/12/health` | Respuesta saludable |
 
 ### Otros
 
