@@ -1,14 +1,16 @@
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from urllib.parse import parse_qs, urlparse
 import base64
+import gc
 import hashlib
 import json
-import math
 import os
 import secrets
+import sys
 import tempfile
 import threading
 import time
+import tracemalloc
 
 APP_STACK = os.environ.get("APP_STACK", "Python 3.12")
 STORAGE_DIR = os.path.join(tempfile.gettempdir(), "pdsl-case05-python")
@@ -16,6 +18,38 @@ STATE_PATH = os.path.join(STORAGE_DIR, "state.json")
 TELEMETRY_PATH = os.path.join(STORAGE_DIR, "telemetry.json")
 
 _lock = threading.Lock()
+
+# Real module-level accumulation — persists across requests like a real leak
+_legacy_retained: list = []
+LEGACY_HARD_CAP = 2000   # safety cap: prevents real OOM in the container
+
+# Optimized mode keeps only a fixed-size hash ring — bounded by design
+_optimized_cache: dict = {}
+OPTIMIZED_CACHE_MAX = 24
+
+tracemalloc.start()
+
+
+# ---------------------------------------------------------------------------
+# Memory measurement helpers
+# ---------------------------------------------------------------------------
+
+def deep_sizeof(obj) -> int:
+    """Recursive sys.getsizeof for lists and dicts — measures actual Python object bytes."""
+    size = sys.getsizeof(obj)
+    if isinstance(obj, list):
+        size += sum(sys.getsizeof(item) for item in obj)
+    elif isinstance(obj, dict):
+        size += sum(sys.getsizeof(k) + sys.getsizeof(v) for k, v in obj.items())
+    return size
+
+
+def snapshot_kb() -> float:
+    """Returns current tracemalloc allocation in KB for this process."""
+    snap = tracemalloc.take_snapshot()
+    stats = snap.statistics("lineno")
+    total_bytes = sum(s.size for s in stats)
+    return round(total_bytes / 1024, 2)
 
 
 # ---------------------------------------------------------------------------
@@ -41,16 +75,20 @@ def initial_state():
         },
         "modes": {
             "legacy": {
-                "retained_kb": 768,
-                "cache_entries": 6,
-                "descriptor_pressure": 2,
+                "retained_kb": 0.0,
+                "retained_bytes": 0,
+                "retained_objects": 0,
+                "cache_entries": 0,
+                "descriptor_pressure": 0,
                 "gc_cycles": 0,
                 "last_cleanup_at": None,
                 "last_updated": None,
             },
             "optimized": {
-                "retained_kb": 512,
-                "cache_entries": 4,
+                "retained_kb": 0.0,
+                "retained_bytes": 0,
+                "retained_objects": 0,
+                "cache_entries": 0,
                 "descriptor_pressure": 0,
                 "gc_cycles": 1,
                 "last_cleanup_at": now_str,
@@ -142,9 +180,9 @@ def write_telemetry(telemetry):
 # ---------------------------------------------------------------------------
 
 SCENARIO_FACTORS = {
-    "cache_growth":    {"leak_factor": 1.45, "descriptor_factor": 0.4},
+    "cache_growth":     {"leak_factor": 1.45, "descriptor_factor": 0.4},
     "descriptor_drift": {"leak_factor": 0.7,  "descriptor_factor": 1.4},
-    "mixed_pressure":  {"leak_factor": 1.1,  "descriptor_factor": 0.9},
+    "mixed_pressure":   {"leak_factor": 1.1,  "descriptor_factor": 0.9},
 }
 
 ALLOWED_SCENARIOS = list(SCENARIO_FACTORS.keys())
@@ -157,8 +195,8 @@ ALLOWED_SCENARIOS = list(SCENARIO_FACTORS.keys())
 def pressure_level(retained_kb, descriptor, thresholds):
     crit_kb = thresholds.get("critical_retained_kb", 16384)
     warn_kb = thresholds.get("warning_retained_kb", 8192)
-    crit_d = thresholds.get("critical_descriptors", 120)
-    warn_d = thresholds.get("warning_descriptors", 60)
+    crit_d  = thresholds.get("critical_descriptors", 120)
+    warn_d  = thresholds.get("warning_descriptors", 60)
     if retained_kb >= crit_kb or descriptor >= crit_d:
         return "critical"
     if retained_kb >= warn_kb or descriptor >= warn_d:
@@ -167,57 +205,87 @@ def pressure_level(retained_kb, descriptor, thresholds):
 
 
 # ---------------------------------------------------------------------------
-# Core batch logic
+# Core batch logic — real memory accumulation and real measurement
 # ---------------------------------------------------------------------------
 
 def run_batch(mode, scenario, documents, payload_kb):
+    global _legacy_retained, _optimized_cache
+
     factors = SCENARIO_FACTORS.get(scenario, SCENARIO_FACTORS["mixed_pressure"])
-    leak_factor = factors["leak_factor"]
     descriptor_factor = factors["descriptor_factor"]
 
     state = read_state()
     thresholds = state["thresholds"]
     ms = state["modes"][mode]
 
-    retained_kb_before = ms["retained_kb"]
-    descriptor_before = ms["descriptor_pressure"]
+    # Snapshot before
+    mem_before_kb = snapshot_kb()
+    retained_kb_before = ms.get("retained_kb", 0.0)
+    descriptor_before = ms.get("descriptor_pressure", 0)
 
-    # Simulate in-memory buffer creation
     peak_request_kb = documents * payload_kb
+
     if mode == "legacy":
-        # Retains all buffers + base64 copy — we track refs in a list (simulated)
-        retained_buffers = []
-        for i in range(documents):
+        # Real accumulation: b64-encoded blobs appended to module-level list.
+        # This list grows across requests — it IS the leak.
+        new_blobs: list[str] = []
+        for _ in range(documents):
             raw = secrets.token_bytes(max(1, payload_kb * 1024 // 8))
             b64 = base64.b64encode(raw).decode("ascii")
-            retained_buffers.append(b64)  # kept alive (simulated leak)
-        # State update
-        ms["retained_kb"] = ms["retained_kb"] + documents * payload_kb * leak_factor
-        ms["descriptor_pressure"] = ms["descriptor_pressure"] + math.ceil(documents / 6 * descriptor_factor)
-        ms["cache_entries"] = ms["cache_entries"] + documents
+            new_blobs.append(b64)
+
+        # Apply hard cap to avoid real OOM — real leak, but bounded for safety
+        _legacy_retained.extend(new_blobs)
+        if len(_legacy_retained) > LEGACY_HARD_CAP:
+            _legacy_retained = _legacy_retained[-LEGACY_HARD_CAP:]
+
+        # Measure actual bytes held by the retained list
+        retained_bytes = deep_sizeof(_legacy_retained)
+        retained_kb_after = retained_bytes / 1024
+
+        ms["retained_bytes"] = retained_bytes
+        ms["retained_kb"] = round(retained_kb_after, 2)
+        ms["retained_objects"] = len(_legacy_retained)
+        ms["cache_entries"] = ms.get("cache_entries", 0) + documents
+        ms["descriptor_pressure"] = ms.get("descriptor_pressure", 0) + max(1, round(documents / 6 * descriptor_factor))
+
     else:
-        # Optimized: only keep sha256 hash, max 24 entries
-        hashes = []
+        # Real bounded cache: only keep last OPTIMIZED_CACHE_MAX digests.
+        # `del raw` + gc.collect() ensures buffers are actually freed.
         for i in range(documents):
             raw = secrets.token_bytes(max(1, payload_kb * 1024 // 8))
             digest = hashlib.sha256(raw).hexdigest()[:16]
-            hashes.append(digest)
-            if len(hashes) > 24:
-                hashes = hashes[-24:]
+            _optimized_cache[digest] = True
+            del raw   # explicit release — GC can reclaim immediately
 
-        batch_kb = documents * payload_kb
-        ms["retained_kb"] = min(3584, ms["retained_kb"] * 0.45 + max(192, batch_kb * 0.18))
-        ms["cache_entries"] = min(32, max(4, math.ceil(documents / 3)))
-        ms["descriptor_pressure"] = max(0, ms["descriptor_pressure"] - max(1, math.ceil(documents / 4)))
+        # Evict old entries beyond the bounded cap
+        if len(_optimized_cache) > OPTIMIZED_CACHE_MAX:
+            keys_to_drop = list(_optimized_cache.keys())[:-OPTIMIZED_CACHE_MAX]
+            for k in keys_to_drop:
+                del _optimized_cache[k]
+
+        gc_count = gc.collect()   # explicit GC cycle — frees unreachable objects
+
+        retained_bytes = deep_sizeof(_optimized_cache)
+        retained_kb_after = retained_bytes / 1024
+
+        ms["retained_bytes"] = retained_bytes
+        ms["retained_kb"] = round(retained_kb_after, 2)
+        ms["retained_objects"] = len(_optimized_cache)
+        ms["cache_entries"] = len(_optimized_cache)
+        ms["descriptor_pressure"] = max(0, ms.get("descriptor_pressure", 0) - max(1, documents // 4))
         ms["gc_cycles"] = ms.get("gc_cycles", 0) + 1
         ms["last_cleanup_at"] = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
 
     ms["last_updated"] = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
 
-    retained_kb_after = ms["retained_kb"]
+    # Snapshot after — real tracemalloc delta
+    mem_after_kb = snapshot_kb()
     descriptor_after = ms["descriptor_pressure"]
+    level = pressure_level(retained_kb_after, descriptor_after, thresholds)
+    http_status = 503 if (mode == "legacy" and level == "critical") else 200
 
-    # Penalty sleep
+    # Proportional penalty sleep based on real retained count
     penalty_ms = (
         documents * 2.8
         + payload_kb * 1.4
@@ -226,9 +294,6 @@ def run_batch(mode, scenario, documents, payload_kb):
     )
     sleep_ms = min(650, max(30, penalty_ms))
     time.sleep(sleep_ms / 1000.0)
-
-    level = pressure_level(retained_kb_after, descriptor_after, thresholds)
-    http_status = 503 if (mode == "legacy" and level == "critical") else 200
 
     state["modes"][mode] = ms
     write_state(state)
@@ -244,6 +309,11 @@ def run_batch(mode, scenario, documents, payload_kb):
             "peak_request_kb": round(peak_request_kb, 2),
             "retained_kb_before": round(retained_kb_before, 2),
             "retained_kb_after": round(retained_kb_after, 2),
+            "retained_bytes": ms["retained_bytes"],
+            "retained_objects": ms["retained_objects"],
+            "tracemalloc_before_kb": mem_before_kb,
+            "tracemalloc_after_kb": mem_after_kb,
+            "tracemalloc_delta_kb": round(mem_after_kb - mem_before_kb, 2),
             "cache_entries": ms["cache_entries"],
             "descriptor_pressure": descriptor_after,
             "gc_cycles": ms.get("gc_cycles", 0),
@@ -324,9 +394,19 @@ def telemetry_summary(telemetry):
 def state_summary():
     state = read_state()
     thresholds = state["thresholds"]
-    summary = {"thresholds": thresholds, "modes": {}}
+    summary = {
+        "thresholds": thresholds,
+        "modes": {},
+        "process": {
+            "legacy_retained_objects": len(_legacy_retained),
+            "legacy_retained_bytes": deep_sizeof(_legacy_retained),
+            "optimized_cache_objects": len(_optimized_cache),
+            "optimized_cache_bytes": deep_sizeof(_optimized_cache),
+            "tracemalloc_current_kb": snapshot_kb(),
+        },
+    }
     for mode, ms in state.get("modes", {}).items():
-        level = pressure_level(ms["retained_kb"], ms["descriptor_pressure"], thresholds)
+        level = pressure_level(ms["retained_kb"], ms.get("descriptor_pressure", 0), thresholds)
         summary["modes"][mode] = {**ms, "pressure_level": level}
     return summary
 
@@ -418,11 +498,19 @@ def render_prometheus_metrics():
         lm = prometheus_label(mode)
         lines += [
             f'app_retained_memory_kb{{mode="{lm}"}} {round(ms.get("retained_kb", 0), 2)}',
+            f'app_retained_objects{{mode="{lm}"}} {ms.get("retained_objects", 0)}',
             f'app_descriptor_pressure{{mode="{lm}"}} {ms.get("descriptor_pressure", 0)}',
         ]
         for level in ("healthy", "warning", "critical"):
             val = (modes_data.get(mode) or {}).get("pressure_counts", {}).get(level, 0)
             lines.append(f'app_pressure_level{{mode="{lm}",level="{level}"}} {val}')
+
+    proc = st.get("process", {})
+    lines += [
+        f'app_tracemalloc_current_kb {proc.get("tracemalloc_current_kb", 0)}',
+        f'app_legacy_retained_objects {proc.get("legacy_retained_objects", 0)}',
+        f'app_optimized_cache_objects {proc.get("optimized_cache_objects", 0)}',
+    ]
 
     return "\n".join(lines) + "\n"
 
@@ -468,16 +556,17 @@ class Handler(BaseHTTPRequestHandler):
                     "case": "05 - Presion de memoria y fugas de recursos",
                     "stack": APP_STACK,
                     "goal": "Comparar un procesamiento que acumula memoria sin limpiar (legacy) contra uno que controla su huella (optimized).",
+                    "measurement": "tracemalloc + sys.getsizeof() para medicion real de bytes Python",
                     "routes": {
                         "/health": "Estado basico.",
-                        "/batch-legacy?scenario=mixed_pressure&documents=24&payload_kb=64": "Procesa documentos con el modo legacy (acumula memoria).",
-                        "/batch-optimized?scenario=mixed_pressure&documents=24&payload_kb=64": "Procesa documentos con el modo optimizado.",
-                        "/state": "Estado actual de memoria y descriptores por modo.",
+                        "/batch-legacy?scenario=mixed_pressure&documents=24&payload_kb=64": "Procesa documentos con el modo legacy (acumula en lista de modulo — fuga real).",
+                        "/batch-optimized?scenario=mixed_pressure&documents=24&payload_kb=64": "Procesa documentos con el modo optimizado (cache acotado + gc.collect()).",
+                        "/state": "Estado actual de memoria y descriptores por modo, con medicion real de proceso.",
                         "/runs?limit=10": "Ultimas runs registradas.",
                         "/diagnostics/summary": "Resumen completo de telemetria.",
                         "/metrics": "Metricas JSON.",
                         "/metrics-prometheus": "Metricas en formato Prometheus.",
-                        "/reset-lab": "Reinicia estado y telemetria.",
+                        "/reset-lab": "Reinicia estado, telemetria y listas de modulo.",
                     },
                     "allowed_scenarios": ALLOWED_SCENARIOS,
                 }
@@ -549,9 +638,15 @@ class Handler(BaseHTTPRequestHandler):
             elif uri == "/reset-lab":
                 skip_store_metrics = True
                 with _lock:
+                    _legacy_retained.clear()
+                    _optimized_cache.clear()
+                    gc.collect()
                     write_state(initial_state())
                     write_telemetry(initial_telemetry())
-                payload = {"status": "reset", "message": "Estado y telemetria reiniciados."}
+                payload = {
+                    "status": "reset",
+                    "message": "Estado, telemetria y listas de modulo reiniciados.",
+                }
 
             else:
                 status_code = 404
