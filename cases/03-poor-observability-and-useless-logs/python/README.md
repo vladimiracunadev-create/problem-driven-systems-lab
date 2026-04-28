@@ -1,24 +1,38 @@
-# Caso 03 — Python: Observabilidad deficiente y logs inutiles
+# 🔭 Caso 03 — Python 3.12 con observabilidad comparada
 
-Implementacion Python del caso **Observabilidad deficiente y logs inutiles**.
+> Implementacion operativa del caso 03 para contrastar logs pobres contra telemetria util en un mismo flujo funcional.
 
-Logica funcional identica al stack PHP: mismo flujo de checkout con los mismos 4 pasos, mismos escenarios de fallo, mismos logs legacy vs estructurados, mismas rutas y misma telemetria local.
+## 🎯 Que resuelve
 
-## Equivalencia funcional con PHP
+Modela un checkout con pasos internos y dependencias externas:
 
-| Aspecto | PHP | Python |
-|---|---|---|
-| Rutas HTTP | `/checkout-legacy`, `/checkout-observable`, `/logs/legacy`, `/logs/observable`, `/traces`, `/diagnostics/summary`, `/metrics`, `/metrics-prometheus`, `/reset-observability` | Identicas |
-| Flujo de checkout | 4 pasos: cart.validate, inventory.reserve, payment.authorize, notification.dispatch | Identico |
-| Escenarios | ok, inventory_conflict (503), payment_timeout (504), notification_down (502) | Identicos |
-| Logging legacy | Lineas de texto sin estructura ni correlacion | Identico |
-| Logging observable | JSON estructurado con request_id, trace_id, step, dependency, elapsed_ms | Identico |
-| Telemetria | Trazas locales, conteo de exitos/fallos por modo y escenario | Identica |
-| Puerto | 813 | 833 |
+- validacion del carrito;
+- reserva de inventario;
+- autorizacion de pago;
+- envio de notificacion.
 
-Este es el unico caso de los 12 donde PHP y Python son funcionalmente equivalentes sin diferencias de infraestructura: ninguno necesita base de datos ni worker externo.
+El mismo flujo se expone en dos modos:
 
-## Arranque
+- `checkout-legacy` → logs en texto plano sin estructura ni correlacion.
+- `checkout-observable` → logs JSON estructurados con correlation IDs, metricas y trazas utiles.
+
+## 💼 Por que importa
+
+La mejora no es estetica. Este caso muestra por que la observabilidad reduce MTTR: transforma un incidente vago en una falla diagnosticable con evidencia accionable. La diferencia entre "fallo algo" y "fallo `payment.authorize` por timeout en la request `req-a3f2`" es la diferencia entre minutos y horas de investigacion.
+
+## 🔬 Analisis Tecnico de la Implementacion (Python)
+
+La telemetria efectiva en Python no requiere librerias externas. Se implementa con `secrets`, `json` y excepciones estructuradas de la stdlib.
+
+- **Logs Opacos (`legacy`):** La funcion `run_legacy_checkout()` acumula mensajes de texto con concatenacion de strings: `f"checkout processing customer={customer_id}"`. Este enfoque destruye la cardinalidad al generar strings no parseables algoritmicamente. Cuando ocurre un fallo, el `except Exception as e` captura unicamente `str(e)`, perdiendo el contexto de en que paso, en que dependencia y con que latencia parcial ocurrio el error. El log resultante no permite correlacionar eventos de una misma request ni cruzar informacion entre requests paralelas.
+
+- **Logs Estructurados y Trazabilidad (`observable`):** Implementa una arquitectura de **Correlation IDs** generados con `secrets.token_hex(4)`, produciendo un `request_id` y un `trace_id` con entropia criptografica. El flujo usa una clase de excepcion personalizada `WorkflowFailure` que captura `step`, `dependency`, `http_status`, `request_id`, `trace_id` y `events` en el momento exacto del fallo. Cada evento del flujo se emite con `json.dumps({"request_id": ..., "trace_id": ..., "step": ..., "elapsed_ms": ...})`, produciendo lineas de log consultables por cualquier motor de busqueda. Al unir eventos por `trace_id`, es posible reconstruir la traza completa de una request independientemente del paralelismo del servidor (`ThreadingHTTPServer`).
+
+## 🧱 Servicio
+
+- `app` → API Python 3.12 con logs legacy y observable, metricas y trazas locales en JSON.
+
+## 🚀 Arranque
 
 ```bash
 docker compose -f compose.yml up -d --build
@@ -26,7 +40,7 @@ docker compose -f compose.yml up -d --build
 
 Puerto local: `833`.
 
-## Endpoints
+## 🔎 Endpoints
 
 ```bash
 curl http://localhost:833/
@@ -42,24 +56,19 @@ curl http://localhost:833/metrics-prometheus
 curl http://localhost:833/reset-observability
 ```
 
-## Escenarios disponibles
+## 🧪 Escenarios utiles
 
-| Scenario | Paso que falla | HTTP Status |
-|---|---|---|
-| `ok` | Ninguno | 200 |
-| `inventory_conflict` | inventory.reserve | 503 |
-| `payment_timeout` | payment.authorize | 504 |
-| `notification_down` | notification.dispatch | 502 |
+- `payment_timeout` → paso que falla visible en observable, invisible en legacy.
+- `inventory_conflict` → muestra correlacion entre reserva fallida y log estructurado.
+- `notification_down` → fallo suave que legacy ignora y observable captura con `http_status: 502`.
 
-## Que observar
+## 🧭 Que observar
 
-Con `checkout-legacy`:
-- Los logs dicen "checkout failed" pero no identifican el paso exacto.
-- No hay correlacion entre eventos de una misma request.
-- Es imposible saber cuanto tardo cada dependencia.
+- si puedes identificar el paso exacto que fallo en cada modo;
+- si puedes correlacionar eventos de una misma request usando `request_id`;
+- si tienes latencias por etapa y dependencia en los logs de observable;
+- si el diagnostico permite pasar de "fallo algo" a "fallo `payment.authorize` por timeout".
 
-Con `checkout-observable`:
-- `request_id` y `trace_id` aparecen en todos los eventos del mismo flujo.
-- El paso fallido y la dependencia involucrada son visibles en el log.
-- Las trazas en `/traces` muestran la latencia de cada paso.
-- `/diagnostics/summary` cuantifica la capacidad de diagnostico de cada modo.
+## ⚖️ Nota de honestidad
+
+No sustituye un stack completo de tracing distribuido (Jaeger, OpenTelemetry). Si deja una base reproducible para demostrar por que logs pobres alargan el MTTR y que cambia cuando la telemetria es util.

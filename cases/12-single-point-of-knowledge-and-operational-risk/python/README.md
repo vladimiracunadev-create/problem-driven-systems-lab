@@ -1,22 +1,32 @@
-# Caso 12 — Python: Punto unico de conocimiento y riesgo operacional
+# 👤 Caso 12 — Python 3.12 con comparacion legacy vs conocimiento distribuido
 
-Implementacion Python del caso **Single point of knowledge and operational risk**.
+> Implementacion operativa del caso 12 para contrastar dependencia de conocimiento tribal contra una postura mas resiliente.
 
-Logica funcional identica al stack PHP: mismo flujo de respuesta a incidentes con hero dependency (legacy) vs conocimiento distribuido (distributed), mismo mecanismo de compartir conocimiento, mismos scores de preparacion, mismas rutas.
+## 🎯 Que resuelve
 
-## Equivalencia funcional con PHP
+Modela incidentes donde importa quien sabe que:
 
-| Aspecto | PHP | Python |
-|---|---|---|
-| Rutas HTTP | `/incident-legacy`, `/incident-distributed`, `/share-knowledge`, `/knowledge/state`, `/incidents`, `/diagnostics/summary`, `/metrics`, `/metrics-prometheus`, `/reset-lab` | Identicas |
-| Modo legacy | Resolucion depende del heroe; sin runbook, sin backup | Identico |
-| Modo distributed | Runbook, personas de backup, simulacros de incidente | Identico |
-| Readiness score | `runbook*0.45 + (backup_people+1)*18 + drill*0.25` | Identico |
-| `/share-knowledge` | Actualiza runbook/backup/drill; NO registra telemetria | Identico |
-| Estado persistido | `/tmp/pdsl-case12-python/` | `/tmp/pdsl-case12-python/` |
-| Puerto | 822 | 842 |
+- `incident-legacy` depende demasiado de una persona o de un procedimiento no compartido;
+- `incident-distributed` combina runbooks, backups y drills para resolver sin el heroe;
+- `share-knowledge` permite subir la madurez del dominio y ver el cambio real en `readiness_score`.
 
-## Arranque
+## 💼 Por que importa
+
+Este caso deja visible que la continuidad operacional tambien es una propiedad del conocimiento. Un sistema "estable" puede seguir siendo fragil si solo una persona sabe como operarlo bajo presion. El bus factor no es una metrica de equipo: es un riesgo operacional medible.
+
+## 🔬 Analisis Tecnico de la Implementacion (Python)
+
+El conocimiento silencioso y la dependencia tribal tienen un impacto tangible en la resolucion de incidentes que se puede modelar con logica determinista.
+
+- **Sintaxis Tribal (`legacy`):** La funcion `run_legacy_incident()` modela la dependencia del heroe con una variable booleana `hero_available = random.random() > 0.35`, que simula que el experto no siempre esta disponible. Cuando `hero_available` es `False`, el codigo intenta acceder a estructuras de conocimiento implicitas que no existen (`opaque_config.get("system_v2_override")` retorna `None`) y cae en un bloque de escalacion: `escalation=True`, `mttr_minutes` alto, `resolution_path: "manual_intervention"`. No hay fallback, no hay runbook, no hay segunda persona. El incidente queda bloqueado hasta que el heroe responde.
+
+- **Aseguramiento Distribuido (`distributed`):** Implementa un `readiness_score` calculado con `runbook_score * 0.45 + (backup_people + 1) * 18 + drill_score * 0.25` que refleja la madurez real del dominio. Cuando el score es suficientemente alto, la funcion puede resolver el incidente sin el heroe usando `runbook_steps` documentados y personas de backup registradas en `state["knowledge"]["backup_people"]`. El acceso a cualquier propiedad de configuracion usa el operador de fusion `config.get("key") or safe_default` para garantizar que el codigo se degrade a un `safe_fallback` en lugar de colapsar con `KeyError`. Cada llamada a `POST /share-knowledge` incrementa `runbook_score`, `backup_people` o `drill_score`, reduciendo el `mttr_minutes` esperado de forma determinista.
+
+## 🧱 Servicio
+
+- `app` → API Python 3.12 con dominios operativos, puntajes de runbook, backups, drills y simulacion de incidentes.
+
+## 🚀 Arranque
 
 ```bash
 docker compose -f compose.yml up -d --build
@@ -24,7 +34,7 @@ docker compose -f compose.yml up -d --build
 
 Puerto local: `842`.
 
-## Endpoints
+## 🔎 Endpoints
 
 ```bash
 curl http://localhost:842/
@@ -40,23 +50,20 @@ curl http://localhost:842/metrics-prometheus
 curl http://localhost:842/reset-lab
 ```
 
-## Severidades disponibles
+## 🧪 Escenarios utiles
 
-| Severity | MTTD simulado | Probabilidad de escalada |
-|---|---|---|
-| `low` | ~5 min | Baja |
-| `medium` | ~15 min | Media |
-| `high` | ~45 min | Alta sin runbook |
-| `critical` | ~120 min | Muy alta sin distribucion de conocimiento |
+- `severity=high&service=payments` → revela el bus factor real en legacy.
+- Ejecutar `POST /share-knowledge?type=runbook` varias veces y ver como baja `mttr_minutes` en distributed.
+- `type=backup_person` → agregar personas al equipo y observar la reduccion de `escalation_rate`.
+- `type=drill` → simular un simulacro y ver como sube `drill_score` en `/knowledge/state`.
 
-## Que observar
+## 🧭 Que observar
 
-- Legacy: `hero_available` determina el resultado; si el heroe no esta disponible, `escalation: true`.
-- Distributed: `readiness_score` refleja el nivel de preparacion del equipo; score alto = resolucion rapida.
-- Ejecuta `POST /share-knowledge?type=runbook` varias veces y observa como `readiness_score` sube en `/knowledge/state`.
-- Agrega personas de backup con `type=backup_person` y observa la reduccion de `avg_resolution_minutes`.
-- `/diagnostics/summary` compara `avg_mttd_minutes`, `escalation_rate` y `hero_dependency_rate` entre modos.
+- como cambia `mttr_minutes` entre legacy y distributed con el mismo escenario;
+- cuantas veces `hero_available: false` provoca `escalation: true` en legacy;
+- si sube `handoff_quality` y baja `hero_dependency_rate` al compartir conocimiento;
+- como mejora `readiness_score` en `/knowledge/state` despues de runbooks, backups y drills.
 
-## Por que `/share-knowledge` no registra telemetria
+## ⚖️ Nota de honestidad
 
-La accion de compartir conocimiento es una operacion administrativa, no un flujo de negocio. Registrar su latencia en las metricas de request distorsionaria los percentiles de `incident-legacy` e `incident-distributed`. Esta decision es identica a como PHP maneja `/cutover/advance` en el caso 08.
+No sustituye una organizacion real, on-call ni gestion formal de conocimiento. Si reproduce el riesgo operativo importante: depender de memoria tribal versus construir continuidad compartida con evidencia observable en `readiness_score` y `mttr_minutes`.

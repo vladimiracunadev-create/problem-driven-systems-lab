@@ -1,21 +1,35 @@
-# Caso 09 — Python: Integracion externa inestable
+# 🌐 Caso 09 — Python 3.12 con adapter y cache defensiva
 
-Implementacion Python del caso **Unstable external integration**.
+> Implementacion operativa del caso 09 para contrastar una integracion externa directa contra una variante endurecida.
 
-Logica funcional identica al stack PHP: mismo flujo de sincronizacion de catalogo con proveedor externo inestable, misma diferencia entre integracion naive (legacy) vs integracion reforzada (hardened) con sanitizacion, idempotencia y reintentos selectivos, mismas rutas.
+## 🎯 Que resuelve
 
-## Equivalencia funcional con PHP
+Modela un consumo de catalogo externo donde el proveedor puede:
 
-| Aspecto | PHP | Python |
-|---|---|---|
-| Rutas HTTP | `/catalog-legacy`, `/catalog-hardened`, `/integration/state`, `/sync-events`, `/diagnostics/summary`, `/metrics`, `/metrics-prometheus`, `/reset-lab` | Identicas |
-| Modo legacy | Acepta respuestas malformadas, no valida SKUs, no es idempotente | Identico |
-| Modo hardened | Sanitiza SKUs (regex `^[A-Z0-9-]{4,20}$`), validacion de schema, idempotencia por `event_id` | Identico |
-| Snapshot de producto | Deterministico por SKU via `sum(ord(c) for c in sku) % N` | Identico |
-| Estado persistido | `/tmp/pdsl-case09-php/` | `/tmp/pdsl-case09-python/` |
-| Puerto | 819 | 839 |
+- cambiar esquema sin aviso;
+- responder con payload parcial o malformado;
+- reenviar eventos duplicados;
+- fallar en un subconjunto de items del batch.
 
-## Arranque
+La variante `catalog-hardened` agrega sanitizacion de SKU, validacion de esquema, idempotencia por `event_id` y procesamiento parcial tolerante a fallos.
+
+## 💼 Por que importa
+
+Este caso deja visible que la resiliencia frente a terceros no depende solo del timeout. También importa la estabilidad del contrato, la validez de los identificadores y la capacidad de operar con informacion parcialmente valida sin contaminar el catalogo interno.
+
+## 🔬 Analisis Tecnico de la Implementacion (Python)
+
+Las APIs de terceros fallan en formas sutiles. Este caso implementa integracion defensiva usando expresiones regulares, operadores de fusion y gestion de idempotencia en memoria.
+
+- **Llamado Vulnerable (`legacy`):** La funcion `run_legacy_sync()` acepta la respuesta del proveedor sin ninguna validacion. Si el proveedor envia un SKU con caracteres invalidos (`SKU 100` con espacio, o `X`), el codigo lo acepta y lo inserta directamente en el catalogo interno. Si el proveedor omite un campo esperado (ej. `price` ausente), el acceso `item["price"]` lanza un `KeyError` que derrumba el batch completo. Si el mismo evento llega dos veces, se procesa dos veces sin deteccion de duplicado. El resultado es un catalogo potencialmente corrupto y un comportamiento no deterministico bajo condiciones de red reales.
+
+- **Aislado Robusto (`hardened`):** Introduce tres capas defensivas. Primero, `sanitize_sku(sku)` valida el SKU con `re.match(r"^[A-Z0-9-]{4,20}$", sku)` y retorna un default determinista si no pasa. Segundo, `validate_schema(item)` verifica la presencia de campos requeridos antes de procesar, descartando items invalidos en lugar de fallar el batch completo. Tercero, la idempotencia se gestiona con un `set` de `processed_event_ids`: `if event_id in processed_event_ids: continue`. Esto garantiza que eventos duplicados del proveedor sean silenciosamente ignorados sin afectar `total_processed`. El procesamiento parcial permite que items validos del batch sean aceptados aunque otros sean invalidos.
+
+## 🧱 Servicio
+
+- `app` → API Python 3.12 con proveedor externo simulado, adapter de contrato, cache de idempotencia y metricas de calidad de datos.
+
+## 🚀 Arranque
 
 ```bash
 docker compose -f compose.yml up -d --build
@@ -23,7 +37,7 @@ docker compose -f compose.yml up -d --build
 
 Puerto local: `839`.
 
-## Endpoints
+## 🔎 Endpoints
 
 ```bash
 curl http://localhost:839/
@@ -38,20 +52,20 @@ curl http://localhost:839/metrics-prometheus
 curl http://localhost:839/reset-lab
 ```
 
-## Escenarios disponibles
+## 🧪 Escenarios utiles
 
-| Scenario | Comportamiento |
-|---|---|
-| `ok` | Proveedor envia datos validos. Ambos modos procesan sin errores. |
-| `malformed_sku` | SKUs con caracteres invalidos o longitud incorrecta. Legacy: los acepta. Hardened: sanitiza o rechaza. |
-| `schema_drift` | Campos renombrados o ausentes en la respuesta. Legacy: falla con KeyError. Hardened: schema validation detecta y descarta. |
-| `duplicate_events` | El proveedor reenvia eventos ya procesados. Legacy: procesa duplicados. Hardened: idempotencia por `event_id`. |
-| `partial_failure` | Algunos items del batch fallan. Legacy: rollback total. Hardened: procesa items validos, descarta invalidos. |
+- `schema_drift` → muestra normalizacion de contrato versus ruptura directa por `KeyError`.
+- `malformed_sku` → legacy acepta SKUs invalidos; hardened sanitiza o rechaza.
+- `duplicate_events` → legacy procesa dos veces; hardened detecta por `event_id`.
+- `partial_failure` → legacy falla todo el batch; hardened procesa los items validos.
 
-## Que observar
+## 🧭 Que observar
 
-- Legacy: `corrupted_items` acumula productos con datos invalidos en el catalogo.
-- Hardened: `sanitized_skus` y `rejected_items` en `/integration/state` muestran que la validacion funciona.
-- `/integration/state` compara `total_processed`, `corrupted_items`, `duplicate_events_skipped`.
-- `/diagnostics/summary` cuantifica `data_quality_score` por modo.
-- Con `duplicate_events`: hardened muestra `idempotent_skips` creciendo sin `total_processed` repetido.
+- cuantos `corrupted_items` acumula legacy vs cuantos `rejected_items` registra hardened;
+- si `idempotent_skips` sube en hardened con el escenario `duplicate_events`;
+- como cambia `data_quality_score` entre modos en `/diagnostics/summary`;
+- si el batch completo falla en legacy ante un solo item invalido.
+
+## ⚖️ Nota de honestidad
+
+No reemplaza una integracion real con colas, DLQ ni proveedores de terceros. Si reproduce las decisiones operativas que importan aqui: adapter, contrato defensivo, idempotencia y tolerancia a fallos parciales.

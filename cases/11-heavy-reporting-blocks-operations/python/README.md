@@ -1,22 +1,32 @@
-# Caso 11 — Python: Reportes pesados que bloquean la operacion
+# 📊 Caso 11 — Python 3.12 con reporting legacy vs aislado
 
-Implementacion Python del caso **Heavy reporting blocks operations**.
+> Implementacion operativa del caso 11 para contrastar reporting pesado sobre el primario contra una ruta que protege la operacion.
 
-Logica funcional identica al stack PHP: mismo flujo de generacion de reporte que compite con escrituras de pedidos por el mismo lock de base de datos, misma diferencia entre modo legacy (bloqueo compartido) vs modo isolated (lock separado por dominio), mismas rutas.
+## 🎯 Que resuelve
 
-## Equivalencia funcional con PHP
+Modela la competencia entre reporting y operacion:
 
-| Aspecto | PHP | Python |
-|---|---|---|
-| Rutas HTTP | `/report-legacy`, `/report-isolated`, `/order-write`, `/reporting/state`, `/activity`, `/diagnostics/summary`, `/metrics`, `/metrics-prometheus`, `/reset-lab` | Identicas |
-| Modo legacy | Reporte y escrituras comparten el mismo lock; contention visible | Identico |
-| Modo isolated | Lock separado por dominio; escrituras nunca bloquean por reportes | Identico |
-| Escritura de pedidos | `/order-write` intenta adquirir lock; falla si legacy lo tiene | Identico |
-| Lock en Python | `threading.Lock` con `acquire(blocking=False)` para simular contention | Equivalente al file lock de PHP |
-| Estado persistido | `/tmp/pdsl-case11-python/` | `/tmp/pdsl-case11-python/` |
-| Puerto | 821 | 841 |
+- `report-legacy` ejecuta carga analitica sobre el mismo lock compartido con las escrituras;
+- `report-isolated` usa un lock separado y no interfiere con el flujo transaccional;
+- `order-write` deja ver como la operacion siente esa diferencia.
 
-## Arranque
+## 💼 Por que importa
+
+Este caso deja visible un problema muy real: el reporte puede "funcionar" y aun asi romper negocio si sube locks, degrada escrituras y deja sin aire a la operacion. El choque entre OLAP y OLTP no es solo un problema de bases de datos: ocurre en cualquier sistema que comparta recursos entre analitica y escrituras.
+
+## 🔬 Analisis Tecnico de la Implementacion (Python)
+
+La colision entre reportes y operaciones se produce mediante la competencia fisica por `threading.Lock`, simulando el comportamiento de bloqueos de tabla en una base de datos.
+
+- **Bloqueo Compartido (`legacy`):** La funcion `run_legacy_report()` adquiere `SHARED_LOCK.acquire(blocking=True)` al inicio y lo mantiene durante toda la duracion del reporte simulado con `time.sleep(report_duration)`. Mientras el lock esta retenido, cualquier peticion concurrente a `order-write` intenta adquirirlo con `SHARED_LOCK.acquire(blocking=False)`: al fallar la adquisicion inmediata, el endpoint devuelve HTTP 503 con `lock_contention: true` y registra el `blocked_ms`. Este mecanismo reproduce el comportamiento de un `SELECT ... FOR UPDATE` o un `flock(LOCK_EX | LOCK_NB)` sobre un recurso compartido: una tarea analitica larga estrangula el flujo transaccional de ventas.
+
+- **Aislamiento y Concurrencia (`isolated`):** La ruta `report-isolated` usa `REPORTING_LOCK`, un `threading.Lock` separado y distinto del `SHARED_LOCK` que usan las escrituras. Las peticiones a `order-write` nunca intentan adquirir `REPORTING_LOCK`; operan unicamente sobre `OPERATIONAL_LOCK`, que el reporte aislado nunca toca. Esto garantiza que el FPM de escrituras procese pedidos en milisegundos sin toparse con el estado ocupado del reporte, independientemente de cuanto tarde la carga analitica.
+
+## 🧱 Servicio
+
+- `app` → API Python 3.12 con estado persistido de contention, presion de locks y cola de reporting.
+
+## 🚀 Arranque
 
 ```bash
 docker compose -f compose.yml up -d --build
@@ -24,7 +34,7 @@ docker compose -f compose.yml up -d --build
 
 Puerto local: `841`.
 
-## Endpoints
+## 🔎 Endpoints
 
 ```bash
 curl http://localhost:841/
@@ -41,20 +51,19 @@ curl http://localhost:841/metrics-prometheus
 curl http://localhost:841/reset-lab
 ```
 
-## Parametros de carga
+## 🧪 Escenarios utiles
 
-| Parametro | Descripcion | Default |
-|---|---|---|
-| `rows` | Numero de filas a procesar en el reporte | 100 |
-| `period_days` | Periodo historico del reporte en dias | 7 |
+- Llamar `report-legacy` y en paralelo `order-write?mode=legacy`: la escritura devuelve `lock_contention: true`.
+- Llamar `report-isolated` y en paralelo `order-write?mode=isolated`: las escrituras nunca ven contention.
+- `rows=600000` → exagera la duracion del reporte para hacer la contention mas visible.
 
-## Que observar
+## 🧭 Que observar
 
-- Llama a `/report-legacy` y en paralelo llama a `/order-write?mode=legacy`: la escritura devuelve `lock_contention: true` y `blocked_ms` alto.
-- Con `/report-isolated` + `/order-write?mode=isolated`: las escrituras nunca ven contention del reporte.
-- `/reporting/state` muestra `lock_contentions`, `blocked_writes`, `avg_report_ms` por modo.
-- `/diagnostics/summary` cuantifica `write_blocking_rate` y `avg_contention_ms`.
+- si suben `lock_contentions` y `blocked_writes` tras cada reporte legacy;
+- cuanto se degrada `order-write` en terminos de `blocked_ms` despues de un reporte pesado;
+- si `write_blocking_rate` es cero en el modo isolated en `/diagnostics/summary`;
+- cuando el sistema pasa de `healthy` a `warning` o `critical` en `/reporting/state`.
 
-## Diferencia de implementacion respecto a PHP
+## ⚖️ Nota de honestidad
 
-PHP usa file locks (`flock`) sobre archivos en `/tmp`. Python usa `threading.Lock` con `acquire(blocking=False)` para simular contention. El comportamiento observable es identico: un proceso que intenta adquirir el lock mientras otro lo retiene recibe inmediatamente un fallo de contention en lugar de esperar indefinidamente.
+No sustituye una plataforma real con replicas, warehouse o jobs distribuidos. Si reproduce la decision operacional clave: aislar cargas analiticas para no romper el camino transaccional, con evidencia observable en terminos de contention y latencia.

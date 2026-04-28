@@ -1,22 +1,31 @@
-# Caso 08 — Python: Extraccion de modulo critico sin romper la operacion
+# 🧩 Caso 08 — Python 3.12 con extraccion compatible
 
-Implementacion Python del caso **Critical module extraction without breaking operations**.
+> Implementacion operativa del caso 08 para contrastar una extraccion big bang contra una ruta segura con proxy, contratos y cutover por fases.
 
-Logica funcional identica al stack PHP: mismo flujo de extraccion del modulo de pricing con estrategia big bang (rompe ante drift de contrato) vs proxy de compatibilidad (adapta y continua), mismo mecanismo de avance de cutover, mismas rutas.
+## 🎯 Que resuelve
 
-## Equivalencia funcional con PHP
+Modela la separacion de un modulo critico de pricing:
 
-| Aspecto | PHP | Python |
-|---|---|---|
-| Rutas HTTP | `/pricing-bigbang`, `/pricing-compatible`, `/cutover/advance`, `/extraction/state`, `/flows`, `/diagnostics/summary`, `/metrics`, `/metrics-prometheus`, `/reset-lab` | Identicas |
-| Modo bigbang | Falla con HTTP 409 ante cualquier drift de contrato | Identico |
-| Modo compatible | Proxy adapter normaliza el contrato; nunca falla por drift | Identico |
-| Cutover | 5 fases: legacy → shadow → canary → parallel → extracted | Identico |
-| `/cutover/advance` | Avanza la fase; NO registra telemetria de request | Identico |
-| Estado persistido | `/tmp/pdsl-case08-php/` | `/tmp/pdsl-case08-python/` |
-| Puerto | 818 | 838 |
+- `pricing-bigbang` intenta moverlo de una vez y expone incompatibilidades de contrato;
+- `pricing-compatible` conserva el contrato publico y migra consumidores gradualmente.
 
-## Arranque
+## 💼 Por que importa
+
+Este caso deja visible un patron muy frecuente: el riesgo de una extraccion no esta solo en el codigo nuevo, sino en romper compatibilidad operativa mientras el sistema sigue vendiendo. Un campo renombrado o un campo nuevo sin default puede romper todos los consumidores existentes en produccion.
+
+## 🔬 Analisis Tecnico de la Implementacion (Python)
+
+Los cruces de contrato se implementan mediante accesos a diccionarios y el operador de fusion de nulos `or`, exponiendo la asimetria entre el esquema legacy y el nuevo.
+
+- **Big-Bang (`legacy`):** La funcion `run_bigbang_pricing()` accede directamente a los campos del payload con `data["price"]` sin ninguna capa de adaptacion. Cuando el escenario `rule_drift` activa campos renombrados (ej. el nuevo servicio usa `unit_price` en lugar de `price`), Python lanza un `KeyError` inmediato al intentar acceder al indice inexistente. Este error se convierte en HTTP 409 Conflict, simulando una ruptura total del contrato que bloquea el checkout. No hay degradacion parcial: o funciona con el esquema exacto o falla completamente.
+
+- **Extraccion Compatible (`proxy`):** Implementa el **Adapter Pattern** a nivel de estructura de datos. Antes de procesar la logica de negocio, un interceptor normaliza el input usando el operador de fusion: `data["price"] = data.get("price") or data.get("unit_price") or data.get("cost_usd") or data.get("legacy_val")`. Este mapeo elastico permite que Python absorba las asimetrias de esquema sin romper la firma de la funcion. El estado de cutover avanza por fases (`legacy` → `shadow` → `canary` → `parallel` → `extracted`) mediante `POST /cutover/advance`, y cada fase aumenta el porcentaje de trafico que va al nuevo servicio, manteniendo siempre un `status_code 200`.
+
+## 🧱 Servicio
+
+- `app` → API Python 3.12 con proxy de compatibilidad, estado de cutover en 5 fases y metricas de drift.
+
+## 🚀 Arranque
 
 ```bash
 docker compose -f compose.yml up -d --build
@@ -24,13 +33,13 @@ docker compose -f compose.yml up -d --build
 
 Puerto local: `838`.
 
-## Endpoints
+## 🔎 Endpoints
 
 ```bash
 curl http://localhost:838/
 curl http://localhost:838/health
-curl "http://localhost:838/pricing-bigbang?product_id=P-001&quantity=5&context=checkout"
-curl "http://localhost:838/pricing-compatible?product_id=P-001&quantity=5&context=checkout"
+curl "http://localhost:838/pricing-bigbang?scenario=rule_drift&consumer=checkout"
+curl "http://localhost:838/pricing-compatible?scenario=rule_drift&consumer=checkout"
 curl -X POST http://localhost:838/cutover/advance
 curl http://localhost:838/extraction/state
 curl "http://localhost:838/flows?limit=10"
@@ -40,20 +49,20 @@ curl http://localhost:838/metrics-prometheus
 curl http://localhost:838/reset-lab
 ```
 
-## Fases de cutover
+## 🧪 Escenarios utiles
 
-| Fase | Descripcion |
-|---|---|
-| `legacy` | Todo el trafico va al modulo monolitico |
-| `shadow` | El nuevo servicio recibe trafico en paralelo (sin afectar respuestas) |
-| `canary` | 10% del trafico va al nuevo servicio |
-| `parallel` | 50% del trafico va al nuevo servicio |
-| `extracted` | 100% del trafico va al nuevo servicio extraido |
+- `rule_drift` → muestra contratos que cambian entre consumidores; bigbang falla, compatible adapta.
+- `shared_write` → hace visible el peligro de estados compartidos entre modulos.
+- `peak_sale` → enfatiza por que no conviene cortar compatibilidad en una ventana critica.
+- `partner_contract` → muestra integracion externa dependiente del contrato legado.
 
-## Que observar
+## 🧭 Que observar
 
-- `pricing-bigbang` en fases avanzadas devuelve HTTP 409 cuando el contrato del nuevo servicio difiere.
-- `pricing-compatible` nunca falla: el proxy adapter normaliza campos faltantes o renombrados.
-- `/extraction/state` muestra la fase actual, `drift_events` acumulados y `adapter_normalizations`.
-- Avanza la fase con `POST /cutover/advance` y observa como `bigbang` empieza a fallar antes que `compatible`.
-- `/diagnostics/summary` compara `contract_errors` entre ambos modos.
+- avanzar la fase con `POST /cutover/advance` y observar cuando `bigbang` empieza a fallar;
+- si `pricing-compatible` nunca devuelve error sin importar la fase de cutover;
+- cuantos `drift_events` y `adapter_normalizations` acumula `/extraction/state`;
+- como cambia `contract_errors` por modo en `/diagnostics/summary`.
+
+## ⚖️ Nota de honestidad
+
+No representa un rollout real con multiples servicios ni feature flags distribuidos. Si reproduce lo importante aqui: contratos, compatibilidad, cutover progresivo y proteccion operacional del cambio.

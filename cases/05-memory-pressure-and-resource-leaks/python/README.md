@@ -1,22 +1,31 @@
-# Caso 05 — Python: Presion de memoria y fugas de recursos
+# 🧠 Caso 05 — Python 3.12 con presion de memoria comparada
 
-Implementacion Python del caso **Memory pressure and resource leaks**.
+> Implementacion operativa del caso 05 para mostrar como una fuga silenciosa degrada un proceso largo frente a una variante que controla su estado.
 
-Logica funcional identica al stack PHP: mismo flujo de procesamiento por lotes, misma simulacion de retencion de buffers vs liberacion controlada, mismos umbrales de presion, mismas rutas.
+## 🎯 Que resuelve
 
-## Equivalencia funcional con PHP
+Modela un proceso de lotes que recibe documentos y payloads de tamano variable:
 
-| Aspecto | PHP | Python |
-|---|---|---|
-| Rutas HTTP | `/batch-legacy`, `/batch-optimized`, `/state`, `/runs`, `/diagnostics/summary`, `/metrics`, `/metrics-prometheus`, `/reset-lab` | Identicas |
-| Modo legacy | Retiene todos los buffers base64 en memoria durante el batch | Identico |
-| Modo optimized | Libera buffers tras procesar cada item; guarda solo hash sha256 | Identico |
-| Umbrales | Warning: 8192 KB / 60 descriptores. Critical: 16384 KB / 120 descriptores | Identicos |
-| HTTP 503 | Cuando legacy alcanza presion critica | Identico |
-| Estado persistido | `/tmp/pdsl-case05-php/` | `/tmp/pdsl-case05-python/` |
-| Puerto | 815 | 835 |
+- `batch-legacy` retiene buffers, hace crecer el estado acumulado y deja subir la presion de recursos;
+- `batch-optimized` limita el cache, limpia estado tras cada item y mantiene el proceso dentro de umbrales sanos.
 
-## Arranque
+## 💼 Por que importa
+
+Este caso sirve para evidenciar un problema comun en incidentes largos: no siempre hay una excepcion clara. Muchas veces el servicio solo se va degradando hasta que alguien lo reinicia. La presion de memoria es silenciosa hasta que no lo es.
+
+## 🔬 Analisis Tecnico de la Implementacion (Python)
+
+Python tiene recolector de basura automatico, pero no elimina el problema de fugas: una referencia activa impide que `gc` reclame el espacio, sin importar cuanto tiempo pase.
+
+- **Problema de Fragmentacion y Fugas (`legacy`):** La funcion `run_batch_legacy()` itera sobre cada item y genera un payload con `b64encode(os.urandom(size_bytes)).decode()`, luego lo acumula en una lista global `retained_buffers` sin ningun limite. Cada llamada a la ruta agrega `items * size_kb` KB al estado del proceso. Al mantener referencias vivas en `retained_buffers`, el recolector de basura de Python no puede liberar esos bloques: el objeto existe y tiene al menos un referenciador. El `retained_kb` crece de forma `O(N*calls)` hasta que el servidor alcanza el umbral `critical` (16384 KB) y empieza a devolver HTTP 503.
+
+- **Ciclo de Memoria Constante (`optimized`):** Implementa una politica de **Eviccion FIFO** con complejidad espacial `O(1)`. En lugar de retener los buffers base64, la funcion calcula `hashlib.sha256(payload.encode()).hexdigest()` y lo guarda como identificador compacto (64 bytes, no `size_kb` KB). Para mantener el cache acotado a 24 entradas maximas, usa `if len(digest_cache) > 24: digest_cache.pop(next(iter(digest_cache)))`. Tras procesar cada item, llama explicitamente a `del payload` para eliminar la referencia local, permitiendo que el GIL libere el bloque en el siguiente ciclo del recolector. El `retained_kb` permanece cerca de cero independientemente de cuantos batches se procesen.
+
+## 🧱 Servicio
+
+- `app` → API Python 3.12 con estado local acumulado por modo y metricas de presion.
+
+## 🚀 Arranque
 
 ```bash
 docker compose -f compose.yml up -d --build
@@ -24,7 +33,7 @@ docker compose -f compose.yml up -d --build
 
 Puerto local: `835`.
 
-## Endpoints
+## 🔎 Endpoints
 
 ```bash
 curl http://localhost:835/
@@ -39,21 +48,19 @@ curl http://localhost:835/metrics-prometheus
 curl http://localhost:835/reset-lab
 ```
 
-## Parametros de carga
+## 🧪 Escenarios utiles
 
-| Parametro | Descripcion | Default |
-|---|---|---|
-| `items` | Numero de items a procesar en el batch | 20 |
-| `size_kb` | Tamano del buffer simulado por item (KB) | 64 |
+- `items=50&size_kb=128` → varias llamadas seguidas para ver como sube `retained_kb` en legacy.
+- `items=100&size_kb=64` → lotes mas grandes para alcanzar el umbral `critical` y provocar HTTP 503.
+- Llamar `batch-optimized` en las mismas condiciones y comparar `retained_kb` constante.
 
-## Que observar
+## 🧭 Que observar
 
-- `retained_kb` en `/state` crece linealmente con cada llamada a `batch-legacy` y nunca baja.
-- `retained_kb` en `batch-optimized` permanece cerca de 0 (decae tras cada batch).
-- Cuando `retained_kb` supera 16384 KB, `batch-legacy` devuelve HTTP 503 con `pressure: critical`.
-- `/diagnostics/summary` muestra `avg_retained_kb` y `pressure_events` por modo.
-- `/runs` historial de ejecuciones con `items_processed`, `retained_kb`, `elapsed_ms`.
+- como sube `retained_kb` en `batch-legacy` tras varias ejecuciones y nunca baja;
+- si `retained_kb` se mantiene cerca de 0 en `batch-optimized` sin importar cuantos batches;
+- cuando `pressure_level` pasa de `healthy` a `warning` o `critical`;
+- la diferencia entre `peak_request_kb` (por llamada) y el estado retenido acumulado.
 
-## Diferencias de implementacion respecto a PHP
+## ⚖️ Nota de honestidad
 
-Ninguna diferencia funcional. La simulacion de presion de memoria en Python usa listas de strings base64 en lugar de arrays PHP; el comportamiento observable (escalada de `retained_kb`, umbrales, 503) es identico.
+Python tiene GC automatico, pero no elimina el problema de retener referencias activas. El laboratorio reproduce la senal operativa importante: crecimiento silencioso de estado, degradacion progresiva y necesidad de limites y limpieza explicita.

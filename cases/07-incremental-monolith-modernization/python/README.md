@@ -1,21 +1,31 @@
-# Caso 07 — Python: Modernizacion incremental de monolito
+# 🏗️ Caso 07 — Python 3.12 con modernizacion incremental comparada
 
-Implementacion Python del caso **Incremental monolith modernization**.
+> Implementacion operativa del caso 07 para contrastar un cambio sobre un monolito acoplado contra una ruta strangler con migracion gradual.
 
-Logica funcional identica al stack PHP: mismo flujo de cambio de precios con acoplamiento de god class (legacy) vs patron strangler fig con ACL y migracion incremental de consumidores (strangler), mismas rutas.
+## 🎯 Que resuelve
 
-## Equivalencia funcional con PHP
+Modela cambios sobre un dominio critico con dos enfoques:
 
-| Aspecto | PHP | Python |
-|---|---|---|
-| Rutas HTTP | `/change-legacy`, `/change-strangler`, `/migration/state`, `/flows`, `/diagnostics/summary`, `/metrics`, `/metrics-prometheus`, `/reset-lab` | Identicas |
-| Modo legacy | God class con acoplamiento directo a todos los modulos internos | Identico |
-| Modo strangler | ACL desacopla el dominio; consumidores migran incrementalmente | Identico |
-| Migracion | `consumers_migrated` / `consumers_total` con porcentaje de avance | Identico |
-| Estado persistido | `/tmp/pdsl-case07-php/` | `/tmp/pdsl-case07-python/` |
-| Puerto | 817 | 837 |
+- `change-legacy` toca demasiados modulos y mantiene alto el blast radius;
+- `change-strangler` usa ACL, contratos y migracion progresiva por consumidor.
 
-## Arranque
+## 💼 Por que importa
+
+La modernizacion incremental no es solo una preferencia arquitectonica: es una forma de bajar riesgo real mientras el negocio sigue operando. Un cambio que toca 8 modulos puede romperse en cualquiera de ellos; un cambio que cruza por un ACL aislado solo puede romperse en la frontera controlada.
+
+## 🔬 Analisis Tecnico de la Implementacion (Python)
+
+El acoplamiento de un monolito se modela en Python como dependencias directas entre dicts compartidos, donde una mutacion en cualquier punto puede romper todos los consumidores activos.
+
+- **Impacto Expandido (`legacy`):** La funcion `run_legacy_change()` accede directamente a multiples modulos del estado compartido mediante referencias a claves del mismo `dict` global: `monolith["billing"]`, `monolith["inventory"]`, `monolith["notifications"]`, etc. Al simular que un equipo elimina un modulo (`del monolith["shared_session"]`), cualquier codigo posterior que intente acceder a esa clave lanza un `KeyError` inmediato sin posibilidad de aislamiento. El `modules_touched` registra todos los modulos afectados por cada cambio, haciendo visible el blast radius: un cambio de precio puede tocar 6-8 modulos distintos.
+
+- **Progresion por Consumidor (`strangler`):** Aplica el patron **Anti-Corruption Layer (ACL)** mediante un objeto mediador `billing_adapter` que encapsula el acceso al dominio de precios. El progreso de la migracion se gestiona por consumidor en `state["migration"]["consumers"][consumer]`, permitiendo que Python desvie el trafico hacia el nuevo modulo solo para consumidores que ya pasaron el contrato de migracion. Los consumidores no migrados siguen usando el camino legacy sin regresion. `acl_translations` registra cuantas traducciones de contrato realizo el ACL en cada llamada, haciendo visible el costo de la capa de compatibilidad.
+
+## 🧱 Servicio
+
+- `app` → API Python 3.12 con progreso por consumidor, blast radius y metricas de cobertura del modulo extraido.
+
+## 🚀 Arranque
 
 ```bash
 docker compose -f compose.yml up -d --build
@@ -23,7 +33,7 @@ docker compose -f compose.yml up -d --build
 
 Puerto local: `837`.
 
-## Endpoints
+## 🔎 Endpoints
 
 ```bash
 curl http://localhost:837/
@@ -38,14 +48,19 @@ curl http://localhost:837/metrics-prometheus
 curl http://localhost:837/reset-lab
 ```
 
-## Que observar
+## 🧪 Escenarios utiles
 
-- Legacy: `modules_touched` lista todos los modulos afectados por cada cambio de precio (god class coupling).
-- Strangler: `acl_translations` muestra las traducciones del ACL; `consumers_migrated` incrementa con cada llamada.
-- `/migration/state` refleja el progreso: `consumers_migrated`, `consumers_total`, `migration_pct`.
-- `/diagnostics/summary` compara `avg_modules_touched` (legacy) vs `avg_acl_translations` (strangler).
-- `/flows` historial de operaciones con `mode`, `product_id`, `modules_touched`, `elapsed_ms`.
+- `billing_change` → cambio frecuente con alto acoplamiento en legacy.
+- `shared_schema` → evidencia por que el ACL importa en una transicion.
+- `parallel_work` → muestra el costo de coordinar todo el monolito frente a una frontera mas clara.
 
-## Patron implementado
+## 🧭 Que observar
 
-El modo strangler implementa el patron **Strangler Fig**: los nuevos consumidores del dominio de precios se comunican a traves de un ACL (Anti-Corruption Layer) que traduce el modelo legacy al modelo nuevo. Cada llamada a `change-strangler` migra un consumidor adicional, simulando la transicion incremental del 0% al 100%.
+- cuantos modulos toca cada enfoque (`modules_touched` en legacy vs `acl_translations` en strangler);
+- como cambia el `blast_radius_score` entre ambos modos;
+- si sube el progreso por consumidor (`consumers_migrated`) cuando se usa la ruta incremental;
+- como evoluciona `migration_pct` en `/migration/state` con llamadas repetidas a strangler.
+
+## ⚖️ Nota de honestidad
+
+No reemplaza un monolito real ni un programa completo de replatforming. Si reproduce lo importante para discutir modernizacion segura: acoplamiento, ACL, migracion por consumidor y reduccion gradual del radio de impacto.

@@ -1,30 +1,35 @@
-# Caso 02 — Python: N+1 y cuellos de botella en base de datos
+# 🔄 Caso 02 — Python 3.12 + SQLite
 
-Implementacion Python del caso **N+1 queries y cuellos de botella en base de datos**.
+> Implementacion operativa del caso 02 para demostrar N+1 anidado y una correccion medible sobre la misma base de datos.
 
-Logica funcional identica al stack PHP: expone las mismas rutas, implementa el mismo patron N+1 anidado (orders → customer + items → product + category por cada item) y la variante optimizada con joins consolidados.
+## 🎯 Que resuelve
 
-## Equivalencia funcional con PHP
+Modela un feed operacional de pedidos recientes que necesita devolver:
 
-| Aspecto | PHP | Python |
-|---|---|---|
-| Rutas HTTP | `/orders-legacy`, `/orders-optimized`, `/diagnostics/summary`, `/metrics`, `/metrics-prometheus`, `/reset-metrics` | Identicas |
-| Patron N+1 (legacy) | SELECT orders → bucle: SELECT customer + SELECT items → bucle: SELECT product + SELECT category | Identico sobre SQLite |
-| Queries legacy | 1 + N + N×M + N×M (donde N=pedidos, M=items por pedido) | Identico |
-| Optimizado | SELECT orders JOIN customers, luego SELECT items JOIN products JOIN categories | Identico sobre SQLite |
-| Base de datos | PostgreSQL 16 (container externo) | **SQLite embebida** (ver razon abajo) |
-| Esquema | customers, products, categories, orders, order_items | Identico |
-| Puerto | 812 | 832 |
+- datos del pedido;
+- datos del cliente;
+- items del pedido;
+- producto y categoria de cada item.
 
-## Por que SQLite en Python y no PostgreSQL
+La ruta `orders-legacy` hace multiples round-trips por pedido e incluso por item. La ruta `orders-optimized` consolida lectura base y detalles en consultas agrupadas con `JOIN`.
 
-El patron N+1 es independiente del motor de base de datos. La razon de usar SQLite en Python es la misma que en el caso 01: **portabilidad y autocontencion**.
+## 💼 Por que importa
 
-Un N+1 sobre SQLite produce el mismo patron observable (escalada de queries, tiempo de DB) que sobre PostgreSQL. La diferencia entre motores importa cuando se mide throughput bajo carga concurrente real; para demostrar el patron de acceso, SQLite es suficiente y elimina la dependencia de un contenedor externo.
+Este caso deja una evidencia muy clara: el problema no es "usar o no usar ORM" en abstracto, sino el patron de acceso a datos. Cuando las relaciones se cargan dentro de bucles, el costo por request crece rapido y desgasta innecesariamente la base, independientemente del lenguaje o el motor.
 
-La variante PHP mantiene PostgreSQL porque es el motor que corresponde a su ecosistema de produccion y el caso viene con un stack completo de observabilidad.
+## 🔬 Analisis Tecnico de la Implementacion (Python)
 
-## Arranque
+El patron N+1 en Python sobre SQLite exhibe exactamente el mismo comportamiento que sobre PostgreSQL: cada `cursor.execute()` dentro de un bucle es una barrera de I/O sincronica que acumula tiempo.
+
+- **Punto de Falla (`legacy`):** La funcion `orders_legacy()` carga el listado base con una sola consulta y luego entra en un bucle `for order in orders`. Dentro de ese bucle ejecuta `cursor.execute("SELECT * FROM customers WHERE id = ?", ...)` y despues un segundo bucle anidado `for item in items` donde ejecuta `cursor.execute("SELECT p.*, c.name FROM products p JOIN categories c ... WHERE p.id = ?", ...)` por cada item. El resultado es el patron clasico `1 + N + N*M`: para 20 pedidos con 3 items promedio, el servidor ejecuta mas de 80 consultas secuenciales. SQLite procesa cada `execute()` de forma sincronica bloqueando el hilo hasta terminar, sin posibilidad de pipelining.
+
+- **Correccion Nativa (`optimized`):** La funcion `orders_optimized()` elimina los bucles de base de datos. Extrae todos los IDs de pedidos con `[o["id"] for o in orders]`, construye un placeholder dinamico `",".join("?" * len(order_ids))` y ejecuta un unico `SELECT order_items JOIN products JOIN categories WHERE order_id IN (...)`. El ensamblado final ocurre en Python puro: construye un `dict` con `{oid: [] for oid in order_ids}` e itera los items una sola vez con `grouped[item["order_id"]].append(item)`, complejidad `O(N)` estricta. El numero total de consultas cae a 3 independientemente de cuantos pedidos o items tenga el resultado.
+
+## 🧱 Servicio
+
+- `app` → API Python 3.12 con endpoints legacy y optimized, SQLite embebida con datos semilla deterministicos.
+
+## 🚀 Arranque
 
 ```bash
 docker compose -f compose.yml up -d --build
@@ -32,7 +37,7 @@ docker compose -f compose.yml up -d --build
 
 Puerto local: `832`.
 
-## Endpoints
+## 🔎 Endpoints
 
 ```bash
 curl http://localhost:832/
@@ -45,17 +50,13 @@ curl http://localhost:832/metrics-prometheus
 curl http://localhost:832/reset-metrics
 ```
 
-## Que observar
+## 🧭 Que observar
 
-- `db_queries` en `orders-legacy`: crece como `1 + N + N*M + N*M`. Con limit=20 y promedio 3 items/pedido, supera 120 queries por request.
-- `db_queries` en `orders-optimized`: constante (3-4 queries independientemente de limit).
-- `db_time_ms` en legacy supera al optimizado en proporcion directa al numero de pedidos.
-- `/diagnostics/summary` muestra la densidad relacional del dataset y la diferencia de queries entre ambas rutas.
+- `db_queries` en `orders-legacy` crece como `1 + N + N*M`; con limit=20 y promedio 3 items/pedido, supera 80 consultas por request;
+- `db_queries` en `orders-optimized` es constante (3 consultas) independientemente de `limit`;
+- `db_time_ms` en legacy supera al optimizado en proporcion directa al numero de pedidos;
+- `/diagnostics/summary` muestra densidad relacional del dataset y diferencia de queries entre rutas.
 
-## Datos de prueba
+## ⚖️ Nota de honestidad
 
-Al arrancar, el servidor siembra automaticamente:
-
-- 500 clientes, 4 categorias, 1000 productos
-- ~5000 pedidos con 1-5 items cada uno (distribucion uniforme)
-- Los datos son deterministicos (semilla fija) para reproducibilidad entre reinicios
+No intenta reproducir un ORM especifico ni benchmarkear SQLite contra PostgreSQL. Reproduce un patron muy real: listas enriquecidas que parecen inocentes y terminan escalando mal por round-trips repetidos y relaciones cargadas dentro de bucles.

@@ -1,21 +1,31 @@
-# Caso 10 — Python: Arquitectura cara para un problema simple
+# 💸 Caso 10 — Python 3.12 con comparacion complex vs right-sized
 
-Implementacion Python del caso **Expensive architecture for simple needs**.
+> Implementacion operativa del caso 10 para contrastar sobrearquitectura contra una solucion proporcional.
 
-Logica funcional identica al stack PHP: mismo flujo de resolucion de features con arquitectura sobre-ingenierizada (multi-hop, serializacion costosa, hidratacion ORM) vs acceso directo right-sized (O(1) lookup), mismas rutas.
+## 🎯 Que resuelve
 
-## Equivalencia funcional con PHP
+Modela decisiones de arquitectura sobre necesidades acotadas:
 
-| Aspecto | PHP | Python |
-|---|---|---|
-| Rutas HTTP | `/feature-complex`, `/feature-right-sized`, `/architecture/state`, `/decisions`, `/diagnostics/summary`, `/metrics`, `/metrics-prometheus`, `/reset-lab` | Identicas |
-| Modo complex | Multi-hop: event bus → rule engine → ORM hydration → serialization pipeline | Identico |
-| Modo right_sized | Dict lookup directo con override por contexto; O(1) | Identico |
-| Overhead simulado | Latencia artificial por cada capa de la arquitectura compleja | Identico |
-| Estado persistido | `/tmp/pdsl-case10-python/` | `/tmp/pdsl-case10-python/` |
-| Puerto | 820 | 840 |
+- `feature-complex` reparte el problema entre demasiadas capas y coordinaciones en memoria;
+- `feature-right-sized` resuelve el mismo caso con acceso directo, sin capas intermedias y con una fraccion del costo computacional.
 
-## Arranque
+## 💼 Por que importa
+
+Este caso deja visible que decir "no" a complejidad innecesaria tambien es una habilidad de arquitectura. El riesgo no es solo pagar mas: tambien se retrasa delivery, se multiplican los puntos de falla y se hace mas dificil de mantener. La complejidad correcta es la proporcional al problema.
+
+## 🔬 Analisis Tecnico de la Implementacion (Python)
+
+La sobre-arquitectura tiene un costo fisico medible en Python: cada capa adicional de serializacion, deserializacion e indirection agrega latencia de CPU aunque no haya I/O.
+
+- **Complejidad Innecesaria (`complex`):** La funcion `run_complex_feature()` simula el overhead de una arquitectura multi-capa mediante un bucle de **hidratacion profunda**. En cada "hop" (event bus, rule engine, ORM, serializer), itera sobre miles de entidades ejecutando `json.dumps()` seguido de `json.loads()` y una conversion de dict a objeto con `type("Entity", (), item)()`. Esta redundancia de complejidad `O(N * hops)` consume CPU del worker sin producir ningun valor adicional respecto al resultado final. El `elapsed_ms` crece linealmente con el numero de capas configuradas, y `services_touched` registra cuantos "servicios" fueron involucrados en una operacion que podria resolverse en microsegundos.
+
+- **Diseno Proporcional (`right_sized`):** Aplica acceso directo con **complejidad asintótica `O(1)`**. La funcion `run_right_sized_feature()` resuelve el valor del feature con un lookup directo: `FEATURE_STORE.get(feature_key, {}).get(context, default_value)`. Sin serializar, sin deserializar, sin iterar entidades, sin capas de coordinacion. El resultado es el mismo valor de negocio con una latencia de microsegundos en lugar de milisegundos. `services_touched` registra 1 en lugar de N, y `lead_time_ms` refleja el costo real de la operacion sin overhead arquitectonico.
+
+## 🧱 Servicio
+
+- `app` → API Python 3.12 con comparacion de latencia, servicios tocados y lead time entre ambos enfoques.
+
+## 🚀 Arranque
 
 ```bash
 docker compose -f compose.yml up -d --build
@@ -23,7 +33,7 @@ docker compose -f compose.yml up -d --build
 
 Puerto local: `840`.
 
-## Endpoints
+## 🔎 Endpoints
 
 ```bash
 curl http://localhost:840/
@@ -38,24 +48,20 @@ curl http://localhost:840/metrics-prometheus
 curl http://localhost:840/reset-lab
 ```
 
-## Features disponibles
+## 🧪 Escenarios utiles
 
-| Feature | Descripcion |
-|---|---|
-| `dark_mode` | Modo oscuro de la interfaz |
-| `beta_checkout` | Flujo de checkout experimental |
-| `ai_recommendations` | Recomendaciones por ML |
-| `advanced_analytics` | Dashboard de analitica avanzada |
-| `legacy_export` | Exportacion en formato legacy |
+- `basic_crud` → deja claro el descalce entre complejidad y necesidad real.
+- `small_campaign` → muestra costo extra por una solucion innecesariamente distribuida.
+- `audit_needed` → ayuda a ver que auditable no significa obligatoriamente complejo.
+- `seasonal_peak` → hace visible como la coordinacion excesiva puede fallar en momentos criticos.
 
-## Que observar
+## 🧭 Que observar
 
-- `feature-complex` acumula `hops` (event bus, rule engine, ORM, serializer) con latencia proporcional al numero de capas.
-- `feature-right-sized` devuelve en <5ms con un lookup directo en dict.
-- `/architecture/state` muestra `avg_hops_complex` vs `avg_hops_right_sized` y la diferencia de latencia.
-- `/diagnostics/summary` cuantifica el overhead por capa y el `complexity_ratio` entre ambos modos.
-- La respuesta funcional es identica: ambos modos resuelven el mismo valor de feature.
+- como cambia `elapsed_ms` entre `feature-complex` y `feature-right-sized` para el mismo feature;
+- cuantos `services_touched` y `hops` registra cada modo;
+- si el resultado de negocio (el valor del feature) es identico entre ambos modos;
+- como evoluciona `complexity_ratio` en `/diagnostics/summary` con llamadas repetidas.
 
-## Por que este caso importa
+## ⚖️ Nota de honestidad
 
-El modo `complex` no es incorrecto por ser complejo: es incorrecto porque la complejidad no aporta valor. Un feature flag es un lookup de configuracion; no necesita event sourcing, ORM ni pipeline de serializacion. El caso demuestra que la arquitectura debe ser proporcional al problema.
+No pretende reemplazar un analisis financiero real ni una plataforma distribuida completa. Si reproduce el trade-off central: complejidad operacional versus adecuacion real al problema de negocio. Un feature flag es un lookup de configuracion; no necesita event sourcing ni pipeline de serializacion.

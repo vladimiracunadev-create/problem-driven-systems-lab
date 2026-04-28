@@ -1,22 +1,31 @@
-# Caso 06 — Python: Pipeline roto y entrega fragil
+# 🚚 Caso 06 — Python 3.12 con delivery comparado
 
-Implementacion Python del caso **Broken pipeline and fragile delivery**.
+> Implementacion operativa del caso 06 para mostrar la diferencia entre un pipeline fragil y un flujo de entrega con validaciones y rollback.
 
-Logica funcional identica al stack PHP: mismo flujo de despliegue con 3 entornos (dev/staging/prod), mismos escenarios de fallo, misma diferencia entre deteccion tardia (legacy) y bloqueo temprano (controlled), mismas rutas.
+## 🎯 Que resuelve
 
-## Equivalencia funcional con PHP
+Modela despliegues hacia `dev`, `staging` y `prod` con escenarios operativos frecuentes:
 
-| Aspecto | PHP | Python |
-|---|---|---|
-| Rutas HTTP | `/deploy-legacy`, `/deploy-controlled`, `/environments`, `/deployments`, `/diagnostics/summary`, `/metrics`, `/metrics-prometheus`, `/reset-lab` | Identicas |
-| Modo legacy | Falla despues de `switch_traffic`; rollback manual necesario | Identico |
-| Modo controlled | Bloquea en `preflight` o hace auto-rollback antes de afectar trafico | Identico |
-| Entornos | dev, staging, prod con `health`, `current_release`, `last_good_release` | Identicos |
-| Escenarios | ok, missing_secret, config_drift, failing_smoke, migration_risk | Identicos |
-| Estado persistido | `/tmp/pdsl-case06-php/` | `/tmp/pdsl-case06-python/` |
-| Puerto | 816 | 836 |
+- `deploy-legacy` detecta problemas tarde y puede dejar el ambiente degradado;
+- `deploy-controlled` valida antes de tocar el ambiente, y puede hacer rollback automatico.
 
-## Arranque
+## 💼 Por que importa
+
+No todos los incidentes de entrega vienen del codigo. Secretos faltantes, drift de configuracion o migraciones mal validadas tambien rompen sistemas que "en dev andaban bien". La diferencia entre detectar tarde y bloquear en preflight puede ser la diferencia entre un deploy fallido y un incidente de produccion.
+
+## 🔬 Analisis Tecnico de la Implementacion (Python)
+
+Los pipelines de entrega se modelan aqui como mutaciones de estado controladas por validaciones previas, donde los fallos son detectables mediante jerarquia de excepciones Python.
+
+- **Implementacion `legacy` (Falla Post-Trafico):** La funcion `run_legacy_deployment()` ejecuta las etapas secuencialmente sin validar precondiciones. Cuando el escenario activa un fallo (ej. `missing_secret`), el codigo intenta acceder a una clave inexistente en el diccionario de configuracion, lo que lanza un `KeyError` nativo de Python. Este error se captura con un bloque generico `except Exception as e`, pero el ambiente ya fue mutado antes del fallo: `current_release` fue actualizado y el trafico fue redirigido. El ambiente queda en estado `degraded` sin rollback automatico.
+
+- **Abstraccion Resiliente (`controlled`):** Introduce una arquitectura de **Preflight Checks** antes de cualquier mutacion de estado. Usa `if scenario_config.get("missing_secret")` y validaciones con `isinstance()` sobre los diccionarios de configuracion para detectar anomalias antes de tocar el ambiente. Si la validacion falla, el flujo lanza una excepcion controlada `DeploymentBlockedError` que es capturada antes de ejecutar `switch_traffic`, garantizando que `current_release` y `health` del ambiente no sean modificados. Si el fallo ocurre post-switch (smoke test), ejecuta un rollback atomico restaurando `current_release = last_good_release` y marcando `health: rollback`.
+
+## 🧱 Servicio
+
+- `app` → API Python 3.12 con estado por ambiente, historial de despliegues y metricas de rollback/bloqueos.
+
+## 🚀 Arranque
 
 ```bash
 docker compose -f compose.yml up -d --build
@@ -24,13 +33,13 @@ docker compose -f compose.yml up -d --build
 
 Puerto local: `836`.
 
-## Endpoints
+## 🔎 Endpoints
 
 ```bash
 curl http://localhost:836/
 curl http://localhost:836/health
-curl "http://localhost:836/deploy-legacy?scenario=missing_secret&release=v2.1.0&env=prod"
-curl "http://localhost:836/deploy-controlled?scenario=missing_secret&release=v2.1.0&env=prod"
+curl "http://localhost:836/deploy-legacy?environment=staging&release=2026.04.1&scenario=missing_secret"
+curl "http://localhost:836/deploy-controlled?environment=staging&release=2026.04.1&scenario=missing_secret"
 curl http://localhost:836/environments
 curl "http://localhost:836/deployments?limit=10"
 curl http://localhost:836/diagnostics/summary
@@ -39,20 +48,20 @@ curl http://localhost:836/metrics-prometheus
 curl http://localhost:836/reset-lab
 ```
 
-## Escenarios disponibles
+## 🧪 Escenarios utiles
 
-| Scenario | Comportamiento |
-|---|---|
-| `ok` | Despliegue completo sin fallos. |
-| `missing_secret` | Secreto de configuracion ausente. Legacy: falla post-trafico. Controlled: bloqueado en preflight. |
-| `config_drift` | Divergencia de configuracion entre entornos. Legacy: falla en smoke test post-trafico. Controlled: detectado en preflight. |
-| `failing_smoke` | Smoke test falla tras el cambio de trafico. Legacy: rollback manual. Controlled: auto-rollback. |
-| `migration_risk` | Migracion de base de datos con riesgo de incompatibilidad. Legacy: falla en produccion. Controlled: bloqueado en staging. |
+- `missing_secret` → el deploy falla por un secreto faltante; controlled bloquea en preflight.
+- `config_drift` → divergencia de configuracion entre entornos.
+- `failing_smoke` → smoke test falla tras el cambio de trafico; controlled hace auto-rollback.
+- `migration_risk` → migracion con riesgo de incompatibilidad; controlled bloquea en staging.
 
-## Que observar
+## 🧭 Que observar
 
-- Legacy: `stage_failed` siempre es `switch_traffic` o posterior; el entorno queda en estado degradado.
-- Controlled: `stage_failed` es `preflight` o el rollback ocurre antes de afectar trafico real.
-- `/environments` muestra el `health` de cada entorno: `healthy`, `degraded`, `rollback`.
-- `/diagnostics/summary` compara `avg_stage_of_failure` entre ambos modos y `rollback_rate`.
-- `/deployments` historial con `scenario`, `mode`, `success`, `stage_failed`, `elapsed_ms`.
+- si el problema se detecta antes o despues de tocar el ambiente (`stage_failed`);
+- cuando el flujo controlado logra hacer rollback automatico;
+- como cambia el `health` de `staging` o `prod` entre ambos modos;
+- cuantas fallas quedan contenidas como `blocked` versus `degraded`.
+
+## ⚖️ Nota de honestidad
+
+No reemplaza un CI/CD real ni IaC completa. Si reproduce la logica que importa para conversar de delivery: preflight, smoke test, rollback y drift entre ambientes.
