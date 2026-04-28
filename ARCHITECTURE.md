@@ -7,7 +7,7 @@
 El laboratorio se organiza hoy como un sistema de cuatro capas:
 
 1. una capa editorial y operativa en la raiz;
-2. un portal local ligero para evaluacion guiada y una entrada completa del laboratorio PHP;
+2. un portal local ligero para evaluacion guiada, mas entradas completas por lenguaje (PHP y Python operativos, cada uno con su propio compose raiz);
 3. un catalogo maestro en metadatos compartidos;
 4. casos problem-driven con stacks aislados por Docker.
 
@@ -50,16 +50,21 @@ flowchart TD
 
 Esto elimina la duplicacion manual que antes existia entre el portal, la documentacion y los links operativos.
 
-### 3. Portal local de evaluacion
+### 3. Portal local y stacks por lenguaje
 
-- `compose.root.yml` levanta el portal y los 12 casos PHP operativos en una sola entrada
-- `compose.portal.yml` mantiene el modo liviano solo para la landing local
+Cada lenguaje operativo tiene su compose raiz — un comando levanta los 12 casos de ese lenguaje:
+
+- `compose.root.yml` — PHP: portal + 12 casos + PostgreSQL (01–02) + Prometheus + Grafana (puertos 811–8112)
+- `compose.python.yml` — Python: 12 casos, stdlib pura, sin dependencias externas (puertos 831–8312)
+- `compose.portal.yml` — portal liviano solamente
+
+Los stacks pueden correr en paralelo sin colisión de puertos. Cada lenguaje futuro (Node.js, Java, .NET) seguirá el mismo patron: `compose.{lang}.yml` en la raiz con su bloque de puertos propio.
+
+El portal:
 - `portal/app/index.html` presenta la interfaz principal
 - `portal/app/catalog.php` transforma el catalogo compartido en payload para la UI
 - `portal/app/probe.php` verifica health checks reales y devuelve status code, latencia y timestamp
 - `portal/app/index.php` mantiene compatibilidad por redireccion
-
-El portal sigue siendo la cara principal del laboratorio, pero ahora tambien puede convivir con el arranque completo PHP para dejar visible el sistema de punta a punta desde `localhost:8080`.
 
 ### 4. Casos, Stacks e Interfaces de Usuario
 
@@ -75,20 +80,25 @@ El laboratorio ha evolucionado de simulaciones matemáticas a **escenarios de fa
 
 ## 📦 Casos operativos actuales
 
-| Caso | Estado | Implementacion real actual |
-| --- | --- | --- |
-| `01` | operativo | PHP + PostgreSQL + worker + Prometheus + Grafana |
-| `02` | operativo | PHP + PostgreSQL |
-| `03` | operativo | PHP + Node.js + Python con telemetria y trazabilidad local |
-| `04` | operativo | PHP con timeout corto, retry storm comparado, circuit breaker y fallback |
-| `05` | operativo | PHP con presion progresiva de memoria/recursos y comparacion legacy vs optimized |
-| `06` | operativo | PHP con pipeline legacy vs controlled, preflight y rollback |
-| `07` | operativo | PHP con modernizacion incremental, strangler y progreso por consumidor |
-| `08` | operativo | PHP con extraccion big bang vs compatible, proxy y cutover gradual |
-| `09` | operativo | PHP con integracion externa endurecida mediante adapter, cache y budget |
-| `10` | operativo | PHP con comparacion complex vs right-sized, costo y lead time visibles |
-| `11` | operativo | PHP con reporting legacy vs aislado y presion observable sobre la operacion |
-| `12` | operativo | PHP con runbooks, bus factor y continuidad operacional observable |
+| Caso | PHP | Python | Node.js | Implementacion PHP (referencia) |
+| --- | --- | --- | --- | --- |
+| `01` | ✅ | ✅ | scaffold | PostgreSQL + worker + Prometheus + Grafana |
+| `02` | ✅ | ✅ | scaffold | PostgreSQL |
+| `03` | ✅ | ✅ | ✅ | telemetria, trazabilidad y logs estructurados |
+| `04` | ✅ | ✅ | scaffold | timeout corto, retry storm, circuit breaker y fallback |
+| `05` | ✅ | ✅ | scaffold | presion progresiva de memoria, comparacion legacy vs optimized |
+| `06` | ✅ | ✅ | scaffold | pipeline legacy vs controlled, preflight y rollback |
+| `07` | ✅ | ✅ | scaffold | modernizacion incremental, strangler, progreso por consumidor |
+| `08` | ✅ | ✅ | scaffold | extraccion big bang vs compatible, proxy y cutover gradual |
+| `09` | ✅ | ✅ | scaffold | integracion externa con adapter, idempotencia y validacion de contrato |
+| `10` | ✅ | ✅ | scaffold | comparacion complex vs right-sized, costo y lead time visibles |
+| `11` | ✅ | ✅ | scaffold | reporting legacy vs aislado, presion observable sobre la operacion |
+| `12` | ✅ | ✅ | scaffold | runbooks, bus factor y continuidad operacional observable |
+
+**✅ OPERATIVO** = logica real, Docker funcional, evidencia observable.
+**scaffold** = estructura y documentacion lista, sin implementacion funcional todavia.
+
+Cada caso incluye ademas un `comparison.md` que explica en profundidad como PHP y Python abordan el mismo problema de forma distinta a nivel de lenguaje.
 
 ## 🔁 Flujo de datos y sincronizacion
 
@@ -105,12 +115,13 @@ Con esto se reduce mucho el riesgo de drift entre lo que el repo dice, lo que mu
 
 | Pieza | Rol |
 | --- | --- |
-| `compose.root.yml` | portal + 12 casos PHP en una sola entrada |
-| `compose.portal.yml` | portal liviano sin levantar los casos |
-| `cases/<caso>/<stack>/compose.yml` | escenario concreto y aislado |
+| `compose.root.yml` | PHP: portal + 12 casos + DB + Prometheus + Grafana (puertos 811–8112) |
+| `compose.python.yml` | Python: 12 casos, stdlib pura, sin dependencias externas (puertos 831–8312) |
+| `compose.portal.yml` | portal liviano solamente |
+| `cases/<caso>/<stack>/compose.yml` | escenario concreto y aislado (desarrollo o revision individual) |
 | `cases/<caso>/compose.compare.yml` | comparacion entre stacks del mismo caso |
 
-La familia PHP ahora comparte un runtime comun en `docker/php/Dockerfile`, mientras cada caso conserva su propio `compose.yml`, sus puertos y sus dependencias especificas.
+La familia PHP comparte un runtime comun en `docker/php/Dockerfile`. La familia Python usa `python:3.12-alpine` directamente. Cada lenguaje nuevo seguira el patron `compose.{lang}.yml` con su bloque de puertos propio en la raiz.
 
 Regla de oro: Docker aqui sirve para reproducibilidad y comparacion, no para inflar complejidad.
 

@@ -16,8 +16,9 @@ problem-driven-systems-lab/
 |- CONTRIBUTING.md
 |- CHANGELOG.md
 |- ROADMAP.md
-|- compose.root.yml
-|- compose.portal.yml
+|- compose.root.yml       ← PHP: 12 casos + portal + DB + observabilidad
+|- compose.python.yml     ← Python: 12 casos, stdlib pura
+|- compose.portal.yml     ← portal liviano solamente
 |- docker/
 |- .github/workflows/ci.yml
 |- portal/
@@ -43,11 +44,15 @@ La raiz contiene documentos para lectura ejecutiva, tecnica y operacional. Esta 
 - `scripts/generate_case_catalog.php` genera `docs/case-catalog.md`;
 - la CI verifica que no exista drift documental.
 
-### 3. Capa de portal
+### 3. Capa de portal y stacks raíz
 
-`compose.root.yml` levanta hoy el portal y los 12 casos PHP operativos en una sola entrada.
+Cada lenguaje operativo tiene su propio compose en la raíz — un comando levanta los 12 casos de ese lenguaje:
 
-`compose.portal.yml` conserva el modo ligero solo para portal.
+- `compose.root.yml` — PHP: portal + 12 casos + PostgreSQL (casos 01–02) + Prometheus + Grafana
+- `compose.python.yml` — Python: 12 casos, stdlib pura, sin dependencias externas
+- `compose.portal.yml` — portal liviano solamente
+
+Los stacks PHP y Python pueden correr en paralelo sin colisión de puertos (PHP: 811–8112, Python: 831–8312). Cuando se incorporen lenguajes adicionales (Node.js, Java, .NET), seguirán el mismo patrón con su bloque de puertos propio.
 
 La capa visual sigue viviendo en `portal/`, con:
 
@@ -81,29 +86,33 @@ flowchart LR
 
 | Pieza | Rol |
 | --- | --- |
-| `compose.root.yml` | portal + laboratorio PHP completo |
+| `compose.root.yml` | portal + laboratorio PHP completo (12 casos, DB, Prometheus, Grafana) |
+| `compose.python.yml` | laboratorio Python completo (12 casos, stdlib pura, sin dependencias externas) |
 | `compose.portal.yml` | portal liviano |
-| `cases/<caso>/<stack>/compose.yml` | escenario concreto y aislado |
+| `cases/<caso>/<stack>/compose.yml` | escenario concreto y aislado (desarrollo o revision individual) |
 | `cases/<caso>/compose.compare.yml` | comparacion entre stacks del mismo caso |
 
-La familia PHP reutiliza ahora un runtime comun en `docker/php/Dockerfile`, mientras cada caso mantiene su `compose.yml` y sus dependencias particulares.
+La familia PHP reutiliza un runtime comun en `docker/php/Dockerfile`. La familia Python usa `python:3.12-alpine` directamente en cada caso. Cada caso mantiene su propio `compose.yml` interno independientemente del compose raiz del lenguaje.
 
 ## ✅ Estado operativo real
 
-| Caso | Stacks operativos actuales |
-| --- | --- |
-| `01` | `php` |
-| `02` | `php` |
-| `03` | `php`, `node`, `python` |
-| `04` | `php` |
-| `05` | `php` |
-| `06` | `php` |
-| `07` | `php` |
-| `08` | `php` |
-| `09` | `php` |
-| `10` | `php` |
-| `11` | `php` |
-| `12` | `php` |
+| Caso | php | python | node | java | dotnet |
+| --- | --- | --- | --- | --- | --- |
+| `01` | ✅ OPERATIVO | ✅ OPERATIVO | scaffold | scaffold | scaffold |
+| `02` | ✅ OPERATIVO | ✅ OPERATIVO | scaffold | scaffold | scaffold |
+| `03` | ✅ OPERATIVO | ✅ OPERATIVO | ✅ OPERATIVO | scaffold | scaffold |
+| `04` | ✅ OPERATIVO | ✅ OPERATIVO | scaffold | scaffold | scaffold |
+| `05` | ✅ OPERATIVO | ✅ OPERATIVO | scaffold | scaffold | scaffold |
+| `06` | ✅ OPERATIVO | ✅ OPERATIVO | scaffold | scaffold | scaffold |
+| `07` | ✅ OPERATIVO | ✅ OPERATIVO | scaffold | scaffold | scaffold |
+| `08` | ✅ OPERATIVO | ✅ OPERATIVO | scaffold | scaffold | scaffold |
+| `09` | ✅ OPERATIVO | ✅ OPERATIVO | scaffold | scaffold | scaffold |
+| `10` | ✅ OPERATIVO | ✅ OPERATIVO | scaffold | scaffold | scaffold |
+| `11` | ✅ OPERATIVO | ✅ OPERATIVO | scaffold | scaffold | scaffold |
+| `12` | ✅ OPERATIVO | ✅ OPERATIVO | scaffold | scaffold | scaffold |
+
+**OPERATIVO** = lógica real, Docker funcional, evidencia observable.
+**scaffold** = estructura y documentación lista, sin implementación funcional todavía.
 
 ## 🧭 Regla principal
 
