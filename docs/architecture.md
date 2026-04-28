@@ -48,11 +48,11 @@ La raiz contiene documentos para lectura ejecutiva, tecnica y operacional. Esta 
 
 Cada lenguaje operativo tiene su propio compose en la raíz — un comando levanta los 12 casos de ese lenguaje:
 
-- `compose.root.yml` — PHP: portal + 12 casos + PostgreSQL (casos 01–02) + Prometheus + Grafana
-- `compose.python.yml` — Python: 12 casos, stdlib pura, sin dependencias externas
-- `compose.portal.yml` — portal liviano solamente
+- `compose.root.yml` — PHP: portal (`8080`) + hub nginx (`8100`) + PostgreSQL (casos 01–02) + Prometheus (`9091`) + Grafana (`3001`)
+- `compose.python.yml` — Python: dispatcher único con 12 casos internos (`8200`), stdlib pura, sin dependencias externas
+- `compose.portal.yml` — portal liviano solamente (`8080`)
 
-Los stacks PHP y Python pueden correr en paralelo sin colisión de puertos (PHP: 811–8112, Python: 831–8312). Cuando se incorporen lenguajes adicionales (Node.js, Java, .NET), seguirán el mismo patrón con su bloque de puertos propio.
+Los stacks PHP y Python pueden correr en paralelo sin colisión de puertos. Cada lenguaje nuevo (Node.js, Java, .NET) seguirá el mismo patrón con un hub propio en su bloque de puertos (`8300`, `8400`, `8500`).
 
 La capa visual sigue viviendo en `portal/`, con:
 
@@ -71,23 +71,23 @@ Cada caso contiene `php`, `node`, `python`, `java` y `dotnet` con Docker aislado
 
 ## 🔁 Flujo de sincronizacion actual
 
-```mermaid
-flowchart LR
-    A["shared/catalog/cases.json"] --> B["portal/app/catalog.php"]
-    A --> C["portal/app/probe.php"]
-    A --> D["scripts/generate_case_catalog.php"]
-    D --> E["docs/case-catalog.md"]
-    F["scripts/validate-structure.sh"] --> G[".github/workflows/ci.yml"]
-    B --> G
-    C --> G
+```
+shared/catalog/cases.json
+  ├──▶ portal/app/catalog.php    (payload JSON para la UI)
+  ├──▶ portal/app/probe.php      (health checks server-side)
+  └──▶ scripts/generate_case_catalog.php
+              └──▶ docs/case-catalog.md
+
+scripts/validate-structure.sh ──▶ .github/workflows/ci.yml ◀── catalog.php
+                                                            ◀── probe.php
 ```
 
 ## 🐳 Modelo de ejecucion
 
 | Pieza | Rol |
 | --- | --- |
-| `compose.root.yml` | portal + laboratorio PHP completo (12 casos, DB, Prometheus, Grafana) |
-| `compose.python.yml` | laboratorio Python completo (12 casos, stdlib pura, sin dependencias externas) |
+| `compose.root.yml` | portal (`8080`) + hub nginx PHP (`8100`) + laboratorio PHP completo (12 casos, DB, Prometheus, Grafana) |
+| `compose.python.yml` | dispatcher Python (`8200`) con los 12 casos internos, stdlib pura, sin dependencias externas |
 | `compose.portal.yml` | portal liviano |
 | `cases/<caso>/<stack>/compose.yml` | escenario concreto y aislado (desarrollo o revision individual) |
 | `cases/<caso>/compose.compare.yml` | comparacion entre stacks del mismo caso |

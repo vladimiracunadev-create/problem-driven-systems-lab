@@ -15,18 +15,23 @@ La fuente de verdad ya no esta repartida entre varios archivos manuales: [`share
 
 ## 🧭 Topologia actual
 
-```mermaid
-flowchart TD
-    A["README.md + docs raiz"] --> B["Portal local\nindex.html + catalog.php + probe.php"]
-    A --> C["Casos problem-driven\ncases/01 ... cases/12"]
-    D["shared/catalog/cases.json"] --> B
-    D --> E["scripts/generate_case_catalog.php"]
-    E --> F["docs/case-catalog.md"]
-    C --> G["compose.yml por stack"]
-    C --> H["compose.compare.yml por caso"]
-    I["scripts/validate-structure.sh"] --> J["CI minima"]
-    G --> J
-    B --> J
+```
+shared/catalog/cases.json ──────────────────────────────────────────────────┐
+  │                                                                          │
+  ├──▶ portal/app/catalog.php  ──▶ portal/app/index.html (UI)               │
+  │       └──▶ portal/app/probe.php (health checks en vivo)                 │
+  │                                                                          │
+  └──▶ scripts/generate_case_catalog.php ──▶ docs/case-catalog.md           │
+                                                                             │
+README.md + docs raiz                                                        │
+  ├──▶ Portal local (index.html + catalog.php + probe.php)  ◀───────────────┘
+  └──▶ cases/01 … cases/12
+         ├──▶ <stack>/compose.yml     (stack aislado)
+         └──▶ compose.compare.yml     (comparacion entre stacks)
+
+scripts/validate-structure.sh ──▶ .github/workflows/ci.yml
+  ▲                                        ▲
+  └── compose config checks ───────────────┘
 ```
 
 ## 🧱 Capas del sistema
@@ -54,9 +59,9 @@ Esto elimina la duplicacion manual que antes existia entre el portal, la documen
 
 Cada lenguaje operativo tiene su compose raiz — un comando levanta los 12 casos de ese lenguaje:
 
-- `compose.root.yml` — PHP: portal + 12 casos + PostgreSQL (01–02) + Prometheus + Grafana (puertos 811–8112)
-- `compose.python.yml` — Python: 12 casos, stdlib pura, sin dependencias externas (puertos 831–8312)
-- `compose.portal.yml` — portal liviano solamente
+- `compose.root.yml` — PHP: portal (`8080`) + hub nginx (`8100`) + PostgreSQL (01–02) + Prometheus (`9091`) + Grafana (`3001`)
+- `compose.python.yml` — Python: 12 casos en un solo contenedor dispatcher (`8200`), stdlib pura, sin dependencias externas
+- `compose.portal.yml` — portal liviano solamente (`8080`)
 
 Los stacks pueden correr en paralelo sin colisión de puertos. Cada lenguaje futuro (Node.js, Java, .NET) seguirá el mismo patron: `compose.{lang}.yml` en la raiz con su bloque de puertos propio.
 
@@ -115,8 +120,8 @@ Con esto se reduce mucho el riesgo de drift entre lo que el repo dice, lo que mu
 
 | Pieza | Rol |
 | --- | --- |
-| `compose.root.yml` | PHP: portal + 12 casos + DB + Prometheus + Grafana (puertos 811–8112) |
-| `compose.python.yml` | Python: 12 casos, stdlib pura, sin dependencias externas (puertos 831–8312) |
+| `compose.root.yml` | PHP: portal (`8080`) + hub nginx (`8100`) + DB + Prometheus (`9091`) + Grafana (`3001`) |
+| `compose.python.yml` | Python: dispatcher único con 12 casos internos (`8200`), stdlib pura, sin dependencias externas |
 | `compose.portal.yml` | portal liviano solamente |
 | `cases/<caso>/<stack>/compose.yml` | escenario concreto y aislado (desarrollo o revision individual) |
 | `cases/<caso>/compose.compare.yml` | comparacion entre stacks del mismo caso |
