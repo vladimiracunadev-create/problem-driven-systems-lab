@@ -676,6 +676,7 @@ class Handler(BaseHTTPRequestHandler):
         self.send_json(status_code, payload)
 
 
-server = HTTPServer(("0.0.0.0", 8080), Handler)
-print("Servidor Python escuchando en 8080")
+PORT = int(os.environ.get("PORT", "8080"))
+server = HTTPServer(("0.0.0.0", PORT), Handler)
+print(f"Servidor Python escuchando en {PORT}")
 server.serve_forever()

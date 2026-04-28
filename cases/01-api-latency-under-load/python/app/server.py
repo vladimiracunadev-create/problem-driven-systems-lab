@@ -616,6 +616,7 @@ class Handler(BaseHTTPRequestHandler):
 
 seed_database()
 threading.Thread(target=worker_loop, daemon=True).start()
-server = ThreadingHTTPServer(("0.0.0.0", 8080), Handler)
-print("Servidor Python escuchando en 8080")
+PORT = int(os.environ.get("PORT", "8080"))
+server = ThreadingHTTPServer(("0.0.0.0", PORT), Handler)
+print(f"Servidor Python escuchando en {PORT}")
 server.serve_forever()

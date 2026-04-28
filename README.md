@@ -96,19 +96,21 @@ Esto lo vuelve mucho mas claro para reclutadores, lideres y personas que quieren
 
 Cada lenguaje tiene su propio compose en la raíz del repositorio. Un comando levanta los 12 casos de ese lenguaje. Los stacks son independientes y pueden correr en paralelo sin colisión de puertos.
 
-| Archivo | Lenguaje | Puertos | Estado |
+| Archivo | Lenguaje | Puertos expuestos | Estado |
 | --- | --- | --- | --- |
-| [`compose.root.yml`](compose.root.yml) | PHP 8.3 | 811–819, 8110–8112 | `OPERATIVO` |
-| [`compose.python.yml`](compose.python.yml) | Python 3.12 | 831–839, 8310–8312 | `OPERATIVO` |
-| `compose.nodejs.yml` | Node.js | 841–849, 8410–8412 | `PLANIFICADO` |
-| `compose.java.yml` | Java / JVM | 851–859, 8510–8512 | `PLANIFICADO` |
-| `compose.dotnet.yml` | .NET 8 | 861–869, 8610–8612 | `PLANIFICADO` |
+| [`compose.root.yml`](compose.root.yml) | PHP 8.3 | `8080` portal · `8100` PHP hub · `9091` Prometheus · `3001` Grafana | `OPERATIVO` |
+| [`compose.python.yml`](compose.python.yml) | Python 3.12 | `8200` Python hub | `OPERATIVO` |
+| `compose.nodejs.yml` | Node.js | `8300` Node hub | `PLANIFICADO` |
+| `compose.java.yml` | Java / JVM | `8400` Java hub | `PLANIFICADO` |
+| `compose.dotnet.yml` | .NET 8 | `8500` .NET hub | `PLANIFICADO` |
+
+Un puerto por lenguaje para los casos. Los servicios de soporte (DB, Prometheus, Grafana) tienen los suyos propios porque son servicios distintos.
 
 ```bash
-# PHP: todos los casos + portal + DB + Prometheus + Grafana
+# PHP: portal + nginx hub (12 casos internos) + DB + Prometheus + Grafana
 docker compose -f compose.root.yml up -d --build
 
-# Python: todos los casos (stdlib pura, sin dependencias externas)
+# Python: dispatcher (12 casos internos en un contenedor)
 docker compose -f compose.python.yml up -d --build
 
 # Portal liviano solamente

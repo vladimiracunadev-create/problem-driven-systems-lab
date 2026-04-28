@@ -1,143 +1,37 @@
 # compose.python.yml — Stack Python completo (los 12 casos)
 #
-# Convención de este repositorio:
-#   compose.root.yml    → PHP   (todos los casos, con DB y observabilidad donde aplica)
-#   compose.python.yml  → Python (todos los casos, stdlib pura, sin dependencias externas)
-#   compose.{lang}.yml  → patrón para cada lenguaje futuro (Node.js, Java, .NET, etc.)
+# Un solo contenedor, un solo puerto.
+# El dispatcher interno enruta por prefijo de path:
 #
-# Los compose.yml individuales dentro de cada caso siguen existiendo para
-# ejecución aislada de un solo caso. Este archivo es el punto de entrada
-# único para levantar el stack Python completo.
+#   GET http://localhost:8200/       → índice de casos
+#   GET http://localhost:8200/01/... → caso 01
+#   GET http://localhost:8200/12/... → caso 12
 #
-# Puertos Python: 831–839 (casos 01–09), 8310–8312 (casos 10–12)
-# Puertos PHP:    811–819 (casos 01–09), 8110–8112 (casos 10–12)
-# No hay colisión: ambos stacks pueden correr en paralelo.
+# Los 12 servidores de caso corren como subprocesos internos
+# en puertos 9001-9012 que nunca se exponen al host.
 #
 # Uso:
 #   docker compose -f compose.python.yml up -d --build
 #   docker compose -f compose.python.yml down
-#   docker compose -f compose.python.yml logs -f case01-python
-
-x-python-app: &python-app
-  environment:
-    APP_STACK: Python 3.12
-  healthcheck:
-    test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://127.0.0.1:8080/health', timeout=2).read()\""]
-    interval: 10s
-    timeout: 3s
-    retries: 5
-    start_period: 5s
-  mem_limit: 128m
-  cpus: 0.50
-  restart: unless-stopped
+#   docker compose -f compose.python.yml logs -f
 
 services:
-
-  case01-python:
-    <<: *python-app
+  python-lab:
     build:
-      context: cases/01-api-latency-under-load/python
-      dockerfile: Dockerfile
-    container_name: pdsl-01-python-app
+      context: .
+      dockerfile: python-dispatcher/Dockerfile
+    container_name: pdsl-python-lab
     ports:
-      - "831:8080"
-
-  case02-python:
-    <<: *python-app
-    build:
-      context: cases/02-n-plus-one-and-db-bottlenecks/python
-      dockerfile: Dockerfile
-    container_name: pdsl-02-python-app
-    ports:
-      - "832:8080"
-
-  case03-python:
-    <<: *python-app
-    build:
-      context: cases/03-poor-observability-and-useless-logs/python
-      dockerfile: Dockerfile
-    container_name: pdsl-03-python-app
-    ports:
-      - "833:8080"
-
-  case04-python:
-    <<: *python-app
-    build:
-      context: cases/04-timeout-chain-and-retry-storms/python
-      dockerfile: Dockerfile
-    container_name: pdsl-04-python-app
-    ports:
-      - "834:8080"
-
-  case05-python:
-    <<: *python-app
-    build:
-      context: cases/05-memory-pressure-and-resource-leaks/python
-      dockerfile: Dockerfile
-    container_name: pdsl-05-python-app
-    ports:
-      - "835:8080"
-    mem_limit: 256m
-
-  case06-python:
-    <<: *python-app
-    build:
-      context: cases/06-broken-pipeline-and-fragile-delivery/python
-      dockerfile: Dockerfile
-    container_name: pdsl-06-python-app
-    ports:
-      - "836:8080"
-
-  case07-python:
-    <<: *python-app
-    build:
-      context: cases/07-incremental-monolith-modernization/python
-      dockerfile: Dockerfile
-    container_name: pdsl-07-python-app
-    ports:
-      - "837:8080"
-
-  case08-python:
-    <<: *python-app
-    build:
-      context: cases/08-critical-module-extraction-without-breaking-operations/python
-      dockerfile: Dockerfile
-    container_name: pdsl-08-python-app
-    ports:
-      - "838:8080"
-
-  case09-python:
-    <<: *python-app
-    build:
-      context: cases/09-unstable-external-integration/python
-      dockerfile: Dockerfile
-    container_name: pdsl-09-python-app
-    ports:
-      - "839:8080"
-
-  case10-python:
-    <<: *python-app
-    build:
-      context: cases/10-expensive-architecture-for-simple-needs/python
-      dockerfile: Dockerfile
-    container_name: pdsl-10-python-app
-    ports:
-      - "8310:8080"
-
-  case11-python:
-    <<: *python-app
-    build:
-      context: cases/11-heavy-reporting-blocks-operations/python
-      dockerfile: Dockerfile
-    container_name: pdsl-11-python-app
-    ports:
-      - "8311:8080"
-
-  case12-python:
-    <<: *python-app
-    build:
-      context: cases/12-single-point-of-knowledge-and-operational-risk/python
-      dockerfile: Dockerfile
-    container_name: pdsl-12-python-app
-    ports:
-      - "8312:8080"
+      - "8200:8200"
+    environment:
+      APP_STACK: Python 3.12
+      PORT: "8200"
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://127.0.0.1:8200/01/health', timeout=3).read()\""]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 25s
+    mem_limit: 512m
+    cpus: 2.0
+    restart: unless-stopped
