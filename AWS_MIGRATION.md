@@ -44,65 +44,28 @@ Mapa rapido de lo que vive hoy en `compose.root.yml` y `compose.python.yml`:
 ## 🏗️ Topologia objetivo (Opcion A · recomendada)
 
 ```
-                          Internet
-                              │
-                              ▼
-                  ┌───────────────────────┐
-                  │  Route 53  (DNS)      │
-                  │  pdsl.tudominio.dev   │
-                  └───────────┬───────────┘
-                              │
-                              ▼
-                  ┌───────────────────────┐
-                  │  CloudFront (CDN+WAF) │
-                  │  TLS · cache estatico │
-                  └───────────┬───────────┘
-                              │
-                              ▼
-                ┌─────────────────────────┐
-                │  Application Load       │
-                │  Balancer (ALB)         │
-                │  /  /portal             │
-                │  /01 … /12  (path-rule) │
-                │  /py/*       (python)   │
-                └──────┬─────────────┬────┘
-                       │             │
-            ┌──────────▼──┐   ┌──────▼─────────┐
-            │ ECS Fargate │   │ ECS Fargate    │
-            │ Service:    │   │ Service:       │
-            │ portal-php  │   │ python-hub     │
-            └──────┬──────┘   └────────────────┘
-                   │
-        ┌──────────┴───────────┐
-        │ ECS Fargate (12 svc) │
-        │ case01..case12 (PHP) │
-        └──────┬───────────────┘
-               │
-   ┌───────────┼───────────────────┐
-   │           │                   │
-   ▼           ▼                   ▼
-┌────────┐ ┌────────┐         ┌─────────────┐
-│ RDS    │ │ RDS    │         │ ECS Fargate │
-│ pg-01  │ │ pg-02  │         │ worker-01   │
-│ t4g.μ  │ │ t4g.μ  │         └─────────────┘
-└────────┘ └────────┘
-   │           │
-   └────┬──────┘
-        ▼
- ┌──────────────────────────────────────┐
- │ Observabilidad                       │
- │  - CloudWatch Logs / Metrics / X-Ray │
- │  - AMP  (Prometheus manejado)        │
- │  - AMG  (Grafana manejado · SSO)     │
- │  - RDS Performance Insights          │
- └──────────────────────────────────────┘
+Internet
+  |
+  `──▶ Route 53        (DNS · pdsl.tudominio.dev)
+         |
+         `──▶ CloudFront   (CDN · TLS · WAF · cache estatico)
+                |
+                `──▶ ALB   (path routing · /  /01..12  /py)
+                       |
+                       |── ECS Fargate · portal-php
+                       |── ECS Fargate · python-hub
+                       |── ECS Fargate · case01-app  ──▶ RDS pg-01 (t4g.micro)
+                       |                              `──▶ ECS Fargate · worker-01
+                       |── ECS Fargate · case02-app  ──▶ RDS pg-02 (t4g.micro)
+                       `── ECS Fargate · case03..12  (sin DB)
 
-      ┌────────────────────────────────┐
-      │  ECR  (registry imagenes)      │
-      │  Secrets Manager / SSM Param   │
-      │  IAM roles por servicio        │
-      │  VPC: 2 AZ · subnets pub/priv  │
-      └────────────────────────────────┘
+Observabilidad           Plataforma
+|- CloudWatch Logs       |- ECR  (registry imagenes)
+|- CloudWatch Metrics    |- Secrets Manager (DB creds)
+|- AWS X-Ray (traces)    |- SSM Parameter Store (config)
+|- AMP (Prometheus)      |- IAM roles por task
+|- AMG (Grafana · SSO)   `- VPC · 2 AZ · subnets pub/priv
+`- RDS Performance Insights
 ```
 
 **Decisiones clave de esta opcion:**
@@ -120,18 +83,17 @@ Mapa rapido de lo que vive hoy en `compose.root.yml` y `compose.python.yml`:
 ### Opcion B · Serverless puro (Lambda + API Gateway + Aurora Serverless v2)
 
 ```
-Internet ─▶ CloudFront ─▶ API Gateway HTTP API
-                              │
-              ┌───────────────┼────────────────┐
-              ▼               ▼                ▼
-        Lambda /01      Lambda /02   …  Lambda /12
-        (container)     (container)      (container)
-              │
-              ▼
-       Aurora Serverless v2  (auto-pause)
-              │
-              ▼
-       CloudWatch + X-Ray + AMG
+Internet
+  `──▶ CloudFront
+         `──▶ API Gateway HTTP API
+                |── Lambda /01  (container image)
+                |── Lambda /02  (container image)
+                |── …
+                `── Lambda /12  (container image)
+                       |
+                       `──▶ Aurora Serverless v2  (auto-pause · 0.5 ACU min)
+
+Observabilidad: CloudWatch + X-Ray + AMG
 ```
 
 - **Pro**: factura por request real → cuando nadie visita el portfolio, casi USD 0. Aurora Serverless v2 puede escalar a 0.5 ACU.
@@ -141,14 +103,14 @@ Internet ─▶ CloudFront ─▶ API Gateway HTTP API
 ### Opcion C · Kubernetes manejado (EKS + RDS + AMP/AMG)
 
 ```
-Internet ─▶ ALB Ingress Controller ─▶ EKS cluster (2 AZ)
-                                         │
-                          ┌──────────────┼───────────────┐
-                          ▼              ▼               ▼
-                     deploy: portal  deploy: php-cases  deploy: python
-                                        │
-                                        ▼
-                                  RDS  +  AMP  +  AMG
+Internet
+  `──▶ ALB Ingress Controller
+         `──▶ EKS cluster  (2 AZ · Karpenter / Managed Node Group)
+                |── deploy: portal
+                |── deploy: php-cases   (12 pods)
+                `── deploy: python-hub
+                       |
+                       `──▶ RDS  +  AMP  +  AMG
 ```
 
 - **Pro**: portafolio mas valioso para audiencia DevOps/Platform Engineering — demuestra Helm, manifests, HPA, PDB, Karpenter.
@@ -310,10 +272,10 @@ npm i -g aws-cdk     # >= 2.140
 
 ```
 VPC 10.0.0.0/16
-├── subnet-public-a   10.0.0.0/24    (AZ a) → IGW
-├── subnet-public-b   10.0.1.0/24    (AZ b) → IGW
-├── subnet-private-a  10.0.10.0/24   (AZ a) → NAT
-└── subnet-private-b  10.0.11.0/24   (AZ b) → NAT
+|- subnet-public-a   10.0.0.0/24    (AZ a) ──▶ IGW
+|- subnet-public-b   10.0.1.0/24    (AZ b) ──▶ IGW
+|- subnet-private-a  10.0.10.0/24   (AZ a) ──▶ NAT
+`- subnet-private-b  10.0.11.0/24   (AZ b) ──▶ NAT
 ```
 
 - 2 AZ minimo (requerido por ALB y RDS Multi-AZ futuro).
