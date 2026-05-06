@@ -101,11 +101,11 @@ Cada lenguaje tiene su propio compose en la raíz del repositorio. Un comando le
 | --- | --- | --- | --- |
 | [`compose.root.yml`](compose.root.yml) | PHP 8.3 | `8080` portal · `8100` PHP hub · `9091` Prometheus · `3001` Grafana | `OPERATIVO` |
 | [`compose.python.yml`](compose.python.yml) | Python 3.12 | `8200` Python hub | `OPERATIVO` |
-| `compose.nodejs.yml` | Node.js | `8300` Node hub | `PLANIFICADO` |
+| `compose.nodejs.yml` | Node.js | `8300` Node hub | `PLANIFICADO` (caso 03 ya operativo de forma aislada en `cases/03-.../node/compose.yml`, puerto `823`) |
 | `compose.java.yml` | Java / JVM | `8400` Java hub | `PLANIFICADO` |
 | `compose.dotnet.yml` | .NET 8 | `8500` .NET hub | `PLANIFICADO` |
 
-Un puerto por lenguaje para los casos. Los servicios de soporte (DB, Prometheus, Grafana) tienen los suyos propios porque son servicios distintos.
+Un puerto por lenguaje para los casos. Los servicios de soporte (DB, Prometheus, Grafana) tienen los suyos propios porque son servicios distintos. Mientras un stack no tenga su `compose.{lang}.yml` raíz, los casos individuales se levantan vía `cases/<caso>/<stack>/compose.yml` y exponen el puerto `8XY` (X=stack, Y=caso).
 
 ```bash
 # PHP: portal + nginx hub (12 casos internos) + DB + Prometheus + Grafana
