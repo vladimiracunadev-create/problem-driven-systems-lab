@@ -1,6 +1,6 @@
 # 📊 Caso 11 - Reportes pesados que bloquean la operación
 
-[![Estado](https://img.shields.io/badge/Estado-PHP%20operativo-green)](php/README.md)
+[![Estado](https://img.shields.io/badge/Estado-Multi--stack%20operativo-green)](php/README.md)
 [![Categoría](https://img.shields.io/badge/Categoría-Operaciones-blueviolet)](../../README.md)
 
 > [!IMPORTANT]
@@ -25,8 +25,8 @@ La analítica y el reporting compiten contra el flujo transaccional sobre los mi
 | Stack | Estado |
 | --- | --- |
 | 🐘 PHP 8 | `OPERATIVO` |
-| 🟢 Node.js | 🔧 Estructura lista |
-| 🐍 Python | 🔧 Estructura lista |
+| 🟢 Node.js | `OPERATIVO` |
+| 🐍 Python | `OPERATIVO` |
 | ☕ Java | 🔧 Estructura lista |
 | 🔵 .NET 8 | 🔧 Estructura lista |
 

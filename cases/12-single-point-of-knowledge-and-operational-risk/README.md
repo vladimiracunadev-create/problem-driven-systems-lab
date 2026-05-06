@@ -1,6 +1,6 @@
 # 👤 Caso 12 - Punto único de conocimiento y riesgo operacional
 
-[![Estado](https://img.shields.io/badge/Estado-PHP%20operativo-green)](php/README.md)
+[![Estado](https://img.shields.io/badge/Estado-Multi--stack%20operativo-green)](php/README.md)
 [![Categoría](https://img.shields.io/badge/Categoría-Operaciones-blueviolet)](../../README.md)
 
 > [!IMPORTANT]
@@ -25,8 +25,8 @@ Una parte crítica de la operación depende demasiado de una sola persona, de sc
 | Stack | Estado |
 | --- | --- |
 | 🐘 PHP 8 | `OPERATIVO` |
-| 🟢 Node.js | 🔧 Estructura lista |
-| 🐍 Python | 🔧 Estructura lista |
+| 🟢 Node.js | `OPERATIVO` |
+| 🐍 Python | `OPERATIVO` |
 | ☕ Java | 🔧 Estructura lista |
 | 🔵 .NET 8 | 🔧 Estructura lista |
 

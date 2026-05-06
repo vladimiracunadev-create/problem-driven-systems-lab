@@ -6,7 +6,7 @@
 
 - Casos `01` al `12` operativos en PHP.
 - Casos `01` al `12` operativos en Python.
-- Casos `01`, `02`, `03`, `04` y `05` operativos en Node.js (con primitivas Node-especificas: `event_loop_lag_ms`, `AbortController`, `process.memoryUsage()`).
+- Casos `01` al `12` operativos en Node.js, cada uno con la primitiva nativa que mejor expresa el problema: `event_loop_lag_ms` y `process.memoryUsage()` para presion real, `AbortController`/`AbortSignal.timeout` para cancelacion y deadlines, `Map<consumer, handler>` para strangler, `Proxy` para compatibilidad de contrato, `EventEmitter` para cutover events, `monitorEventLoopDelay()` para impacto sobre el loop, optional chaining como runbook codificado.
 - Docker por caso y por stack definido como ruta oficial.
 - Familia documental profesional incorporada en la raiz del repo.
 - Catalogo y portal conectados por metadatos compartidos.
@@ -37,24 +37,23 @@ Estado: en progreso
 - Completar implementaciones funcionales por caso y stack con mayor logica de negocio.
 - Agregar medicion reproducible donde el problema lo requiera.
 - Sumar mas observabilidad compartida cuando aporte valor real.
-- Casos `01` al `05` ya con paridad multi-stack PHP + Python + Node.js.
-- Llevar casos `06` al `12` a mayor paridad multi-stack en Node.js sin degradar lo ya operativo.
+- Casos `01` al `12` con paridad multi-stack PHP + Python + Node.js.
 - Sumar Java o .NET para algun caso especifico cuando aporte contraste tecnico real.
 
-Avance actual:
+Avance actual (multi-stack PHP + Python + Node.js):
 
-- Caso `01`: PHP + PostgreSQL + worker + Prometheus + Grafana / Python + SQLite + worker / Node.js + datos en memoria + worker `setInterval` con `event_loop_lag_ms`.
+- Caso `01`: PHP + PostgreSQL + worker + Prometheus + Grafana / Python + SQLite + worker / Node.js con worker `setInterval` y `event_loop_lag_ms`.
 - Caso `02`: PHP + PostgreSQL con N+1 legacy vs lectura optimizada / Python + SQLite / Node.js con `Map`+`Set` y `event_loop_lag_ms`.
-- Caso `03`: PHP + Node.js + Python con logs pobres vs telemetria util y trazabilidad.
-- Caso `04`: PHP con timeout chain, retry storm, circuit breaker y fallback / Python equivalente / Node.js con `AbortController`/`AbortSignal` cooperativo.
-- Caso `05`: PHP con presion progresiva de memoria / Python con `tracemalloc` / Node.js con `process.memoryUsage()` (heap V8 + RSS + external).
-- Caso `06`: PHP con pipeline legacy vs controlled, preflight y rollback.
-- Caso `07`: PHP con modernizacion incremental de monolito y comparacion legacy vs strangler.
-- Caso `08`: PHP con extraccion big bang vs compatible, proxy y cutover gradual.
-- Caso `09`: PHP con integracion directa vs adapter endurecido, cache y budget de cuota.
-- Caso `10`: PHP con solucion complex vs right-sized y comparacion de costo/lead time.
-- Caso `11`: PHP con reporting legacy vs aislado y efecto directo sobre la operacion.
-- Caso `12`: PHP con continuidad operacional basada en runbooks, pairing y bus factor.
+- Caso `03`: logs pobres vs telemetria util y trazabilidad en los tres stacks.
+- Caso `04`: timeout chain, retry storm, circuit breaker y fallback / Node.js con `AbortController`/`AbortSignal` cooperativo.
+- Caso `05`: presion progresiva de memoria / Python con `tracemalloc` / Node.js con `process.memoryUsage()` (heap V8 + RSS + external).
+- Caso `06`: pipeline legacy vs controlled con preflight y rollback / Node.js con `AbortController` para cancelacion cooperativa de pasos.
+- Caso `07`: modernizacion incremental, legacy vs strangler / Node.js con `Map<consumer, handler>` mutable en runtime + ACL como closure.
+- Caso `08`: extraccion big bang vs compatible con proxy y cutover gradual / Node.js con `Proxy` nativo de compatibilidad de contrato + `EventEmitter` para events.
+- Caso `09`: integracion directa vs adapter endurecido con cache y budget de cuota / Node.js con `AbortSignal.timeout` y circuit breaker en memoria.
+- Caso `10`: solucion complex vs right-sized con costo/lead time / Node.js con CPU real medido en hops de `JSON.stringify`/`parse`.
+- Caso `11`: reporting legacy vs aislado / Node.js con `monitorEventLoopDelay()` y bloqueo sincronico observable.
+- Caso `12`: continuidad operacional basada en runbooks, pairing y bus factor / Node.js con optional chaining (`?.`) como runbook codificado.
 
 ## Fase 3 - Valor de portafolio
 

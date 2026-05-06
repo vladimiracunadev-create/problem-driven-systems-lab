@@ -30,6 +30,13 @@ Ambos stacks pueden correr en paralelo sin colisión de puertos.
 | Caso 02 Node.js | `docker compose -f cases/02-n-plus-one-and-db-bottlenecks/node/compose.yml up -d --build` |
 | Caso 04 Node.js | `docker compose -f cases/04-timeout-chain-and-retry-storms/node/compose.yml up -d --build` |
 | Caso 05 Node.js | `docker compose -f cases/05-memory-pressure-and-resource-leaks/node/compose.yml up -d --build` |
+| Caso 06 Node.js | `docker compose -f cases/06-broken-pipeline-and-fragile-delivery/node/compose.yml up -d --build` |
+| Caso 07 Node.js | `docker compose -f cases/07-incremental-monolith-modernization/node/compose.yml up -d --build` |
+| Caso 08 Node.js | `docker compose -f cases/08-critical-module-extraction-without-breaking-operations/node/compose.yml up -d --build` |
+| Caso 09 Node.js | `docker compose -f cases/09-unstable-external-integration/node/compose.yml up -d --build` |
+| Caso 10 Node.js | `docker compose -f cases/10-expensive-architecture-for-simple-needs/node/compose.yml up -d --build` |
+| Caso 11 Node.js | `docker compose -f cases/11-heavy-reporting-blocks-operations/node/compose.yml up -d --build` |
+| Caso 12 Node.js | `docker compose -f cases/12-single-point-of-knowledge-and-operational-risk/node/compose.yml up -d --build` |
 
 ## ▶️ Arranque recomendado
 
@@ -70,6 +77,13 @@ Ambos stacks pueden correr en paralelo sin colisión de puertos.
 | Caso 03 Node.js | `http://localhost:823/health` | Respuesta saludable |
 | Caso 04 Node.js | `http://localhost:824/health` | Respuesta saludable |
 | Caso 05 Node.js | `http://localhost:825/health` | Respuesta saludable |
+| Caso 06 Node.js | `http://localhost:826/health` | Respuesta saludable |
+| Caso 07 Node.js | `http://localhost:827/health` | Respuesta saludable |
+| Caso 08 Node.js | `http://localhost:828/health` | Respuesta saludable |
+| Caso 09 Node.js | `http://localhost:829/health` | Respuesta saludable |
+| Caso 10 Node.js | `http://localhost:8210/health` | Respuesta saludable |
+| Caso 11 Node.js | `http://localhost:8211/health` | Respuesta saludable |
+| Caso 12 Node.js | `http://localhost:8212/health` | Respuesta saludable |
 
 ## 🧰 Comandos utiles de operacion
 

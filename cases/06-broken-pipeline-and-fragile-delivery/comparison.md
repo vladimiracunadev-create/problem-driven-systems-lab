@@ -1,4 +1,4 @@
-# Caso 06 — Comparativa PHP vs Python: Pipeline roto y entrega frágil
+# Caso 06 — Comparativa multi-stack: Pipeline roto y entrega frágil (PHP · Python · Node.js)
 
 ## El problema que ambos resuelven
 
@@ -110,13 +110,66 @@ def run_controlled_deployment(env: dict, release: str, scenario: str) -> dict:
 
 ---
 
+## Node.js: AbortController + AbortSignal cooperativo, cancelacion nativa
+
+**Runtime:** Node.js 20 single-thread con event loop. El servidor http vive como un proceso largo, exactamente como Python. Cada request engancha un `AbortController` cuyo `signal` se propaga por todos los pasos asincronicos del pipeline.
+
+**El AbortSignal por paso:**
+```javascript
+const stepDelay = async (signal, baseMs) => {
+  const elapsed = baseMs + Math.floor(Math.random() * 17) + 8;
+  await new Promise((resolve, reject) => {
+    const t = setTimeout(resolve, elapsed);
+    signal.addEventListener('abort', () => {
+      clearTimeout(t);
+      reject(new Error('pipeline_aborted'));
+    }, { once: true });
+  });
+  return elapsed;
+};
+```
+
+**El handler engancha cancelacion cuando el cliente cierra:**
+```javascript
+const ac = new AbortController();
+const onClose = () => ac.abort();
+req.once('close', onClose);
+try {
+  result = await runControlledDeployment(environment, release, scenario, ac.signal);
+} finally {
+  req.removeListener('close', onClose);
+}
+```
+
+Si el cliente desconecta o si pones un timeout encima (`setTimeout(()=>ac.abort(), 5000)`), los pasos restantes nunca se ejecutan — el `signal` se propaga por toda la cadena async sin polling de un flag global. Es el equivalente Node-nativo de un cancellation token: una primitiva del estandar (`AbortController` viene de la spec WHATWG/DOM), no una libreria.
+
+**Preflight + rollback en Node:**
+```javascript
+let validationBlocked = false;
+try {
+  if (scenario === 'missing_secret') getSecretReal('DB_PASSWORD');
+  else if (scenario === 'migration_risk') throw new Error('Migration pre-flight checksum missed');
+} catch (e) {
+  validationBlocked = true;
+}
+if (validationBlocked) return buildResult(409, { ...preflight_blocked }, ctx);
+
+// Si el smoke falla post-switch, rollback atomico
+if (scenario === 'failing_smoke') {
+  env.current_release = previousRelease;
+  env.health = 'healthy';
+}
+```
+
+---
+
 ## Diferencias de decisión, no de corrección
 
-| Aspecto | PHP | Python | Razon |
-|---|---|---|---|
-| Detección de clave ausente | `class_exists()` + `isset()` | `dict.get()` con default | PHP valida existencia de clases e índices explícitamente. Python usa `get()` que nunca lanza. |
-| Jerarquía de excepciones | `extends RuntimeException` con `readonly` | `class DeploymentBlocked(Exception)` con atributos | PHP 8.1+ readonly properties. Python usa atributos de instancia directamente. |
-| Rollback | Asignación de referencia `$env = $previous` | Asignación de dict `env["current_release"] = previous` | Mismo efecto. PHP pasa el ambiente por referencia (`&$env`). Python lo modifica in-place. |
-| Preflight pattern | `class_exists()` para dependencias de clase | `.get()` para dependencias de config | PHP valida presencia de clases como contratos. Python valida presencia de claves de config. |
+| Aspecto | PHP | Python | Node.js | Razon |
+|---|---|---|---|---|
+| Cancelacion del pipeline | Implicita: el proceso muere por request en FPM | `threading.Event` o flag manual | `AbortController` + `AbortSignal` propagado | Solo Node tiene una primitiva estandar de cancelacion en stdlib. |
+| Detección de clave ausente | `class_exists()` + `isset()` | `dict.get()` con default | `Object.prototype.hasOwnProperty.call(o, k)` | PHP/Node validan explicitamente; Python evita el lanzamiento con `.get()`. |
+| Jerarquía de excepciones | `extends RuntimeException` con `readonly` | `class DeploymentBlocked(Exception)` | `class DeploymentBlocked extends Error` | Tres formas, mismo objetivo. Node hereda de `Error` global. |
+| Rollback | `$env = $previous` (por referencia) | `env["current_release"] = previous` | `env.current_release = previousRelease` | Mismo efecto en los tres. |
 
-**El patron que ambos demuestran es idéntico:** validar antes de mutar, rollback si el post-switch falla. PHP y Python usan diferentes mecanismos de su stdlib para implementar la misma lógica defensiva.
+**El patron que los tres demuestran es idéntico:** validar antes de mutar, rollback si el post-switch falla. Lo distintivo de Node: el `AbortSignal` propagado convierte la cancelacion del cliente en cancelacion del pipeline sin codigo de glue — la primitiva ya existe en el lenguaje.

@@ -1,6 +1,6 @@
 # 🧩 Caso 08 - Extracción de módulo crítico sin romper operación
 
-[![Estado](https://img.shields.io/badge/Estado-PHP%20operativo-green)](php/README.md)
+[![Estado](https://img.shields.io/badge/Estado-Multi--stack%20operativo-green)](php/README.md)
 [![Categoría](https://img.shields.io/badge/Categoría-Arquitectura-blueviolet)](../../README.md)
 
 > [!IMPORTANT]
@@ -25,8 +25,8 @@ Hay que sacar un módulo sensible del sistema vivo, pero ese módulo sigue sirvi
 | Stack | Estado |
 | --- | --- |
 | 🐘 PHP 8 | `OPERATIVO` |
-| 🟢 Node.js | 🔧 Estructura lista |
-| 🐍 Python | 🔧 Estructura lista |
+| 🟢 Node.js | `OPERATIVO` |
+| 🐍 Python | `OPERATIVO` |
 | ☕ Java | 🔧 Estructura lista |
 | 🔵 .NET 8 | 🔧 Estructura lista |
 

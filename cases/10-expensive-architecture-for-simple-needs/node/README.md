@@ -1,34 +1,57 @@
 # Arquitectura cara para un problema simple — Node.js
 
-## Objetivo de esta variante
-Representar este caso desde el stack **Node.js**, manteniendo foco en el problema y no solo en la sintaxis.
+> Implementacion operativa del caso 10 con paridad al stack PHP. La sobrearquitectura se mide como CPU real: el modo `complex` realiza N rondas de `JSON.stringify`/`JSON.parse` sobre arrays grandes, castigando el event loop. El `right-sized` accede al mismo dato en O(1).
 
-## Qué debería mostrar esta carpeta
-- una base dockerizada,
-- un punto de entrada mínimo,
-- espacio para instrumentación, pruebas o scripts,
-- notas de diseño específicas del stack.
+## Que resuelve
 
-## Qué NO debería hacer
-- mezclar dependencias de otros stacks,
-- levantar todo el laboratorio,
-- esconder decisiones importantes fuera del repositorio.
+Compara dos formas de resolver el mismo requerimiento de negocio:
 
-## Puertos de referencia
-- Puerto local sugerido: `8210`
+- `feature-complex`: 8-10 servicios coordinandose, hops serializados, cost mensual alto, lead time largo. Bajo `seasonal_peak` rompe con timeout.
+- `feature-right-sized`: 2-4 servicios proporcionales al problema, acceso directo, cost / lead time / coordination todos significativamente menores.
 
-## Comando esperado
+Escenarios: `basic_crud`, `small_campaign`, `audit_needed`, `seasonal_peak`.
+
+## Primitiva Node-especifica
+
+El "costo" de la sobrearquitectura no es ficcion — es CPU real:
+
+```js
+if (mode === 'complex') {
+  for (let hop = 0; hop < servicesTouched; hop++) {
+    const json = JSON.stringify(entities);
+    entities = JSON.parse(json);              // overhead de serializacion entre hops
+    entities = entities.map((e) => Object.assign(Object.create(null), e));  // hidratacion
+  }
+}
+```
+
+Cada hop de servicio inter-proceso cuesta una ronda de stringify+parse+map. En `right_sized`, simplemente accedemos el primer elemento del array. La diferencia se observa en latencia y, bajo `seasonal_peak`, en un timeout duro.
+
+## Arranque
+
 ```bash
 docker compose -f compose.yml up -d --build
 ```
 
-## Notas del stack
-En Node.js conviene estudiar este caso considerando:
-- ergonomía del runtime,
-- patrones habituales del ecosistema,
-- observabilidad disponible,
-- costos de complejidad,
-- límites y trade-offs específicos.
+Puerto local: `8210`.
 
-## Estado inicial
-Esta carpeta deja una base mínima documentada y ampliable para que el caso evolucione hacia un escenario más realista.
+## Endpoints
+
+```bash
+curl http://localhost:8210/
+curl http://localhost:8210/health
+curl "http://localhost:8210/feature-complex?scenario=basic_crud&accounts=120"
+curl "http://localhost:8210/feature-right-sized?scenario=basic_crud&accounts=120"
+curl "http://localhost:8210/decisions?limit=10"
+curl http://localhost:8210/diagnostics/summary
+curl http://localhost:8210/metrics
+curl http://localhost:8210/metrics-prometheus
+curl http://localhost:8210/reset-lab
+```
+
+## Que observar
+
+- `monthly_cost_usd` y `lead_time_days` son sustancialmente mayores en `complex`;
+- `problem_fit_score` baja en `complex`: la solucion no acompana al problema;
+- bajo `seasonal_peak` con `accounts >= 200`, complex cruza el umbral interno y devuelve 502;
+- `simplification_backlog` baja con cada `right_sized` ejecutado.

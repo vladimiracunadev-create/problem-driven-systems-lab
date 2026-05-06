@@ -1,4 +1,4 @@
-# Caso 11 — Comparativa PHP vs Python: Reportes pesados que bloquean la operación
+# Caso 11 — Comparativa multi-stack: Reportes pesados que bloquean la operación (PHP · Python · Node.js)
 
 ## El problema que ambos resuelven
 
@@ -105,14 +105,60 @@ Los dos locks son objetos distintos en memoria. Son completamente independientes
 
 ---
 
+## Node.js: monitorEventLoopDelay() + setImmediate — el lock es el event loop
+
+**Runtime:** Node.js 20 single-thread. **No hay locks** porque no hay concurrencia paralela en el codigo JS — todo corre en un solo thread del event loop. La "contencion" es de otro tipo: una operacion sincronica costosa **bloquea el loop entero** y todas las requests concurrentes lo pagan.
+
+**El fallo legacy en Node — bloqueo sincronico del event loop:**
+```javascript
+const blockEventLoop = (ms) => {
+  const end = Date.now() + ms;
+  while (Date.now() < end) { /* spin */ }   // CPU sincronico, no cede el loop
+};
+
+const runReportFlow = async (mode, scenario, rows) => {
+  if (mode === 'legacy') {
+    const blockMs = Math.min(900, 200 + Math.floor(rows / 1000));
+    blockEventLoop(blockMs);   // bloquea TODAS las requests concurrentes
+  }
+};
+```
+Mientras el `while` corre, ninguna otra request puede ser atendida — el writer concurrente espera. Es el equivalente Node de un `flock(LOCK_EX)` que no cede.
+
+**La medicion del impacto con primitiva Node:**
+```javascript
+const { monitorEventLoopDelay } = require('perf_hooks');
+const ELOOP = monitorEventLoopDelay({ resolution: 10 });
+ELOOP.enable();
+
+// En las metricas:
+event_loop: {
+  p50_ms: Number((ELOOP.percentile(50) / 1e6).toFixed(2)),
+  p99_ms: Number((ELOOP.percentile(99) / 1e6).toFixed(2)),
+  max_ms: Number((ELOOP.max / 1e6).toFixed(2)),
+}
+```
+`monitorEventLoopDelay()` devuelve un histograma de Node nativo del lag del event loop. Tras correr `report-legacy`, `event_loop_lag_ms_p99` sube notoriamente y el efecto sobre `/order-write` es directamente visible. PHP y Python no tienen esa metrica nativa porque su modelo de concurrencia es diferente.
+
+**La correccion isolated en Node:**
+```javascript
+if (mode === 'isolated') {
+  await new Promise((r) => setImmediate(r));   // cede el loop al final del tick actual
+  reporting.queue_depth = Math.min(120, ...);  // simula encolar a worker pool/replica
+}
+```
+`setImmediate` es la forma idiomatica Node de decir "deja que otras operaciones pendientes corran antes". Para isolation real, el siguiente paso seria `worker_threads` — un thread paralelo de verdad para CPU-heavy. Lo dejamos como evolucion del caso.
+
+---
+
 ## Diferencias de decisión, no de corrección
 
-| Aspecto | PHP | Python | Razon |
-|---|---|---|---|
-| Mecanismo de lock | `flock()` — kernel del SO, cross-process | `threading.Lock()` — en proceso, cross-thread | PHP tiene procesos separados → necesita lock de SO. Python tiene hilos → lock de threading. |
-| Non-blocking | `flock($fp, LOCK_EX \| LOCK_NB)` | `lock.acquire(blocking=False)` | API diferente, semántica idéntica: retorna inmediatamente si no puede adquirir. |
-| Granularidad | Archivo de lock por dominio | Objeto Lock por dominio | Mismo concepto. PHP en disco, Python en memoria. |
-| Costo de contention | Syscall de kernel (flock) | Lock de threading (futex en Linux) | Python es más eficiente: `threading.Lock` usa futex, más barato que flock. |
-| Scope | Cross-process (todos los workers FPM) | Intra-process (todos los hilos del servidor) | PHP necesita sincronización entre OS processes. Python sincroniza entre OS threads del mismo process. |
+| Aspecto | PHP | Python | Node.js | Razon |
+|---|---|---|---|---|
+| Mecanismo de "lock" | `flock()` — kernel SO | `threading.Lock()` — futex | Bloqueo sincronico del event loop | Node no tiene locks porque no tiene concurrencia paralela en JS. |
+| Non-blocking | `LOCK_NB` flag | `acquire(blocking=False)` | El loop nunca bloquea por design — bloquea por accion | Solo Node lo hace por error de codigo, no por construccion. |
+| Granularidad | Archivo por dominio | Objeto por dominio | `setImmediate` o `worker_threads` para offload | En Node, "isolation" es offload del loop principal. |
+| Medicion del impacto | Tiempo de espera en lock | Tiempo de espera en lock | `monitorEventLoopDelay()` — lag p50/p99/max nativo | Solo Node tiene la primitiva nativa para medir el efecto. |
+| Modelo de concurrencia | Multi-proceso | Multi-thread con GIL | Single-thread + event loop | Tres modelos distintos para el mismo problema. |
 
-**La diferencia más importante:** `flock()` de PHP es la herramienta correcta para PHP-FPM (multiproceso). `threading.Lock` de Python es la herramienta correcta para ThreadingHTTPServer (multihilo). Usar `flock()` en Python sería una traducción literal incorrecta — funcionaría en Linux pero sería innecesariamente complejo y más lento que `threading.Lock`. Esta es la divergencia más clara entre los dos stacks: **misma solución lógica, herramienta de sincronización diferente por modelo de concurrencia**.
+**Lo distintivo de Node:** el problema **no es concurrencia paralela** — es que un trabajo CPU-bound bloquea el loop entero y degrada todo el servicio. La medicion via `monitorEventLoopDelay()` es la primitiva exacta que detecta el bloqueo, sin instrumentacion adicional.

@@ -1,34 +1,62 @@
-# Extracción de módulo crítico sin romper operación — Node.js
+# Extraccion de modulo critico sin romper operacion — Node.js
 
-## Objetivo de esta variante
-Representar este caso desde el stack **Node.js**, manteniendo foco en el problema y no solo en la sintaxis.
+> Implementacion operativa del caso 08 con paridad al stack PHP. Compatibilidad de contrato implementada con `Proxy` nativo + `EventEmitter` para emitir cada avance de cutover.
 
-## Qué debería mostrar esta carpeta
-- una base dockerizada,
-- un punto de entrada mínimo,
-- espacio para instrumentación, pruebas o scripts,
-- notas de diseño específicas del stack.
+## Que resuelve
 
-## Qué NO debería hacer
-- mezclar dependencias de otros stacks,
-- levantar todo el laboratorio,
-- esconder decisiones importantes fuera del repositorio.
+Compara dos formas de extraer un modulo critico de pricing:
 
-## Puertos de referencia
-- Puerto local sugerido: `828`
+- `pricing-bigbang`: corta el modulo de una vez. Si los consumidores no estan alineados al nuevo contrato, rompe en el path critico (TypeError / 409 / 502 segun escenario).
+- `pricing-compatible`: el llamado pasa por un Proxy de compatibilidad que traduce campos (`cost_usd` → `price`) en vuelo y avanza el cutover por consumidor; el bus de eventos publica cada avance.
 
-## Comando esperado
+Escenarios: `stable`, `rule_drift`, `shared_write`, `peak_sale`, `partner_contract`. Consumers: `checkout`, `marketplace`, `backoffice`, `partner_api`.
+
+## Primitiva Node-especifica
+
+```js
+const compatibilityProxy = new Proxy(newPricingModule, {
+  get(target, prop, receiver) {
+    if (prop === 'computeFinalPrice') {
+      return (payload) => {
+        if (payload?.cost_usd !== undefined && payload.price === undefined) {
+          payload = { ...payload, price: payload.cost_usd };
+        }
+        return Reflect.get(target, prop, receiver).call(target, payload);
+      };
+    }
+    return Reflect.get(target, prop, receiver);
+  },
+});
+```
+
+El codigo de negocio sigue llamando `pricing.computeFinalPrice(payload)`. La traduccion vive en el Proxy, no en el negocio. Adicionalmente un `EventEmitter` (`cutoverBus`) publica cada `advance` y mantiene un log circular en memoria.
+
+## Arranque
+
 ```bash
 docker compose -f compose.yml up -d --build
 ```
 
-## Notas del stack
-En Node.js conviene estudiar este caso considerando:
-- ergonomía del runtime,
-- patrones habituales del ecosistema,
-- observabilidad disponible,
-- costos de complejidad,
-- límites y trade-offs específicos.
+Puerto local: `828`.
 
-## Estado inicial
-Esta carpeta deja una base mínima documentada y ampliable para que el caso evolucione hacia un escenario más realista.
+## Endpoints
+
+```bash
+curl http://localhost:828/
+curl http://localhost:828/health
+curl "http://localhost:828/pricing-bigbang?scenario=rule_drift&consumer=checkout"
+curl "http://localhost:828/pricing-compatible?scenario=rule_drift&consumer=checkout"
+curl "http://localhost:828/cutover/advance?consumer=checkout&step=25"
+curl http://localhost:828/extraction/state
+curl "http://localhost:828/flows?limit=10"
+curl http://localhost:828/diagnostics/summary
+curl http://localhost:828/metrics
+curl http://localhost:828/metrics-prometheus
+curl http://localhost:828/reset-lab
+```
+
+## Que observar
+
+- `pricing-bigbang` con `rule_drift` rompe con TypeError; `pricing-compatible` lo absorbe via Proxy y devuelve 200;
+- `cutover_log` muestra cada avance emitido por el EventEmitter;
+- `app_consumer_cutover_progress{consumer="..."}` en Prometheus permite ver el corte gradual.

@@ -1,4 +1,4 @@
-# Caso 08 — Comparativa PHP vs Python: Extracción de módulo crítico sin romper la operación
+# Caso 08 — Comparativa multi-stack: Extracción de módulo crítico sin romper la operación (PHP · Python · Node.js)
 
 ## El problema que ambos resuelven
 
@@ -87,14 +87,63 @@ Idéntica lógica. Python usa `list.index()` donde PHP usa `array_search()`.
 
 ---
 
+## Node.js: Proxy nativo + EventEmitter para cutover
+
+**Runtime:** Node.js 20. La compatibilidad de contrato vive en un objeto `Proxy` que intercepta el llamado al modulo nuevo y traduce el shape antes de delegar. El cutover por consumer se publica en un `EventEmitter`.
+
+**El fallo big bang en Node:**
+```javascript
+const newPricingModule = {
+  computeFinalPrice(payload) {
+    if (typeof payload.price !== 'number') {
+      throw new TypeError(`Contrato roto: 'price' esperado, llego ${Object.keys(payload)}`);
+    }
+    return Number((payload.price * 1.21).toFixed(2));
+  },
+};
+// payload legacy: { cost_usd: 100 } → TypeError
+```
+
+**La compatibilidad como Proxy nativo:**
+```javascript
+const compatibilityProxy = new Proxy(newPricingModule, {
+  get(target, prop, receiver) {
+    if (prop === 'computeFinalPrice') {
+      return (payload) => {
+        if (payload?.cost_usd !== undefined && payload.price === undefined) {
+          payload = { ...payload, price: payload.cost_usd };   // traduccion en vuelo
+        }
+        return Reflect.get(target, prop, receiver).call(target, payload);
+      };
+    }
+    return Reflect.get(target, prop, receiver);
+  },
+});
+// El codigo de negocio sigue llamando computeFinalPrice — el Proxy traduce sin que se note.
+```
+`Proxy` es la primitiva del lenguaje (ECMAScript 2015) para interceptar operaciones. La traduccion vive en un solo lugar (el `get` trap), no esparcida en `if` por toda la aplicacion. Cuando el cutover termina, basta con hacer que el codigo apunte al `newPricingModule` directo en lugar del `compatibilityProxy` — ningun cambio en la fuente del consumidor.
+
+**El cutover events con `EventEmitter`:**
+```javascript
+const cutoverBus = new EventEmitter();
+cutoverBus.on('advance', ({ consumer, before, after }) => {
+  cutoverLog.push({ consumer, before, after, at: new Date().toISOString() });
+});
+// En cada avance:
+cutoverBus.emit('advance', { consumer, before: cur, after: next });
+```
+Otros listeners (alerting, audit log, slack notifier) pueden engancharse al `cutoverBus` sin tocar el flujo principal — pub/sub nativo.
+
+---
+
 ## Diferencias de decisión, no de corrección
 
-| Aspecto | PHP | Python | Razon |
-|---|---|---|---|
-| Acceso a clave ausente | Warning + null (PHP 8) | KeyError (excepción inmediata) | PHP es más permisivo con arrays. Python falla más ruidosamente — más visible en tests. |
-| Fusión de contratos | Operador `??` | `.get()` + `or` | PHP tiene operador nativo. Python usa el método de dict + operador booleano. |
-| Trampa de `or` vs `??` | `??` ignora solo `null` | `or` ignora `null`, `0`, `""`, `[]` | Diferencia semántica importante para precios: `or` con `0.0` lo trataría como ausente. |
-| Fases de cutover | `array_search()` + indexación | `list.index()` + indexación | Idiomas distintos, misma lógica de avance lineal por índice. |
-| Estado del proxy | JSON en disco | JSON en disco | Idéntico. El estado de cutover debe sobrevivir reinicios. |
+| Aspecto | PHP | Python | Node.js | Razon |
+|---|---|---|---|---|
+| Acceso a clave ausente | Warning + null (PHP 8) | KeyError (excepción inmediata) | TypeError al acceder propiedad de undefined | Tres comportamientos, similar visibilidad en tests. |
+| Fusión / traduccion de contratos | Operador `??` | `.get()` + `or` | `Proxy` con `Reflect.get` + asignacion | PHP/Python fusionan claves en el callsite. Node usa metaprogramacion nativa: el Proxy es el adapter. |
+| Trampa de operadores | `??` ignora solo `null` | `or` ignora todo falsy | `??` (ECMAScript) ignora solo `null`/`undefined` | Node y PHP comparten semantica de fusion estricta; Python es mas amplio. |
+| Cutover events | Estado en JSON | Estado en JSON | `EventEmitter` + estado en JSON | Solo Node tiene pub/sub nativo en stdlib (`events` modulo). |
+| Estado del proxy | JSON en disco | JSON en disco | JSON en disco | Idéntico. El estado de cutover debe sobrevivir reinicios. |
 
-**La diferencia semántica más importante:** `??` en PHP solo fusiona `null`. `or` en Python fusiona cualquier valor falsy (`None`, `0`, `""`, `False`, `[]`). Para campos numéricos como `price`, esto requiere precaución: si el proveedor envía `price: 0`, el `or` de Python lo trataría como ausente. En PHP, `??` lo aceptaría como valor válido. Esta diferencia de lenguaje no afecta el patrón demostrado, pero es relevante en código de producción real.
+**Lo distintivo de Node:** `Proxy` permite que el adapter sea **transparente al codigo de negocio**. El consumidor sigue llamando `pricing.computeFinalPrice(payload)`, sin if/else de versiones — la traduccion vive en una sola capa. Cuando el cutover termina, eliminar el Proxy es una sola linea. PHP y Python necesitan el if/else explicito en el consumidor.

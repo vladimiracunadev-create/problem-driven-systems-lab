@@ -1,6 +1,6 @@
 # 🚚 Caso 06 - Pipeline roto y entrega frágil
 
-[![Estado](https://img.shields.io/badge/Estado-PHP%20operativo-green)](php/README.md)
+[![Estado](https://img.shields.io/badge/Estado-Multi--stack%20operativo-green)](php/README.md)
 [![Categoría](https://img.shields.io/badge/Categoría-Entrega-green)](../../README.md)
 
 > [!IMPORTANT]
@@ -25,8 +25,8 @@ El software funciona en desarrollo, pero falla al promover cambios, validar conf
 | Stack | Estado |
 | --- | --- |
 | 🐘 PHP 8 | `OPERATIVO` |
-| 🟢 Node.js | 🔧 Estructura lista |
-| 🐍 Python | 🔧 Estructura lista |
+| 🟢 Node.js | `OPERATIVO` |
+| 🐍 Python | `OPERATIVO` |
 | ☕ Java | 🔧 Estructura lista |
 | 🔵 .NET 8 | 🔧 Estructura lista |
 

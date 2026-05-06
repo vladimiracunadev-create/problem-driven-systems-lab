@@ -92,13 +92,13 @@ El laboratorio ha evolucionado de simulaciones matemáticas a **escenarios de fa
 | `03` | ✅ | ✅ | ✅ | telemetria, trazabilidad y logs estructurados |
 | `04` | ✅ | ✅ | ✅ | timeout corto, retry storm, circuit breaker y fallback |
 | `05` | ✅ | ✅ | ✅ | presion progresiva de memoria, comparacion legacy vs optimized |
-| `06` | ✅ | ✅ | scaffold | pipeline legacy vs controlled, preflight y rollback |
-| `07` | ✅ | ✅ | scaffold | modernizacion incremental, strangler, progreso por consumidor |
-| `08` | ✅ | ✅ | scaffold | extraccion big bang vs compatible, proxy y cutover gradual |
-| `09` | ✅ | ✅ | scaffold | integracion externa con adapter, idempotencia y validacion de contrato |
-| `10` | ✅ | ✅ | scaffold | comparacion complex vs right-sized, costo y lead time visibles |
-| `11` | ✅ | ✅ | scaffold | reporting legacy vs aislado, presion observable sobre la operacion |
-| `12` | ✅ | ✅ | scaffold | runbooks, bus factor y continuidad operacional observable |
+| `06` | ✅ | ✅ | ✅ | pipeline legacy vs controlled, preflight y rollback |
+| `07` | ✅ | ✅ | ✅ | modernizacion incremental, strangler, progreso por consumidor |
+| `08` | ✅ | ✅ | ✅ | extraccion big bang vs compatible, proxy y cutover gradual |
+| `09` | ✅ | ✅ | ✅ | integracion externa con adapter, idempotencia y validacion de contrato |
+| `10` | ✅ | ✅ | ✅ | comparacion complex vs right-sized, costo y lead time visibles |
+| `11` | ✅ | ✅ | ✅ | reporting legacy vs aislado, presion observable sobre la operacion |
+| `12` | ✅ | ✅ | ✅ | runbooks, bus factor y continuidad operacional observable |
 
 **✅ OPERATIVO** = logica real, Docker funcional, evidencia observable.
 **scaffold** = estructura y documentacion lista, sin implementacion funcional todavia.

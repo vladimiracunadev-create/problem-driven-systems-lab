@@ -18,11 +18,11 @@
 | 12 casos definidos y documentados | si |
 | Casos `01` al `12` operativos en PHP | si |
 | Casos `01` al `12` operativos en Python | si |
-| Casos `01` al `05` operativos en Node.js | si |
+| Casos `01` al `12` operativos en Node.js | si |
 | Docker por caso y por stack como ruta oficial | si |
 | Portal raiz para navegar el laboratorio | si |
 | Familia documental profesional en la raiz | si |
-| Paridad funcional completa entre todos los lenguajes | no |
+| Paridad funcional completa entre todos los lenguajes | parcial — Java y .NET siguen como scaffold |
 
 ## 🚫 Limites conscientes
 

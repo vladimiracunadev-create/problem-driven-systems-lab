@@ -16,7 +16,7 @@ El objetivo es mostrar cómo **el mismo problema se manifiesta y se resuelve de 
 | Stack | Ícono | Versión | Fortaleza en el contexto del lab |
 |-------|-------|---------|----------------------------------|
 | PHP | 🐘 | 8.x | Ideal para casos de APIs web, ORMs y patrones MVC |
-| Node.js | 🟢 | LTS | Concurrencia basada en eventos, ecosistema npm |
+| Node.js | 🟢 | 20 LTS | Single-thread + event loop; primitivas estandar (`AbortController`, `AbortSignal.timeout`, `Proxy`, `EventEmitter`, `monitorEventLoopDelay`, `process.memoryUsage`) que mapean a problemas de cancelacion, contratos, eventos y observabilidad sin libreria externa |
 | Python | 🐍 | 3.x | Data, análisis, scripting y rapidez de prototipado |
 | Java | ☕ | JVM | Tipado fuerte, ecosistema empresarial, Spring |
 | .NET | 🔵 | 8.x | Ecosistema Microsoft, rendimiento y tipado fuerte |

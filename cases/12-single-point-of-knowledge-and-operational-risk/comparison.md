@@ -1,4 +1,4 @@
-# Caso 12 — Comparativa PHP vs Python: Punto único de conocimiento y riesgo operacional
+# Caso 12 — Comparativa multi-stack: Punto único de conocimiento y riesgo operacional (PHP · Python · Node.js)
 
 ## El problema que ambos resuelven
 
@@ -120,14 +120,54 @@ Mismo criterio que PHP: `/share-knowledge` no contamina los percentiles de laten
 
 ---
 
+## Node.js: optional chaining `?.` como runbook codificado
+
+**Runtime:** Node.js 20. La gracia del caso en Node es que el lenguaje tiene un operador (**optional chaining**, ECMAScript 2020) que codifica el runbook directamente — la diferencia entre legacy y distributed se reduce a tres caracteres.
+
+**El fallo legacy en Node:**
+```javascript
+// Acceso ciego — equivalente a memoria tribal sin validacion
+const opaque = {};
+const _ = opaque.config.system[2].is_active;
+// → TypeError: Cannot read properties of undefined (reading 'config')
+```
+Idéntico al PHP `Warning`/`TypeError` y al Python `KeyError`: el sistema rompe ruidosamente.
+
+**La correccion distribuida en Node — el runbook **es** el operador:**
+```javascript
+// El runbook codificado en el lenguaje
+const _ = opaque?.config?.system?.[2]?.is_active ?? false;
+//             ^^^         ^^^         ^^^^^         ^^
+//      "si no existe, default seguro y sigue"
+```
+`?.` evalua de izquierda a derecha y, si cualquier eslabon es `null`/`undefined`, retorna `undefined` sin lanzar. `??` provee el default. Es la encarnacion **en el lenguaje** de la regla "si no esta documentado, asume el default seguro y reporta" — tres caracteres que codifican una decision operacional.
+
+**El score de readiness:**
+```javascript
+const readinessScore = (d) =>
+  Math.round(((d.runbook_score || 0) * 0.45) + (((d.backup_people || 0) + 1) * 18) + ((d.drill_score || 0) * 0.25));
+
+const shareKnowledge = (domain, activity) => {
+  const state = readState();
+  const d = state.knowledge.domains[domain];
+  if (activity === 'runbook') d.runbook_score = Math.min(100, (d.runbook_score || 0) + 20);
+  else if (activity === 'pairing') d.backup_people = Math.min(4, (d.backup_people || 0) + 1);
+  else d.drill_score = Math.min(100, (d.drill_score || 0) + 18);
+  writeState(state);
+};
+```
+Misma formula que PHP/Python. La diferencia esta en como Node maneja el "si no existe": `||` (similar al `or` de Python — ojo con `0`).
+
+---
+
 ## Diferencias de decisión, no de corrección
 
-| Aspecto | PHP | Python | Razon |
-|---|---|---|---|
-| Acceso defensivo | `$data['key'] ?? $default` | `data.get("key", default)` | Mismo efecto: valor por defecto si la clave no existe, sin excepción. |
-| Tipado estricto | `declare(strict_types=1)` | No existe equivalente directo | PHP 8 tiene tipado estricto opt-in. Python tiene `mypy` / type hints pero no enforcement en runtime por defecto. |
-| Función pura de score | Función PHP con `array` | Función Python con `dict` | Mismo concepto: sin efectos secundarios, entrada → salida determinista. |
-| Estado compartido | Disco (JSON) | Disco (JSON) + variable de módulo | Ambos persisten en JSON. Python podría usar solo memoria pero usa disco para consistencia entre reinicios. |
-| `declare(strict_types=1)` | Activa `TypeError` en mismatches | No aplica | PHP tiene esta opción de lenguaje. Python confía en type hints + herramientas externas como mypy. |
+| Aspecto | PHP | Python | Node.js | Razon |
+|---|---|---|---|---|
+| Acceso defensivo | `$data['key'] ?? $default` | `data.get("key", default)` | `data?.key ?? default` | Tres formas, mismo efecto. JS combina chaining con coalescing. |
+| Acceso anidado profundo | `$d['a']['b']['c'] ?? null` (todavia rompe en niveles intermedios undefined sin isset) | `d.get("a", {}).get("b", {}).get("c")` | `d?.a?.b?.c ?? null` (operador en cada nivel) | Solo Node tiene chaining nativo en cada nivel sin gimnasia. |
+| Tipado estricto | `declare(strict_types=1)` | type hints + mypy externo | TypeScript opcional fuera del runtime | Tres aproximaciones. JS puro confia en el chaining defensivo. |
+| Funcion pura de score | Funcion PHP con `array` | Funcion Python con `dict` | Arrow function con `||` | Tres formas, misma matematica. |
+| Estado compartido | Disco (JSON) | Disco (JSON) + variable de modulo | Disco (JSON) | Persistencia cross-restart en los tres. |
 
-**El concepto es idéntico en ambos:** el conocimiento distribuido (runbooks + personas de backup + simulacros) convierte un sistema frágil que depende del héroe en uno que puede resolver incidentes de forma autónoma. La fórmula de `readinessScore` / `readiness_score` es la misma. La diferencia es que PHP usa `??` mientras Python usa `.get()`, y PHP tiene `declare(strict_types=1)` como contrato de tipado explícito que Python no tiene en runtime.
+**Lo distintivo de Node:** optional chaining (`?.`) hace el contraste legacy/distributed casi tipografico — la "ausencia de runbook" es visible en el codigo como ausencia del operador. PHP y Python lo aproximan con `??` y `.get()` pero con menos elegancia en estructuras anidadas profundas. La leccion operativa es la misma: **el conocimiento implicito siempre se cobra; el conocimiento codificado en defaults seguros sobrevive a la rotacion**.

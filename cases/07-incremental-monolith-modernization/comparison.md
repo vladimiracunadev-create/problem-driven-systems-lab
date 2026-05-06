@@ -1,4 +1,4 @@
-# Caso 07 — Comparativa PHP vs Python: Modernización incremental de monolito
+# Caso 07 — Comparativa multi-stack: Modernización incremental de monolito (PHP · Python · Node.js)
 
 ## El problema que ambos resuelven
 
@@ -113,14 +113,50 @@ El ACL en Python es un dict de funciones (`translate`, `route`). Esto es más fu
 
 ---
 
+## Node.js: Map<consumer, handler> mutable como tabla de routing strangler
+
+**Runtime:** Node.js 20. El monolito legacy se modela como un objeto plano con propiedades cuyo `delete` produce el equivalente al `unset` de PHP. La novedad Node es la **tabla de routing del strangler como `Map` mutable en runtime**.
+
+**El fallo legacy en Node:**
+```javascript
+const monolith = { billingEngine: {}, sharedSessionDb: { fetchData: () => 'session_blob' } };
+if (scenario === 'shared_schema') {
+  delete monolith.sharedSessionDb;
+  const _ = monolith.sharedSessionDb.fetchData();   // TypeError nativo
+}
+```
+`delete` sobre una propiedad la quita del objeto. El acceso posterior lanza `TypeError: Cannot read properties of undefined`. Equivalente al Fatal Error de PHP y al KeyError de Python — pero como `TypeError`.
+
+**El strangler como Map registrable:**
+```javascript
+const newModuleHandlers = new Map();
+const registerNewHandler = (consumer, handler) => newModuleHandlers.set(consumer, handler);
+
+['web', 'mobile', 'backoffice'].forEach((c) =>
+  registerNewHandler(c, ({ scenario }) => ({
+    handled_by: 'extracted_module',
+    scenario_resolution: SCENARIO_CATALOG[scenario]?.hint,
+  }))
+);
+
+// En el flujo strangler:
+const handler = newModuleHandlers.get(consumer);
+handler({ scenario });   // Llama al modulo extraido
+```
+Mover un consumidor al nuevo modulo es **una linea**: `registerNewHandler('mobile', newHandler)`. No requiere instanciar clases, no requiere reload del proceso, no requiere DI container. La tabla de routing es la primitiva del lenguaje (`Map`), y los handlers son funciones de primera clase. La ACL es el **closure** que filtra el contrato: si el contrato cambia, el wrapping vive donde se registra.
+
+**Por que `Map` y no objeto literal:** `Map` preserva orden de insercion, soporta cualquier tipo de clave, y `Map.prototype.get/set` son O(1) garantizados — una propiedad operacional importante cuando se registran muchos consumers.
+
+---
+
 ## Diferencias de decisión, no de corrección
 
-| Aspecto | PHP | Python | Razon |
-|---|---|---|---|
-| Modelo del monolito | `stdClass` con propiedades dinámicas | `dict` con claves dinámicas | PHP tiene objetos genéricos como stdClass. Python usa dicts para estado estructurado dinámico. |
-| Rotura del módulo | `unset($obj->prop)` → Fatal Error | `del dict["key"]` → KeyError | El efecto es idéntico: acceso posterior falla. La excepción es diferente (Error vs KeyError). |
-| ACL / Adapter | Clase `BillingAdapter` con métodos | Dict de funciones (`{"translate": lambda, "route": lambda}`) | PHP orienta naturalmente a clases. Python acepta funciones de primera clase como valores de dict. |
-| Seguimiento de migración | `$state['migration']['consumers'][$consumer]` | `state["migration"]["consumers"][consumer]` | Idéntica estructura. Sintaxis diferente. |
-| Progreso incremental | `consumers_migrated` / `consumers_total` | `consumers_migrated` / `consumers_total` | Idéntico. Ambos muestran el porcentaje de avance de la migración. |
+| Aspecto | PHP | Python | Node.js | Razon |
+|---|---|---|---|---|
+| Modelo del monolito | `stdClass` con propiedades dinámicas | `dict` con claves dinámicas | `object` plano con propiedades dinámicas | Tres formas, mismo efecto. |
+| Rotura del módulo | `unset($obj->prop)` → Fatal Error | `del dict["key"]` → KeyError | `delete obj.prop` → TypeError al acceso | El efecto es idéntico: acceso posterior falla, distinta excepcion. |
+| ACL / Adapter | Clase `BillingAdapter` con métodos | Dict de funciones (lambdas) | `Map<consumer, handler>` con closures | Node usa la primitiva mas directa: tabla de funciones registrables en runtime. |
+| Mover consumer a nuevo modulo | Instanciar adapter + flag | Asignar funcion al dict | `map.set(consumer, handler)` (1 linea) | Solo Node lo hace sin clase ni patron formal. |
+| Seguimiento de migración | `$state['migration']['consumers'][$consumer]` | `state["migration"]["consumers"][consumer]` | `state.migration.consumers[consumer]` | Idéntica estructura. |
 
-**El patron Strangler Fig es idéntico en ambos:** un mediador (ACL) intercepta el acceso al dominio, traduce entre modelos, y enruta al servicio nuevo solo para los consumidores que ya migraron. La implementación en PHP usa POO; en Python usa funciones de primera clase. El resultado operacional es el mismo.
+**El patron Strangler Fig es idéntico en los tres:** un mediador intercepta el acceso al dominio, traduce entre modelos, y enruta al servicio nuevo solo para los consumidores que ya migraron. Lo distintivo de Node: la tabla de routing es el `Map` y los handlers son funciones de primera clase — el patron desaparece casi por completo, queda solo la primitiva del lenguaje.

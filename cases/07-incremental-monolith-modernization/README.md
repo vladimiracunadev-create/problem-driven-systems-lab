@@ -1,6 +1,6 @@
 # 🏗️ Caso 07 - Modernización incremental de monolito
 
-[![Estado](https://img.shields.io/badge/Estado-PHP%20operativo-green)](php/README.md)
+[![Estado](https://img.shields.io/badge/Estado-Multi--stack%20operativo-green)](php/README.md)
 [![Categoría](https://img.shields.io/badge/Categoría-Arquitectura-blueviolet)](../../README.md)
 
 > [!IMPORTANT]
@@ -25,8 +25,8 @@ El sistema legacy sigue siendo crítico, pero cambiar una parte rompe otras no r
 | Stack | Estado |
 | --- | --- |
 | 🐘 PHP 8 | `OPERATIVO` |
-| 🟢 Node.js | 🔧 Estructura lista |
-| 🐍 Python | 🔧 Estructura lista |
+| 🟢 Node.js | `OPERATIVO` |
+| 🐍 Python | `OPERATIVO` |
 | ☕ Java | 🔧 Estructura lista |
 | 🔵 .NET 8 | 🔧 Estructura lista |
 

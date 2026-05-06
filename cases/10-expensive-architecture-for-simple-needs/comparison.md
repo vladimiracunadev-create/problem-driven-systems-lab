@@ -1,4 +1,4 @@
-# Caso 10 — Comparativa PHP vs Python: Arquitectura cara para un problema simple
+# Caso 10 — Comparativa multi-stack: Arquitectura cara para un problema simple (PHP · Python · Node.js)
 
 ## El problema que ambos resuelven
 
@@ -89,14 +89,44 @@ Dos `.get()` anidados. Los `dict` de Python son hash tables — acceso O(1) gara
 
 ---
 
+## Node.js: JSON.stringify/parse en bucle vs acceso O(1) directo
+
+**Runtime:** Node.js 20 single-thread. El overhead de la sobrearquitectura se materializa como CPU real sobre el event loop — y esa medicion es lo que hace al caso accionable en Node.
+
+**El fallo complex en Node:**
+```javascript
+let entities = Array.from({ length: Math.min(8000, Math.max(100, accounts * 15)) }, () => ({
+  id: 100 + Math.floor(Math.random() * 900),
+}));
+if (mode === 'complex') {
+  for (let hop = 0; hop < servicesTouched; hop++) {
+    const json = JSON.stringify(entities);
+    entities = JSON.parse(json);                                       // serializacion entre hops
+    entities = entities.map((e) => Object.assign(Object.create(null), e));  // hidratacion
+  }
+  if (scenario === 'seasonal_peak') {
+    throw new Error('Gateway Timeout: demasiados hops serializando bajo pico estacional.');
+  }
+}
+```
+`JSON.stringify`/`parse` y `map` consumen CPU del event loop entero — no hay GIL en Node, pero hay un solo thread principal, asi que el costo se ve directamente en latencia para otras requests.
+
+**La correccion right-sized:**
+```javascript
+let entities = Array.from(...);
+const _ = entities[0]?.id;   // O(1)
+```
+
+---
+
 ## Diferencias de decisión, no de corrección
 
-| Aspecto | PHP | Python | Razon |
-|---|---|---|---|
-| Overhead simulado | `json_encode/decode` + `(array)(object)` | `json.dumps/loads` + `type("Entity", (), e)()` | Ambos usan serialización redundante para simular overhead multi-capa. |
-| Object casting | `(array)(object)$e` | `type("Entity", (), e)()` + `vars()` | PHP castea arrays a objetos y de vuelta. Python crea clases dinámicas con `type()` — más costoso. |
-| Lookup O(1) | Array asociativo PHP `$store[$key]` | Dict Python `FEATURE_STORE.get(key)` | Ambos son hash tables. `.get()` en Python agrega seguridad contra KeyError. |
-| Costo real | CPU: json cycles × accounts × hops | CPU: json cycles + type() × accounts × hops | Python añade el overhead de `type()` dinámico, que PHP no tiene con el cast. |
-| Constante vs variable | `const FEATURE_STORE` | Módulo-level `dict` | PHP usa constantes de clase. Python usa variables de módulo (no hay constantes reales en Python). |
+| Aspecto | PHP | Python | Node.js | Razon |
+|---|---|---|---|---|
+| Overhead simulado | `json_encode/decode` + `(array)(object)` | `json.dumps/loads` + `type()` | `JSON.stringify/parse` + `Object.assign` | Tres formas, mismo costo cualitativo. |
+| Lookup O(1) | Array asociativo PHP `$store[$key]` | Dict Python `FEATURE_STORE.get(key)` | Objeto `STORE[key]` o `Map.get(key)` | Tres hash tables. |
+| Modelo de concurrencia | Multi-proceso (FPM) | Multi-thread con GIL | Single-thread + event loop | Solo Node sufre el costo en latencia visible inmediatamente. |
+| Sintoma observable | Memoria/CPU del proceso | Memoria/CPU del proceso | Latencia subiendo en otras rutas concurrentes | El single-thread de Node hace el costo mas visible. |
+| Constante | `const FEATURE_STORE` (clase) | Modulo-level `dict` | `const STORE = ...` o `Object.freeze(...)` | Tres formas de declarar inmutable-ish. |
 
-**El principio que ambos demuestran es idéntico:** la complejidad debe ser proporcional al problema. Un feature flag es un lookup de configuración. No necesita event sourcing, ORM, ni serialización en cada hop. PHP y Python llegan al mismo resultado con diferentes herramientas de overhead, pero el punto de enseñanza es el mismo.
+**El principio que los tres demuestran es idéntico:** la complejidad debe ser proporcional al problema. Lo distintivo de Node: como el event loop es **un solo thread**, el costo de la sobrearquitectura se ve directamente en latencia degradada para otras peticiones concurrentes — el caso 11 lo explora en profundidad con `monitorEventLoopDelay()`.
