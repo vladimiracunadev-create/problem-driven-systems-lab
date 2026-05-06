@@ -87,11 +87,11 @@ El laboratorio ha evolucionado de simulaciones matemáticas a **escenarios de fa
 
 | Caso | PHP | Python | Node.js | Implementacion PHP (referencia) |
 | --- | --- | --- | --- | --- |
-| `01` | ✅ | ✅ | scaffold | PostgreSQL + worker + Prometheus + Grafana |
-| `02` | ✅ | ✅ | scaffold | PostgreSQL |
+| `01` | ✅ | ✅ | ✅ | PostgreSQL + worker + Prometheus + Grafana |
+| `02` | ✅ | ✅ | ✅ | PostgreSQL |
 | `03` | ✅ | ✅ | ✅ | telemetria, trazabilidad y logs estructurados |
-| `04` | ✅ | ✅ | scaffold | timeout corto, retry storm, circuit breaker y fallback |
-| `05` | ✅ | ✅ | scaffold | presion progresiva de memoria, comparacion legacy vs optimized |
+| `04` | ✅ | ✅ | ✅ | timeout corto, retry storm, circuit breaker y fallback |
+| `05` | ✅ | ✅ | ✅ | presion progresiva de memoria, comparacion legacy vs optimized |
 | `06` | ✅ | ✅ | scaffold | pipeline legacy vs controlled, preflight y rollback |
 | `07` | ✅ | ✅ | scaffold | modernizacion incremental, strangler, progreso por consumidor |
 | `08` | ✅ | ✅ | scaffold | extraccion big bang vs compatible, proxy y cutover gradual |

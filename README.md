@@ -58,8 +58,8 @@ Estado actual:
 
 - `OPERATIVO` en PHP: todos los casos [01](cases/01-api-latency-under-load/README.md) al [12](cases/12-single-point-of-knowledge-and-operational-risk/README.md), con UI nativa, Prometheus, Grafana y fallos de alta fidelidad.
 - `OPERATIVO` en Python: los 12 casos, con logica funcional equivalente a PHP, stdlib pura y autocontenidos en un solo contenedor.
-- `OPERATIVO` adicional: [caso 03](cases/03-poor-observability-and-useless-logs/README.md) en Node.js.
-- `DOCUMENTADO / SCAFFOLD`: stacks adicionales (Java, .NET, Node.js casos 01-02 y 04-12) con estructura base y documentacion lista.
+- `OPERATIVO` en Node.js: casos [01](cases/01-api-latency-under-load/README.md), [02](cases/02-n-plus-one-and-db-bottlenecks/README.md), [03](cases/03-poor-observability-and-useless-logs/README.md), [04](cases/04-timeout-chain-and-retry-storms/README.md) y [05](cases/05-memory-pressure-and-resource-leaks/README.md), con primitivas Node-especificas (event loop lag, AbortController, `process.memoryUsage()`).
+- `DOCUMENTADO / SCAFFOLD`: stacks adicionales (Java, .NET, Node.js casos 06-12) con estructura base y documentacion lista.
 
 ## 🔎 Catálogo de Casos Resolutivos
 
@@ -168,7 +168,7 @@ El sistema se organiza como una capa editorial en raiz, un portal de evaluacion 
 
 ## 🚫 Lo que este repo no vende
 
-- Paridad funcional completa en todos los stacks (Java, .NET, Node.js casos 04-12 siguen en scaffold).
+- Paridad funcional completa en todos los stacks (Java, .NET, Node.js casos 06-12 siguen en scaffold).
 - Benchmarks absolutos entre lenguajes.
 - Seniority inflada con claims sin evidencia.
 

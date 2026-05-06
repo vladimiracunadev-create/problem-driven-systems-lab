@@ -26,6 +26,10 @@ Ambos stacks pueden correr en paralelo sin colisión de puertos.
 | Caso 03 PHP | `docker compose -f cases/03-poor-observability-and-useless-logs/php/compose.yml up -d --build` |
 | Caso 03 Node.js | `docker compose -f cases/03-poor-observability-and-useless-logs/node/compose.yml up -d --build` |
 | Caso 03 Python | `docker compose -f cases/03-poor-observability-and-useless-logs/python/compose.yml up -d --build` |
+| Caso 01 Node.js | `docker compose -f cases/01-api-latency-under-load/node/compose.yml up -d --build` |
+| Caso 02 Node.js | `docker compose -f cases/02-n-plus-one-and-db-bottlenecks/node/compose.yml up -d --build` |
+| Caso 04 Node.js | `docker compose -f cases/04-timeout-chain-and-retry-storms/node/compose.yml up -d --build` |
+| Caso 05 Node.js | `docker compose -f cases/05-memory-pressure-and-resource-leaks/node/compose.yml up -d --build` |
 
 ## ▶️ Arranque recomendado
 
@@ -57,11 +61,15 @@ Ambos stacks pueden correr en paralelo sin colisión de puertos.
 | Caso 02 Python | `http://localhost:8200/02/health` | Respuesta saludable |
 | Casos 03–12 Python | `http://localhost:8200/03/health` … `http://localhost:8200/12/health` | Respuesta saludable |
 
-### Otros
+### Otros (Node.js casos aislados)
 
 | Componente | URL | Senal esperada |
 | --- | --- | --- |
+| Caso 01 Node.js | `http://localhost:821/health` | Respuesta saludable |
+| Caso 02 Node.js | `http://localhost:822/health` | Respuesta saludable |
 | Caso 03 Node.js | `http://localhost:823/health` | Respuesta saludable |
+| Caso 04 Node.js | `http://localhost:824/health` | Respuesta saludable |
+| Caso 05 Node.js | `http://localhost:825/health` | Respuesta saludable |
 
 ## 🧰 Comandos utiles de operacion
 
