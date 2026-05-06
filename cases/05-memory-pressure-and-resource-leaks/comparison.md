@@ -1,4 +1,4 @@
-# Caso 05 — Comparativa PHP vs Python: Presión de memoria y fugas de recursos
+# Caso 05 — Comparativa multi-stack: Presión de memoria y fugas de recursos (PHP · Python · Node.js)
 
 ## El problema que ambos resuelven
 
@@ -109,14 +109,80 @@ delta_kb = sum(s.size_diff for s in stats) / 1024
 
 ---
 
+## Node.js: V8 heap medido con `process.memoryUsage()`, fuga en array de modulo
+
+**Runtime:** Node.js 20 single-thread con event loop. El proceso vive indefinidamente, igual que Python — y como Python, las referencias a nivel de modulo persisten entre requests. Esa es la fuga "autentica" del laboratorio.
+
+**Medicion del heap V8:**
+```javascript
+const heapSnapshotKb = () => {
+  const m = process.memoryUsage();
+  return {
+    heap_used_kb: Number((m.heapUsed / 1024).toFixed(2)),
+    heap_total_kb: Number((m.heapTotal / 1024).toFixed(2)),
+    rss_kb: Number((m.rss / 1024).toFixed(2)),
+    external_kb: Number((m.external / 1024).toFixed(2)),
+  };
+};
+```
+La api `process.memoryUsage()` expone cuatro metricas distintas que **no existen en PHP ni Python con esa separacion**:
+- `heapUsed`: bytes vivos en el heap V8 (objetos JS).
+- `heapTotal`: bytes reservados por V8 para el heap.
+- `rss`: memoria del proceso entero (incluye stack, native code, etc.).
+- `external`: Buffers/ArrayBuffer fuera del heap V8 (I/O nativa).
+
+Permite distinguir "fuga de objetos JS" (heapUsed sube) de "fuga de I/O nativa" (external/rss suben sin que heapUsed lo haga). Esa separacion no la tiene `memory_get_usage()` de PHP ni `tracemalloc` de Python.
+
+**La fuga real:**
+```javascript
+const legacyRetained = [];   // Modulo. V8 no puede reclamar nunca mientras la raiz exista.
+const LEGACY_HARD_CAP = 2000;
+
+const runBatch = async (mode, ...) => {
+  if (mode === 'legacy') {
+    for (let i = 0; i < documents; i += 1) {
+      const raw = crypto.randomBytes((payloadKb * 1024) / 8);
+      legacyRetained.push(raw.toString('base64'));
+    }
+    if (legacyRetained.length > LEGACY_HARD_CAP) {
+      legacyRetained.splice(0, legacyRetained.length - LEGACY_HARD_CAP);
+    }
+  }
+};
+```
+La referencia vive en el cierre del modulo. V8 no puede reclamar mientras esa raiz exista. El array crece request a request hasta el cap.
+
+**La sanitizacion:**
+```javascript
+const optimizedCache = new Map();
+const OPTIMIZED_CACHE_MAX = 24;
+
+if (mode === 'optimized') {
+  for (let i = 0; i < documents; i += 1) {
+    const raw = crypto.randomBytes((payloadKb * 1024) / 8);
+    const digest = crypto.createHash('sha256').update(raw).digest('hex').slice(0, 16);
+    optimizedCache.set(digest, true);
+    // raw sale de scope; V8 GC lo reclama en el siguiente minor GC
+  }
+  if (optimizedCache.size > OPTIMIZED_CACHE_MAX) {
+    const drop = [...optimizedCache.keys()].slice(0, optimizedCache.size - OPTIMIZED_CACHE_MAX);
+    for (const k of drop) optimizedCache.delete(k);
+  }
+  if (typeof globalThis.gc === 'function') globalThis.gc();
+}
+```
+`raw` vive en scope local de la iteracion. Despues de calcular el digest, el scope termina y V8 marca el buffer como reclamable. Solo el digest (16 chars) queda en el `Map` con eviction. Si Node corre con `--expose-gc`, `globalThis.gc()` fuerza un ciclo; sin el flag, V8 reclama solo (la presion baja casi igual).
+
+---
+
 ## Diferencias de decisión, no de corrección
 
-| Aspecto | PHP | Python | Razon |
-|---|---|---|---|
-| Modelo de vida del proceso | Muere por request (FPM) | Vive indefinidamente (ThreadingHTTPServer) | PHP libera automáticamente al morir. Python necesita gestión explícita. |
-| Fuga real | Dentro de la request (heap crece) | En estado de módulo (persiste entre requests) | La fuga Python es más auténtica: sobrevive a la request, como una fuga real de producción. |
-| Medición de memoria | `memory_get_usage()` (PHP heap) | `sys.getsizeof()` + `tracemalloc` (Python heap) | Ambas miden memoria real. Python tiene dos herramientas: una por objeto, una por snapshot. |
-| Liberación explícita | `unset($var)` | `del var` + `gc.collect()` | Idiomas distintos, mismo efecto: eliminar la referencia para que el GC pueda reclamar. |
-| Evicción FIFO | `array_shift()` | `del dict[oldest_key]` | PHP usa arrays como colas. Python usa dicts ordenados (desde 3.7, orden de inserción garantizado). |
+| Aspecto | PHP | Python | Node.js | Razon |
+|---|---|---|---|---|
+| Modelo de vida del proceso | Muere por request (FPM) | Vive indefinidamente | Vive indefinidamente | PHP libera al morir. Python y Node necesitan gestion explicita. |
+| Fuga real | Dentro de la request (heap crece) | En estado de modulo (persiste) | En array de modulo (persiste) | Solo Python y Node simulan fuga long-running real. |
+| Medicion de memoria | `memory_get_usage()` (heap PHP) | `sys.getsizeof()` + `tracemalloc` | `process.memoryUsage()` con 4 metricas | Solo Node separa heap V8 de RSS y de Buffers externos. |
+| Liberacion explicita | `unset($var)` | `del var` + `gc.collect()` | scope local + opcional `globalThis.gc()` | Tres APIs, mismo efecto. |
+| Evicción FIFO | `array_shift()` | `del dict[oldest_key]` | `Map.delete([...keys].slice(0, ...))` | Tres idiomas, misma estructura ordenada. Solo Node usa `Map` formal en lugar de `array`/`dict` polimorfico. |
 
-**La diferencia más importante:** en PHP la fuga ocurre dentro de una request y el proceso la "limpia" al morir. En Python la fuga persiste en el módulo entre requests — lo que lo hace un escenario más representativo de lo que ocurre en servicios long-running reales (workers, daemons, servidores web).
+**La diferencia mas importante:** en PHP la fuga "se limpia" al morir el proceso. En Python y Node la fuga persiste en el modulo — comportamiento autentico de servicios long-running reales (workers, daemons, servidores web). Lo distintivo de Node: `process.memoryUsage().external` permite detectar fugas de Buffers/I/O nativa que `tracemalloc` no ve, y `process.memoryUsage().rss` mide el costo total para el OS independiente del runtime.

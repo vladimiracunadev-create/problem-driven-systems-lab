@@ -1,4 +1,4 @@
-# Caso 01 — Comparativa PHP vs Python: API lenta bajo carga
+# Caso 01 — Comparativa multi-stack: API lenta bajo carga (PHP · Python · Node.js)
 
 ## El problema que ambos resuelven
 
@@ -75,13 +75,56 @@ Python construye el `dict` de clientes con una dict comprehension. El acceso por
 
 ---
 
+## Node.js: single-thread event loop, datos en memoria, worker `setInterval`
+
+**Runtime:** Node.js 20 single-thread con event loop libuv. Cada request es una funcion async que comparte el mismo proceso. Un `await` cede al loop pero no libera ningun thread — el costo agregado de awaits secuenciales degrada throughput global del proceso, no solo de la propia request.
+
+**Motor de datos:** estructuras en memoria (`Map<id, customer>`, array de `orders`) con I/O simulado por `setTimeout(roundtrip_ms)`. La eleccion explicita evita compilar bindings nativos (`better-sqlite3`) y mantiene el foco en el patron de acceso, no en el motor.
+
+**El fallo legacy en Node.js:**
+```javascript
+for (const row of aggregated) {
+  row.customer = await timedQuery(() => customers.get(row.customer_id), stats);
+  row.recent_orders = await timedQuery(
+    () => orders.filter(o => o.customer_id === row.customer_id)
+                .sort((a,b) => b.created_at - a.created_at).slice(0,3),
+    stats
+  );
+}
+```
+Para 20 pedidos: 41 awaits secuenciales. Cada `await sleep(1.2)` cede al event loop, pero la callback de la siguiente iteracion vuelve a la cola. El loop se mantiene caliente atendiendo otras tareas pero el throughput por request crece linealmente con `limit`. Lo distintivo: bajo concurrencia, la metrica `event_loop_lag_ms` se dispara — es la senal Node-especifica del bloqueo agregado.
+
+**La corrección en Node.js:**
+```javascript
+const idSet = new Set(aggregated.map(row => row.customer_id));
+const recentMap = await timedQuery(() => {
+  const grouped = new Map();
+  for (const order of orders) {
+    if (!idSet.has(order.customer_id)) continue;
+    const list = grouped.get(order.customer_id) || [];
+    list.push(order);
+    grouped.set(order.customer_id, list);
+  }
+  return grouped;
+}, stats);
+return aggregated.map(row => ({ ...row, recent_orders: recentMap.get(row.customer_id) || [] }));
+```
+Una sola lectura batch, agrupacion en memoria con `Map.get()` O(1), ensamblado funcional con `.map()`. Sin awaits anidados, sin yields innecesarios al loop entre items.
+
+**Worker:** `setInterval(refresh, 20000).unref()` embebido en el proceso. El `unref()` permite que el proceso muera limpio si solo queda el timer. Comparte estructuras en memoria con los handlers — no necesita lock porque Node es single-thread.
+
+**Observabilidad:** endpoint `/metrics-prometheus` con `event_loop_lag_ms` como senal propia del runtime (medida con `setImmediate` callback). No existe equivalente en PHP-FPM ni Python — es lo que delata el bloqueo agregado del loop.
+
+---
+
 ## Diferencias de decisión, no de corrección
 
-| Aspecto | PHP | Python | Razon |
-|---|---|---|---|
-| Motor DB | PostgreSQL 16 (externo) | SQLite (embebida) | PHP no tiene motor embebido de produccion. Python tiene `sqlite3` en stdlib. |
-| Worker | Contenedor Docker separado | `threading.Thread` en proceso | PHP-FPM no comparte estado entre procesos. Python sí puede compartir `DB_LOCK`. |
-| Observabilidad | Prometheus + Grafana stack | `/metrics-prometheus` endpoint | PHP necesita exporters externos. Python expone el formato directamente. |
-| Concurrencia | FPM workers (multiproceso) | Threads en un proceso (GIL) | Modelos distintos con el mismo resultado para I/O-bound workloads. |
+| Aspecto | PHP | Python | Node.js | Razon |
+|---|---|---|---|---|
+| Motor DB | PostgreSQL 16 (externo) | SQLite (embebida) | Datos en memoria + I/O simulado | PHP usa motor productivo. Python tiene `sqlite3` en stdlib. Node mantiene foco en el patron sin compilar bindings nativos. |
+| Worker | Contenedor Docker separado | `threading.Thread` en proceso | `setInterval(...).unref()` en proceso | FPM no comparte estado. Python y Node si pueden — Node sin lock por single-thread. |
+| Observabilidad | Prometheus + Grafana | `/metrics-prometheus` | `/metrics-prometheus` + `event_loop_lag_ms` | Solo Node expone lag del loop, propio del runtime. |
+| Concurrencia | FPM workers (multiproceso) | Threads en un proceso (GIL) | Single-thread event loop | Tres modelos. Mismo patron N+1, distintas senales bajo carga. |
+| Costo de await secuencial | Bloquea el proceso FPM completo | Bloquea el thread, libera GIL en I/O | Cede al loop pero penaliza throughput global del proceso | El comportamiento bajo carga concurrente es lo que mas diferencia los runtimes. |
 
-**El patron que ambos demuestran es identico:** N+1 vs batch loading. La diferencia observable (`db_queries`, `db_time_ms`) es la misma. El motor de base de datos no cambia el patron — lo que cambia es el overhead de cada query (socket TCP en PHP vs llamada local en Python).
+**El patron que los tres demuestran es identico:** N+1 vs batch loading. La diferencia observable (`db_queries`, `db_time_ms`) es la misma. Lo que cambia es **donde duele**: en PHP el pool FPM se agota; en Python el thread queda en I/O; en Node se acumula lag del event loop.

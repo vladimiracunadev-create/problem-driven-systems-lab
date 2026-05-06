@@ -7,7 +7,7 @@ Si es tu primera vez en este repositorio, esta es la ruta mas simple para entend
 1. Lee [README.md](../README.md) para entender la idea general.
 2. Revisa [docs/positioning-and-objective.md](positioning-and-objective.md) para ver que problema profesional resuelve este laboratorio.
 3. Mira [docs/case-catalog.md](case-catalog.md) para identificar los casos operativos.
-4. Sigue [INSTALL.md](../INSTALL.md) y levanta uno de los casos `01` al `12` en PHP.
+4. Sigue [INSTALL.md](../INSTALL.md) y levanta uno de los casos operativos: `01` al `12` en PHP o Python; `01` al `05` tambien en Node.js.
 5. Usa [RUNBOOK.md](../RUNBOOK.md) si algo no levanta como esperas.
 6. Recorre el caso que mas te interese y luego vuelve al resto del catalogo.
 

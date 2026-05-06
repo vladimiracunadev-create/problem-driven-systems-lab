@@ -1,4 +1,4 @@
-# Caso 03 — Comparativa PHP vs Python: Observabilidad deficiente y logs inútiles
+# Caso 03 — Comparativa multi-stack: Observabilidad deficiente y logs inútiles (PHP · Python · Node.js)
 
 ## El problema que ambos resuelven
 
@@ -137,14 +137,68 @@ Misma filosofía que PHP: la excepción lleva el contexto completo del fallo. La
 
 ---
 
+## Node.js: `WorkflowFailure` extends Error, JSON sin libreria, append por linea
+
+**Runtime:** Node.js 20 single-thread. Cada request es una funcion `async (req, res) => {...}` que comparte el mismo proceso con todos los handlers. El logger es ad-hoc — `fs.appendFileSync()` con `JSON.stringify()` — porque agregar una dependencia (winston, pino) ocultaria la decision detras de una libreria.
+
+**El fallo legacy en Node.js:**
+```javascript
+const appendLegacyLog = (msg) => {
+  fs.appendFileSync(LEGACY_LOG_PATH, `[${new Date().toISOString()}] ${msg}\n`);
+};
+
+appendLegacyLog('checkout started');
+appendLegacyLog(`processing customer=${customerId}`);
+appendLegacyLog('checkout failed');
+```
+Texto plano. Sin correlacion. Bajo concurrencia las lineas se intercalan en el archivo y no hay forma de saber que pertenece a que request.
+
+**La corrección en Node.js:**
+```javascript
+const reqId = `req-${crypto.randomBytes(4).toString('hex')}`;
+const traceId = `trace-${crypto.randomBytes(4).toString('hex')}`;
+
+const appendStructuredLog = (record) => {
+  const line = JSON.stringify({ ...record, timestamp_utc: new Date().toISOString() });
+  fs.appendFileSync(OBSERVABLE_LOG_PATH, line + '\n');
+};
+
+appendStructuredLog({
+  level: 'error', event: 'dependency_failed',
+  request_id: reqId, trace_id: traceId,
+  customer_id: customerId, step: step.name,
+  dependency: step.dependency, elapsed_ms: elapsedMs,
+  error_class: scenarioMeta.error_class, hint: scenarioMeta.hint,
+});
+```
+JSON-per-line. `crypto.randomBytes` para entropia criptografica. Los campos `request_id` y `trace_id` se pasan explicitamente — Node no tiene un equivalente built-in de `LoggerAdapter` de Python en stdlib, asi que la disciplina queda en el codigo de negocio (o en una libreria si se la introduce).
+
+**Excepcion estructurada en Node.js:**
+```javascript
+class WorkflowFailure extends Error {
+  constructor(message, step, dependency, httpStatus, requestId, traceId, events) {
+    super(message);
+    this.step = step;
+    this.dependency = dependency;
+    this.httpStatus = httpStatus;
+    this.requestId = requestId;
+    this.traceId = traceId;
+    this.events = events;
+  }
+}
+```
+Misma filosofia que PHP/Python. Node soporta clases ES6 nativamente y el `extends Error` preserva la stack trace.
+
+---
+
 ## Diferencias de decisión, no de corrección
 
-| Aspecto | PHP | Python | Razon |
-|---|---|---|---|
-| API de logging | `file_put_contents` + `json_encode` manual | `logging.LoggerAdapter` + `JsonFormatter` | PHP no tiene un módulo de logging con adaptadores en stdlib. Python sí. |
-| Thread safety | No aplica (un proceso por request) | `logging` maneja su propio lock interno | En PHP-FPM los procesos son aislados. En Python los hilos comparten el logger. |
-| Correlation ID | `bin2hex(random_bytes(4))` | `secrets.token_hex(4)` | Misma entropia criptográfica, API de stdlib diferente. |
-| Propagación de contexto | Manual en cada llamada | Automática via `LoggerAdapter.extra` | El adapter de Python elimina el error humano de olvidar el `request_id`. |
-| Formato del log | `json_encode()` de array | `JsonFormatter.format()` de `LogRecord` | Python tiene una abstracción formal para formatear logs; PHP la construye manualmente. |
+| Aspecto | PHP | Python | Node.js | Razon |
+|---|---|---|---|---|
+| API de logging | `file_put_contents` + `json_encode` manual | `logging.LoggerAdapter` + `JsonFormatter` | `fs.appendFileSync` + `JSON.stringify` manual | Solo Python tiene en stdlib una abstraccion formal de logging con adapters. |
+| Thread safety | No aplica (un proceso por request) | Lock interno del modulo `logging` | No aplica (single-thread event loop) | Cada runtime resuelve la concurrencia distinto. |
+| Correlation ID | `bin2hex(random_bytes(4))` | `secrets.token_hex(4)` | `crypto.randomBytes(4).toString('hex')` | Misma entropia criptografica, tres APIs distintas de stdlib. |
+| Propagación de contexto | Manual en cada llamada | Automática via `LoggerAdapter.extra` | Manual (sin equivalente built-in) | Solo Python lo hace por diseño; PHP y Node dependen de disciplina o libreria. |
+| Excepcion con contexto | `class WorkflowFailure { ... }` | `class WorkflowFailure(Exception): ...` | `class WorkflowFailure extends Error { ... }` | ES6 classes en Node alinean con PHP/Python sin sintaxis especial. |
 
-**El concepto que ambos demuestran es idéntico:** logs sin estructura y sin correlación hacen el diagnóstico imposible. La diferencia es que Python tiene una API estándar (`logging`) que hace el patrón correcto más difícil de violar que el incorrecto.
+**El concepto que los tres demuestran es idéntico:** logs sin estructura y sin correlación hacen el diagnóstico imposible. La diferencia practica es que Python tiene la API mas dificil de violar accidentalmente; PHP y Node confian en disciplina del developer (o de una libreria como winston/pino para Node, monolog para PHP).

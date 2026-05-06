@@ -98,11 +98,11 @@ La familia PHP reutiliza un runtime comun en `docker/php/Dockerfile`. La familia
 
 | Caso | php | python | node | java | dotnet |
 | --- | --- | --- | --- | --- | --- |
-| `01` | ✅ OPERATIVO | ✅ OPERATIVO | scaffold | scaffold | scaffold |
-| `02` | ✅ OPERATIVO | ✅ OPERATIVO | scaffold | scaffold | scaffold |
+| `01` | ✅ OPERATIVO | ✅ OPERATIVO | ✅ OPERATIVO | scaffold | scaffold |
+| `02` | ✅ OPERATIVO | ✅ OPERATIVO | ✅ OPERATIVO | scaffold | scaffold |
 | `03` | ✅ OPERATIVO | ✅ OPERATIVO | ✅ OPERATIVO | scaffold | scaffold |
-| `04` | ✅ OPERATIVO | ✅ OPERATIVO | scaffold | scaffold | scaffold |
-| `05` | ✅ OPERATIVO | ✅ OPERATIVO | scaffold | scaffold | scaffold |
+| `04` | ✅ OPERATIVO | ✅ OPERATIVO | ✅ OPERATIVO | scaffold | scaffold |
+| `05` | ✅ OPERATIVO | ✅ OPERATIVO | ✅ OPERATIVO | scaffold | scaffold |
 | `06` | ✅ OPERATIVO | ✅ OPERATIVO | scaffold | scaffold | scaffold |
 | `07` | ✅ OPERATIVO | ✅ OPERATIVO | scaffold | scaffold | scaffold |
 | `08` | ✅ OPERATIVO | ✅ OPERATIVO | scaffold | scaffold | scaffold |

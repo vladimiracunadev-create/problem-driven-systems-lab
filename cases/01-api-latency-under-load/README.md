@@ -64,9 +64,19 @@ El stack Python ahora resuelve el caso con libreria estandar y SQLite local:
 
 PHP sigue siendo la version mas profunda con PostgreSQL, exporter, Prometheus y Grafana. Python queda operativo para comparar el criterio de solucion sin romper el stack principal.
 
-### Node.js / Java / .NET (espacio de crecimiento)
+### Node.js 20 (implementacion operativa)
 
-Los demas stacks tienen estructura dockerizada lista, pero todavia no representan paridad funcional completa con PHP y Python en este caso.
+El stack Node.js resuelve el mismo problema con primitivas naturales del runtime:
+
+- `report-legacy` reproduce el `1 + N + N` con `await` secuencial dentro de un bucle, dejando explicito que cada iteracion cede al event loop pero el costo agregado es real.
+- `report-optimized` apoya la lectura sobre el resumen pre-calculado por un worker `setInterval` y agrupa los detalles con un `Map` en una sola pasada.
+- Expone `event_loop_lag_ms` como senal Node-especifica (medida con `setImmediate`), que delata el bloqueo agregado del loop bajo carga concurrente.
+
+Ver detalles en [`node/README.md`](node/README.md). Puerto local: `821`.
+
+### Java / .NET (espacio de crecimiento)
+
+Los stacks Java y .NET tienen estructura dockerizada lista, pero todavia no representan paridad funcional con PHP, Python y Node en este caso.
 
 ---
 
@@ -174,7 +184,7 @@ Este caso deja estructura para medir y comparar:
 │   ├── Dockerfile
 │   ├── compose.yml
 │   └── README.md
-├── 🟢 node/                        ← Base de crecimiento
+├── 🟢 node/                        ← Implementacion operativa (event loop lag, worker setInterval)
 ├── 🐍 python/                      ← Implementacion operativa portable
 ├── ☕ java/                         ← Base de crecimiento
 └── 🔵 dotnet/                      ← Base de crecimiento

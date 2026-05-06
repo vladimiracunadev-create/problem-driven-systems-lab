@@ -1,4 +1,4 @@
-# Caso 02 — Comparativa PHP vs Python: N+1 y cuellos de botella en base de datos
+# Caso 02 — Comparativa multi-stack: N+1 y cuellos de botella en base de datos (PHP · Python · Node.js)
 
 ## El problema que ambos resuelven
 
@@ -108,13 +108,52 @@ Python usa `dict.setdefault()` y list comprehensions. El resultado es funcionalm
 
 ---
 
+## Node.js: bucles `await` anidados, `Map` + `Set` como primitivas, single-thread
+
+**Runtime:** Node.js 20 single-thread con event loop. El N+1 anidado se traduce literalmente en `for await (...) { for await (...) }` — el costo es `1 + N + sum(items_por_order * 2)` round-trips simulados secuencialmente.
+
+**El fallo legacy en Node.js:**
+```javascript
+for (const order of baseOrders) {
+  order.customer = await timedQuery(() => customers.get(order.customer_id), stats);
+  const items = await timedQuery(() => orderItems.get(order.id) || [], stats);
+  for (const item of items) {
+    item.product = await timedQuery(() => products.get(item.product_id), stats);
+    item.category = await timedQuery(() => categories.get(item.product.category_id), stats);
+  }
+  order.items = items;
+}
+```
+Con `limit=20` y ~3.7 items/order: ~190 awaits secuenciales. Cada `await` cede al loop pero el siguiente vuelve a la cola — bajo concurrencia, `event_loop_lag_ms` se dispara y el throughput del proceso cae.
+
+**La corrección en Node.js:**
+```javascript
+const ids = new Set(baseOrders.map(o => o.id));
+const itemsByOrder = await timedQuery(() => {
+  const grouped = new Map();
+  for (const orderId of ids) {
+    const items = (orderItems.get(orderId) || []).map(it => {
+      const product = products.get(it.product_id);
+      const category = product ? categories.get(product.category_id) : null;
+      return { id: it.id, quantity: it.quantity, unit_price: it.unit_price, product, category };
+    });
+    grouped.set(orderId, items);
+  }
+  return grouped;
+}, stats);
+for (const order of baseOrders) order.items = itemsByOrder.get(order.id) || [];
+```
+Dos lecturas. Joins en memoria con `Map.get()` O(1) y `Set.has()` para filtros de pertenencia. La ausencia de un ORM hace explicita la decision — no hay magia que la oculte.
+
+---
+
 ## Diferencias de decisión, no de corrección
 
-| Aspecto | PHP | Python | Razon |
-|---|---|---|---|
-| Motor DB | PostgreSQL 16 | SQLite embebida | El patron N+1 es independiente del motor. SQLite elimina la variable de latencia de red. |
-| Agrupación | `array_column()` + `foreach` | `dict.setdefault()` + list comprehension | Idiomas distintos para el mismo algoritmo O(N). |
-| Medición real | `pg_stat_statements` via Grafana | `db_queries` contado por el servidor | PHP tiene observabilidad de motor externo. Python cuenta internamente. |
-| Datos semilla | 1000 customers, 5000 orders | 500 customers, 5000 orders | Misma densidad relacional para el patron, escala ajustada al motor. |
+| Aspecto | PHP | Python | Node.js | Razon |
+|---|---|---|---|---|
+| Motor DB | PostgreSQL 16 | SQLite embebida | Datos en memoria + I/O simulado | PHP usa motor productivo. Python embebido en stdlib. Node mantiene foco en el patron. |
+| Agrupación | `array_column()` + `foreach` | `dict.setdefault()` + list comprehension | `Map.get()` + `[].map()` + `Set.has()` | Tres idiomas, mismo algoritmo O(N). |
+| Medición real | `pg_stat_statements` via Grafana | `db_queries` contado por el servidor | `db_queries` + `event_loop_lag_ms` | Solo Node expone lag del loop como senal nativa. |
+| Costo del N+1 anidado | Bloquea el proceso FPM completo | Bloquea el thread (GIL libre en I/O) | Cede al loop pero degrada throughput global | Tres modelos de concurrencia, mismo patron, distinta senal bajo carga. |
 
-**El patron que demuestra es identico en ambos:** el costo de N+1 crece con N*M independientemente del lenguaje o el motor. La corrección — batch loading + agrupación en memoria — también es idéntica en concepto.
+**El patron que los tres demuestran es identico:** el costo de N+1 escala con N*M independientemente del lenguaje o motor. La corrección — batch loading + agrupación en memoria — también es identica en concepto. La diferencia observable bajo carga concurrente es **donde duele**.

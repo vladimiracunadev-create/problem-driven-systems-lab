@@ -78,9 +78,19 @@ El stack Python ahora implementa el caso con dataset local en SQLite y rutas equ
 - `orders-optimized` -> consolida pedidos y detalles con lecturas agrupadas.
 - `/metrics`, `/metrics-prometheus` y `/diagnostics/summary` -> dejan evidencia medible de queries y latencia.
 
-### Node.js / Java / .NET
+### Node.js 20 (implementacion operativa)
 
-Se mantienen como base de crecimiento para llevar el mismo caso a paridad multi-stack en una fase posterior.
+El stack Node.js resuelve el N+1 anidado con primitivas naturales:
+
+- `orders-legacy` ejecuta bucles `await` anidados (orders → customer → items → product → category) generando ~1+N+sum(items*2) round-trips.
+- `orders-optimized` colapsa todo en 2 lecturas con join en memoria via `Map.get()` O(1) y agrupacion en una pasada.
+- Expone `event_loop_lag_ms` para mostrar como N+1 con await secuencial degrada throughput global del proceso.
+
+Ver [`node/README.md`](node/README.md). Puerto local: `822`.
+
+### Java / .NET
+
+Se mantienen como base de crecimiento para llevar el caso a paridad multi-stack en una fase posterior.
 
 ---
 
@@ -106,7 +116,7 @@ Se mantienen como base de crecimiento para llevar el mismo caso a paridad multi-
 | Stack | Estado |
 |-------|--------|
 | 🐘 PHP 8 | ✅ Implementado (Docker + PostgreSQL) |
-| 🟢 Node.js | 🔧 Estructura lista |
+| 🟢 Node.js | ✅ Implementado (Docker + datos en memoria + event_loop_lag) |
 | 🐍 Python | ✅ Implementado (Docker + SQLite local + metricas) |
 | ☕ Java | 🔧 Estructura lista |
 | 🔵 .NET 8 | 🔧 Estructura lista |

@@ -5,7 +5,8 @@
 ## Fotografia actual
 
 - Casos `01` al `12` operativos en PHP.
-- Caso `03` operativo tambien en Node.js y Python.
+- Casos `01` al `12` operativos en Python.
+- Casos `01`, `02`, `03`, `04` y `05` operativos en Node.js (con primitivas Node-especificas: `event_loop_lag_ms`, `AbortController`, `process.memoryUsage()`).
 - Docker por caso y por stack definido como ruta oficial.
 - Familia documental profesional incorporada en la raiz del repo.
 - Catalogo y portal conectados por metadatos compartidos.
@@ -36,17 +37,17 @@ Estado: en progreso
 - Completar implementaciones funcionales por caso y stack con mayor logica de negocio.
 - Agregar medicion reproducible donde el problema lo requiera.
 - Sumar mas observabilidad compartida cuando aporte valor real.
-- Llevar el caso `01` a mayor paridad multi-stack sin degradarlo a demo superficial.
-- Llevar el caso `02` a mayor paridad multi-stack con una implementacion real fuera de PHP.
-- Profundizar otros stacks sin degradar la implementacion PHP ya operativa de `01` a `12`.
+- Casos `01` al `05` ya con paridad multi-stack PHP + Python + Node.js.
+- Llevar casos `06` al `12` a mayor paridad multi-stack en Node.js sin degradar lo ya operativo.
+- Sumar Java o .NET para algun caso especifico cuando aporte contraste tecnico real.
 
 Avance actual:
 
-- Caso `01`: PHP + PostgreSQL + worker + Prometheus + Grafana.
-- Caso `02`: PHP + PostgreSQL con N+1 legacy vs lectura optimizada.
+- Caso `01`: PHP + PostgreSQL + worker + Prometheus + Grafana / Python + SQLite + worker / Node.js + datos en memoria + worker `setInterval` con `event_loop_lag_ms`.
+- Caso `02`: PHP + PostgreSQL con N+1 legacy vs lectura optimizada / Python + SQLite / Node.js con `Map`+`Set` y `event_loop_lag_ms`.
 - Caso `03`: PHP + Node.js + Python con logs pobres vs telemetria util y trazabilidad.
-- Caso `04`: PHP con timeout chain, retry storm, circuit breaker y fallback.
-- Caso `05`: PHP con presion progresiva de memoria/recursos y comparacion legacy vs optimized.
+- Caso `04`: PHP con timeout chain, retry storm, circuit breaker y fallback / Python equivalente / Node.js con `AbortController`/`AbortSignal` cooperativo.
+- Caso `05`: PHP con presion progresiva de memoria / Python con `tracemalloc` / Node.js con `process.memoryUsage()` (heap V8 + RSS + external).
 - Caso `06`: PHP con pipeline legacy vs controlled, preflight y rollback.
 - Caso `07`: PHP con modernizacion incremental de monolito y comparacion legacy vs strangler.
 - Caso `08`: PHP con extraccion big bang vs compatible, proxy y cutover gradual.

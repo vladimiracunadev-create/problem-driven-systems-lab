@@ -33,7 +33,7 @@ Cada lenguaje tiene su propio archivo compose en la raíz. Un solo comando levan
 | --- | --- | --- | --- |
 | [`compose.root.yml`](compose.root.yml) | PHP 8.3 | `8080` portal · `8100` PHP hub · `9091` Prometheus · `3001` Grafana | `OPERATIVO` |
 | [`compose.python.yml`](compose.python.yml) | Python 3.12 | `8200` Python hub | `OPERATIVO` |
-| `compose.nodejs.yml` | Node.js | 841–849, 8410–8412 | `PLANIFICADO` |
+| `compose.nodejs.yml` | Node.js | 841–849, 8410–8412 | `PLANIFICADO` (casos `01`-`05` operativos hoy de forma aislada en `cases/<caso>/node/compose.yml`, puertos `821`-`825`) |
 | `compose.java.yml` | Java / JVM | 851–859, 8510–8512 | `PLANIFICADO` |
 | `compose.dotnet.yml` | .NET 8 | 861–869, 8610–8612 | `PLANIFICADO` |
 
@@ -131,6 +131,17 @@ URLs esperadas:
 - PHP via hub: `http://localhost:8100/03/`
 - Node.js (aislado): `http://localhost:823`
 - Python via hub: `http://localhost:8200/03/`
+
+### Casos 01, 02, 04, 05 en Node.js (aislados)
+
+Cada uno se levanta independiente y deja senales Node-especificas (`event_loop_lag_ms`, `process.memoryUsage()`, `AbortController`):
+
+```bash
+docker compose -f cases/01-api-latency-under-load/node/compose.yml up -d --build       # http://localhost:821
+docker compose -f cases/02-n-plus-one-and-db-bottlenecks/node/compose.yml up -d --build # http://localhost:822
+docker compose -f cases/04-timeout-chain-and-retry-storms/node/compose.yml up -d --build # http://localhost:824
+docker compose -f cases/05-memory-pressure-and-resource-leaks/node/compose.yml up -d --build # http://localhost:825
+```
 
 ## 🛠️ Atajos con Makefile
 
