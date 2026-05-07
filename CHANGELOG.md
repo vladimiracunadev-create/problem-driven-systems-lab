@@ -2,6 +2,18 @@
 
 Todos los cambios notables de este laboratorio se registran aqui con foco en madurez tecnica y documental.
 
+## 2026-05-07 - Postura de seguridad documentada con honestidad
+
+### Security
+
+- `SECURITY.md` reescrito con un **analisis completo** del lab: modelo de amenaza explicito (3 escenarios localhost/LAN/Internet), defensas activas verificadas por revision manual con `archivo:linea` (SQL injection, allowlist de scenarios, regex de SKU/release, clamping numerico, paths fijos, sin shell exec, sin eval, AbortSignal cooperativo, etc.), y los hallazgos abiertos clasificados por severidad — A1 sin auth, A2 DoS del event loop en caso 11, M1 sin validacion de metodo HTTP, M2 reflejo del header Host en probe.php, M3 sin rate limiting, M4 sin atomicidad en escrituras de state.
+- Checklist mínimo para exponer mas alla de localhost (reverse proxy + TLS + auth + rate limit + bloquear `/reset-lab`).
+- Nota explicita sobre la complicacion del bind localhost-only: requiere mover el portal a la misma red Docker que los hubs y resolver por DNS interno (no implementado todavía).
+
+### Changed
+
+- `README.md` raiz: nueva seccion **🔐 Postura de seguridad y modelo de despliegue** con tabla de 3 escenarios + resumen de garantias activas + frontera honesta de lo que no se garantiza + link a `SECURITY.md`. Tambien fila nueva "Security engineer" en la tabla "Como evaluarlo rapido".
+
 ## 2026-05-06 - Node.js hub `compose.nodejs.yml` operativo: tres puertos cubren el lab
 
 ### Added

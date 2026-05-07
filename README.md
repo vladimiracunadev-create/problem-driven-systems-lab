@@ -42,6 +42,7 @@ El laboratorio no es solo una "API JSON ciega". Los 12 casos en PHP ahora interc
 | Recruiter / hiring manager | [RECRUITER.md](RECRUITER.md) | El repo deja evidencia real y no solo una narrativa bonita |
 | CTO / Head of Engineering | [ARCHITECTURE.md](ARCHITECTURE.md) | Hay criterio sistemico, foco en operacion y reduccion de riesgo |
 | Developer / DevOps | [INSTALL.md](INSTALL.md) → [RUNBOOK.md](RUNBOOK.md) | El entorno levanta limpio y los casos operativos cuentan una historia tecnica verificable |
+| Security engineer | [SECURITY.md](SECURITY.md) | Modelo de amenaza explicito, hallazgos del analisis interno y frontera honesta entre lo que el lab garantiza y lo que no |
 | Beginner | [docs/BEGINNERS_GUIDE.md](docs/BEGINNERS_GUIDE.md) | La estructura y la taxonomia de madurez son comprensibles antes de entrar al codigo |
 
 Si quieres una sola puerta de entrada local con los 12 casos PHP disponibles, levanta `docker compose -f compose.root.yml up -d --build` y abre `http://localhost:8080`.
@@ -60,6 +61,22 @@ Estado actual:
 - `OPERATIVO` en Python: los 12 casos, con logica funcional equivalente a PHP, stdlib pura y autocontenidos en un solo contenedor.
 - `OPERATIVO` en Node.js: los **12 casos**, con primitivas Node-especificas distintas por caso (event loop lag, `AbortController`, `AbortSignal.timeout`, `process.memoryUsage()`, `Map<consumer, handler>` strangler, `Proxy` de compatibilidad, `EventEmitter`, `monitorEventLoopDelay`, optional chaining como runbook codificado).
 - `DOCUMENTADO / SCAFFOLD`: stacks adicionales (Java, .NET) con estructura base y documentacion lista.
+
+## 🔐 Postura de seguridad y modelo de despliegue
+
+**El lab está pensado para correr en `localhost`.** Esa decisión define toda su postura de seguridad — y este repo prefiere ser explícito sobre eso antes que vender una robustez que no implementa.
+
+| Escenario | Riesgo realista | Recomendado |
+|---|---|---|
+| **Localhost only** (`docker compose up` en tu máquina) | Bajo — el atacante necesita acceso físico o ya está dentro | ✅ caso de uso pensado |
+| **LAN / VM con `0.0.0.0`** | Medio — cualquiera del segmento puede llamar `/reset-lab`, intentar DoS | ⚠️ requiere reverse proxy con auth |
+| **Internet sin proxy con auth** | Alto/Crítico — sin auth, sin rate limiting, sin TLS | ❌ no exponer así |
+
+**Lo que el código sí garantiza** (verificado por revisión manual): SQL injection bloqueada por prepared statements, validación por allowlist de scenarios/consumers, regex allowlist en SKU/release, clamping numérico en todos los enteros de query, paths fijos sin user input (sin path traversal), spawn de subprocesos con paths fijos del registry (sin RCE), `crypto.randomBytes` para IDs impredecibles, sin `eval`/`exec`/`shell`, fallback seguro en JSON.parse de state corrupto, AbortSignal cooperativo en pipelines.
+
+**Lo que NO garantiza** (intencional, es un lab): autenticación, rate limiting, TLS, validación de método HTTP, headers de seguridad, atomicidad de escrituras de state.
+
+➡️ **[Análisis completo en SECURITY.md](SECURITY.md)** — modelo de amenaza, los 4 hallazgos altos/medios con mitigación concreta, las defensas activas en detalle (con `archivo:línea`), y el checklist mínimo si necesitás exponerlo más allá de localhost.
 
 ## 🔎 Catálogo de Casos Resolutivos
 
