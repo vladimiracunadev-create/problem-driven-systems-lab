@@ -33,50 +33,58 @@ El laboratorio no se levanta como un unico sistema enorme. Se trabaja por capas:
 | Mejor diagnostico | Cada problema se observa con menos interferencia |
 | Portafolio mas claro | Puedes mostrar un caso concreto sin cargar todo el mundo |
 
-## 🧱 Tres modelos de containerización (uno por stack) — y por qué son distintos
+## 🧱 Modelo de containerización (simétrico para los 3 stacks)
 
-Una observacion legitima cuando uno mira los hubs: **`localhost:8100` (PHP), `localhost:8200` (Python) y `localhost:8300` (Node) parecen lo mismo desde afuera, pero adentro son arquitecturas distintas.** Esta tabla lo hace explicito:
+Los tres hubs siguen el **mismo patrón**: un contenedor por lenguaje que spawnea los 12 casos como subprocesos internos. Los servicios reales (DB, worker, observabilidad) viven aparte porque NO son procesos del lenguaje — son servicios independientes que el caso estudia.
 
-| Stack | Compose | Contenedores Docker que levanta | Aislamiento por caso | RAM total | Justificacion |
-| --- | --- | --- | --- | --- | --- |
-| **PHP** | `compose.root.yml` | **~20 contenedores distintos** (portal, hub nginx, **12 apps PHP separadas**, 2 PostgreSQL, exporter, prometheus, grafana, worker) | Fuerte (OS-level): cada caso es su propio proceso en su propio contenedor con `mem_limit` y `cpus` propios | ~2.5 GB | Los casos PHP nacieron primero, **uno por uno**, cada uno modelando un problema operativo distinto. Mantenerlos como contenedores separados refleja como vivirian en produccion (microservicios), permite `mem_limit: 256m` por caso, y un memory leak en `case-11` no tira a `case-07`. El nginx hub solo hace path routing — no es un dispatcher. |
-| **Python** | `compose.python.yml` | **1 solo contenedor** (`pdsl-python-lab`) | Cooperativo: 12 subprocesos `subprocess.Popen` en `:9001-:9012` (internos al contenedor) | ~512 MB | El dispatcher Python (`python-dispatcher/app/main.py`) spawnea los 12 servers como subprocesos hijos. Trade-off elegido: **costo y simplicidad** vs aislamiento. Para un lab que demuestra paridad multi-stack sin DB ni observabilidad pesada, 1 contenedor de 512 MB justifica perfectamente. |
-| **Node.js** | `compose.nodejs.yml` | **1 solo contenedor** (`pdsl-node-lab`) | Cooperativo: 12 subprocesos `child_process.spawn` en `:9101 + :9002-:9012` | ~512 MB | Espejo del modelo Python (`node-dispatcher/app/main.js`). Misma justificacion: el dispatcher es ligero, los 12 procesos son ligeros, y un solo contenedor cubre los 12 endpoints sin la sobrecarga de 12 imagenes. |
+| Stack | Compose | Contenedores Docker que levanta | Mecanismo interno | Puerto host |
+| --- | --- | --- | --- | --- |
+| **PHP** | `compose.root.yml` | **~7 contenedores** (portal + `php-lab` + 2 PostgreSQL + worker + exporter + prometheus + grafana) | `php-dispatcher` con 12 subprocesos `php -S` en `127.0.0.1:9001-9012` | `8100` |
+| **Python** | `compose.python.yml` | **1 contenedor** (`pdsl-python-lab`) | `python-dispatcher` con 12 subprocesos `subprocess.Popen` en `:9001-9012` | `8200` |
+| **Node.js** | `compose.nodejs.yml` | **1 contenedor** (`pdsl-node-lab`) | `node-dispatcher` con 12 subprocesos `child_process.spawn` en `:9101 + :9002-9012` | `8300` |
 
-### Trade-offs explicitos
+> **Asimetria residual del PHP**: PHP levanta ~7 contenedores en lugar de 1 porque los casos `01` y `02` necesitan PostgreSQL **real** corriendo en paralelo, mas el worker de caso 01, mas Prometheus + Grafana. Eso son **servicios independientes** (no subprocesos PHP) que el caso 01 estudia. Las 12 apps PHP se colapsan en `php-lab` (1 contenedor); los servicios reales se mantienen separados porque tienen que serlo.
 
-| Aspecto | PHP (12 contenedores) | Python / Node (1 contenedor + 12 subprocesos) |
-| --- | --- | --- |
-| **RAM total** | ~2.5 GB | ~512 MB |
-| **Tiempo de boot** | 15–20 segundos | 3–5 segundos |
-| **Aislamiento entre casos** | Fuerte (OS-level: cgroups, namespaces) | Cooperativo (mismo proceso padre, mismo heap del runtime) |
-| **Memory leak en 1 caso** | Solo afecta a ese caso (su contenedor muere o degrada solo) | Puede afectar a los otros 11 si revienta el proceso padre |
-| **Costo en AWS Fargate** | 12 services × ~USD 3.5 = **USD 42/mes** | 1 service × USD 7 = **USD 7/mes** |
-| **Refleja produccion realista** | Modelo de microservicios | Modelo de monorepo con plugins / monolito modular |
-| **Donde encaja mejor** | Casos con DB, worker, observabilidad pesada (cases 01, 02) | Casos sin estado externo, donde la gracia es la primitiva del lenguaje |
+### Antes y despues del refactor (PHP)
 
-### Por que NO se uniformaron
+Antes (commit historico): **~20 contenedores Docker**. Despues del dispatcher PHP: **~7 contenedores**. RAM cae de ~2.5 GB a ~1 GB. Costo AWS Fargate cae de USD ~42/mes a USD ~7/mes para los casos.
 
-Tres razones honestas:
-
-1. **PHP no se puede colapsar a 1 contenedor sin perder el caso 01**. El caso 01 PHP necesita Postgres + worker + exporter + Prometheus + Grafana corriendo en paralelo. Eso son 5+ servicios reales que no son un "subproceso" de PHP. Una vez que tenes esa arquitectura, los otros 11 casos vienen "gratis" como contenedores adicionales.
-
-2. **Python y Node sin estado externo permiten 1 contenedor sin perder nada**. Los 12 casos en estos stacks usan `tmpfile` para state, sin DB. Spawneando como subprocesos se mantiene el aislamiento de **memoria del proceso JS/Python** (cada subproceso tiene su V8/CPython propio) sin pagar el costo de imagenes Docker separadas.
-
-3. **El lab vale mas con la asimetria que sin ella**. Mantener los tres modelos lado a lado **muestra los tres patrones reales** que se ven en produccion: microservicios verdaderos (PHP), monorepo con plugins (Python), single-tenant multi-process (Node). Un evaluador tecnico ve los tres en el mismo repo y entiende que la decision fue consciente.
-
-### Cuando elegir un modelo u otro en tu propio proyecto
-
-| Si tu caso tiene… | Modelo correcto |
+| Antes (legacy) | Despues (actual) |
 | --- | --- |
-| DB propia, worker, observabilidad pesada | **N contenedores Docker separados** (modelo PHP) |
-| Solo lógica de aplicación, sin estado externo | **1 contenedor con N procesos internos** (modelo Python/Node) |
-| Necesidad estricta de aislamiento de memoria entre casos | **N contenedores** — cgroups del kernel garantizan limites |
-| Necesidad de minimizar RAM en idle | **1 contenedor** — un solo runtime cargado |
-| Posibilidad de leak en un caso afecte a otros | **N contenedores** — failure domain por caso |
+| `nginx-hub` (path routing) | `php-lab` (dispatcher hace el routing **y** ejecuta los 12 casos) |
+| `case01-app` ... `case12-app` (12 contenedores PHP separados) | 12 subprocesos internos de `php-lab` |
+| `case01-worker` (separate) | `case01-worker` (sigue separado — es un CLI worker, no HTTP) |
+| `case01-db`, `case02-db` (PostgreSQL) | sin cambio |
+| `case01-prometheus`, `case01-grafana`, `case01-postgres-exporter` | sin cambio |
+
+### Por que los 3 stacks ahora son simetricos
+
+- **El dispatcher resuelve el problema de "muchos contenedores por lenguaje"**. Para PHP, Python y Node, la unidad logica es "el lenguaje sirve los 12 casos". Eso es 1 contenedor con N subprocesos, NO 12 contenedores.
+- **Los servicios reales del caso 01** (PostgreSQL, worker, observabilidad) son independientes del lenguaje. Si manana se agrega caso 01 en Python con su propio Postgres, ese Postgres seria otro contenedor — no un subproceso del Python lab.
+- **Los per-case `compose.yml`** siguen funcionando para "modo aislado" (estudiar UN caso sin ruido) — es la unidad atomica de reproducibilidad.
+
+### Trade-offs heredados (que el refactor preserva)
+
+| Aspecto | Hub (1 contenedor + N subprocesos) | Per-case (1 contenedor por caso, modo aislado) |
+| --- | --- | --- |
+| RAM | ~512 MB - 1 GB total | ~256 MB por caso aislado |
+| Boot | 3-6 segundos | 5-10 segundos |
+| Aislamiento entre casos | Cooperativo (mismo runtime padre) | Fuerte (OS-level cgroups) |
+| Memory leak en 1 caso | Puede afectar a los otros 11 | Aislado |
+| Cuando usar | Demo del lab completo, vista del catalogo | Reproducir UN problema sin contaminacion (caso 05 memoria, caso 11 event loop) |
+
+### Cuando elegir cada modelo en tu propio proyecto
+
+| Si tu caso tiene... | Modelo correcto |
+| --- | --- |
+| DB propia, worker dedicado, observabilidad pesada | **Servicios separados + 1 hub para los procesos del lenguaje** (modelo actual) |
+| Solo lógica de aplicación, sin estado externo | **1 contenedor con N procesos internos** (cualquiera de los 3 hubs) |
+| Necesidad estricta de aislamiento de memoria entre casos | **Per-case compose** o N contenedores con cgroups |
+| Necesidad de minimizar RAM en idle | **1 hub con dispatcher** — un solo runtime cargado |
+| Posibilidad de leak en un caso afecte a otros | **N contenedores con `mem_limit`** — failure domain por caso |
 | Casos cooperativos que comparten dataset | **1 contenedor** — pueden compartir memoria/cache |
 
-Esta asimetria esta tambien reconocida en la nota de costos del [`AWS_MIGRATION.md`](../AWS_MIGRATION.md) — al migrar a AWS, los modelos se preservan: 12 services Fargate para PHP vs 1 service para los hubs Python/Node, exactamente como en local.
+Esta simetria se preserva al migrar a AWS — ver [`AWS_MIGRATION.md`](../AWS_MIGRATION.md): los 3 hubs se mapean a 3 ECS Fargate services (uno por lenguaje), y los servicios reales del caso 01 se mapean a RDS PostgreSQL + ECS worker + AMP/AMG.
 
 ## 🚫 Lo que se evita conscientemente
 

@@ -13,9 +13,9 @@
 
 ## 🎯 Executive Summary
 
-- El laboratorio hoy corre como un conjunto de servicios Docker Compose: **portal PHP**, **3 hubs por lenguaje** (`compose.root.yml` PHP `:8100` + `compose.python.yml` `:8200` + `compose.nodejs.yml` `:8300`, cada uno sirve los 12 casos via routing por path), **2 instancias PostgreSQL** (casos 01 y 02 PHP), **Prometheus**, **Grafana** y un **worker** background del caso 01.
+- El laboratorio hoy corre como un conjunto de servicios Docker Compose: **portal PHP** + **3 hubs simetricos por lenguaje** (`pdsl-php-lab` :8100, `pdsl-python-lab` :8200, `pdsl-node-lab` :8300; cada uno es **1 contenedor con 12 subprocesos internos**) + **2 instancias PostgreSQL** (casos 01/02 PHP) + **Prometheus** + **Grafana** + **worker** background del caso 01.
 - AWS ofrece **al menos tres rutas validas** segun presupuesto, foco pedagogico y madurez operacional deseada (serverless, contenedores manejados, Kubernetes).
-- La opcion recomendada para un portafolio publico orientado a costo/utilidad es **ECS Fargate + RDS PostgreSQL + ALB + CloudWatch + AMP/AMG**, con un costo estimado de **USD ~150–165/mes** ejecutandolo 24x7, o **USD ~75–100/mes** apagado fuera de horario.
+- La opcion recomendada para un portafolio publico orientado a costo/utilidad es **ECS Fargate + RDS PostgreSQL + ALB + CloudWatch + AMP/AMG**, con un costo estimado de **USD ~120–135/mes** ejecutandolo 24x7, o **USD ~65–85/mes** apagado fuera de horario.
 - Toda la migracion se publica como **Infrastructure as Code (Terraform o AWS CDK)** dentro del propio repo, manteniendo la promesa de reproducibilidad.
 - La narrativa del repo se preserva: los 12 casos siguen siendo *problem-driven*, ahora con tres capitulos adicionales — **costo, escalabilidad cloud-native** y **como AWS mitiga los hallazgos abiertos del [`SECURITY.md`](SECURITY.md)** (sin auth, DoS del event loop, sin rate limiting, etc.).
 
@@ -28,8 +28,7 @@ Mapa rapido de lo que vive hoy en `compose.root.yml`, `compose.python.yml` y `co
 | Servicio actual | Imagen / runtime | Recurso | Estado | Equivalente AWS sugerido |
 | --- | --- | --- | --- | --- |
 | `portal-php8` | PHP 8 + Apache | 1 contenedor | OPERATIVO | ECS Fargate Service · S3+CloudFront (si se hace estatico) |
-| `php-hub` | nginx 1.27 alpine | reverse proxy | OPERATIVO | ALB · API Gateway HTTP API |
-| `case01-app` … `case12-app` | PHP 8.3 (`php -S`) | 12 contenedores | OPERATIVO | ECS Fargate (12 services o 1 task multi-container) · Lambda Container Image |
+| `php-lab` (PHP dispatcher, 12 casos internos `:9001-:9012`) | PHP 8.3 + tini | 1 contenedor | OPERATIVO | ECS Fargate Service · Lambda Container |
 | `case01-worker` | PHP CLI loop | worker | OPERATIVO | ECS Fargate Service (long-running) · EventBridge Scheduler + Lambda |
 | `case01-db`, `case02-db` | postgres:16-alpine | 2 DBs | OPERATIVO | **RDS PostgreSQL** (db.t4g.micro) · Aurora Serverless v2 |
 | `case01-postgres-exporter` | postgres-exporter | metrics | OPERATIVO | RDS Performance Insights · Prometheus en AMP |
@@ -54,10 +53,11 @@ Internet
                 `──▶ ALB   (path routing por lenguaje + caso)
                        |
                        |── /                 → ECS Fargate · portal-php
-                       |── /php/01..12/*     → ECS Fargate · php-hub  ──▶ RDS pg-01,02
+                       |── /php/01..12/*     → ECS Fargate · php-lab    (1 task, 12 casos internos)
+                       |                                              ──▶ RDS pg-01,02
                        |                                              `──▶ ECS Fargate · worker-01
-                       |── /py/01..12/*      → ECS Fargate · python-hub  (1 task, 12 casos internos)
-                       `── /node/01..12/*    → ECS Fargate · node-hub    (1 task, 12 casos internos)
+                       |── /py/01..12/*      → ECS Fargate · python-lab (1 task, 12 casos internos)
+                       `── /node/01..12/*    → ECS Fargate · node-lab   (1 task, 12 casos internos)
 
 Observabilidad           Plataforma                   Seguridad / Edge
 |- CloudWatch Logs       |- ECR  (registry imagenes)  |- CloudFront + AWS WAF (rate limit, OWASP)
@@ -181,9 +181,9 @@ Internet
 | Servicio | Configuracion | Costo mensual estimado |
 | --- | --- | --- |
 | ECS Fargate — portal | 0.25 vCPU / 0.5 GB · 1 servicio | ~ USD 3.5 |
-| ECS Fargate — python-hub | 0.5 vCPU / 1 GB · dispatcher con 12 casos internos | ~ USD 7 |
-| ECS Fargate — node-hub | 0.5 vCPU / 1 GB · dispatcher con 12 casos internos | ~ USD 7 |
-| ECS Fargate — 12 casos PHP | 0.25 vCPU / 0.5 GB c/u | ~ USD 42 |
+| ECS Fargate — php-lab | 0.5 vCPU / 1 GB · dispatcher con 12 casos internos | ~ USD 7 |
+| ECS Fargate — python-lab | 0.5 vCPU / 1 GB · dispatcher con 12 casos internos | ~ USD 7 |
+| ECS Fargate — node-lab | 0.5 vCPU / 1 GB · dispatcher con 12 casos internos | ~ USD 7 |
 | ECS Fargate — worker case01 | 0.25 vCPU / 0.5 GB | ~ USD 3.5 |
 | RDS PostgreSQL — case01 | db.t4g.micro · 20 GB gp3 · single-AZ | ~ USD 13 |
 | RDS PostgreSQL — case02 | db.t4g.micro · 20 GB gp3 · single-AZ | ~ USD 13 |
@@ -197,9 +197,9 @@ Internet
 | AMG | 1 editor user | ~ USD 9 |
 | ECR | 5 GB | ~ USD 0.5 |
 | Secrets Manager | 4 secrets | ~ USD 1.6 |
-| **Total aproximado 24x7** | | **USD ~165–175 / mes** |
+| **Total aproximado 24x7** | | **USD ~130–140 / mes** |
 
-> **Nota sobre Python y Node**: cada hub corre los 12 casos en un solo task Fargate (subprocesos internos), exactamente como en local — un container, mas RAM. Esto es muchisimo mas barato que correr 24 services Fargate adicionales (12 Python + 12 Node = ~USD 84/mes extra). El trade-off: si un caso Python tiene un memory leak, afecta a los otros 11. Para PHP no aplica porque cada caso ya tiene su servicio independiente (es asi en `compose.root.yml`).
+> **Nota sobre los 3 hubs simetricos**: cada hub (PHP/Python/Node) corre los 12 casos en un solo task Fargate como subprocesos internos, exactamente como en local. Antes del refactor del PHP dispatcher, PHP usaba 12 services separados (~USD 42/mes). Ahora son 3 hubs simetricos × ~USD 7 = USD 21/mes para los 36 endpoints. El trade-off: si un caso tiene memory leak, puede afectar a los otros 11 del mismo hub. Para los servicios reales del caso 01 (PostgreSQL, worker, observabilidad) NO se aplica — siguen siendo contenedores/services independientes porque son servicios distintos del lenguaje, no procesos PHP.
 
 ### Opcion A · ECS Fargate · apagado fuera de horario laboral (cron 8h x 5 dias)
 
@@ -207,10 +207,10 @@ Internet
 
 | Componente | Ahorro |
 | --- | --- |
-| ECS Fargate (12 casos PHP + worker + 3 hubs) | -75% → ~ USD 16 |
+| ECS Fargate (3 hubs + worker + portal) | -75% → ~ USD 7 |
 | RDS (stop max 7 dias por ciclo) | -60% → ~ USD 10 |
 | ALB / NAT / Route 53 / CloudFront / WAF | sin cambio |
-| **Total estimado** | **USD ~85–110 / mes** |
+| **Total estimado** | **USD ~70–90 / mes** |
 
 ### Opcion B · Lambda + Aurora Serverless v2 · pay-per-use
 
@@ -321,17 +321,15 @@ psql "postgres://problemlab:***@case01.xxxxx.us-east-1.rds.amazonaws.com:5432/pr
 ### Fase 4 · Cluster ECS y task definitions (Dia 3–4)
 
 - Crear cluster `pdsl-prod` con capacity provider Fargate + Fargate Spot 70/30.
-- Por cada servicio: una task definition con el contenedor unico, 256 CPU / 512 MiB (ARM64) para casos PHP, 512 CPU / 1024 MiB para los hubs Python y Node (corren 12 procesos internos).
-- Crear 15 services (portal + 12 casos PHP + python-hub + node-hub) detras de un solo ALB con **listener rules por path**:
+- Por cada hub: una task definition de 512 CPU / 1024 MiB (ARM64) que corre el dispatcher con 12 procesos internos. Worker del caso 01 como service separado (256 CPU / 512 MiB).
+- Crear 5 services (portal + php-lab + python-lab + node-lab + worker-01) detras de un solo ALB con **listener rules por path**:
 
 | Path rule | Target group | Notas |
 | --- | --- | --- |
 | `/`, `/static/*` | `tg-portal` | Portal HTML (PHP+Apache) |
-| `/php/01/*` | `tg-php-case01` | Caso 01 PHP, conecta a RDS pg-01 |
-| `/php/02/*` | `tg-php-case02` | Caso 02 PHP, conecta a RDS pg-02 |
-| `/php/03/*` … `/php/12/*` | `tg-php-caseNN` | Casos sin DB |
-| `/py/*` | `tg-python-hub` | Dispatcher Python (12 casos internos) |
-| `/node/*` | `tg-node-hub` | Dispatcher Node (12 casos internos) |
+| `/php/*` | `tg-php-lab` | Dispatcher PHP (12 casos internos), casos 01/02 conectan a RDS pg-01/pg-02 |
+| `/py/*` | `tg-python-lab` | Dispatcher Python (12 casos internos) |
+| `/node/*` | `tg-node-lab` | Dispatcher Node (12 casos internos) |
 
 ### Fase 5 · Edge (Dia 4)
 

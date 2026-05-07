@@ -124,10 +124,10 @@ Cada lenguaje tiene su propio compose en la raíz del repositorio. Un comando le
 
 **Tres hubs garantizan el lab completo (uno por lenguaje):** un solo puerto sirve los 12 casos vía routing por path (`/01/health`...`/12/health`). Los servicios de soporte (DB, Prometheus, Grafana) tienen los suyos propios porque son servicios distintos.
 
-> 🧱 **Pero los tres hubs no son la misma arquitectura por dentro.** PHP levanta **~20 contenedores Docker distintos** (12 apps PHP + DB + observabilidad), mientras que Python y Node levantan **1 solo contenedor cada uno** que spawnea los 12 casos como subprocesos internos. Es una asimetría deliberada — ver [`docs/docker-strategy.md` § Tres modelos de containerización](docs/docker-strategy.md#-tres-modelos-de-containerización-uno-por-stack--y-por-qué-son-distintos) para el por qué y los trade-offs explícitos (RAM, aislamiento, costo en AWS).
+> 🧱 **Los tres hubs siguen el mismo patrón arquitectónico:** un contenedor por lenguaje (`pdsl-php-lab`, `pdsl-python-lab`, `pdsl-node-lab`) ejecuta los 12 casos como subprocesos internos en puertos no expuestos. PHP suma ~7 contenedores extras solo porque los **servicios reales** que el caso 01 estudia (PostgreSQL, worker, Prometheus, Grafana) son contenedores aparte por necesidad técnica — no son procesos del lenguaje. Detalles, trade-offs y comparación per-case en [`docs/docker-strategy.md`](docs/docker-strategy.md#-modelo-de-containerización-simétrico-para-los-3-stacks).
 
 ```bash
-# PHP: portal + nginx hub (12 casos internos) + DB + Prometheus + Grafana
+# PHP: portal + dispatcher (12 casos internos en un contenedor) + DB + Prometheus + Grafana
 docker compose -f compose.root.yml up -d --build
 
 # Python: dispatcher (12 casos internos en un contenedor)

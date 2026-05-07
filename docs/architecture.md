@@ -48,7 +48,7 @@ La raiz contiene documentos para lectura ejecutiva, tecnica y operacional. Esta 
 
 Cada lenguaje operativo tiene su propio compose en la raíz — un comando levanta los 12 casos de ese lenguaje:
 
-- `compose.root.yml` — PHP: portal (`8080`) + hub nginx (`8100`) + PostgreSQL (casos 01–02) + Prometheus (`9091`) + Grafana (`3001`)
+- `compose.root.yml` — PHP: portal (`8080`) + dispatcher PHP `php-lab` (`8100`, 12 casos internos en `:9001-:9012`) + PostgreSQL (casos 01–02) + worker case01 + Prometheus (`9091`) + Grafana (`3001`)
 - `compose.python.yml` — Python: dispatcher único con 12 casos internos (`8200`), stdlib pura, sin dependencias externas
 - `compose.nodejs.yml` — Node.js 20: dispatcher único con 12 casos internos (`8300`), stdlib pura, sin dependencias externas
 - `compose.portal.yml` — portal liviano solamente (`8080`)
@@ -87,7 +87,7 @@ scripts/validate-structure.sh ──▶ .github/workflows/ci.yml ◀── catal
 
 | Pieza | Rol |
 | --- | --- |
-| `compose.root.yml` | portal (`8080`) + hub nginx PHP (`8100`) + laboratorio PHP completo (12 casos, DB, Prometheus, Grafana) |
+| `compose.root.yml` | portal (`8080`) + `php-lab` dispatcher (`8100`, 12 casos PHP como subprocesos internos) + DB caso 01-02 + worker + Prometheus + Grafana |
 | `compose.python.yml` | dispatcher Python (`8200`) con los 12 casos internos, stdlib pura, sin dependencias externas |
 | `compose.portal.yml` | portal liviano |
 | `cases/<caso>/<stack>/compose.yml` | escenario concreto y aislado (desarrollo o revision individual) |

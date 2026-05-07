@@ -2,6 +2,38 @@
 
 Todos los cambios notables de este laboratorio se registran aqui con foco en madurez tecnica y documental.
 
+## 2026-05-08 - PHP dispatcher operativo: paridad arquitectonica completa con Python/Node
+
+Cierra la asimetria que hasta ayer documentabamos como "deuda reconocida": PHP usaba ~20 contenedores (12 apps separadas + nginx hub + DB + observabilidad), mientras Python y Node usaban 1 contenedor con 12 subprocesos. **Ahora los tres stacks comparten el mismo patron arquitectonico** (1 dispatcher por lenguaje), preservando los servicios reales del caso 01 que NO son procesos PHP.
+
+### Added
+
+- `php-dispatcher/` con `Dockerfile`, `app/entrypoint.sh` y `app/dispatcher.php`. Espejo del patron de `python-dispatcher/` y `node-dispatcher/`:
+  - `entrypoint.sh` spawnea los 12 servidores PHP (`php -S`) como subprocesos en `127.0.0.1:9001-:9012` con env DB-aware (caso 01 conecta a `case01-db`, caso 02 a `case02-db`, casos 03-12 sin DB).
+  - `dispatcher.php` actua como router script de `php -S 0.0.0.0:8100` que enruta `/01..12/*` proxy-eando con `file_get_contents` + `stream_context`. Forward de query strings, headers, body POST/PUT/DELETE.
+  - `tini` como PID 1 para signal forwarding limpio (SIGTERM/SIGINT propagado al shell, que mata los 12 hijos antes de salir).
+- `php-dispatcher/Dockerfile` con `pdo_pgsql` instalado (necesario para casos 01 y 02 que conectan a PostgreSQL).
+
+### Changed
+
+- `compose.root.yml` reescrito: pasa de 14 services PHP (`php-hub` + 12 `caseXX-app`) a **1 service `php-lab`** con dispatcher. Servicios reales del caso 01 (PostgreSQL, worker, Prometheus, Grafana, exporter) NO se tocan — siguen siendo contenedores aparte porque son servicios independientes del lenguaje. Conteo total: ~20 contenedores → **~7 contenedores**. RAM total: ~2.5 GB → **~1 GB**.
+- `cases/01-api-latency-under-load/shared/observability/prometheus.yml`: target del scrape pasa de `app:8080` a `php-lab:8100` con `metrics_path: /01/metrics-prometheus` (Prometheus llega al caso 01 via el dispatcher, en vez del contenedor `case01-app` que ya no existe).
+- `docker/nginx/php-hub.conf` **eliminado** — el dispatcher PHP hace el routing ahora, ya no necesita nginx.
+
+### Documentation sweep
+
+- `docs/docker-strategy.md`: la seccion "Tres modelos" pasa a llamarse **"Modelo de containerización (simétrico para los 3 stacks)"**. Tabla unica con los 3 stacks siguiendo el mismo patron. Antes/despues del refactor PHP. Trade-offs heredados (hub vs per-case modo aislado).
+- `README.md` raiz: nota debajo de la tabla de hubs aclara que los 3 hubs son simetricos; PHP tiene contenedores extras solo por los servicios reales del caso 01.
+- `ARCHITECTURE.md`: subseccion de containerizacion actualizada con la nueva simetria y el refactor.
+- `AWS_MIGRATION.md`: inventario reemplaza `php-hub` + `case01-app..case12-app` por una sola fila `php-lab`. Topologia ALB con `/php/*` → `tg-php-lab` (en vez de 12 target groups). **Costos recalculados**: total 24x7 baja de USD ~165 a **USD ~130-140/mes** (PHP pasa de USD 42 en 12 services a USD 7 en 1 dispatcher). Apagado fuera de horario: USD ~70-90/mes.
+- `docs/architecture.md`: descripcion de `compose.root.yml` actualizada al nuevo modelo.
+
+### Smoke test
+
+- `php -l dispatcher.php` OK; `sh -n entrypoint.sh` OK.
+- Spawn local sin Docker de los 10 casos PHP sin DB (03-12) detras del dispatcher: 10/10 responden 200 a `/XX/health`. Casos 06 y 12 retornan payloads completos end-to-end con query strings (`/06/deploy-controlled?...` y `/12/incident-distributed?...`).
+- Casos 01 y 02 PHP no se testean localmente (requieren PostgreSQL + worker), pero el codigo de los casos no se toco — solo cambia el contenedor donde corren.
+
 ## 2026-05-07 - Asimetria de containerizacion por stack documentada explicitamente
 
 ### Documentation

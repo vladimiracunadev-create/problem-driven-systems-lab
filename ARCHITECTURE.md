@@ -106,15 +106,15 @@ El laboratorio ha evolucionado de simulaciones matemáticas a **escenarios de fa
 
 Cada caso incluye ademas un `comparison.md` que explica en profundidad como PHP, Python y Node.js abordan el mismo problema de forma distinta a nivel de lenguaje.
 
-### 🧱 Modelos de containerizacion por stack
+### 🧱 Modelo de containerizacion (simetrico para los 3 stacks)
 
-Los tres hubs (`compose.root.yml` PHP, `compose.python.yml` Python, `compose.nodejs.yml` Node.js) **se ven simétricos desde afuera** (un puerto por lenguaje sirve los 12 casos), pero adentro son arquitecturas distintas:
+Los tres hubs (`compose.root.yml` PHP, `compose.python.yml` Python, `compose.nodejs.yml` Node.js) siguen el **mismo patrón**: un contenedor por lenguaje ejecuta los 12 casos como subprocesos internos.
 
-- **PHP** levanta **~20 contenedores Docker** (12 apps PHP separadas + DB + observabilidad + worker). Microservicios verdaderos con aislamiento OS-level por caso.
-- **Python** levanta **1 solo contenedor** que internamente spawnea 12 subprocesos. Modelo monorepo-con-plugins.
-- **Node.js** levanta **1 solo contenedor** con el mismo patron. Modelo single-tenant multi-process.
+- **PHP** → `pdsl-php-lab` con dispatcher en `:8100` y 12 procesos `php -S` en `:9001-:9012` internos. Suma ~6 contenedores extras (PostgreSQL × 2, worker, Prometheus, Grafana, exporter) **porque son servicios reales que el caso 01 estudia**, no procesos PHP. Total ~7 contenedores.
+- **Python** → `pdsl-python-lab` con dispatcher en `:8200` y 12 subprocesos `subprocess.Popen` internos. 1 contenedor.
+- **Node.js** → `pdsl-node-lab` con dispatcher en `:8300` y 12 subprocesos `child_process.spawn` internos. 1 contenedor.
 
-Esta asimetria es deliberada: PHP necesita N contenedores porque el caso 01 ya requiere DB + worker + observabilidad como contenedores reales; Python y Node se benefician de 1 contenedor porque sus 12 casos son sin estado externo. **Trade-offs detallados en [`docs/docker-strategy.md`](docs/docker-strategy.md#-tres-modelos-de-containerización-uno-por-stack--y-por-qué-son-distintos).**
+Refactor reciente: PHP pasó de ~20 contenedores (12 apps + nginx hub) a ~7 contenedores (1 dispatcher + servicios reales). RAM cae de ~2.5 GB a ~1 GB. **Trade-offs y rationale en [`docs/docker-strategy.md`](docs/docker-strategy.md#-modelo-de-containerización-simétrico-para-los-3-stacks).**
 
 ## 🔁 Flujo de datos y sincronizacion
 

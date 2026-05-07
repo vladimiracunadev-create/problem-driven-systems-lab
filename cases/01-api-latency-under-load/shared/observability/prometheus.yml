@@ -3,15 +3,13 @@ global:
   evaluation_interval: 5s
 
 scrape_configs:
+  # Despues del refactor a php-dispatcher, el caso 01 PHP vive como subproceso
+  # interno del contenedor php-lab. Prometheus lo scrapea via el dispatcher
+  # en /01/metrics-prometheus (path routing del dispatcher PHP).
   - job_name: case01_app
-    metrics_path: /metrics-prometheus
+    metrics_path: /01/metrics-prometheus
     static_configs:
-      - targets: ['app:8080']
-
-  - job_name: case01_php_app_compare
-    metrics_path: /metrics-prometheus
-    static_configs:
-      - targets: ['php-app:8080']
+      - targets: ['php-lab:8100']
 
   - job_name: case01_postgres_exporter
     static_configs:

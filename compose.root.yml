@@ -1,23 +1,35 @@
+# compose.root.yml — Stack PHP completo (los 12 casos + portal + servicios reales)
+#
+# Despues del refactor a php-dispatcher: los 12 casos PHP corren como
+# subprocesos internos en :9001-:9012 dentro de un solo contenedor `php-lab`,
+# espejo del modelo de compose.python.yml y compose.nodejs.yml.
+#
+# Servicios que SI siguen siendo contenedores separados (no son PHP, son
+# servicios reales que el caso 01 estudia):
+#   - case01-db / case02-db: PostgreSQL real
+#   - case01-worker:         worker PHP CLI (long-running, no HTTP)
+#   - case01-postgres-exporter / case01-prometheus / case01-grafana: observabilidad
+#
+# Uso:
+#   docker compose -f compose.root.yml up -d --build
+#   docker compose -f compose.root.yml down
+#
+# Endpoints:
+#   http://localhost:8080         portal
+#   http://localhost:8100/        index del PHP hub (12 casos via /XX/...)
+#   http://localhost:8100/01/...  caso 01 (con DB real)
+#   http://localhost:8100/12/...  caso 12
+#   http://localhost:9091         Prometheus
+#   http://localhost:3001         Grafana
+
 x-php-build: &php-build
   context: .
   dockerfile: docker/php/Dockerfile
 
-x-php-app: &php-app
-  environment:
-    APP_STACK: PHP 8.3
-  command: ["php", "-S", "0.0.0.0:8080", "-t", "/app", "/app/index.php"]
-  healthcheck:
-    test: ["CMD", "php", "-r", "echo 'ok';"]
-    interval: 10s
-    timeout: 3s
-    retries: 3
-  mem_limit: 256m
-  cpus: 0.75
-
 services:
 
   # ---------------------------------------------------------------------------
-  # Portal
+  # Portal HTML (Apache + PHP)
   # ---------------------------------------------------------------------------
 
   portal-php8:
@@ -41,39 +53,51 @@ services:
       - case02
 
   # ---------------------------------------------------------------------------
-  # PHP Hub — nginx reverse proxy, único punto de entrada para los 12 casos PHP
-  # Puerto 8100: GET /01/... /02/... ... /12/...
-  # Los casos no exponen puertos al host — solo este nginx lo hace.
+  # PHP Lab — un solo contenedor, los 12 casos como subprocesos internos
+  # Sustituye al antiguo nginx php-hub + 12 caseXX-app separados.
   # ---------------------------------------------------------------------------
 
-  php-hub:
-    image: nginx:1.27-alpine
-    container_name: pdsl-php-hub
+  php-lab:
+    build:
+      context: .
+      dockerfile: php-dispatcher/Dockerfile
+    container_name: pdsl-php-lab
     ports:
-      - "8100:80"
-    volumes:
-      - ./docker/nginx/php-hub.conf:/etc/nginx/conf.d/default.conf:ro
+      - "8100:8100"
+    environment:
+      APP_STACK: PHP 8.3
+      # Casos 01 y 02 conectan a sus PostgreSQL reales por DNS de Docker.
+      CASE01_DB_HOST: case01-db
+      CASE01_DB_NAME: problemlab
+      CASE01_DB_USER: problemlab
+      CASE01_DB_PASSWORD: problemlab
+      WORKER_NAME: report-refresh
+      CASE02_DB_HOST: case02-db
+      CASE02_DB_NAME: problemlab
+      CASE02_DB_USER: problemlab
+      CASE02_DB_PASSWORD: problemlab
     depends_on:
-      - case01-app
-      - case02-app
-      - case03-app
-      - case04-app
-      - case05-app
-      - case06-app
-      - case07-app
-      - case08-app
-      - case09-app
-      - case10-app
-      - case11-app
-      - case12-app
+      case01-db:
+        condition: service_healthy
+      case02-db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "php -r \"exit(@file_get_contents('http://127.0.0.1:8100/03/health') !== false ? 0 : 1);\""]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 25s
+    mem_limit: 1024m
+    cpus: 2.0
+    restart: unless-stopped
     networks:
       - default
       - case01
       - case02
-    restart: unless-stopped
 
   # ---------------------------------------------------------------------------
   # Caso 01 — PostgreSQL + worker + Prometheus + Grafana
+  # (servicios reales que el caso estudia — NO se colapsan)
   # ---------------------------------------------------------------------------
 
   case01-db:
@@ -97,33 +121,6 @@ services:
       case01:
         aliases:
           - db
-
-  case01-app:
-    <<: *php-app
-    build:
-      <<: *php-build
-      args:
-        APP_DIR: cases/01-api-latency-under-load/php/app
-    container_name: pdsl-01-php-app
-    environment:
-      APP_STACK: PHP 8.3
-      DB_HOST: db
-      DB_PORT: "5432"
-      DB_NAME: problemlab
-      DB_USER: problemlab
-      DB_PASSWORD: problemlab
-      WORKER_NAME: report-refresh
-    depends_on:
-      case01-db:
-        condition: service_healthy
-    mem_limit: 512m
-    cpus: 1.00
-    networks:
-      case01:
-        aliases:
-          - app
-          - php-app
-          - pdsl-01-php-app
 
   case01-worker:
     build:
@@ -174,7 +171,7 @@ services:
     ports:
       - "9091:9090"
     depends_on:
-      - case01-app
+      - php-lab
       - case01-postgres-exporter
     networks:
       case01:
@@ -222,115 +219,6 @@ services:
       case02:
         aliases:
           - db
-
-  case02-app:
-    <<: *php-app
-    build:
-      <<: *php-build
-      args:
-        APP_DIR: cases/02-n-plus-one-and-db-bottlenecks/php/app
-    container_name: pdsl-02-php-app
-    environment:
-      APP_STACK: PHP 8.3
-      DB_HOST: db
-      DB_PORT: "5432"
-      DB_NAME: problemlab
-      DB_USER: problemlab
-      DB_PASSWORD: problemlab
-    depends_on:
-      case02-db:
-        condition: service_healthy
-    mem_limit: 512m
-    cpus: 1.00
-    networks:
-      case02:
-        aliases:
-          - pdsl-02-php-app
-
-  # ---------------------------------------------------------------------------
-  # Casos 03–12 — sin dependencias externas
-  # ---------------------------------------------------------------------------
-
-  case03-app:
-    <<: *php-app
-    build:
-      <<: *php-build
-      args:
-        APP_DIR: cases/03-poor-observability-and-useless-logs/php/app
-    container_name: pdsl-03-php-app
-
-  case04-app:
-    <<: *php-app
-    build:
-      <<: *php-build
-      args:
-        APP_DIR: cases/04-timeout-chain-and-retry-storms/php/app
-    container_name: pdsl-04-php-app
-
-  case05-app:
-    <<: *php-app
-    build:
-      <<: *php-build
-      args:
-        APP_DIR: cases/05-memory-pressure-and-resource-leaks/php/app
-    container_name: pdsl-05-php-app
-
-  case06-app:
-    <<: *php-app
-    build:
-      <<: *php-build
-      args:
-        APP_DIR: cases/06-broken-pipeline-and-fragile-delivery/php/app
-    container_name: pdsl-06-php-app
-
-  case07-app:
-    <<: *php-app
-    build:
-      <<: *php-build
-      args:
-        APP_DIR: cases/07-incremental-monolith-modernization/php/app
-    container_name: pdsl-07-php-app
-
-  case08-app:
-    <<: *php-app
-    build:
-      <<: *php-build
-      args:
-        APP_DIR: cases/08-critical-module-extraction-without-breaking-operations/php/app
-    container_name: pdsl-08-php-app
-
-  case09-app:
-    <<: *php-app
-    build:
-      <<: *php-build
-      args:
-        APP_DIR: cases/09-unstable-external-integration/php/app
-    container_name: pdsl-09-php-app
-
-  case10-app:
-    <<: *php-app
-    build:
-      <<: *php-build
-      args:
-        APP_DIR: cases/10-expensive-architecture-for-simple-needs/php/app
-    container_name: pdsl-10-php-app
-
-  case11-app:
-    <<: *php-app
-    build:
-      <<: *php-build
-      args:
-        APP_DIR: cases/11-heavy-reporting-blocks-operations/php/app
-    container_name: pdsl-11-php-app
-    mem_limit: 320m
-
-  case12-app:
-    <<: *php-app
-    build:
-      <<: *php-build
-      args:
-        APP_DIR: cases/12-single-point-of-knowledge-and-operational-risk/php/app
-    container_name: pdsl-12-php-app
 
 volumes:
   pgdata_case01:
