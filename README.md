@@ -19,7 +19,7 @@ Portafolio técnico orientado a problemas reales de software: rendimiento, obser
 - Docker es la vía oficial de ejecución limpia y reproducible.
 - [`shared/catalog/cases.json`](shared/catalog/cases.json) es la fuente de verdad del portal, de la documentacion generada y de la narrativa operativa.
 - El portal raiz ahora sirve como hub de evaluacion: rutas por audiencia, seleccion por lenguaje, proof cards y probes server-side.
-- ☁️ Plan de despliegue en la nube documentado en [AWS_MIGRATION.md](AWS_MIGRATION.md): tres rutas (ECS Fargate, Lambda, EKS), costos reales estimados y paso a paso.
+- ☁️ Plan de despliegue en la nube documentado en [AWS_MIGRATION.md](AWS_MIGRATION.md): tres rutas (ECS Fargate, Lambda, EKS), costos reales estimados, paso a paso, y un **mapping explicito de como AWS mitiga cada hallazgo del [`SECURITY.md`](SECURITY.md)** (auth via Cognito, rate limiting via WAF, atomicidad via DynamoDB, etc.) sin tocar codigo del lab.
 
 ## 💻 Interfaz Visual Integrada
 
@@ -163,7 +163,7 @@ Tambien existen atajos con `make`, pero la ruta soportada y mas portable sigue s
 | --- | --- |
 | [RECRUITER.md](RECRUITER.md) | Ruta ejecutiva para evaluacion rapida |
 | [ARCHITECTURE.md](ARCHITECTURE.md) | Vista ejecutiva de la arquitectura actual |
-| [AWS_MIGRATION.md](AWS_MIGRATION.md) | ☁️ Plan de migracion a AWS (ECS Fargate · Lambda · EKS) con costos y paso a paso |
+| [AWS_MIGRATION.md](AWS_MIGRATION.md) | ☁️ Plan de migracion a AWS (ECS Fargate · Lambda · EKS) con los 3 hubs PHP/Python/Node, costos reales, paso a paso y mapping de hallazgos `SECURITY.md` → mitigaciones AWS |
 | [INSTALL.md](INSTALL.md) | Instalacion y puesta en marcha recomendada |
 | [RUNBOOK.md](RUNBOOK.md) | Operacion diaria y chequeos iniciales |
 | [SECURITY.md](SECURITY.md) | Politica de seguridad y reporte responsable |

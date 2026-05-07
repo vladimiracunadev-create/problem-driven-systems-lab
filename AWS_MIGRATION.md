@@ -7,23 +7,23 @@
 [![IaC](https://img.shields.io/badge/IaC-Terraform%20%7C%20CDK-7B42BC?logo=terraform&logoColor=white)](https://www.terraform.io/)
 [![Status](https://img.shields.io/badge/Estado-Plan%20de%20migraci%C3%B3n-blue)](#)
 
-> Plan tecnico-operativo y honesto para migrar el laboratorio (12 casos PHP + Python + portal + observabilidad) desde Docker Compose local hacia AWS, con tres rutas alternativas, costos reales estimados y trade-offs explicitos.
+> Plan tecnico-operativo y honesto para migrar el laboratorio (12 casos × 3 stacks operativos: PHP + Python + Node.js + portal + observabilidad) desde Docker Compose local hacia AWS, con tres rutas alternativas, costos reales estimados y trade-offs explicitos.
 
 ---
 
 ## 🎯 Executive Summary
 
-- El laboratorio hoy corre como un conjunto de servicios Docker Compose: **portal PHP**, **hub nginx (12 casos PHP)**, **dispatcher Python**, **2 instancias PostgreSQL**, **Prometheus**, **Grafana** y un **worker** background.
+- El laboratorio hoy corre como un conjunto de servicios Docker Compose: **portal PHP**, **3 hubs por lenguaje** (`compose.root.yml` PHP `:8100` + `compose.python.yml` `:8200` + `compose.nodejs.yml` `:8300`, cada uno sirve los 12 casos via routing por path), **2 instancias PostgreSQL** (casos 01 y 02 PHP), **Prometheus**, **Grafana** y un **worker** background del caso 01.
 - AWS ofrece **al menos tres rutas validas** segun presupuesto, foco pedagogico y madurez operacional deseada (serverless, contenedores manejados, Kubernetes).
-- La opcion recomendada para un portafolio publico orientado a costo/utilidad es **ECS Fargate + RDS PostgreSQL + ALB + CloudWatch + AMP/AMG**, con un costo estimado de **USD ~80–140/mes** ejecutandolo 24x7, o **USD ~15–35/mes** apagado fuera de horario.
+- La opcion recomendada para un portafolio publico orientado a costo/utilidad es **ECS Fargate + RDS PostgreSQL + ALB + CloudWatch + AMP/AMG**, con un costo estimado de **USD ~150–165/mes** ejecutandolo 24x7, o **USD ~75–100/mes** apagado fuera de horario.
 - Toda la migracion se publica como **Infrastructure as Code (Terraform o AWS CDK)** dentro del propio repo, manteniendo la promesa de reproducibilidad.
-- La narrativa del repo se preserva: los 12 casos siguen siendo *problem-driven*, ahora con un capitulo adicional — **costo, escalabilidad y observabilidad cloud-native**.
+- La narrativa del repo se preserva: los 12 casos siguen siendo *problem-driven*, ahora con tres capitulos adicionales — **costo, escalabilidad cloud-native** y **como AWS mitiga los hallazgos abiertos del [`SECURITY.md`](SECURITY.md)** (sin auth, DoS del event loop, sin rate limiting, etc.).
 
 ---
 
 ## 🧭 Inventario actual a migrar
 
-Mapa rapido de lo que vive hoy en `compose.root.yml` y `compose.python.yml`:
+Mapa rapido de lo que vive hoy en `compose.root.yml`, `compose.python.yml` y `compose.nodejs.yml`:
 
 | Servicio actual | Imagen / runtime | Recurso | Estado | Equivalente AWS sugerido |
 | --- | --- | --- | --- | --- |
@@ -35,7 +35,8 @@ Mapa rapido de lo que vive hoy en `compose.root.yml` y `compose.python.yml`:
 | `case01-postgres-exporter` | postgres-exporter | metrics | OPERATIVO | RDS Performance Insights · Prometheus en AMP |
 | `case01-prometheus` | prom/prometheus | TSDB | OPERATIVO | **AMP** (Amazon Managed Prometheus) |
 | `case01-grafana` | grafana 11 | UI | OPERATIVO | **AMG** (Amazon Managed Grafana) |
-| Python dispatcher (12 casos) | Python 3.12 | 1 contenedor | OPERATIVO | ECS Fargate Service · Lambda Container |
+| `python-lab` (Python dispatcher, 12 casos internos `:9001-:9012`) | Python 3.12 | 1 contenedor | OPERATIVO | ECS Fargate Service · Lambda Container |
+| `node-lab` (Node dispatcher, 12 casos internos `:9101` + `:9002-:9012`) | Node.js 20 | 1 contenedor | OPERATIVO | ECS Fargate Service · Lambda Container |
 
 **Volumenes con estado**: `pgdata_case01`, `pgdata_case02`, `prometheus_case01`, `grafana_case01` — todos pasan a servicios manejados (RDS / AMP / AMG) y desaparecen como volumenes EFS/EBS.
 
@@ -50,21 +51,20 @@ Internet
          |
          `──▶ CloudFront   (CDN · TLS · WAF · cache estatico)
                 |
-                `──▶ ALB   (path routing · /  /01..12  /py)
+                `──▶ ALB   (path routing por lenguaje + caso)
                        |
-                       |── ECS Fargate · portal-php
-                       |── ECS Fargate · python-hub
-                       |── ECS Fargate · case01-app  ──▶ RDS pg-01 (t4g.micro)
-                       |                              `──▶ ECS Fargate · worker-01
-                       |── ECS Fargate · case02-app  ──▶ RDS pg-02 (t4g.micro)
-                       `── ECS Fargate · case03..12  (sin DB)
+                       |── /                 → ECS Fargate · portal-php
+                       |── /php/01..12/*     → ECS Fargate · php-hub  ──▶ RDS pg-01,02
+                       |                                              `──▶ ECS Fargate · worker-01
+                       |── /py/01..12/*      → ECS Fargate · python-hub  (1 task, 12 casos internos)
+                       `── /node/01..12/*    → ECS Fargate · node-hub    (1 task, 12 casos internos)
 
-Observabilidad           Plataforma
-|- CloudWatch Logs       |- ECR  (registry imagenes)
-|- CloudWatch Metrics    |- Secrets Manager (DB creds)
-|- AWS X-Ray (traces)    |- SSM Parameter Store (config)
-|- AMP (Prometheus)      |- IAM roles por task
-|- AMG (Grafana · SSO)   `- VPC · 2 AZ · subnets pub/priv
+Observabilidad           Plataforma                   Seguridad / Edge
+|- CloudWatch Logs       |- ECR  (registry imagenes)  |- CloudFront + AWS WAF (rate limit, OWASP)
+|- CloudWatch Metrics    |- Secrets Manager (DB creds)|- Cognito User Pool (auth opcional)
+|- AWS X-Ray (traces)    |- SSM Parameter Store       |- ACM (TLS)
+|- AMP (Prometheus)      |- IAM roles por task        |- VPC · 2 AZ · subnets pub/priv
+|- AMG (Grafana · SSO)   `- (ver SECURITY.md mapping) |- GuardDuty + CloudTrail
 `- RDS Performance Insights
 ```
 
@@ -73,8 +73,9 @@ Observabilidad           Plataforma
 - **ECS Fargate** y no EC2: cero parches de SO, factura por vCPU/RAM realmente consumidos.
 - **RDS** y no Postgres en contenedor: backups, snapshots, upgrades manejados — alineado con el caso `01` y `02` que justamente hablan de presion de DB.
 - **AMP + AMG** y no Prometheus/Grafana auto-hospedados: mismo dashboard, sin operar TSDB.
-- **ALB con path routing** reemplaza `php-hub` (nginx).
-- **CloudFront** delante para TLS, cache del portal y proteccion ante picos.
+- **ALB con path routing por lenguaje** (`/php/*`, `/py/*`, `/node/*`) replica el modelo de los 3 hubs locales (`compose.root.yml`, `compose.python.yml`, `compose.nodejs.yml`) — el visitante elige stack en la URL, no hay 36 endpoints.
+- **CloudFront + WAF** delante para TLS, cache del portal, rate limiting y proteccion ante los hallazgos del [`SECURITY.md`](SECURITY.md) (DoS del caso 11, ausencia de auth, etc. — ver mapping abajo).
+- **Cognito** opcional para resolver el hallazgo A1 (sin auth) sin tocar codigo del lab.
 
 ---
 
@@ -179,7 +180,9 @@ Internet
 
 | Servicio | Configuracion | Costo mensual estimado |
 | --- | --- | --- |
-| ECS Fargate — portal + python | 0.25 vCPU / 0.5 GB · 2 servicios | ~ USD 7 |
+| ECS Fargate — portal | 0.25 vCPU / 0.5 GB · 1 servicio | ~ USD 3.5 |
+| ECS Fargate — python-hub | 0.5 vCPU / 1 GB · dispatcher con 12 casos internos | ~ USD 7 |
+| ECS Fargate — node-hub | 0.5 vCPU / 1 GB · dispatcher con 12 casos internos | ~ USD 7 |
 | ECS Fargate — 12 casos PHP | 0.25 vCPU / 0.5 GB c/u | ~ USD 42 |
 | ECS Fargate — worker case01 | 0.25 vCPU / 0.5 GB | ~ USD 3.5 |
 | RDS PostgreSQL — case01 | db.t4g.micro · 20 GB gp3 · single-AZ | ~ USD 13 |
@@ -187,13 +190,16 @@ Internet
 | ALB | 1 ALB · trafico bajo | ~ USD 18 |
 | NAT Gateway | 1 NAT (single-AZ) | ~ USD 33 |
 | CloudFront | <50 GB egress | ~ USD 1–3 |
+| AWS WAF | managed rules + rate-limit | ~ USD 6 |
 | Route 53 | 1 hosted zone | ~ USD 0.5 |
 | CloudWatch Logs | 5 GB ingest + 10 GB store | ~ USD 4 |
 | AMP | <10M samples ingeridos | ~ USD 2 |
 | AMG | 1 editor user | ~ USD 9 |
 | ECR | 5 GB | ~ USD 0.5 |
 | Secrets Manager | 4 secrets | ~ USD 1.6 |
-| **Total aproximado 24x7** | | **USD ~145–155 / mes** |
+| **Total aproximado 24x7** | | **USD ~165–175 / mes** |
+
+> **Nota sobre Python y Node**: cada hub corre los 12 casos en un solo task Fargate (subprocesos internos), exactamente como en local — un container, mas RAM. Esto es muchisimo mas barato que correr 24 services Fargate adicionales (12 Python + 12 Node = ~USD 84/mes extra). El trade-off: si un caso Python tiene un memory leak, afecta a los otros 11. Para PHP no aplica porque cada caso ya tiene su servicio independiente (es asi en `compose.root.yml`).
 
 ### Opcion A · ECS Fargate · apagado fuera de horario laboral (cron 8h x 5 dias)
 
@@ -201,21 +207,23 @@ Internet
 
 | Componente | Ahorro |
 | --- | --- |
-| ECS Fargate (12 casos + worker + 2 hubs) | -75% → ~ USD 13 |
+| ECS Fargate (12 casos PHP + worker + 3 hubs) | -75% → ~ USD 16 |
 | RDS (stop max 7 dias por ciclo) | -60% → ~ USD 10 |
-| ALB / NAT / Route 53 / CloudFront | sin cambio |
-| **Total estimado** | **USD ~70–95 / mes** |
+| ALB / NAT / Route 53 / CloudFront / WAF | sin cambio |
+| **Total estimado** | **USD ~85–110 / mes** |
 
 ### Opcion B · Lambda + Aurora Serverless v2 · pay-per-use
 
 | Servicio | Asuncion | Costo |
 | --- | --- | --- |
-| Lambda (12 funciones container) | <10 000 invocaciones / mes | ~ USD 0–1 |
+| Lambda (12 funciones PHP container + 12 Python + 12 Node = 36 funciones) | <10 000 invocaciones / mes total | ~ USD 0–1 |
 | API Gateway HTTP API | <1M requests / mes | ~ USD 1 |
 | Aurora Serverless v2 | min 0.5 ACU, ~30 min/dia activo | ~ USD 25–40 |
-| CloudFront / Route 53 / WAF | igual que A | ~ USD 5 |
+| CloudFront / Route 53 / WAF | igual que A | ~ USD 11 |
 | CloudWatch | base | ~ USD 2 |
-| **Total** | | **USD ~35–50 / mes** |
+| **Total** | | **USD ~40–55 / mes** |
+
+> Lambda escala mejor con la **paridad multi-stack completa**: 36 funciones que comparten edge (CloudFront + WAF) y un solo backend (Aurora Serverless v2). El cold start sigue siendo visible (200-800ms en PHP, 100-300ms en Node, 200-500ms en Python).
 
 ### Opcion C · EKS
 
@@ -313,16 +321,17 @@ psql "postgres://problemlab:***@case01.xxxxx.us-east-1.rds.amazonaws.com:5432/pr
 ### Fase 4 · Cluster ECS y task definitions (Dia 3–4)
 
 - Crear cluster `pdsl-prod` con capacity provider Fargate + Fargate Spot 70/30.
-- Por cada servicio: una task definition con el contenedor unico, 256 CPU / 512 MiB (ARM64).
-- Crear 14 services (portal, python, 12 casos) detras de un solo ALB con **listener rules por path**:
+- Por cada servicio: una task definition con el contenedor unico, 256 CPU / 512 MiB (ARM64) para casos PHP, 512 CPU / 1024 MiB para los hubs Python y Node (corren 12 procesos internos).
+- Crear 15 services (portal + 12 casos PHP + python-hub + node-hub) detras de un solo ALB con **listener rules por path**:
 
-| Path rule | Target group |
-| --- | --- |
-| `/`, `/static/*` | tg-portal |
-| `/01/*` | tg-case01 |
-| … | … |
-| `/12/*` | tg-case12 |
-| `/py/*` | tg-python |
+| Path rule | Target group | Notas |
+| --- | --- | --- |
+| `/`, `/static/*` | `tg-portal` | Portal HTML (PHP+Apache) |
+| `/php/01/*` | `tg-php-case01` | Caso 01 PHP, conecta a RDS pg-01 |
+| `/php/02/*` | `tg-php-case02` | Caso 02 PHP, conecta a RDS pg-02 |
+| `/php/03/*` … `/php/12/*` | `tg-php-caseNN` | Casos sin DB |
+| `/py/*` | `tg-python-hub` | Dispatcher Python (12 casos internos) |
+| `/node/*` | `tg-node-hub` | Dispatcher Node (12 casos internos) |
 
 ### Fase 5 · Edge (Dia 4)
 
@@ -377,7 +386,55 @@ jobs:
 
 ---
 
-## 🔐 Seguridad y cumplimiento
+## 🛡️ Como AWS resuelve los hallazgos abiertos del [`SECURITY.md`](SECURITY.md)
+
+El [`SECURITY.md`](SECURITY.md) documenta hallazgos del lab que existen **por diseño** (es un laboratorio educativo, no un servicio productivo): sin auth, sin rate limiting, DoS posible del event loop en caso 11, sin atomicidad en escrituras de state, etc. **Migrar a AWS resuelve la mayoria de esos hallazgos sin tocar codigo del lab**, simplemente delegando defensas en servicios manejados.
+
+Esta tabla mapea cada hallazgo a la solucion AWS recomendada:
+
+| # | Hallazgo en SECURITY.md | Severidad si se expone | Mitigacion AWS sin tocar codigo del lab | Costo aproximado |
+| --- | --- | --- | --- | --- |
+| **A1** | Sin autenticacion en ningun endpoint | Alta | **3 opciones**, en orden de simplicidad: <br/>**a)** **ALB OIDC integration** con **Cognito User Pool** — el ALB intercepta requests no autenticadas y redirige al login Cognito. Cero cambio en el codigo del lab. <br/>**b)** **CloudFront + Lambda@Edge** validando JWT de Cognito o IdP externo (Okta, Auth0, Google). <br/>**c)** **WAF custom rule** validando un header `X-API-Key` contra Secrets Manager (rotable). | Cognito: USD 0 hasta 50K MAU. Lambda@Edge: <USD 1/mes |
+| **A2** | DoS del event loop en caso 11 Node (`while(...){}` sincronico bloqueante) | Alta | **WAF rate-based rule**: `RateLimit: 100 requests / 5min por IP, scoped to /node/11/*`. **CloudFront + WAF Bot Control** filtra crawlers automatizados. **ALB target health checks** detectan task colgada → Fargate la reemplaza automaticamente (`HealthCheckGracePeriodSeconds: 30s`). **Auto Scaling** sobre CPU (target 60%) escala horizontalmente. | WAF: USD 6/mes + USD 1 por regla custom |
+| **M1** | Mutaciones aceptan cualquier verbo HTTP (`GET /reset-lab` ≡ `DELETE /reset-lab`) | Media | **WAF custom rule**: `if path matches /reset-lab and method != POST then BLOCK`. Definible declarativamente. **API Gateway** (Opcion B serverless) valida verbo nativamente — no llega a Lambda si el metodo no esta en la spec. | Incluido en WAF base |
+| **M2** | Reflejo de header `Host` en `probe.php` | Baja | **CloudFront origin request policy** controla que headers llegan al backend (allowlist). **ALB** dropea Host invalido con `if header Host not in (pdsl.tudominio.dev, *.tudominio.dev) then 421`. **WAF managed rule** `AWSManagedRulesCommonRuleSet` cubre Host header attacks comunes. | Incluido |
+| **M3** | Sin rate limiting global | Media | **WAF rate-based rules** por path: 1000 req/5min para lecturas, 60 req/5min para `/reset-lab`/`/share-knowledge`/`/cutover/advance`. **CloudFront cache** absorbe lecturas repetidas — el backend ni se entera. **API Gateway throttling** (Opcion B) tiene throttle por endpoint nativo. | Incluido en WAF |
+| **M4** | Sin atomicidad en escrituras de state JSON en `/tmp` | Media | **El problema desaparece**: el state se va de `/tmp` a un servicio AWS apropiado: <br/>**a)** **DynamoDB** con `ConditionExpression` para writes condicionales (CAS atomico). <br/>**b)** **RDS** con transacciones SERIALIZABLE. <br/>**c)** **S3 + If-Match ETag** para optimistic locking. <br/>Cualquiera elimina la corrupcion silenciosa que existe con archivos planos compartidos. | DynamoDB: USD 0–5 (PAY_PER_REQUEST) |
+
+### Defensas adicionales que AWS aporta (que el lab no tiene)
+
+| Capa | Servicio | Que protege |
+| --- | --- | --- |
+| **Edge** | CloudFront | TLS, cache (reduce hits al origen ≈90% en lecturas estaticas), origin shield |
+| **Edge** | AWS WAF + AWS Shield Standard | OWASP Top 10 (`AWSManagedRulesCommonRuleSet`), bots (`AWSManagedRulesBotControlRuleSet`), known bad inputs, geo-blocking, IP reputation lists, DDoS L3/L4 (gratuito con AWS Shield Standard) |
+| **Identity** | Cognito + IAM Identity Center | Auth de usuarios finales (Cognito) y de operadores (IAM IC con SSO corporativo) |
+| **Network** | VPC privadas + Security Groups | Tasks Fargate sin IP publica; el ALB es el unico ingress |
+| **Network** | VPC Endpoints | Tasks acceden a S3/ECR/Secrets Manager sin pasar por Internet (NAT) |
+| **Application** | IAM task roles | Cada servicio Fargate asume un rol con permisos minimos (least privilege). Caso 01 puede leer su RDS, no la del caso 02 |
+| **Secrets** | Secrets Manager + KMS | Rotacion automatica de credenciales DB, cifrado en reposo, audit completo en CloudTrail |
+| **Detection** | GuardDuty | ML-based threat detection: bitcoin miners, DNS exfiltration, SSH brute force, comportamiento anomalo |
+| **Audit** | CloudTrail | Log inmutable de TODA accion en la cuenta (quien hizo que, cuando, desde donde) — 7 dias gratis, +1 trail a S3 cifrado para retencion larga |
+| **Compliance** | AWS Config + Security Hub | Reglas automaticas tipo "ningun S3 bucket publico", "RDS cifrado", "tasks sin IAM role overprivilegiado" |
+
+### Ejemplo concreto: `/node/11/report-legacy?rows=5000000` despues de migrar
+
+Sin AWS, este endpoint puede ser invocado en loop por cualquier IP en LAN para bloquear el event loop del hub Node `:8300` durante 9 segundos por cada 10 requests concurrentes (hallazgo A2).
+
+Despues de migrar:
+
+1. **Cognito** rechaza el request si no hay JWT valido (A1 mitigado).
+2. Si pasa Cognito, **WAF rate-based rule** (`/node/11/*` limit 50 req/5min/IP) bloquea el flood (A2 mitigado en el edge).
+3. Si por alguna razon llega al backend, **ALB health check** detecta latencia anomala y rota la task antes que afecte a otras requests.
+4. **CloudWatch alarm** sobre `event_loop_lag_p99` (publicada por el caso 11 al `/metrics-prometheus`, scrapeada por **AMP**, alarmada via **Container Insights**) notifica via **SNS → email/Slack/PagerDuty** en 60 segundos.
+5. **Auto Scaling** lanza una task adicional si el CPU sostenido supera 60% — el costo de la mitigacion se amortiza solo durante el ataque.
+
+El costo total de estas mitigaciones es **~USD 6–10/mes** (WAF + Cognito en su tier gratuito + Container Insights). Un buen ejercicio de "el costo defensivo es bajo cuando se delega correctamente".
+
+---
+
+## 🔐 Seguridad y cumplimiento (controles base)
+
+Mas alla del mapping anterior con `SECURITY.md`, esta es la postura base de la migracion:
 
 - **IAM**: una task role por servicio, principio de privilegio minimo. Nunca claves AWS dentro del contenedor.
 - **Secretos**: Secrets Manager con rotacion automatica para RDS.
@@ -455,12 +512,17 @@ terraform apply -var "domain_name=pdsl.tudominio.dev"
 ## ✅ Definition of Done de la migracion
 
 - [ ] `terraform apply` levanta toda la infra desde cero en <30 min.
-- [ ] `https://pdsl.tudominio.dev/01/` … `/12/` responden 200 con la UI nativa.
-- [ ] Grafana publico (read-only) muestra latencia y QPS de caso 01 en vivo.
+- [ ] `https://pdsl.tudominio.dev/php/01..12/` responden 200 con la UI nativa.
+- [ ] `https://pdsl.tudominio.dev/py/01..12/health` responden 200 (hub Python).
+- [ ] `https://pdsl.tudominio.dev/node/01..12/health` responden 200 (hub Node).
+- [ ] Grafana publico (read-only) muestra latencia y QPS de caso 01 en vivo, mas `event_loop_lag_ms_p99` del hub Node.
 - [ ] CI/CD: `git push main` → imagen en ECR → service redeploy automatico.
-- [ ] AWS Budget con alerta activa.
+- [ ] AWS Budget con alerta activa a USD 50 y USD 150.
+- [ ] WAF rate-based rules activas en `/php/*`, `/py/*`, `/node/*`.
+- [ ] Cognito User Pool funcional para auth (resuelve hallazgo A1 del [`SECURITY.md`](SECURITY.md)).
 - [ ] Documentado en este archivo el costo real del primer mes vs estimado.
-- [ ] El portal sigue siendo evaluable en local con `docker compose -f compose.root.yml up` (no se rompe nada).
+- [ ] **Confirmar que cada hallazgo del [`SECURITY.md`](SECURITY.md) tiene su mitigacion AWS validada en produccion** (A1-A2 alta prioridad, M1-M4 verificado).
+- [ ] El laboratorio sigue siendo evaluable en local con los 3 composes (`compose.root.yml`, `compose.python.yml`, `compose.nodejs.yml`) — no se rompe nada.
 
 ---
 

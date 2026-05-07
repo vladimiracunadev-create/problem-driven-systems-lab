@@ -2,6 +2,33 @@
 
 Todos los cambios notables de este laboratorio se registran aqui con foco en madurez tecnica y documental.
 
+## 2026-05-07 - AWS_MIGRATION.md actualizado: paridad Node + hubs + mapping de seguridad
+
+### Changed
+
+- `AWS_MIGRATION.md` refleja la realidad del repo post-Node:
+  - Inventario incluye `node-lab` (dispatcher Node, 12 casos internos en `:9101 + :9002-:9012`) junto al `python-lab` y `php-hub`.
+  - Topologia objetivo ECS Fargate documenta los **3 hubs por lenguaje** detras de un ALB con path routing por lenguaje (`/php/*`, `/py/*`, `/node/*`) — espejo del modelo local de los 3 composes (`compose.root.yml`, `compose.python.yml`, `compose.nodejs.yml`).
+  - Tabla de costos Opcion A actualizada: 3 hubs Fargate (php-hub via 12 services, python-hub y node-hub como tasks unicas con dispatchers internos). Total 24x7 sube de USD ~145 a USD ~165/mes (incluye node-hub + WAF), con apagado fuera de horario en USD ~85–110.
+  - Opcion B Lambda escala a 36 funciones (12 PHP + 12 Python + 12 Node) compartiendo Aurora Serverless v2 + CloudFront + WAF.
+
+### Added
+
+- Nueva seccion **🛡️ Como AWS resuelve los hallazgos abiertos del SECURITY.md** que mapea cada hallazgo (A1-A2 altos, M1-M4 medios) a la mitigacion AWS recomendada con costo aproximado:
+  - **A1** (sin auth) → ALB OIDC + Cognito User Pool, o Lambda@Edge, o WAF X-API-Key
+  - **A2** (DoS event loop caso 11) → WAF rate-based rule + ALB health checks + Auto Scaling
+  - **M1** (verbo HTTP) → WAF custom rule por path/metodo
+  - **M2** (Host reflejado) → CloudFront origin request policy + WAF managed rules
+  - **M3** (sin rate limiting) → WAF rate-based rules + CloudFront cache + API Gateway throttling
+  - **M4** (atomicidad de state) → DynamoDB con conditional writes / RDS / S3 ETag — el problema desaparece al moverse fuera de `/tmp`
+- Ejemplo concreto end-to-end de como `/node/11/report-legacy?rows=5000000` queda blindado en AWS (Cognito → WAF rate limit → ALB health check → CloudWatch alarm → Auto Scaling), con costo total ~USD 6-10/mes.
+- Tabla de **defensas adicionales que AWS aporta** (CloudFront edge, AWS Shield Standard, GuardDuty, CloudTrail, IAM task roles, VPC privadas, Secrets Manager + KMS, AWS Config + Security Hub).
+- Definition of Done extendida con checks por stack (PHP/Python/Node) y validacion explicita del mapping de seguridad.
+
+### Documentation
+
+- `README.md` raiz: bullet del Executive Summary y fila de la tabla de docs principales mencionan ahora el mapping `SECURITY.md` → AWS dentro de `AWS_MIGRATION.md`.
+
 ## 2026-05-07 - Postura de seguridad documentada con honestidad
 
 ### Security
