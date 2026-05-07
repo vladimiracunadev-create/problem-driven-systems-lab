@@ -1,0 +1,37 @@
+# compose.nodejs.yml — Stack Node.js completo (los 12 casos)
+#
+# Un solo contenedor, un solo puerto.
+# El dispatcher interno enruta por prefijo de path:
+#
+#   GET http://localhost:8300/       → indice de casos
+#   GET http://localhost:8300/01/... → caso 01
+#   GET http://localhost:8300/12/... → caso 12
+#
+# Los 12 servidores de caso corren como subprocesos internos
+# en puertos 9001-9012 que nunca se exponen al host.
+#
+# Uso:
+#   docker compose -f compose.nodejs.yml up -d --build
+#   docker compose -f compose.nodejs.yml down
+#   docker compose -f compose.nodejs.yml logs -f
+
+services:
+  node-lab:
+    build:
+      context: .
+      dockerfile: node-dispatcher/Dockerfile
+    container_name: pdsl-node-lab
+    ports:
+      - "8300:8300"
+    environment:
+      APP_STACK: Node.js 20
+      PORT: "8300"
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://127.0.0.1:8300/01/health',{timeout:3000},r=>process.exit(r.statusCode===200?0:1)).on('error',()=>process.exit(1))"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 25s
+    mem_limit: 512m
+    cpus: 2.0
+    restart: unless-stopped

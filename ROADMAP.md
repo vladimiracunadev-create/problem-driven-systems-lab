@@ -7,7 +7,8 @@
 - Casos `01` al `12` operativos en PHP.
 - Casos `01` al `12` operativos en Python.
 - Casos `01` al `12` operativos en Node.js, cada uno con la primitiva nativa que mejor expresa el problema: `event_loop_lag_ms` y `process.memoryUsage()` para presion real, `AbortController`/`AbortSignal.timeout` para cancelacion y deadlines, `Map<consumer, handler>` para strangler, `Proxy` para compatibilidad de contrato, `EventEmitter` para cutover events, `monitorEventLoopDelay()` para impacto sobre el loop, optional chaining como runbook codificado.
-- Docker por caso y por stack definido como ruta oficial.
+- **Tres hubs operativos (uno por lenguaje):** `compose.root.yml` (PHP `8100`), `compose.python.yml` (Python `8200`), `compose.nodejs.yml` (Node.js `8300`). Cada hub sirve los 12 casos via routing por path.
+- Docker por caso disponible para modo estudio aislado (memoria, event loop) sin contaminacion de otros workloads.
 - Familia documental profesional incorporada en la raiz del repo.
 - Catalogo y portal conectados por metadatos compartidos.
 - Los otros stacks siguen creciendo de forma gradual sobre la misma base problem-driven.

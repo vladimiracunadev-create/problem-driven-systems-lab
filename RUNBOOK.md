@@ -11,11 +11,14 @@
 | --- | --- | --- |
 | PHP — portal + hub + DB + observabilidad | `docker compose -f compose.root.yml up -d --build` | `8080` portal · `8100` hub · `9091` Prometheus · `3001` Grafana |
 | Python — dispatcher unificado | `docker compose -f compose.python.yml up -d --build` | `8200` hub |
+| Node.js — dispatcher unificado | `docker compose -f compose.nodejs.yml up -d --build` | `8300` hub |
 | Portal liviano | `docker compose -f compose.portal.yml up -d --build` | `8080` |
 
-Ambos stacks pueden correr en paralelo sin colisión de puertos.
+Los tres stacks pueden correr en paralelo sin colisión de puertos. **Tres hubs cubren los 36 endpoints (12 casos × 3 stacks).**
 
-### Casos aislados (desarrollo o revisión individual)
+### Casos aislados (modo estudio individual)
+
+Cada caso conserva su propio `compose.yml` para reproducir UN problema en aislamiento. Util cuando la gracia del caso **es** el aislamiento (caso `05` mide heap V8 / `tracemalloc` / `memory_get_usage()` sin contaminacion; caso `11` mide `event_loop_lag_ms` / contention sin requests concurrentes diluyendo la senal). Para los demas casos, los hubs son suficientes.
 
 | Escenario | Comando recomendado |
 | --- | --- |
@@ -68,22 +71,22 @@ Ambos stacks pueden correr en paralelo sin colisión de puertos.
 | Caso 02 Python | `http://localhost:8200/02/health` | Respuesta saludable |
 | Casos 03–12 Python | `http://localhost:8200/03/health` … `http://localhost:8200/12/health` | Respuesta saludable |
 
-### Otros (Node.js casos aislados)
+### Node.js (compose.nodejs.yml)
 
 | Componente | URL | Senal esperada |
 | --- | --- | --- |
-| Caso 01 Node.js | `http://localhost:821/health` | Respuesta saludable |
-| Caso 02 Node.js | `http://localhost:822/health` | Respuesta saludable |
-| Caso 03 Node.js | `http://localhost:823/health` | Respuesta saludable |
-| Caso 04 Node.js | `http://localhost:824/health` | Respuesta saludable |
-| Caso 05 Node.js | `http://localhost:825/health` | Respuesta saludable |
-| Caso 06 Node.js | `http://localhost:826/health` | Respuesta saludable |
-| Caso 07 Node.js | `http://localhost:827/health` | Respuesta saludable |
-| Caso 08 Node.js | `http://localhost:828/health` | Respuesta saludable |
-| Caso 09 Node.js | `http://localhost:829/health` | Respuesta saludable |
-| Caso 10 Node.js | `http://localhost:8210/health` | Respuesta saludable |
-| Caso 11 Node.js | `http://localhost:8211/health` | Respuesta saludable |
-| Caso 12 Node.js | `http://localhost:8212/health` | Respuesta saludable |
+| Node.js hub — índice | `http://localhost:8300/` | Lista de casos JSON |
+| Caso 01 Node.js | `http://localhost:8300/01/health` | Respuesta saludable |
+| Caso 02 Node.js | `http://localhost:8300/02/health` | Respuesta saludable |
+| Casos 03–12 Node.js | `http://localhost:8300/03/health` … `http://localhost:8300/12/health` | Respuesta saludable |
+
+### Casos aislados (modo estudio — solo cuando el aislamiento aporta)
+
+| Componente | URL | Cuando usarlo |
+| --- | --- | --- |
+| Caso 05 Node.js aislado | `http://localhost:825/health` | Medir `process.memoryUsage()` heap V8 sin contaminacion de otros workloads |
+| Caso 11 Node.js aislado | `http://localhost:8211/health` | Medir `event_loop_lag_ms` sin requests concurrentes diluyendo la senal |
+| Otros casos aislados | `http://localhost:821-829`, `8210-8212` | Disponibles, pero los hubs (`8100`/`8200`/`8300`) ya los aislan por path |
 
 ## 🧰 Comandos utiles de operacion
 

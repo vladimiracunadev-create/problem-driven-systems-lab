@@ -61,9 +61,10 @@ Cada lenguaje operativo tiene su compose raiz — un comando levanta los 12 caso
 
 - `compose.root.yml` — PHP: portal (`8080`) + hub nginx (`8100`) + PostgreSQL (01–02) + Prometheus (`9091`) + Grafana (`3001`)
 - `compose.python.yml` — Python: 12 casos en un solo contenedor dispatcher (`8200`), stdlib pura, sin dependencias externas
+- `compose.nodejs.yml` — Node.js 20: 12 casos en un solo contenedor dispatcher (`8300`), stdlib pura, sin dependencias externas
 - `compose.portal.yml` — portal liviano solamente (`8080`)
 
-Los stacks pueden correr en paralelo sin colisión de puertos. Cada lenguaje futuro (Node.js, Java, .NET) seguirá el mismo patron: `compose.{lang}.yml` en la raiz con su bloque de puertos propio.
+Los stacks pueden correr en paralelo sin colisión de puertos. Cada lenguaje futuro (Java, .NET) seguirá el mismo patron: `compose.{lang}.yml` en la raiz con su bloque de puertos propio (`8400`, `8500`).
 
 El portal:
 - `portal/app/index.html` presenta la interfaz principal

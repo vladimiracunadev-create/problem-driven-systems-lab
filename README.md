@@ -101,11 +101,11 @@ Cada lenguaje tiene su propio compose en la raíz del repositorio. Un comando le
 | --- | --- | --- | --- |
 | [`compose.root.yml`](compose.root.yml) | PHP 8.3 | `8080` portal · `8100` PHP hub · `9091` Prometheus · `3001` Grafana | `OPERATIVO` |
 | [`compose.python.yml`](compose.python.yml) | Python 3.12 | `8200` Python hub | `OPERATIVO` |
-| `compose.nodejs.yml` | Node.js | `8300` Node hub | `PLANIFICADO` (caso 03 ya operativo de forma aislada en `cases/03-.../node/compose.yml`, puerto `823`) |
+| [`compose.nodejs.yml`](compose.nodejs.yml) | Node.js 20 | `8300` Node hub | `OPERATIVO` |
 | `compose.java.yml` | Java / JVM | `8400` Java hub | `PLANIFICADO` |
 | `compose.dotnet.yml` | .NET 8 | `8500` .NET hub | `PLANIFICADO` |
 
-Un puerto por lenguaje para los casos. Los servicios de soporte (DB, Prometheus, Grafana) tienen los suyos propios porque son servicios distintos. Mientras un stack no tenga su `compose.{lang}.yml` raíz, los casos individuales se levantan vía `cases/<caso>/<stack>/compose.yml` y exponen el puerto `8XY` (X=stack, Y=caso).
+**Tres hubs garantizan el lab completo (uno por lenguaje):** un solo puerto sirve los 12 casos vía routing por path (`/01/health`...`/12/health`). Los servicios de soporte (DB, Prometheus, Grafana) tienen los suyos propios porque son servicios distintos.
 
 ```bash
 # PHP: portal + nginx hub (12 casos internos) + DB + Prometheus + Grafana
@@ -114,13 +114,18 @@ docker compose -f compose.root.yml up -d --build
 # Python: dispatcher (12 casos internos en un contenedor)
 docker compose -f compose.python.yml up -d --build
 
+# Node.js: dispatcher (12 casos internos en un contenedor)
+docker compose -f compose.nodejs.yml up -d --build
+
 # Portal liviano solamente
 docker compose -f compose.portal.yml up -d --build
 ```
 
-### Ejecucion aislada de un solo caso
+Con esto, los 36 endpoints (12 casos × 3 stacks) viven detras de **3 puertos**: `8100`, `8200`, `8300`. El portal (`8080`) y la observabilidad (`9091` Prometheus, `3001` Grafana) suman 3 mas. **6 puertos cubren el laboratorio entero.**
 
-Cada caso mantiene su propio `compose.yml` interno para desarrollo o revisión individual:
+### Ejecucion aislada de un solo caso (modo estudio)
+
+Cada caso mantiene su propio `compose.yml` para reproducir UN problema en aislamiento — util cuando la gracia del caso **es** el aislamiento (caso `05` mide heap V8 sin contaminacion de otros workloads; caso `11` mide `event_loop_lag_ms` sin requests concurrentes diluyendo la senal). Para los demas casos, los hubs son suficientes.
 
 ```bash
 # PHP aislado (ejemplo caso 01)
@@ -128,6 +133,9 @@ docker compose -f cases/01-api-latency-under-load/php/compose.yml up -d --build
 
 # Python aislado (ejemplo caso 01)
 docker compose -f cases/01-api-latency-under-load/python/compose.yml up -d --build
+
+# Node.js aislado (ejemplo caso 11 — para medir event loop lag sin ruido)
+docker compose -f cases/11-heavy-reporting-blocks-operations/node/compose.yml up -d --build
 ```
 
 Tambien existen atajos con `make`, pero la ruta soportada y mas portable sigue siendo `docker compose` directo.

@@ -33,7 +33,7 @@ Cada lenguaje tiene su propio archivo compose en la raíz. Un solo comando levan
 | --- | --- | --- | --- |
 | [`compose.root.yml`](compose.root.yml) | PHP 8.3 | `8080` portal · `8100` PHP hub · `9091` Prometheus · `3001` Grafana | `OPERATIVO` |
 | [`compose.python.yml`](compose.python.yml) | Python 3.12 | `8200` Python hub | `OPERATIVO` |
-| `compose.nodejs.yml` | Node.js | 841–849, 8410–8412 | `PLANIFICADO` (casos `01`-`05` operativos hoy de forma aislada en `cases/<caso>/node/compose.yml`, puertos `821`-`825`) |
+| [`compose.nodejs.yml`](compose.nodejs.yml) | Node.js 20 | `8300` Node hub | `OPERATIVO` |
 | `compose.java.yml` | Java / JVM | 851–859, 8510–8512 | `PLANIFICADO` |
 | `compose.dotnet.yml` | .NET 8 | 861–869, 8610–8612 | `PLANIFICADO` |
 
@@ -63,12 +63,30 @@ docker compose -f compose.python.yml up -d --build
 
 URLs esperadas:
 
-- Casos Python: `http://localhost:831` a `http://localhost:839` y `http://localhost:8310` a `http://localhost:8312`
+- Python hub: `http://localhost:8200/`
+- Casos Python: `http://localhost:8200/01/health` ... `http://localhost:8200/12/health`
 
 Para apagar:
 
 ```bash
 docker compose -f compose.python.yml down
+```
+
+## 🟢 Laboratorio Node.js completo
+
+```bash
+docker compose -f compose.nodejs.yml up -d --build
+```
+
+URLs esperadas:
+
+- Node.js hub: `http://localhost:8300/`
+- Casos Node.js: `http://localhost:8300/01/health` ... `http://localhost:8300/12/health`
+
+Para apagar:
+
+```bash
+docker compose -f compose.nodejs.yml down
 ```
 
 ## 🪶 Portal liviano solamente

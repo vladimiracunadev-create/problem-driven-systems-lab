@@ -50,9 +50,10 @@ Cada lenguaje operativo tiene su propio compose en la raíz — un comando levan
 
 - `compose.root.yml` — PHP: portal (`8080`) + hub nginx (`8100`) + PostgreSQL (casos 01–02) + Prometheus (`9091`) + Grafana (`3001`)
 - `compose.python.yml` — Python: dispatcher único con 12 casos internos (`8200`), stdlib pura, sin dependencias externas
+- `compose.nodejs.yml` — Node.js 20: dispatcher único con 12 casos internos (`8300`), stdlib pura, sin dependencias externas
 - `compose.portal.yml` — portal liviano solamente (`8080`)
 
-Los stacks PHP y Python pueden correr en paralelo sin colisión de puertos. Cada lenguaje nuevo (Node.js, Java, .NET) seguirá el mismo patrón con un hub propio en su bloque de puertos (`8300`, `8400`, `8500`).
+Los tres stacks operativos pueden correr en paralelo sin colisión de puertos. Cada lenguaje futuro (Java, .NET) seguirá el mismo patrón con un hub propio (`8400`, `8500`).
 
 La capa visual sigue viviendo en `portal/`, con:
 

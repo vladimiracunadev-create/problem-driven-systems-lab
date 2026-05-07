@@ -432,7 +432,7 @@ const jsonResponse = (res, statusCode, body) => {
   res.end(JSON.stringify(body, null, 2));
 };
 
-http.createServer(async (req, res) => {
+const server = http.createServer(async (req, res) => {
   const started = process.hrtime.bigint();
   const url = new URL(req.url, 'http://127.0.0.1');
   const uri = url.pathname || '/';
@@ -581,6 +581,9 @@ http.createServer(async (req, res) => {
   payload.timestamp_utc = new Date().toISOString();
   payload.pid = process.pid;
   jsonResponse(res, statusCode, payload);
-}).listen(8080, '0.0.0.0', () => {
-  console.log('Servidor Node escuchando en 8080');
+});
+
+const PORT = Number.parseInt(process.env.PORT || '8080', 10);
+server.listen(PORT, '0.0.0.0', () => {
+  console.log(`Servidor Node escuchando en ${PORT}`);
 });
