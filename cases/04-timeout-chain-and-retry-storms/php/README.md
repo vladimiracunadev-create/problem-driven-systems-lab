@@ -34,19 +34,25 @@ El diseño de resiliencia requiere manejo de tiempo explícito y algoritmos de r
 docker compose -f compose.yml up -d --build
 ```
 
+## Como consumir (dos opciones)
+
+**Hub PHP (recomendado, 8100 en `compose.root.yml`):** este caso queda servido en `http://localhost:8100/04/...` junto a los otros 11 casos.
+
+**Modo aislado (814 en este `compose.yml`):** levanta solo este caso, util cuando la medicion necesita procesar limpio (sin otros casos compartiendo runtime).
+
 ## 🔎 Endpoints
 
 ```bash
-curl http://localhost:814/
-curl http://localhost:814/health
-curl "http://localhost:814/quote-legacy?scenario=provider_down&customer_id=42&items=3"
-curl "http://localhost:814/quote-resilient?scenario=provider_down&customer_id=42&items=3"
-curl http://localhost:814/dependency/state
-curl http://localhost:814/incidents?limit=10
-curl http://localhost:814/diagnostics/summary
-curl http://localhost:814/metrics
-curl http://localhost:814/metrics-prometheus
-curl http://localhost:814/reset-lab
+curl http://localhost:8100/04/
+curl http://localhost:8100/04/health
+curl "http://localhost:8100/04/quote-legacy?scenario=provider_down&customer_id=42&items=3"
+curl "http://localhost:8100/04/quote-resilient?scenario=provider_down&customer_id=42&items=3"
+curl http://localhost:8100/04/dependency/state
+curl http://localhost:8100/04/incidents?limit=10
+curl http://localhost:8100/04/diagnostics/summary
+curl http://localhost:8100/04/metrics
+curl http://localhost:8100/04/metrics-prometheus
+curl http://localhost:8100/04/reset-lab
 ```
 
 ## 🧪 Escenarios útiles

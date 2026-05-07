@@ -41,18 +41,24 @@ A nivel de código puro, este caso desnuda el estrangulamiento de los workers ma
 docker compose -f compose.yml up -d --build
 ```
 
+## Como consumir (dos opciones)
+
+**Hub PHP (recomendado, 8100 en `compose.root.yml`):** este caso queda servido en `http://localhost:8100/01/...` junto a los otros 11 casos.
+
+**Modo aislado (811 en este `compose.yml`):** levanta solo este caso, util cuando la medicion necesita procesar limpio (sin otros casos compartiendo runtime).
+
 ## 🔎 Endpoints
 
 ```bash
-curl http://localhost:811/
-curl http://localhost:811/health
-curl "http://localhost:811/report-legacy?days=30&limit=20"
-curl "http://localhost:811/report-optimized?days=30&limit=20"
-curl http://localhost:811/batch/status
-curl http://localhost:811/job-runs?limit=10
-curl http://localhost:811/diagnostics/summary
-curl http://localhost:811/metrics
-curl http://localhost:811/metrics-prometheus
+curl http://localhost:8100/01/
+curl http://localhost:8100/01/health
+curl "http://localhost:8100/01/report-legacy?days=30&limit=20"
+curl "http://localhost:8100/01/report-optimized?days=30&limit=20"
+curl http://localhost:8100/01/batch/status
+curl http://localhost:8100/01/job-runs?limit=10
+curl http://localhost:8100/01/diagnostics/summary
+curl http://localhost:8100/01/metrics
+curl http://localhost:8100/01/metrics-prometheus
 ```
 
 ## 📈 Observabilidad
@@ -66,15 +72,15 @@ curl http://localhost:811/metrics-prometheus
 ### Manual
 
 ```bash
-curl http://localhost:811/reset-metrics
+curl http://localhost:8100/01/reset-metrics
 make case-load CASE=01-api-latency-under-load TARGET_URL="http://php-app:8080/report-legacy?days=30&limit=20" REQUESTS=60 CONCURRENCY=8
-curl http://localhost:811/metrics | jq
-curl http://localhost:811/diagnostics/summary | jq
+curl http://localhost:8100/01/metrics | jq
+curl http://localhost:8100/01/diagnostics/summary | jq
 
-curl http://localhost:811/reset-metrics
+curl http://localhost:8100/01/reset-metrics
 make case-load CASE=01-api-latency-under-load TARGET_URL="http://php-app:8080/report-optimized?days=30&limit=20" REQUESTS=60 CONCURRENCY=8
-curl http://localhost:811/metrics | jq
-curl http://localhost:811/diagnostics/summary | jq
+curl http://localhost:8100/01/metrics | jq
+curl http://localhost:8100/01/diagnostics/summary | jq
 ```
 
 ### Automatizado

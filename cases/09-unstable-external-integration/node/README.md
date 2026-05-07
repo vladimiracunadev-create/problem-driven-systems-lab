@@ -23,20 +23,26 @@ Escenarios: `ok`, `schema_drift`, `rate_limited`, `partial_payload`, `maintenanc
 docker compose -f compose.yml up -d --build
 ```
 
-Puerto local: `829`.
+Puerto local: `829` (modo aislado, ver opciones abajo).
+
+## Como consumir (dos opciones)
+
+**Hub Node.js (recomendado, 8300 en `compose.nodejs.yml`):** este caso queda servido en `http://localhost:8300/09/...` junto a los otros 11 casos.
+
+**Modo aislado (829 en este `compose.yml`):** levanta solo este caso, util cuando la medicion necesita procesar limpio (sin otros casos compartiendo runtime).
 
 ## Endpoints
 
 ```bash
-curl http://localhost:829/
-curl http://localhost:829/health
-curl "http://localhost:829/catalog-legacy?scenario=rate_limited&sku=SKU-100"
-curl "http://localhost:829/catalog-hardened?scenario=rate_limited&sku=SKU-100"
-curl "http://localhost:829/sync-events?limit=10"
-curl http://localhost:829/diagnostics/summary
-curl http://localhost:829/metrics
-curl http://localhost:829/metrics-prometheus
-curl http://localhost:829/reset-lab
+curl http://localhost:8300/09/
+curl http://localhost:8300/09/health
+curl "http://localhost:8300/09/catalog-legacy?scenario=rate_limited&sku=SKU-100"
+curl "http://localhost:8300/09/catalog-hardened?scenario=rate_limited&sku=SKU-100"
+curl "http://localhost:8300/09/sync-events?limit=10"
+curl http://localhost:8300/09/diagnostics/summary
+curl http://localhost:8300/09/metrics
+curl http://localhost:8300/09/metrics-prometheus
+curl http://localhost:8300/09/reset-lab
 ```
 
 ## Que observar

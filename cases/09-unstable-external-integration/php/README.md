@@ -38,19 +38,25 @@ Las APIs de terceros fallan en formas sutiles que van más allá de un socket ca
 docker compose -f compose.yml up -d --build
 ```
 
+## Como consumir (dos opciones)
+
+**Hub PHP (recomendado, 8100 en `compose.root.yml`):** este caso queda servido en `http://localhost:8100/09/...` junto a los otros 11 casos.
+
+**Modo aislado (819 en este `compose.yml`):** levanta solo este caso, util cuando la medicion necesita procesar limpio (sin otros casos compartiendo runtime).
+
 ## 🔎 Endpoints
 
 ```bash
-curl http://localhost:819/
-curl http://localhost:819/health
-curl "http://localhost:819/catalog-legacy?scenario=rate_limited&sku=SKU-100"
-curl "http://localhost:819/catalog-hardened?scenario=rate_limited&sku=SKU-100"
-curl http://localhost:819/integration/state
-curl http://localhost:819/sync-events?limit=10
-curl http://localhost:819/diagnostics/summary
-curl http://localhost:819/metrics
-curl http://localhost:819/metrics-prometheus
-curl http://localhost:819/reset-lab
+curl http://localhost:8100/09/
+curl http://localhost:8100/09/health
+curl "http://localhost:8100/09/catalog-legacy?scenario=rate_limited&sku=SKU-100"
+curl "http://localhost:8100/09/catalog-hardened?scenario=rate_limited&sku=SKU-100"
+curl http://localhost:8100/09/integration/state
+curl http://localhost:8100/09/sync-events?limit=10
+curl http://localhost:8100/09/diagnostics/summary
+curl http://localhost:8100/09/metrics
+curl http://localhost:8100/09/metrics-prometheus
+curl http://localhost:8100/09/reset-lab
 ```
 
 ## 🧪 Escenarios útiles

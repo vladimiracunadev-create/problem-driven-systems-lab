@@ -21,21 +21,31 @@ Escenarios: `billing_change`, `shared_schema`, `parallel_conflict`. Consumers: `
 docker compose -f compose.yml up -d --build
 ```
 
-Puerto local: `827`.
+Puerto local: `827` (modo aislado).
 
-## Endpoints
+## Como consumir (dos opciones)
+
+**Hub Node (recomendado):** `compose.nodejs.yml` en raiz → este caso vive en `http://localhost:8300/07/...`.
+
+**Modo aislado:** este compose levanta solo el caso 07 en `:827`.
+
+## Endpoints (via hub :8300/07)
 
 ```bash
-curl http://localhost:827/
-curl http://localhost:827/health
-curl "http://localhost:827/change-legacy?scenario=shared_schema&consumer=web"
-curl "http://localhost:827/change-strangler?scenario=shared_schema&consumer=web"
-curl "http://localhost:827/flows?limit=10"
-curl http://localhost:827/diagnostics/summary
-curl http://localhost:827/metrics
-curl http://localhost:827/metrics-prometheus
-curl http://localhost:827/reset-lab
+curl http://localhost:8300/07/
+curl http://localhost:8300/07/health
+curl "http://localhost:8300/07/change-legacy?scenario=shared_schema&consumer=web"
+curl "http://localhost:8300/07/change-strangler?scenario=shared_schema&consumer=web"
+curl "http://localhost:8300/07/flows?limit=10"
+curl http://localhost:8300/07/diagnostics/summary
+curl http://localhost:8300/07/metrics
+curl http://localhost:8300/07/metrics-prometheus
+curl http://localhost:8300/07/reset-lab
 ```
+
+## Endpoints (modo aislado :827)
+
+Reemplaza `8300/07` por `827` en los curls de arriba.
 
 ## Que observar
 

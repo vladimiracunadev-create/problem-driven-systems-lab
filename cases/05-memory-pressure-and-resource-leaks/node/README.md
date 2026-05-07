@@ -35,21 +35,27 @@ El sintoma clasico: el servicio funciona bien al deploy, degrada gradualmente, y
 docker compose -f compose.yml up -d --build
 ```
 
-Puerto local: `825`.
+Puerto local: `825` (modo aislado, ver opciones abajo).
+
+## Como consumir (dos opciones)
+
+**Hub Node.js (recomendado, 8300 en `compose.nodejs.yml`):** este caso queda servido en `http://localhost:8300/05/...` junto a los otros 11 casos.
+
+**Modo aislado (825 en este `compose.yml`):** levanta solo este caso, util cuando la medicion necesita procesar limpio (sin otros casos compartiendo runtime).
 
 ## 🔎 Endpoints
 
 ```bash
-curl http://localhost:825/
-curl http://localhost:825/health
-curl "http://localhost:825/batch-legacy?scenario=mixed_pressure&documents=24&payload_kb=64"
-curl "http://localhost:825/batch-optimized?scenario=mixed_pressure&documents=24&payload_kb=64"
-curl http://localhost:825/state
-curl "http://localhost:825/runs?limit=10"
-curl http://localhost:825/diagnostics/summary
-curl http://localhost:825/metrics
-curl http://localhost:825/metrics-prometheus
-curl http://localhost:825/reset-lab
+curl http://localhost:8300/05/
+curl http://localhost:8300/05/health
+curl "http://localhost:8300/05/batch-legacy?scenario=mixed_pressure&documents=24&payload_kb=64"
+curl "http://localhost:8300/05/batch-optimized?scenario=mixed_pressure&documents=24&payload_kb=64"
+curl http://localhost:8300/05/state
+curl "http://localhost:8300/05/runs?limit=10"
+curl http://localhost:8300/05/diagnostics/summary
+curl http://localhost:8300/05/metrics
+curl http://localhost:8300/05/metrics-prometheus
+curl http://localhost:8300/05/reset-lab
 ```
 
 ## 🧭 Que observar

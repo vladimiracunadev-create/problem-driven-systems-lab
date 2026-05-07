@@ -35,21 +35,27 @@ El cuello de botella clasico de N+1 en Node se ve agravado por la naturaleza sin
 docker compose -f compose.yml up -d --build
 ```
 
-Puerto local: `821`.
+Puerto local: `821` (modo aislado, ver opciones abajo).
+
+## Como consumir (dos opciones)
+
+**Hub Node.js (recomendado, 8300 en `compose.nodejs.yml`):** este caso queda servido en `http://localhost:8300/01/...` junto a los otros 11 casos.
+
+**Modo aislado (821 en este `compose.yml`):** levanta solo este caso, util cuando la medicion necesita procesar limpio (sin otros casos compartiendo runtime).
 
 ## 🔎 Endpoints
 
 ```bash
-curl http://localhost:821/
-curl http://localhost:821/health
-curl "http://localhost:821/report-legacy?days=30&limit=20"
-curl "http://localhost:821/report-optimized?days=30&limit=20"
-curl http://localhost:821/batch/status
-curl "http://localhost:821/job-runs?limit=10"
-curl http://localhost:821/diagnostics/summary
-curl http://localhost:821/metrics
-curl http://localhost:821/metrics-prometheus
-curl http://localhost:821/reset-metrics
+curl http://localhost:8300/01/
+curl http://localhost:8300/01/health
+curl "http://localhost:8300/01/report-legacy?days=30&limit=20"
+curl "http://localhost:8300/01/report-optimized?days=30&limit=20"
+curl http://localhost:8300/01/batch/status
+curl "http://localhost:8300/01/job-runs?limit=10"
+curl http://localhost:8300/01/diagnostics/summary
+curl http://localhost:8300/01/metrics
+curl http://localhost:8300/01/metrics-prometheus
+curl http://localhost:8300/01/reset-metrics
 ```
 
 ## 🧭 Que observar

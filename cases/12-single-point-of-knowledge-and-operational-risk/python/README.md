@@ -34,20 +34,26 @@ docker compose -f compose.yml up -d --build
 
 Puerto local: `842`.
 
+## Como consumir (dos opciones)
+
+**Hub Python (recomendado, 8200 en `compose.python.yml`):** este caso queda servido en `http://localhost:8200/12/...` junto a los otros 11 casos.
+
+**Modo aislado (8312 en este `compose.yml`):** levanta solo este caso, util cuando la medicion necesita procesar limpio (sin otros casos compartiendo runtime).
+
 ## 🔎 Endpoints
 
 ```bash
-curl http://localhost:842/
-curl http://localhost:842/health
-curl "http://localhost:842/incident-legacy?severity=high&service=payments"
-curl "http://localhost:842/incident-distributed?severity=high&service=payments"
-curl -X POST "http://localhost:842/share-knowledge?type=runbook&detail=payments-runbook-v2"
-curl http://localhost:842/knowledge/state
-curl "http://localhost:842/incidents?limit=10"
-curl http://localhost:842/diagnostics/summary
-curl http://localhost:842/metrics
-curl http://localhost:842/metrics-prometheus
-curl http://localhost:842/reset-lab
+curl http://localhost:8200/12/
+curl http://localhost:8200/12/health
+curl "http://localhost:8200/12/incident-legacy?severity=high&service=payments"
+curl "http://localhost:8200/12/incident-distributed?severity=high&service=payments"
+curl -X POST "http://localhost:8200/12/share-knowledge?type=runbook&detail=payments-runbook-v2"
+curl http://localhost:8200/12/knowledge/state
+curl "http://localhost:8200/12/incidents?limit=10"
+curl http://localhost:8200/12/diagnostics/summary
+curl http://localhost:8200/12/metrics
+curl http://localhost:8200/12/metrics-prometheus
+curl http://localhost:8200/12/reset-lab
 ```
 
 ## 🧪 Escenarios utiles

@@ -35,20 +35,26 @@ El choque entre procesos de reporte y operaciones vitales se produce mediante la
 docker compose -f compose.yml up -d --build
 ```
 
+## Como consumir (dos opciones)
+
+**Hub PHP (recomendado, 8100 en `compose.root.yml`):** este caso queda servido en `http://localhost:8100/11/...` junto a los otros 11 casos.
+
+**Modo aislado (8111 en este `compose.yml`):** levanta solo este caso, util cuando la medicion necesita procesar limpio (sin otros casos compartiendo runtime).
+
 ## 🔎 Endpoints
 
 ```bash
-curl http://localhost:8111/
-curl http://localhost:8111/health
-curl "http://localhost:8111/report-legacy?scenario=end_of_month&rows=600000"
-curl "http://localhost:8111/report-isolated?scenario=end_of_month&rows=600000"
-curl "http://localhost:8111/order-write?orders=25"
-curl http://localhost:8111/reporting/state
-curl http://localhost:8111/activity?limit=10
-curl http://localhost:8111/diagnostics/summary
-curl http://localhost:8111/metrics
-curl http://localhost:8111/metrics-prometheus
-curl http://localhost:8111/reset-lab
+curl http://localhost:8100/11/
+curl http://localhost:8100/11/health
+curl "http://localhost:8100/11/report-legacy?scenario=end_of_month&rows=600000"
+curl "http://localhost:8100/11/report-isolated?scenario=end_of_month&rows=600000"
+curl "http://localhost:8100/11/order-write?orders=25"
+curl http://localhost:8100/11/reporting/state
+curl http://localhost:8100/11/activity?limit=10
+curl http://localhost:8100/11/diagnostics/summary
+curl http://localhost:8100/11/metrics
+curl http://localhost:8100/11/metrics-prometheus
+curl http://localhost:8100/11/reset-lab
 ```
 
 ## 🧪 Escenarios útiles

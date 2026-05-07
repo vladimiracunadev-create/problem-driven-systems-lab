@@ -38,22 +38,28 @@ La telemetria efectiva en Python no requiere librerias externas. Se implementa c
 docker compose -f compose.yml up -d --build
 ```
 
-Puerto local: `833`.
+Puerto local: `833` (modo aislado, ver opciones abajo).
+
+## Como consumir (dos opciones)
+
+**Hub Python (recomendado, 8200 en `compose.python.yml`):** este caso queda servido en `http://localhost:8200/03/...` junto a los otros 11 casos.
+
+**Modo aislado (833 en este `compose.yml`):** levanta solo este caso, util cuando la medicion necesita procesar limpio (sin otros casos compartiendo runtime).
 
 ## 🔎 Endpoints
 
 ```bash
-curl http://localhost:833/
-curl http://localhost:833/health
-curl "http://localhost:833/checkout-legacy?scenario=payment_timeout&customer_id=42&cart_items=3"
-curl "http://localhost:833/checkout-observable?scenario=payment_timeout&customer_id=42&cart_items=3"
-curl "http://localhost:833/logs/legacy?tail=20"
-curl "http://localhost:833/logs/observable?tail=20"
-curl "http://localhost:833/traces?limit=10"
-curl http://localhost:833/diagnostics/summary
-curl http://localhost:833/metrics
-curl http://localhost:833/metrics-prometheus
-curl http://localhost:833/reset-observability
+curl http://localhost:8200/03/
+curl http://localhost:8200/03/health
+curl "http://localhost:8200/03/checkout-legacy?scenario=payment_timeout&customer_id=42&cart_items=3"
+curl "http://localhost:8200/03/checkout-observable?scenario=payment_timeout&customer_id=42&cart_items=3"
+curl "http://localhost:8200/03/logs/legacy?tail=20"
+curl "http://localhost:8200/03/logs/observable?tail=20"
+curl "http://localhost:8200/03/traces?limit=10"
+curl http://localhost:8200/03/diagnostics/summary
+curl http://localhost:8200/03/metrics
+curl http://localhost:8200/03/metrics-prometheus
+curl http://localhost:8200/03/reset-observability
 ```
 
 ## 🧪 Escenarios utiles

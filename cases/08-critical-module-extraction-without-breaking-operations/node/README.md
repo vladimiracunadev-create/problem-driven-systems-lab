@@ -37,22 +37,28 @@ El codigo de negocio sigue llamando `pricing.computeFinalPrice(payload)`. La tra
 docker compose -f compose.yml up -d --build
 ```
 
-Puerto local: `828`.
+Puerto local: `828` (modo aislado, ver opciones abajo).
+
+## Como consumir (dos opciones)
+
+**Hub Node.js (recomendado, 8300 en `compose.nodejs.yml`):** este caso queda servido en `http://localhost:8300/08/...` junto a los otros 11 casos.
+
+**Modo aislado (828 en este `compose.yml`):** levanta solo este caso, util cuando la medicion necesita procesar limpio (sin otros casos compartiendo runtime).
 
 ## Endpoints
 
 ```bash
-curl http://localhost:828/
-curl http://localhost:828/health
-curl "http://localhost:828/pricing-bigbang?scenario=rule_drift&consumer=checkout"
-curl "http://localhost:828/pricing-compatible?scenario=rule_drift&consumer=checkout"
-curl "http://localhost:828/cutover/advance?consumer=checkout&step=25"
-curl http://localhost:828/extraction/state
-curl "http://localhost:828/flows?limit=10"
-curl http://localhost:828/diagnostics/summary
-curl http://localhost:828/metrics
-curl http://localhost:828/metrics-prometheus
-curl http://localhost:828/reset-lab
+curl http://localhost:8300/08/
+curl http://localhost:8300/08/health
+curl "http://localhost:8300/08/pricing-bigbang?scenario=rule_drift&consumer=checkout"
+curl "http://localhost:8300/08/pricing-compatible?scenario=rule_drift&consumer=checkout"
+curl "http://localhost:8300/08/cutover/advance?consumer=checkout&step=25"
+curl http://localhost:8300/08/extraction/state
+curl "http://localhost:8300/08/flows?limit=10"
+curl http://localhost:8300/08/diagnostics/summary
+curl http://localhost:8300/08/metrics
+curl http://localhost:8300/08/metrics-prometheus
+curl http://localhost:8300/08/reset-lab
 ```
 
 ## Que observar

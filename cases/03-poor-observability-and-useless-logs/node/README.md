@@ -30,20 +30,26 @@ Esta variante muestra que el valor de la observabilidad no depende del runtime. 
 docker compose -f compose.yml up -d --build
 ```
 
+## Como consumir (dos opciones)
+
+**Hub Node.js (recomendado, 8300 en `compose.nodejs.yml`):** este caso queda servido en `http://localhost:8300/03/...` junto a los otros 11 casos.
+
+**Modo aislado (823 en este `compose.yml`):** levanta solo este caso, util cuando la medicion necesita procesar limpio (sin otros casos compartiendo runtime).
+
 ## 🔎 Endpoints
 
 ```bash
-curl http://localhost:823/
-curl http://localhost:823/health
-curl "http://localhost:823/checkout-legacy?scenario=payment_timeout&customer_id=42&cart_items=3"
-curl "http://localhost:823/checkout-observable?scenario=payment_timeout&customer_id=42&cart_items=3"
-curl http://localhost:823/logs/legacy?tail=20
-curl http://localhost:823/logs/observable?tail=20
-curl http://localhost:823/traces?limit=10
-curl http://localhost:823/diagnostics/summary
-curl http://localhost:823/metrics
-curl http://localhost:823/metrics-prometheus
-curl http://localhost:823/reset-observability
+curl http://localhost:8300/03/
+curl http://localhost:8300/03/health
+curl "http://localhost:8300/03/checkout-legacy?scenario=payment_timeout&customer_id=42&cart_items=3"
+curl "http://localhost:8300/03/checkout-observable?scenario=payment_timeout&customer_id=42&cart_items=3"
+curl http://localhost:8300/03/logs/legacy?tail=20
+curl http://localhost:8300/03/logs/observable?tail=20
+curl http://localhost:8300/03/traces?limit=10
+curl http://localhost:8300/03/diagnostics/summary
+curl http://localhost:8300/03/metrics
+curl http://localhost:8300/03/metrics-prometheus
+curl http://localhost:8300/03/reset-observability
 ```
 
 ## 🧭 Que observar

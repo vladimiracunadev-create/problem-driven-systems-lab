@@ -33,20 +33,26 @@ Cada hop de servicio inter-proceso cuesta una ronda de stringify+parse+map. En `
 docker compose -f compose.yml up -d --build
 ```
 
-Puerto local: `8210`.
+Puerto local: `8210` (modo aislado, ver opciones abajo).
+
+## Como consumir (dos opciones)
+
+**Hub Node.js (recomendado, 8300 en `compose.nodejs.yml`):** este caso queda servido en `http://localhost:8300/10/...` junto a los otros 11 casos.
+
+**Modo aislado (8210 en este `compose.yml`):** levanta solo este caso, util cuando la medicion necesita procesar limpio (sin otros casos compartiendo runtime).
 
 ## Endpoints
 
 ```bash
-curl http://localhost:8210/
-curl http://localhost:8210/health
-curl "http://localhost:8210/feature-complex?scenario=basic_crud&accounts=120"
-curl "http://localhost:8210/feature-right-sized?scenario=basic_crud&accounts=120"
-curl "http://localhost:8210/decisions?limit=10"
-curl http://localhost:8210/diagnostics/summary
-curl http://localhost:8210/metrics
-curl http://localhost:8210/metrics-prometheus
-curl http://localhost:8210/reset-lab
+curl http://localhost:8300/10/
+curl http://localhost:8300/10/health
+curl "http://localhost:8300/10/feature-complex?scenario=basic_crud&accounts=120"
+curl "http://localhost:8300/10/feature-right-sized?scenario=basic_crud&accounts=120"
+curl "http://localhost:8300/10/decisions?limit=10"
+curl http://localhost:8300/10/diagnostics/summary
+curl http://localhost:8300/10/metrics
+curl http://localhost:8300/10/metrics-prometheus
+curl http://localhost:8300/10/reset-lab
 ```
 
 ## Que observar

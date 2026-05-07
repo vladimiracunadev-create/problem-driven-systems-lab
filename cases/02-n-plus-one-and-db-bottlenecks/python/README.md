@@ -35,19 +35,25 @@ El patron N+1 en Python sobre SQLite exhibe exactamente el mismo comportamiento 
 docker compose -f compose.yml up -d --build
 ```
 
-Puerto local: `832`.
+Puerto local: `832` (modo aislado, ver opciones abajo).
+
+## Como consumir (dos opciones)
+
+**Hub Python (recomendado, 8200 en `compose.python.yml`):** este caso queda servido en `http://localhost:8200/02/...` junto a los otros 11 casos.
+
+**Modo aislado (832 en este `compose.yml`):** levanta solo este caso, util cuando la medicion necesita procesar limpio (sin otros casos compartiendo runtime).
 
 ## 🔎 Endpoints
 
 ```bash
-curl http://localhost:832/
-curl http://localhost:832/health
-curl "http://localhost:832/orders-legacy?days=30&limit=20"
-curl "http://localhost:832/orders-optimized?days=30&limit=20"
-curl http://localhost:832/diagnostics/summary
-curl http://localhost:832/metrics
-curl http://localhost:832/metrics-prometheus
-curl http://localhost:832/reset-metrics
+curl http://localhost:8200/02/
+curl http://localhost:8200/02/health
+curl "http://localhost:8200/02/orders-legacy?days=30&limit=20"
+curl "http://localhost:8200/02/orders-optimized?days=30&limit=20"
+curl http://localhost:8200/02/diagnostics/summary
+curl http://localhost:8200/02/metrics
+curl http://localhost:8200/02/metrics-prometheus
+curl http://localhost:8200/02/reset-metrics
 ```
 
 ## 🧭 Que observar

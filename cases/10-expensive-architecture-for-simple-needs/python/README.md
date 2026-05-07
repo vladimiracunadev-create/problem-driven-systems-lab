@@ -33,19 +33,25 @@ docker compose -f compose.yml up -d --build
 
 Puerto local: `840`.
 
+## Como consumir (dos opciones)
+
+**Hub Python (recomendado, 8200 en `compose.python.yml`):** este caso queda servido en `http://localhost:8200/10/...` junto a los otros 11 casos.
+
+**Modo aislado (8310 en este `compose.yml`):** levanta solo este caso, util cuando la medicion necesita procesar limpio (sin otros casos compartiendo runtime).
+
 ## 🔎 Endpoints
 
 ```bash
-curl http://localhost:840/
-curl http://localhost:840/health
-curl "http://localhost:840/feature-complex?feature=dark_mode&user_id=42&context=mobile"
-curl "http://localhost:840/feature-right-sized?feature=dark_mode&user_id=42&context=mobile"
-curl http://localhost:840/architecture/state
-curl "http://localhost:840/decisions?limit=10"
-curl http://localhost:840/diagnostics/summary
-curl http://localhost:840/metrics
-curl http://localhost:840/metrics-prometheus
-curl http://localhost:840/reset-lab
+curl http://localhost:8200/10/
+curl http://localhost:8200/10/health
+curl "http://localhost:8200/10/feature-complex?feature=dark_mode&user_id=42&context=mobile"
+curl "http://localhost:8200/10/feature-right-sized?feature=dark_mode&user_id=42&context=mobile"
+curl http://localhost:8200/10/architecture/state
+curl "http://localhost:8200/10/decisions?limit=10"
+curl http://localhost:8200/10/diagnostics/summary
+curl http://localhost:8200/10/metrics
+curl http://localhost:8200/10/metrics-prometheus
+curl http://localhost:8200/10/reset-lab
 ```
 
 ## 🧪 Escenarios utiles

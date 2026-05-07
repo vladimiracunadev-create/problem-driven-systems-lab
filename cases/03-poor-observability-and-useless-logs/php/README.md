@@ -41,20 +41,26 @@ La telemetría efectiva no es un accesorio, es una implementación estructural d
 docker compose -f compose.yml up -d --build
 ```
 
+## Como consumir (dos opciones)
+
+**Hub PHP (recomendado, 8100 en `compose.root.yml`):** este caso queda servido en `http://localhost:8100/03/...` junto a los otros 11 casos.
+
+**Modo aislado (813 en este `compose.yml`):** levanta solo este caso, util cuando la medicion necesita procesar limpio (sin otros casos compartiendo runtime).
+
 ## 🔎 Endpoints
 
 ```bash
-curl http://localhost:813/
-curl http://localhost:813/health
-curl "http://localhost:813/checkout-legacy?scenario=payment_timeout&customer_id=42&cart_items=3"
-curl "http://localhost:813/checkout-observable?scenario=payment_timeout&customer_id=42&cart_items=3"
-curl http://localhost:813/logs/legacy?tail=20
-curl http://localhost:813/logs/observable?tail=20
-curl http://localhost:813/traces?limit=10
-curl http://localhost:813/diagnostics/summary
-curl http://localhost:813/metrics
-curl http://localhost:813/metrics-prometheus
-curl http://localhost:813/reset-observability
+curl http://localhost:8100/03/
+curl http://localhost:8100/03/health
+curl "http://localhost:8100/03/checkout-legacy?scenario=payment_timeout&customer_id=42&cart_items=3"
+curl "http://localhost:8100/03/checkout-observable?scenario=payment_timeout&customer_id=42&cart_items=3"
+curl http://localhost:8100/03/logs/legacy?tail=20
+curl http://localhost:8100/03/logs/observable?tail=20
+curl http://localhost:8100/03/traces?limit=10
+curl http://localhost:8100/03/diagnostics/summary
+curl http://localhost:8100/03/metrics
+curl http://localhost:8100/03/metrics-prometheus
+curl http://localhost:8100/03/reset-observability
 ```
 
 ## 🧭 Que observar

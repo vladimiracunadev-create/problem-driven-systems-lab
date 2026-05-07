@@ -34,19 +34,25 @@ Previamente concebidos como simulaciones figurativas, los pipelines aquí resuel
 docker compose -f compose.yml up -d --build
 ```
 
+## Como consumir (dos opciones)
+
+**Hub PHP (recomendado, 8100 en `compose.root.yml`):** este caso queda servido en `http://localhost:8100/06/...` junto a los otros 11 casos.
+
+**Modo aislado (816 en este `compose.yml`):** levanta solo este caso, util cuando la medicion necesita procesar limpio (sin otros casos compartiendo runtime).
+
 ## 🔎 Endpoints
 
 ```bash
-curl http://localhost:816/
-curl http://localhost:816/health
-curl "http://localhost:816/deploy-legacy?environment=staging&release=2026.04.1&scenario=missing_secret"
-curl "http://localhost:816/deploy-controlled?environment=staging&release=2026.04.1&scenario=missing_secret"
-curl http://localhost:816/environments
-curl http://localhost:816/deployments?limit=10
-curl http://localhost:816/diagnostics/summary
-curl http://localhost:816/metrics
-curl http://localhost:816/metrics-prometheus
-curl http://localhost:816/reset-lab
+curl http://localhost:8100/06/
+curl http://localhost:8100/06/health
+curl "http://localhost:8100/06/deploy-legacy?environment=staging&release=2026.04.1&scenario=missing_secret"
+curl "http://localhost:8100/06/deploy-controlled?environment=staging&release=2026.04.1&scenario=missing_secret"
+curl http://localhost:8100/06/environments
+curl http://localhost:8100/06/deployments?limit=10
+curl http://localhost:8100/06/diagnostics/summary
+curl http://localhost:8100/06/metrics
+curl http://localhost:8100/06/metrics-prometheus
+curl http://localhost:8100/06/reset-lab
 ```
 
 ## 🧪 Escenarios útiles

@@ -31,21 +31,27 @@ Optional chaining no es un patch — es la encarnacion en codigo del runbook "si
 docker compose -f compose.yml up -d --build
 ```
 
-Puerto local: `8212`.
+Puerto local: `8212` (modo aislado, ver opciones abajo).
+
+## Como consumir (dos opciones)
+
+**Hub Node.js (recomendado, 8300 en `compose.nodejs.yml`):** este caso queda servido en `http://localhost:8300/12/...` junto a los otros 11 casos.
+
+**Modo aislado (8212 en este `compose.yml`):** levanta solo este caso, util cuando la medicion necesita procesar limpio (sin otros casos compartiendo runtime).
 
 ## Endpoints
 
 ```bash
-curl http://localhost:8212/
-curl http://localhost:8212/health
-curl "http://localhost:8212/incident-legacy?scenario=owner_absent&domain=deployments"
-curl "http://localhost:8212/incident-distributed?scenario=owner_absent&domain=deployments"
-curl "http://localhost:8212/share-knowledge?domain=deployments&activity=runbook"
-curl "http://localhost:8212/incidents?limit=10"
-curl http://localhost:8212/diagnostics/summary
-curl http://localhost:8212/metrics
-curl http://localhost:8212/metrics-prometheus
-curl http://localhost:8212/reset-lab
+curl http://localhost:8300/12/
+curl http://localhost:8300/12/health
+curl "http://localhost:8300/12/incident-legacy?scenario=owner_absent&domain=deployments"
+curl "http://localhost:8300/12/incident-distributed?scenario=owner_absent&domain=deployments"
+curl "http://localhost:8300/12/share-knowledge?domain=deployments&activity=runbook"
+curl "http://localhost:8300/12/incidents?limit=10"
+curl http://localhost:8300/12/diagnostics/summary
+curl http://localhost:8300/12/metrics
+curl http://localhost:8300/12/metrics-prometheus
+curl http://localhost:8300/12/reset-lab
 ```
 
 ## Que observar

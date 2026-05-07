@@ -25,22 +25,32 @@ Cada paso del pipeline corre dentro de un `AbortController`. El handler engancha
 docker compose -f compose.yml up -d --build
 ```
 
-Puerto local: `826`.
+Puerto local: `826` (modo aislado).
 
-## Endpoints
+## Como consumir (dos opciones)
+
+**Hub Node (recomendado para el lab completo):** levanta `compose.nodejs.yml` en la raiz y este caso queda servido en `http://localhost:8300/06/...` junto a los otros 11 casos.
+
+**Modo aislado (recomendado solo si necesitas medicion limpia):** este compose levanta solo el caso 06 en `:826`.
+
+## Endpoints (via hub :8300/06)
 
 ```bash
-curl http://localhost:826/
-curl http://localhost:826/health
-curl "http://localhost:826/deploy-legacy?environment=staging&release=2026.04.1&scenario=missing_secret"
-curl "http://localhost:826/deploy-controlled?environment=staging&release=2026.04.1&scenario=missing_secret"
-curl http://localhost:826/environments
-curl "http://localhost:826/deployments?limit=10"
-curl http://localhost:826/diagnostics/summary
-curl http://localhost:826/metrics
-curl http://localhost:826/metrics-prometheus
-curl http://localhost:826/reset-lab
+curl http://localhost:8300/06/
+curl http://localhost:8300/06/health
+curl "http://localhost:8300/06/deploy-legacy?environment=staging&release=2026.04.1&scenario=missing_secret"
+curl "http://localhost:8300/06/deploy-controlled?environment=staging&release=2026.04.1&scenario=missing_secret"
+curl http://localhost:8300/06/environments
+curl "http://localhost:8300/06/deployments?limit=10"
+curl http://localhost:8300/06/diagnostics/summary
+curl http://localhost:8300/06/metrics
+curl http://localhost:8300/06/metrics-prometheus
+curl http://localhost:8300/06/reset-lab
 ```
+
+## Endpoints (modo aislado :826)
+
+Reemplaza `8300/06` por `826` en los curls de arriba.
 
 ## Que observar
 

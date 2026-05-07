@@ -35,21 +35,27 @@ Un proveedor lento + politica de reintentos sin freno es la receta clasica del r
 docker compose -f compose.yml up -d --build
 ```
 
-Puerto local: `824`.
+Puerto local: `824` (modo aislado, ver opciones abajo).
+
+## Como consumir (dos opciones)
+
+**Hub Node.js (recomendado, 8300 en `compose.nodejs.yml`):** este caso queda servido en `http://localhost:8300/04/...` junto a los otros 11 casos.
+
+**Modo aislado (824 en este `compose.yml`):** levanta solo este caso, util cuando la medicion necesita procesar limpio (sin otros casos compartiendo runtime).
 
 ## 🔎 Endpoints
 
 ```bash
-curl http://localhost:824/
-curl http://localhost:824/health
-curl "http://localhost:824/quote-legacy?scenario=slow_provider&customer_id=42&items=3"
-curl "http://localhost:824/quote-resilient?scenario=slow_provider&customer_id=42&items=3"
-curl http://localhost:824/dependency/state
-curl "http://localhost:824/incidents?limit=10"
-curl http://localhost:824/diagnostics/summary
-curl http://localhost:824/metrics
-curl http://localhost:824/metrics-prometheus
-curl http://localhost:824/reset-lab
+curl http://localhost:8300/04/
+curl http://localhost:8300/04/health
+curl "http://localhost:8300/04/quote-legacy?scenario=slow_provider&customer_id=42&items=3"
+curl "http://localhost:8300/04/quote-resilient?scenario=slow_provider&customer_id=42&items=3"
+curl http://localhost:8300/04/dependency/state
+curl "http://localhost:8300/04/incidents?limit=10"
+curl http://localhost:8300/04/diagnostics/summary
+curl http://localhost:8300/04/metrics
+curl http://localhost:8300/04/metrics-prometheus
+curl http://localhost:8300/04/reset-lab
 ```
 
 ## 🧭 Que observar

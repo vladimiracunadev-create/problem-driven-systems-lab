@@ -35,20 +35,26 @@ El bus-factor y el conocimiento silencioso son factores operativos abstractos co
 docker compose -f compose.yml up -d --build
 ```
 
+## Como consumir (dos opciones)
+
+**Hub PHP (recomendado, 8100 en `compose.root.yml`):** este caso queda servido en `http://localhost:8100/12/...` junto a los otros 11 casos.
+
+**Modo aislado (8112 en este `compose.yml`):** levanta solo este caso, util cuando la medicion necesita procesar limpio (sin otros casos compartiendo runtime).
+
 ## 🔎 Endpoints
 
 ```bash
-curl http://localhost:8112/
-curl http://localhost:8112/health
-curl "http://localhost:8112/incident-legacy?scenario=owner_absent&domain=deployments"
-curl "http://localhost:8112/incident-distributed?scenario=owner_absent&domain=deployments"
-curl "http://localhost:8112/share-knowledge?domain=deployments&activity=runbook"
-curl http://localhost:8112/knowledge/state
-curl http://localhost:8112/incidents?limit=10
-curl http://localhost:8112/diagnostics/summary
-curl http://localhost:8112/metrics
-curl http://localhost:8112/metrics-prometheus
-curl http://localhost:8112/reset-lab
+curl http://localhost:8100/12/
+curl http://localhost:8100/12/health
+curl "http://localhost:8100/12/incident-legacy?scenario=owner_absent&domain=deployments"
+curl "http://localhost:8100/12/incident-distributed?scenario=owner_absent&domain=deployments"
+curl "http://localhost:8100/12/share-knowledge?domain=deployments&activity=runbook"
+curl http://localhost:8100/12/knowledge/state
+curl http://localhost:8100/12/incidents?limit=10
+curl http://localhost:8100/12/diagnostics/summary
+curl http://localhost:8100/12/metrics
+curl http://localhost:8100/12/metrics-prometheus
+curl http://localhost:8100/12/reset-lab
 ```
 
 ## 🧪 Escenarios útiles

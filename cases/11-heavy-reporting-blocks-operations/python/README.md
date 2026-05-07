@@ -34,21 +34,27 @@ docker compose -f compose.yml up -d --build
 
 Puerto local: `841`.
 
+## Como consumir (dos opciones)
+
+**Hub Python (recomendado, 8200 en `compose.python.yml`):** este caso queda servido en `http://localhost:8200/11/...` junto a los otros 11 casos.
+
+**Modo aislado (8311 en este `compose.yml`):** levanta solo este caso, util cuando la medicion necesita procesar limpio (sin otros casos compartiendo runtime).
+
 ## 🔎 Endpoints
 
 ```bash
-curl http://localhost:841/
-curl http://localhost:841/health
-curl "http://localhost:841/report-legacy?rows=500&period_days=30"
-curl "http://localhost:841/report-isolated?rows=500&period_days=30"
-curl "http://localhost:841/order-write?order_id=ORD-001&mode=legacy"
-curl "http://localhost:841/order-write?order_id=ORD-001&mode=isolated"
-curl http://localhost:841/reporting/state
-curl "http://localhost:841/activity?limit=20"
-curl http://localhost:841/diagnostics/summary
-curl http://localhost:841/metrics
-curl http://localhost:841/metrics-prometheus
-curl http://localhost:841/reset-lab
+curl http://localhost:8200/11/
+curl http://localhost:8200/11/health
+curl "http://localhost:8200/11/report-legacy?rows=500&period_days=30"
+curl "http://localhost:8200/11/report-isolated?rows=500&period_days=30"
+curl "http://localhost:8200/11/order-write?order_id=ORD-001&mode=legacy"
+curl "http://localhost:8200/11/order-write?order_id=ORD-001&mode=isolated"
+curl http://localhost:8200/11/reporting/state
+curl "http://localhost:8200/11/activity?limit=20"
+curl http://localhost:8200/11/diagnostics/summary
+curl http://localhost:8200/11/metrics
+curl http://localhost:8200/11/metrics-prometheus
+curl http://localhost:8200/11/reset-lab
 ```
 
 ## 🧪 Escenarios utiles

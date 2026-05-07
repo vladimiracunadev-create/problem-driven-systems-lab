@@ -31,21 +31,27 @@ El acoplamiento de un monolito se modela en Python como dependencias directas en
 docker compose -f compose.yml up -d --build
 ```
 
-Puerto local: `837`.
+Puerto local: `837` (modo aislado, ver opciones abajo).
+
+## Como consumir (dos opciones)
+
+**Hub Python (recomendado, 8200 en `compose.python.yml`):** este caso queda servido en `http://localhost:8200/07/...` junto a los otros 11 casos.
+
+**Modo aislado (837 en este `compose.yml`):** levanta solo este caso, util cuando la medicion necesita procesar limpio (sin otros casos compartiendo runtime).
 
 ## 🔎 Endpoints
 
 ```bash
-curl http://localhost:837/
-curl http://localhost:837/health
-curl "http://localhost:837/change-legacy?product_id=P-001&new_price=99.99&reason=promo"
-curl "http://localhost:837/change-strangler?product_id=P-001&new_price=99.99&reason=promo"
-curl http://localhost:837/migration/state
-curl "http://localhost:837/flows?limit=10"
-curl http://localhost:837/diagnostics/summary
-curl http://localhost:837/metrics
-curl http://localhost:837/metrics-prometheus
-curl http://localhost:837/reset-lab
+curl http://localhost:8200/07/
+curl http://localhost:8200/07/health
+curl "http://localhost:8200/07/change-legacy?product_id=P-001&new_price=99.99&reason=promo"
+curl "http://localhost:8200/07/change-strangler?product_id=P-001&new_price=99.99&reason=promo"
+curl http://localhost:8200/07/migration/state
+curl "http://localhost:8200/07/flows?limit=10"
+curl http://localhost:8200/07/diagnostics/summary
+curl http://localhost:8200/07/metrics
+curl http://localhost:8200/07/metrics-prometheus
+curl http://localhost:8200/07/reset-lab
 ```
 
 ## 🧪 Escenarios utiles

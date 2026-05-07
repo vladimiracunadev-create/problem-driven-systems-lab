@@ -31,19 +31,25 @@ Este caso muestra el caso clasico donde el costo escala con `1 + N + sum(items_p
 docker compose -f compose.yml up -d --build
 ```
 
-Puerto local: `822`.
+Puerto local: `822` (modo aislado, ver opciones abajo).
+
+## Como consumir (dos opciones)
+
+**Hub Node.js (recomendado, 8300 en `compose.nodejs.yml`):** este caso queda servido en `http://localhost:8300/02/...` junto a los otros 11 casos.
+
+**Modo aislado (822 en este `compose.yml`):** levanta solo este caso, util cuando la medicion necesita procesar limpio (sin otros casos compartiendo runtime).
 
 ## 🔎 Endpoints
 
 ```bash
-curl http://localhost:822/
-curl http://localhost:822/health
-curl "http://localhost:822/orders-legacy?days=30&limit=20"
-curl "http://localhost:822/orders-optimized?days=30&limit=20"
-curl http://localhost:822/diagnostics/summary
-curl http://localhost:822/metrics
-curl http://localhost:822/metrics-prometheus
-curl http://localhost:822/reset-metrics
+curl http://localhost:8300/02/
+curl http://localhost:8300/02/health
+curl "http://localhost:8300/02/orders-legacy?days=30&limit=20"
+curl "http://localhost:8300/02/orders-optimized?days=30&limit=20"
+curl http://localhost:8300/02/diagnostics/summary
+curl http://localhost:8300/02/metrics
+curl http://localhost:8300/02/metrics-prometheus
+curl http://localhost:8300/02/reset-metrics
 ```
 
 ## 🧭 Que observar

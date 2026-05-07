@@ -34,19 +34,25 @@ Este caso implementa la topología de memoria y dependencias de PHP para exponer
 docker compose -f compose.yml up -d --build
 ```
 
+## Como consumir (dos opciones)
+
+**Hub PHP (recomendado, 8100 en `compose.root.yml`):** este caso queda servido en `http://localhost:8100/07/...` junto a los otros 11 casos.
+
+**Modo aislado (817 en este `compose.yml`):** levanta solo este caso, util cuando la medicion necesita procesar limpio (sin otros casos compartiendo runtime).
+
 ## 🔎 Endpoints
 
 ```bash
-curl http://localhost:817/
-curl http://localhost:817/health
-curl "http://localhost:817/change-legacy?scenario=shared_schema&consumer=web"
-curl "http://localhost:817/change-strangler?scenario=shared_schema&consumer=web"
-curl http://localhost:817/migration/state
-curl http://localhost:817/flows?limit=10
-curl http://localhost:817/diagnostics/summary
-curl http://localhost:817/metrics
-curl http://localhost:817/metrics-prometheus
-curl http://localhost:817/reset-lab
+curl http://localhost:8100/07/
+curl http://localhost:8100/07/health
+curl "http://localhost:8100/07/change-legacy?scenario=shared_schema&consumer=web"
+curl "http://localhost:8100/07/change-strangler?scenario=shared_schema&consumer=web"
+curl http://localhost:8100/07/migration/state
+curl http://localhost:8100/07/flows?limit=10
+curl http://localhost:8100/07/diagnostics/summary
+curl http://localhost:8100/07/metrics
+curl http://localhost:8100/07/metrics-prometheus
+curl http://localhost:8100/07/reset-lab
 ```
 
 ## 🧪 Escenarios útiles

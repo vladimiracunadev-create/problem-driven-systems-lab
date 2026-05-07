@@ -34,19 +34,25 @@ A diferencia de lenguajes como Node.js, PHP "nace para morir" bajo el modelo cl�
 docker compose -f compose.yml up -d --build
 ```
 
+## Como consumir (dos opciones)
+
+**Hub PHP (recomendado, 8100 en `compose.root.yml`):** este caso queda servido en `http://localhost:8100/05/...` junto a los otros 11 casos.
+
+**Modo aislado (815 en este `compose.yml`):** levanta solo este caso, util cuando la medicion necesita procesar limpio (sin otros casos compartiendo runtime).
+
 ## 🔎 Endpoints
 
 ```bash
-curl http://localhost:815/
-curl http://localhost:815/health
-curl "http://localhost:815/batch-legacy?scenario=mixed_pressure&documents=24&payload_kb=64"
-curl "http://localhost:815/batch-optimized?scenario=mixed_pressure&documents=24&payload_kb=64"
-curl http://localhost:815/state
-curl http://localhost:815/runs?limit=10
-curl http://localhost:815/diagnostics/summary
-curl http://localhost:815/metrics
-curl http://localhost:815/metrics-prometheus
-curl http://localhost:815/reset-lab
+curl http://localhost:8100/05/
+curl http://localhost:8100/05/health
+curl "http://localhost:8100/05/batch-legacy?scenario=mixed_pressure&documents=24&payload_kb=64"
+curl "http://localhost:8100/05/batch-optimized?scenario=mixed_pressure&documents=24&payload_kb=64"
+curl http://localhost:8100/05/state
+curl http://localhost:8100/05/runs?limit=10
+curl http://localhost:8100/05/diagnostics/summary
+curl http://localhost:8100/05/metrics
+curl http://localhost:8100/05/metrics-prometheus
+curl http://localhost:8100/05/reset-lab
 ```
 
 ## 🧪 Escenarios útiles

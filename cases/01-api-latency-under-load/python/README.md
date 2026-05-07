@@ -33,21 +33,27 @@ El cuello de botella clasico de N+1 en Python no es exclusivo de ORMs. Ocurre cu
 docker compose -f compose.yml up -d --build
 ```
 
-Puerto local: `831`.
+Puerto local: `831` (modo aislado, ver opciones abajo).
+
+## Como consumir (dos opciones)
+
+**Hub Python (recomendado, 8200 en `compose.python.yml`):** este caso queda servido en `http://localhost:8200/01/...` junto a los otros 11 casos.
+
+**Modo aislado (831 en este `compose.yml`):** levanta solo este caso, util cuando la medicion necesita procesar limpio (sin otros casos compartiendo runtime).
 
 ## 🔎 Endpoints
 
 ```bash
-curl http://localhost:831/
-curl http://localhost:831/health
-curl "http://localhost:831/report-legacy?days=30&limit=20"
-curl "http://localhost:831/report-optimized?days=30&limit=20"
-curl http://localhost:831/batch/status
-curl "http://localhost:831/job-runs?limit=10"
-curl http://localhost:831/diagnostics/summary
-curl http://localhost:831/metrics
-curl http://localhost:831/metrics-prometheus
-curl http://localhost:831/reset-metrics
+curl http://localhost:8200/01/
+curl http://localhost:8200/01/health
+curl "http://localhost:8200/01/report-legacy?days=30&limit=20"
+curl "http://localhost:8200/01/report-optimized?days=30&limit=20"
+curl http://localhost:8200/01/batch/status
+curl "http://localhost:8200/01/job-runs?limit=10"
+curl http://localhost:8200/01/diagnostics/summary
+curl http://localhost:8200/01/metrics
+curl http://localhost:8200/01/metrics-prometheus
+curl http://localhost:8200/01/reset-metrics
 ```
 
 ## 🧭 Que observar

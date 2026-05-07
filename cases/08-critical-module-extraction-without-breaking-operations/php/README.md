@@ -34,20 +34,26 @@ Este caso implementa cruces de contratos mediante manipulaciones de arreglos aso
 docker compose -f compose.yml up -d --build
 ```
 
+## Como consumir (dos opciones)
+
+**Hub PHP (recomendado, 8100 en `compose.root.yml`):** este caso queda servido en `http://localhost:8100/08/...` junto a los otros 11 casos.
+
+**Modo aislado (818 en este `compose.yml`):** levanta solo este caso, util cuando la medicion necesita procesar limpio (sin otros casos compartiendo runtime).
+
 ## 🔎 Endpoints
 
 ```bash
-curl http://localhost:818/
-curl http://localhost:818/health
-curl "http://localhost:818/pricing-bigbang?scenario=rule_drift&consumer=checkout"
-curl "http://localhost:818/pricing-compatible?scenario=rule_drift&consumer=checkout"
-curl "http://localhost:818/cutover/advance?consumer=checkout"
-curl http://localhost:818/extraction/state
-curl http://localhost:818/flows?limit=10
-curl http://localhost:818/diagnostics/summary
-curl http://localhost:818/metrics
-curl http://localhost:818/metrics-prometheus
-curl http://localhost:818/reset-lab
+curl http://localhost:8100/08/
+curl http://localhost:8100/08/health
+curl "http://localhost:8100/08/pricing-bigbang?scenario=rule_drift&consumer=checkout"
+curl "http://localhost:8100/08/pricing-compatible?scenario=rule_drift&consumer=checkout"
+curl "http://localhost:8100/08/cutover/advance?consumer=checkout"
+curl http://localhost:8100/08/extraction/state
+curl http://localhost:8100/08/flows?limit=10
+curl http://localhost:8100/08/diagnostics/summary
+curl http://localhost:8100/08/metrics
+curl http://localhost:8100/08/metrics-prometheus
+curl http://localhost:8100/08/reset-lab
 ```
 
 ## 🧪 Escenarios útiles

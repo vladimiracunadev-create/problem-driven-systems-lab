@@ -39,17 +39,23 @@ El problema del **N+1** en PHP no es exclusivo de los ORMs pesados (como Eloquen
 docker compose -f compose.yml up -d --build
 ```
 
+## Como consumir (dos opciones)
+
+**Hub PHP (recomendado, 8100 en `compose.root.yml`):** este caso queda servido en `http://localhost:8100/02/...` junto a los otros 11 casos.
+
+**Modo aislado (812 en este `compose.yml`):** levanta solo este caso, util cuando la medicion necesita procesar limpio (sin otros casos compartiendo runtime).
+
 ## 🔎 Endpoints
 
 ```bash
-curl http://localhost:812/
-curl http://localhost:812/health
-curl "http://localhost:812/orders-legacy?days=30&limit=20"
-curl "http://localhost:812/orders-optimized?days=30&limit=20"
-curl http://localhost:812/diagnostics/summary
-curl http://localhost:812/metrics
-curl http://localhost:812/metrics-prometheus
-curl http://localhost:812/reset-metrics
+curl http://localhost:8100/02/
+curl http://localhost:8100/02/health
+curl "http://localhost:8100/02/orders-legacy?days=30&limit=20"
+curl "http://localhost:8100/02/orders-optimized?days=30&limit=20"
+curl http://localhost:8100/02/diagnostics/summary
+curl http://localhost:8100/02/metrics
+curl http://localhost:8100/02/metrics-prometheus
+curl http://localhost:8100/02/reset-metrics
 ```
 
 ## 🧭 Que observar

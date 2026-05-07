@@ -31,21 +31,27 @@ Python tiene recolector de basura automatico, pero no elimina el problema de fug
 docker compose -f compose.yml up -d --build
 ```
 
-Puerto local: `835`.
+Puerto local: `835` (modo aislado, ver opciones abajo).
+
+## Como consumir (dos opciones)
+
+**Hub Python (recomendado, 8200 en `compose.python.yml`):** este caso queda servido en `http://localhost:8200/05/...` junto a los otros 11 casos.
+
+**Modo aislado (835 en este `compose.yml`):** levanta solo este caso, util cuando la medicion necesita procesar limpio (sin otros casos compartiendo runtime).
 
 ## 🔎 Endpoints
 
 ```bash
-curl http://localhost:835/
-curl http://localhost:835/health
-curl "http://localhost:835/batch-legacy?items=50&size_kb=128"
-curl "http://localhost:835/batch-optimized?items=50&size_kb=128"
-curl http://localhost:835/state
-curl "http://localhost:835/runs?limit=10"
-curl http://localhost:835/diagnostics/summary
-curl http://localhost:835/metrics
-curl http://localhost:835/metrics-prometheus
-curl http://localhost:835/reset-lab
+curl http://localhost:8200/05/
+curl http://localhost:8200/05/health
+curl "http://localhost:8200/05/batch-legacy?items=50&size_kb=128"
+curl "http://localhost:8200/05/batch-optimized?items=50&size_kb=128"
+curl http://localhost:8200/05/state
+curl "http://localhost:8200/05/runs?limit=10"
+curl http://localhost:8200/05/diagnostics/summary
+curl http://localhost:8200/05/metrics
+curl http://localhost:8200/05/metrics-prometheus
+curl http://localhost:8200/05/reset-lab
 ```
 
 ## 🧪 Escenarios utiles

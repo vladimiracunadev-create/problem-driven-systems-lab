@@ -31,21 +31,27 @@ El control de tiempo en Python sobre I/O simulado con `time.sleep()` expone la d
 docker compose -f compose.yml up -d --build
 ```
 
-Puerto local: `834`.
+Puerto local: `834` (modo aislado, ver opciones abajo).
+
+## Como consumir (dos opciones)
+
+**Hub Python (recomendado, 8200 en `compose.python.yml`):** este caso queda servido en `http://localhost:8200/04/...` junto a los otros 11 casos.
+
+**Modo aislado (834 en este `compose.yml`):** levanta solo este caso, util cuando la medicion necesita procesar limpio (sin otros casos compartiendo runtime).
 
 ## 🔎 Endpoints
 
 ```bash
-curl http://localhost:834/
-curl http://localhost:834/health
-curl "http://localhost:834/quote-legacy?scenario=provider_down&customer_id=42&items=3"
-curl "http://localhost:834/quote-resilient?scenario=provider_down&customer_id=42&items=3"
-curl http://localhost:834/dependency/state
-curl "http://localhost:834/incidents?limit=10"
-curl http://localhost:834/diagnostics/summary
-curl http://localhost:834/metrics
-curl http://localhost:834/metrics-prometheus
-curl http://localhost:834/reset-lab
+curl http://localhost:8200/04/
+curl http://localhost:8200/04/health
+curl "http://localhost:8200/04/quote-legacy?scenario=provider_down&customer_id=42&items=3"
+curl "http://localhost:8200/04/quote-resilient?scenario=provider_down&customer_id=42&items=3"
+curl http://localhost:8200/04/dependency/state
+curl "http://localhost:8200/04/incidents?limit=10"
+curl http://localhost:8200/04/diagnostics/summary
+curl http://localhost:8200/04/metrics
+curl http://localhost:8200/04/metrics-prometheus
+curl http://localhost:8200/04/reset-lab
 ```
 
 ## 🧪 Escenarios utiles

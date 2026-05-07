@@ -35,21 +35,27 @@ Las APIs de terceros fallan en formas sutiles. Este caso implementa integracion 
 docker compose -f compose.yml up -d --build
 ```
 
-Puerto local: `839`.
+Puerto local: `839` (modo aislado, ver opciones abajo).
+
+## Como consumir (dos opciones)
+
+**Hub Python (recomendado, 8200 en `compose.python.yml`):** este caso queda servido en `http://localhost:8200/09/...` junto a los otros 11 casos.
+
+**Modo aislado (839 en este `compose.yml`):** levanta solo este caso, util cuando la medicion necesita procesar limpio (sin otros casos compartiendo runtime).
 
 ## 🔎 Endpoints
 
 ```bash
-curl http://localhost:839/
-curl http://localhost:839/health
-curl "http://localhost:839/catalog-legacy?scenario=malformed_sku&batch_size=10"
-curl "http://localhost:839/catalog-hardened?scenario=malformed_sku&batch_size=10"
-curl http://localhost:839/integration/state
-curl "http://localhost:839/sync-events?limit=10"
-curl http://localhost:839/diagnostics/summary
-curl http://localhost:839/metrics
-curl http://localhost:839/metrics-prometheus
-curl http://localhost:839/reset-lab
+curl http://localhost:8200/09/
+curl http://localhost:8200/09/health
+curl "http://localhost:8200/09/catalog-legacy?scenario=malformed_sku&batch_size=10"
+curl "http://localhost:8200/09/catalog-hardened?scenario=malformed_sku&batch_size=10"
+curl http://localhost:8200/09/integration/state
+curl "http://localhost:8200/09/sync-events?limit=10"
+curl http://localhost:8200/09/diagnostics/summary
+curl http://localhost:8200/09/metrics
+curl http://localhost:8200/09/metrics-prometheus
+curl http://localhost:8200/09/reset-lab
 ```
 
 ## 🧪 Escenarios utiles

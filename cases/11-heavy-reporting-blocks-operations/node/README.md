@@ -23,21 +23,27 @@ Escenarios: `end_of_month`, `finance_audit`, `ad_hoc_export`, `mixed_peak`.
 docker compose -f compose.yml up -d --build
 ```
 
-Puerto local: `8211`.
+Puerto local: `8211` (modo aislado, ver opciones abajo).
+
+## Como consumir (dos opciones)
+
+**Hub Node.js (recomendado, 8300 en `compose.nodejs.yml`):** este caso queda servido en `http://localhost:8300/11/...` junto a los otros 11 casos.
+
+**Modo aislado (8211 en este `compose.yml`):** levanta solo este caso, util cuando la medicion necesita procesar limpio (sin otros casos compartiendo runtime).
 
 ## Endpoints
 
 ```bash
-curl http://localhost:8211/
-curl http://localhost:8211/health
-curl "http://localhost:8211/report-legacy?scenario=end_of_month&rows=600000"
-curl "http://localhost:8211/report-isolated?scenario=end_of_month&rows=600000"
-curl "http://localhost:8211/order-write?orders=25"
-curl "http://localhost:8211/activity?limit=10"
-curl http://localhost:8211/diagnostics/summary
-curl http://localhost:8211/metrics
-curl http://localhost:8211/metrics-prometheus
-curl http://localhost:8211/reset-lab
+curl http://localhost:8300/11/
+curl http://localhost:8300/11/health
+curl "http://localhost:8300/11/report-legacy?scenario=end_of_month&rows=600000"
+curl "http://localhost:8300/11/report-isolated?scenario=end_of_month&rows=600000"
+curl "http://localhost:8300/11/order-write?orders=25"
+curl "http://localhost:8300/11/activity?limit=10"
+curl http://localhost:8300/11/diagnostics/summary
+curl http://localhost:8300/11/metrics
+curl http://localhost:8300/11/metrics-prometheus
+curl http://localhost:8300/11/reset-lab
 ```
 
 ## Que observar

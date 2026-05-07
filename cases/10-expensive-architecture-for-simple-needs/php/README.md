@@ -34,19 +34,25 @@ La sobre-arquitectura y el abuso de patrones DTO tienen repercusiones físicas s
 docker compose -f compose.yml up -d --build
 ```
 
+## Como consumir (dos opciones)
+
+**Hub PHP (recomendado, 8100 en `compose.root.yml`):** este caso queda servido en `http://localhost:8100/10/...` junto a los otros 11 casos.
+
+**Modo aislado (8110 en este `compose.yml`):** levanta solo este caso, util cuando la medicion necesita procesar limpio (sin otros casos compartiendo runtime).
+
 ## 🔎 Endpoints
 
 ```bash
-curl http://localhost:8110/
-curl http://localhost:8110/health
-curl "http://localhost:8110/feature-complex?scenario=basic_crud&accounts=120"
-curl "http://localhost:8110/feature-right-sized?scenario=basic_crud&accounts=120"
-curl http://localhost:8110/architecture/state
-curl http://localhost:8110/decisions?limit=10
-curl http://localhost:8110/diagnostics/summary
-curl http://localhost:8110/metrics
-curl http://localhost:8110/metrics-prometheus
-curl http://localhost:8110/reset-lab
+curl http://localhost:8100/10/
+curl http://localhost:8100/10/health
+curl "http://localhost:8100/10/feature-complex?scenario=basic_crud&accounts=120"
+curl "http://localhost:8100/10/feature-right-sized?scenario=basic_crud&accounts=120"
+curl http://localhost:8100/10/architecture/state
+curl http://localhost:8100/10/decisions?limit=10
+curl http://localhost:8100/10/diagnostics/summary
+curl http://localhost:8100/10/metrics
+curl http://localhost:8100/10/metrics-prometheus
+curl http://localhost:8100/10/reset-lab
 ```
 
 ## 🧪 Escenarios útiles

@@ -31,21 +31,27 @@ Los pipelines de entrega se modelan aqui como mutaciones de estado controladas p
 docker compose -f compose.yml up -d --build
 ```
 
-Puerto local: `836`.
+Puerto local: `836` (modo aislado, ver opciones abajo).
+
+## Como consumir (dos opciones)
+
+**Hub Python (recomendado, 8200 en `compose.python.yml`):** este caso queda servido en `http://localhost:8200/06/...` junto a los otros 11 casos.
+
+**Modo aislado (836 en este `compose.yml`):** levanta solo este caso, util cuando la medicion necesita procesar limpio (sin otros casos compartiendo runtime).
 
 ## 🔎 Endpoints
 
 ```bash
-curl http://localhost:836/
-curl http://localhost:836/health
-curl "http://localhost:836/deploy-legacy?environment=staging&release=2026.04.1&scenario=missing_secret"
-curl "http://localhost:836/deploy-controlled?environment=staging&release=2026.04.1&scenario=missing_secret"
-curl http://localhost:836/environments
-curl "http://localhost:836/deployments?limit=10"
-curl http://localhost:836/diagnostics/summary
-curl http://localhost:836/metrics
-curl http://localhost:836/metrics-prometheus
-curl http://localhost:836/reset-lab
+curl http://localhost:8200/06/
+curl http://localhost:8200/06/health
+curl "http://localhost:8200/06/deploy-legacy?environment=staging&release=2026.04.1&scenario=missing_secret"
+curl "http://localhost:8200/06/deploy-controlled?environment=staging&release=2026.04.1&scenario=missing_secret"
+curl http://localhost:8200/06/environments
+curl "http://localhost:8200/06/deployments?limit=10"
+curl http://localhost:8200/06/diagnostics/summary
+curl http://localhost:8200/06/metrics
+curl http://localhost:8200/06/metrics-prometheus
+curl http://localhost:8200/06/reset-lab
 ```
 
 ## 🧪 Escenarios utiles

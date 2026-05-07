@@ -31,22 +31,28 @@ Los cruces de contrato se implementan mediante accesos a diccionarios y el opera
 docker compose -f compose.yml up -d --build
 ```
 
-Puerto local: `838`.
+Puerto local: `838` (modo aislado, ver opciones abajo).
+
+## Como consumir (dos opciones)
+
+**Hub Python (recomendado, 8200 en `compose.python.yml`):** este caso queda servido en `http://localhost:8200/08/...` junto a los otros 11 casos.
+
+**Modo aislado (838 en este `compose.yml`):** levanta solo este caso, util cuando la medicion necesita procesar limpio (sin otros casos compartiendo runtime).
 
 ## 🔎 Endpoints
 
 ```bash
-curl http://localhost:838/
-curl http://localhost:838/health
-curl "http://localhost:838/pricing-bigbang?scenario=rule_drift&consumer=checkout"
-curl "http://localhost:838/pricing-compatible?scenario=rule_drift&consumer=checkout"
-curl -X POST http://localhost:838/cutover/advance
-curl http://localhost:838/extraction/state
-curl "http://localhost:838/flows?limit=10"
-curl http://localhost:838/diagnostics/summary
-curl http://localhost:838/metrics
-curl http://localhost:838/metrics-prometheus
-curl http://localhost:838/reset-lab
+curl http://localhost:8200/08/
+curl http://localhost:8200/08/health
+curl "http://localhost:8200/08/pricing-bigbang?scenario=rule_drift&consumer=checkout"
+curl "http://localhost:8200/08/pricing-compatible?scenario=rule_drift&consumer=checkout"
+curl -X POST http://localhost:8200/08/cutover/advance
+curl http://localhost:8200/08/extraction/state
+curl "http://localhost:8200/08/flows?limit=10"
+curl http://localhost:8200/08/diagnostics/summary
+curl http://localhost:8200/08/metrics
+curl http://localhost:8200/08/metrics-prometheus
+curl http://localhost:8200/08/reset-lab
 ```
 
 ## 🧪 Escenarios utiles
