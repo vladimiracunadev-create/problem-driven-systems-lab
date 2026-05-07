@@ -8,7 +8,9 @@
 #   GET http://localhost:8300/12/... → caso 12
 #
 # Los 12 servidores de caso corren como subprocesos internos
-# en puertos 9001-9012 que nunca se exponen al host.
+# en puertos 9101 (caso 01) y 9002-9012 (casos 02-12) que nunca
+# se exponen al host. El caso 01 usa 9101 porque algunos hosts
+# Windows reservan 9001.
 #
 # Uso:
 #   docker compose -f compose.nodejs.yml up -d --build

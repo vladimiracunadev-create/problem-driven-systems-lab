@@ -3,16 +3,20 @@
 /**
  * Node Lab Dispatcher — un solo contenedor, un solo puerto para los 12 casos.
  *
- * Cada caso corre como subproceso interno en un puerto local (9001-9012).
+ * Cada caso corre como subproceso interno en un puerto local.
  * El dispatcher escucha en :8300 y enruta por prefijo de path:
  *
- *     GET /01/health          → case 01 server (interno :9001)
+ *     GET /01/health          → case 01 server (interno :9101)
  *     GET /02/query?...       → case 02 server (interno :9002)
  *     ...
  *     GET /12/share-knowledge → case 12 server (interno :9012)
  *     GET /                   → indice de todos los casos
  *
  * Los puertos internos nunca se exponen al host — solo :8300 es visible.
+ *
+ * Nota: el caso 01 usa :9101 en lugar de :9001 porque algunos hosts
+ * Windows reservan 9001 (rango excluido del kernel). En Linux Docker
+ * cualquier puerto libre funciona; mantener 9101 no rompe nada.
  */
 
 const http = require('http');
@@ -20,7 +24,7 @@ const { spawn } = require('child_process');
 const { URL } = require('url');
 
 const CASES = {
-  '01': { port: 9001, name: 'API lenta bajo carga',               server: '/cases/01/server.js' },
+  '01': { port: 9101, name: 'API lenta bajo carga',               server: '/cases/01/server.js' },
   '02': { port: 9002, name: 'N+1 y cuellos de botella DB',        server: '/cases/02/server.js' },
   '03': { port: 9003, name: 'Observabilidad deficiente',          server: '/cases/03/server.js' },
   '04': { port: 9004, name: 'Timeout chain y retry storms',       server: '/cases/04/server.js' },
@@ -197,7 +201,7 @@ process.on('SIGINT',  () => shutdown('SIGINT'));
   await waitForCases(20000);
 
   console.log(`[dispatcher] Listo. Escuchando en :${DISPATCH_PORT}`);
-  console.log('[dispatcher] Rutas: /01/ ... /12/  →  casos internos :9001 ... :9012');
+  console.log('[dispatcher] Rutas: /01/ → :9101, /02/.../12/ → :9002...:9012');
 
   http.createServer(handler).listen(DISPATCH_PORT, '0.0.0.0');
 })();
