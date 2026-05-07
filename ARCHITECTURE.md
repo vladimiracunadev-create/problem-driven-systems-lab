@@ -104,7 +104,17 @@ El laboratorio ha evolucionado de simulaciones matemáticas a **escenarios de fa
 **✅ OPERATIVO** = logica real, Docker funcional, evidencia observable.
 **scaffold** = estructura y documentacion lista, sin implementacion funcional todavia.
 
-Cada caso incluye ademas un `comparison.md` que explica en profundidad como PHP y Python abordan el mismo problema de forma distinta a nivel de lenguaje.
+Cada caso incluye ademas un `comparison.md` que explica en profundidad como PHP, Python y Node.js abordan el mismo problema de forma distinta a nivel de lenguaje.
+
+### 🧱 Modelos de containerizacion por stack
+
+Los tres hubs (`compose.root.yml` PHP, `compose.python.yml` Python, `compose.nodejs.yml` Node.js) **se ven simétricos desde afuera** (un puerto por lenguaje sirve los 12 casos), pero adentro son arquitecturas distintas:
+
+- **PHP** levanta **~20 contenedores Docker** (12 apps PHP separadas + DB + observabilidad + worker). Microservicios verdaderos con aislamiento OS-level por caso.
+- **Python** levanta **1 solo contenedor** que internamente spawnea 12 subprocesos. Modelo monorepo-con-plugins.
+- **Node.js** levanta **1 solo contenedor** con el mismo patron. Modelo single-tenant multi-process.
+
+Esta asimetria es deliberada: PHP necesita N contenedores porque el caso 01 ya requiere DB + worker + observabilidad como contenedores reales; Python y Node se benefician de 1 contenedor porque sus 12 casos son sin estado externo. **Trade-offs detallados en [`docs/docker-strategy.md`](docs/docker-strategy.md#-tres-modelos-de-containerización-uno-por-stack--y-por-qué-son-distintos).**
 
 ## 🔁 Flujo de datos y sincronizacion
 

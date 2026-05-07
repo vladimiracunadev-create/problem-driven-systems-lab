@@ -2,6 +2,23 @@
 
 Todos los cambios notables de este laboratorio se registran aqui con foco en madurez tecnica y documental.
 
+## 2026-05-07 - Asimetria de containerizacion por stack documentada explicitamente
+
+### Documentation
+
+- `docs/docker-strategy.md`: nueva seccion **🧱 Tres modelos de containerización (uno por stack) — y por qué son distintos**. Aclara que los tres hubs `compose.root.yml`/`compose.python.yml`/`compose.nodejs.yml` parecen simetricos pero adentro son arquitecturas distintas:
+  - **PHP**: ~20 contenedores Docker reales (12 apps separadas + DB + observabilidad). Microservicios con aislamiento OS-level.
+  - **Python**: 1 contenedor con 12 subprocesos `subprocess.Popen` internos.
+  - **Node.js**: 1 contenedor con 12 subprocesos `child_process.spawn` internos.
+- Tabla de trade-offs explicitos: RAM total (~2.5 GB vs ~512 MB), tiempo de boot (15-20s vs 3-5s), aislamiento (OS-level vs cooperativo), failure domain por memory leak, costo en AWS Fargate (12 services vs 1).
+- Tabla "cuando elegir cada modelo" en tu propio proyecto.
+- Justificacion explicita de por que NO se uniformaron los tres stacks (PHP no se puede colapsar a 1 contenedor por el caso 01; Python y Node si pueden por no tener estado externo; mantener los 3 modelos lado a lado muestra patrones reales que se ven en produccion).
+
+### Changed
+
+- `README.md`: nota visible debajo de la tabla de los 3 hubs apuntando a la nueva seccion. Aclara que "1 puerto por lenguaje" no implica "1 contenedor por lenguaje".
+- `ARCHITECTURE.md`: subseccion nueva "Modelos de containerizacion por stack" debajo de la tabla de casos operativos, con link al detalle en docker-strategy.
+
 ## 2026-05-07 - AWS_MIGRATION.md actualizado: paridad Node + hubs + mapping de seguridad
 
 ### Changed
