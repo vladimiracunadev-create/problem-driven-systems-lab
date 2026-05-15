@@ -1,34 +1,62 @@
-# Cadena de timeouts y tormentas de reintentos — Java
+# Caso 04 — Java 21
 
-## Objetivo de esta variante
-Representar este caso desde el stack **Java**, manteniendo foco en el problema y no solo en la sintaxis.
+Stack Java operativo del caso 04. Contraste entre retry storm (5 reintentos sin backoff) vs circuit breaker con timeout cooperativo + fallback cacheado.
 
-## Qué debería mostrar esta carpeta
-- una base dockerizada,
-- un punto de entrada mínimo,
-- espacio para instrumentación, pruebas o scripts,
-- notas de diseño específicas del stack.
+## Primitivas nativas
 
-## Qué NO debería hacer
-- mezclar dependencias de otros stacks,
-- levantar todo el laboratorio,
-- esconder decisiones importantes fuera del repositorio.
+| Primitiva | Rol |
+|---|---|
+| `CompletableFuture.orTimeout(Duration)` | Deadline cooperativo a nivel future. Si el provider no responde en 300ms, se cancela. |
+| `AtomicReference<BreakerState>` | Transiciones `closed → open → half_open` sin lock. CAS implicito en `set()`. |
+| `record BreakerState(state, failCount, openedAt)` | Snapshot inmutable del estado del breaker. |
+| `LongAdder` | Contadores de `legacy_retries`, `resilient_short_circuits`, `resilient_fallbacks`. |
 
-## Puertos de referencia
-- Puerto local sugerido: `844`
+## Contraste
 
-## Comando esperado
-```bash
-docker compose -f compose.yml up -d --build
+**Legacy** — retry storm sin breaker, sin backoff:
+```java
+for (int attempt = 1; attempt <= 5; attempt++) {
+    legacyRetries.increment();
+    try { return callProvider(fail, 800); }
+    catch (Exception e) { /* sin backoff */ }
+}
 ```
 
-## Notas del stack
-En Java conviene estudiar este caso considerando:
-- ergonomía del runtime,
-- patrones habituales del ecosistema,
-- observabilidad disponible,
-- costos de complejidad,
-- límites y trade-offs específicos.
+**Resilient** — short-circuit cuando breaker abierto + future con timeout + fallback:
+```java
+BreakerState st = breaker.get();
+if ("open".equals(st.state) && cooldownNotElapsed(st)) {
+    return fallback(lastFallbackPrice.get());  // sin tocar al provider
+}
+CompletableFuture<Long> fut = CompletableFuture
+    .supplyAsync(() -> callProviderUnchecked(fail, 800))
+    .orTimeout(300, TimeUnit.MILLISECONDS);
+```
 
-## Estado inicial
-Esta carpeta deja una base mínima documentada y ampliable para que el caso evolucione hacia un escenario más realista.
+Tras 3 fallos consecutivos el breaker pasa a `open` durante 5s.
+
+## Rutas
+
+| Ruta | Que muestra |
+|---|---|
+| `/health` | liveness |
+| `/quote-legacy?fail=on` | 5 reintentos secuenciales hasta agotarse |
+| `/quote-resilient?fail=on` | timeout 300ms + breaker; tras 3 fallos pasa a fallback inmediato |
+| `/dependency/state` | estado actual del breaker + cooldown restante |
+| `/diagnostics/summary` | totales por variante |
+| `/reset-lab` | limpia contadores y cierra el breaker |
+
+## Hub
+
+```
+docker compose -f compose.java.yml up -d --build
+# generar 3 fallos para abrir el breaker
+for i in 1 2 3; do curl -s "http://127.0.0.1:8400/04/quote-resilient?fail=on"; done
+curl http://127.0.0.1:8400/04/dependency/state
+# proximo call sera short_circuited sin tocar al provider
+curl "http://127.0.0.1:8400/04/quote-resilient?fail=on"
+```
+
+## Por que CompletableFuture y no Thread.interrupt()
+
+`CompletableFuture.orTimeout()` es cooperativo y limpio: el future entra en estado `completedExceptionally(TimeoutException)` y el chain de continuations recibe el error. `Thread.interrupt()` sobre un `Thread.sleep()` funciona, pero no se propaga a I/O bloqueante real (sockets, FileChannel). Para HTTP real usariamos `HttpClient` con `Duration` timeout — misma idea.

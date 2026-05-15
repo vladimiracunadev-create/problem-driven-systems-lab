@@ -119,7 +119,7 @@ Cada lenguaje tiene su propio compose en la raíz del repositorio. Un comando le
 | [`compose.root.yml`](compose.root.yml) | PHP 8.3 | `8080` portal · `8100` PHP hub · `9091` Prometheus · `3001` Grafana | `OPERATIVO` |
 | [`compose.python.yml`](compose.python.yml) | Python 3.12 | `8200` Python hub | `OPERATIVO` |
 | [`compose.nodejs.yml`](compose.nodejs.yml) | Node.js 20 | `8300` Node hub | `OPERATIVO` |
-| `compose.java.yml` | Java / JVM | `8400` Java hub | `PLANIFICADO` |
+| [`compose.java.yml`](compose.java.yml) | Java 21 | `8400` Java hub | `PARCIAL` (casos 01-06) |
 | `compose.dotnet.yml` | .NET 8 | `8500` .NET hub | `PLANIFICADO` |
 
 **Tres hubs garantizan el lab completo (uno por lenguaje):** un solo puerto sirve los 12 casos vía routing por path (`/01/health`...`/12/health`). Los servicios de soporte (DB, Prometheus, Grafana) tienen los suyos propios porque son servicios distintos.
@@ -136,11 +136,14 @@ docker compose -f compose.python.yml up -d --build
 # Node.js: dispatcher (12 casos internos en un contenedor)
 docker compose -f compose.nodejs.yml up -d --build
 
+# Java: dispatcher (6 casos internos en un contenedor — 01 a 06 operativos)
+docker compose -f compose.java.yml up -d --build
+
 # Portal liviano solamente
 docker compose -f compose.portal.yml up -d --build
 ```
 
-Con esto, los 36 endpoints (12 casos × 3 stacks) viven detras de **3 puertos**: `8100`, `8200`, `8300`. El portal (`8080`) y la observabilidad (`9091` Prometheus, `3001` Grafana) suman 3 mas. **6 puertos cubren el laboratorio entero.**
+Con esto, los 42 endpoints operativos (12 PHP + 12 Python + 12 Node + 6 Java) viven detras de **4 puertos**: `8100`, `8200`, `8300`, `8400`. El portal (`8080`) y la observabilidad (`9091` Prometheus, `3001` Grafana) suman 3 mas. **7 puertos cubren el laboratorio entero.**
 
 ### Ejecucion aislada de un solo caso (modo estudio)
 

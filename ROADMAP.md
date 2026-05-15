@@ -7,7 +7,8 @@
 - Casos `01` al `12` operativos en PHP.
 - Casos `01` al `12` operativos en Python.
 - Casos `01` al `12` operativos en Node.js, cada uno con la primitiva nativa que mejor expresa el problema: `event_loop_lag_ms` y `process.memoryUsage()` para presion real, `AbortController`/`AbortSignal.timeout` para cancelacion y deadlines, `Map<consumer, handler>` para strangler, `Proxy` para compatibilidad de contrato, `EventEmitter` para cutover events, `monitorEventLoopDelay()` para impacto sobre el loop, optional chaining como runbook codificado.
-- **Tres hubs operativos (uno por lenguaje):** `compose.root.yml` (PHP `8100`), `compose.python.yml` (Python `8200`), `compose.nodejs.yml` (Node.js `8300`). Cada hub sirve los 12 casos via routing por path.
+- Casos `01` al `06` operativos en Java 21 con primitivas distintas: `ConcurrentHashMap` + `LongAdder` + `ScheduledExecutorService` (caso 01), batch IN simulado + `HashMap` (02), `ThreadLocal<RequestContext>` + estructurado JSON (03), `CompletableFuture.orTimeout` + `AtomicReference<BreakerState>` (04), `LinkedHashMap.removeEldestEntry` + `Runtime.totalMemory()` (05), `record` types + state machine (06). Casos 07-12 Java pendientes.
+- **Cuatro hubs operativos (uno por lenguaje):** `compose.root.yml` (PHP `8100`), `compose.python.yml` (Python `8200`), `compose.nodejs.yml` (Node.js `8300`), `compose.java.yml` (Java `8400` — casos 01-06). Cada hub sirve sus casos via routing por path.
 - Docker por caso disponible para modo estudio aislado (memoria, event loop) sin contaminacion de otros workloads.
 - Familia documental profesional incorporada en la raiz del repo.
 - Catalogo y portal conectados por metadatos compartidos.
@@ -39,7 +40,8 @@ Estado: en progreso
 - Agregar medicion reproducible donde el problema lo requiera.
 - Sumar mas observabilidad compartida cuando aporte valor real.
 - Casos `01` al `12` con paridad multi-stack PHP + Python + Node.js.
-- Sumar Java o .NET para algun caso especifico cuando aporte contraste tecnico real.
+- **Java 21 entra como 4to stack operativo en casos 01-06** (en progreso). Los primeros 6 casos cierran con primitivas Java nativas (ConcurrentHashMap, CompletableFuture.orTimeout, LinkedHashMap LRU, record types). Casos 07-12 Java pendientes.
+- Sumar .NET para algun caso especifico cuando aporte contraste tecnico real.
 
 Avance actual (multi-stack PHP + Python + Node.js):
 

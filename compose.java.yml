@@ -1,0 +1,36 @@
+# compose.java.yml — Stack Java completo (casos 01-06 operativos)
+#
+# Un solo contenedor, un solo puerto.
+# El dispatcher interno enruta por prefijo de path:
+#
+#   GET http://localhost:8400/       → indice de casos Java
+#   GET http://localhost:8400/01/... → caso 01
+#   GET http://localhost:8400/06/... → caso 06
+#
+# Los 6 servidores de caso corren como subprocesos internos en puertos
+# 9401-9406 que nunca se exponen al host. Cuando se sumen cases 07-12
+# se agregan al dispatcher sin cambiar el contrato externo.
+#
+# Uso:
+#   docker compose -f compose.java.yml up -d --build
+#   docker compose -f compose.java.yml down
+#   docker compose -f compose.java.yml logs -f
+
+services:
+  java-lab:
+    build:
+      context: .
+      dockerfile: java-dispatcher/Dockerfile
+    container_name: pdsl-java-lab
+    ports:
+      - "8400:8400"
+    environment:
+      APP_STACK: Java 21
+      PORT: "8400"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:8400/01/health > /dev/null || exit 1"]
+      interval: 10s
+      timeout: 3s
+      retries: 12
+      start_period: 30s
+    restart: unless-stopped

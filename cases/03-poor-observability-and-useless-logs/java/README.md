@@ -1,34 +1,55 @@
-# Observabilidad deficiente y logs inútiles — Java
+# Caso 03 — Java 21
 
-## Objetivo de esta variante
-Representar este caso desde el stack **Java**, manteniendo foco en el problema y no solo en la sintaxis.
+Stack Java operativo del caso 03. Contraste entre logs opacos (`println` sin contexto) vs estructurados con correlation ID propagado.
 
-## Qué debería mostrar esta carpeta
-- una base dockerizada,
-- un punto de entrada mínimo,
-- espacio para instrumentación, pruebas o scripts,
-- notas de diseño específicas del stack.
+## Primitivas nativas
 
-## Qué NO debería hacer
-- mezclar dependencias de otros stacks,
-- levantar todo el laboratorio,
-- esconder decisiones importantes fuera del repositorio.
+| Primitiva | Rol |
+|---|---|
+| `ThreadLocal<RequestContext>` | Contexto de correlation ID propagado durante el handler. Equivalente a `ScopedValue` de JDK 21 sin requerir preview flags. |
+| `UUID.randomUUID()` | Generacion de `correlation_id` por request. |
+| Estructurado JSON inline | Sin libreria de logging externa: build manual con `StringBuilder` para mantener el lab single-file. |
 
-## Puertos de referencia
-- Puerto local sugerido: `843`
+## Contraste
 
-## Comando esperado
-```bash
-docker compose -f compose.yml up -d --build
+**Legacy** — log sin contexto:
+```java
+System.out.println("[INFO] processing checkout");
+if (total > 500) {
+    System.out.println("[ERROR] checkout failed");  // sin id, sin total, sin razon
+}
 ```
 
-## Notas del stack
-En Java conviene estudiar este caso considerando:
-- ergonomía del runtime,
-- patrones habituales del ecosistema,
-- observabilidad disponible,
-- costos de complejidad,
-- límites y trade-offs específicos.
+**Observable** — correlation ID + campos estructurados:
+```java
+CTX.set(new RequestContext(corrId, "checkout-observable", Instant.now().toString()));
+structuredLog("error", "checkout_failed", Map.of(
+    "total", String.valueOf(total),
+    "reason", "exceeds_limit",
+    "limit", "500"));
+// → {"ts":"...","level":"error","event":"checkout_failed","correlation_id":"<uuid>",
+//    "route":"checkout-observable","total":"600.0","reason":"exceeds_limit","limit":"500"}
+```
 
-## Estado inicial
-Esta carpeta deja una base mínima documentada y ampliable para que el caso evolucione hacia un escenario más realista.
+## Rutas
+
+| Ruta | Que muestra |
+|---|---|
+| `/health` | liveness |
+| `/checkout-legacy?total=600` | log opaco a stdout, sin id |
+| `/checkout-observable?total=600` | log estructurado + `correlation_id` en respuesta y en `/logs` |
+| `/logs` | ultimos 200 logs estructurados (JSON) |
+| `/diagnostics/summary` | contraste de requests/errors entre variantes |
+| `/reset-lab` | limpia logs y contadores |
+
+## Hub
+
+```
+docker compose -f compose.java.yml up -d --build
+curl "http://127.0.0.1:8400/03/checkout-observable?total=600"
+curl http://127.0.0.1:8400/03/logs
+```
+
+## Por que ThreadLocal y no ScopedValue
+
+`ScopedValue` (JDK 21) es la API moderna recomendada por Loom. Aqui se usa `ThreadLocal` porque (a) requiere menos flags de compilacion, (b) el resultado observable es el mismo: contexto propagado dentro del handler, limpiado en `finally`. Para produccion real con `Executors.newVirtualThreadPerTaskExecutor()` la migracion a `ScopedValue` es ~10 lineas.
