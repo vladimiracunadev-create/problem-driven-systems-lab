@@ -39,7 +39,7 @@ El laboratorio no es solo una "API JSON ciega". Los 12 casos en PHP ahora interc
 
 | Perfil | Punto de entrada | Que deberia poder concluir |
 | --- | --- | --- |
-| Recruiter / hiring manager | [RECRUITER.md](RECRUITER.md) | El repo deja evidencia real y no solo una narrativa bonita |
+| Recruiter / hiring manager | [RECRUITER.md](RECRUITER.md) → [docs/executive-summary.md](docs/executive-summary.md) | El repo deja evidencia real y los 12 casos caben en una pagina ejecutiva |
 | CTO / Head of Engineering | [ARCHITECTURE.md](ARCHITECTURE.md) | Hay criterio sistemico, foco en operacion y reduccion de riesgo |
 | Developer / DevOps | [INSTALL.md](INSTALL.md) → [RUNBOOK.md](RUNBOOK.md) | El entorno levanta limpio y los casos operativos cuentan una historia tecnica verificable |
 | Security engineer | [SECURITY.md](SECURITY.md) | Modelo de amenaza explicito, hallazgos del analisis interno y frontera honesta entre lo que el lab garantiza y lo que no |
@@ -174,6 +174,7 @@ Tambien existen atajos con `make`, pero la ruta soportada y mas portable sigue s
 | [CHANGELOG.md](CHANGELOG.md) | Historial notable de cambios |
 | [docs/architecture.md](docs/architecture.md) | Mapa estructural del repositorio |
 | [docs/case-catalog.md](docs/case-catalog.md) | Catalogo sincronizado desde metadatos |
+| [docs/executive-summary.md](docs/executive-summary.md) | 📋 Resumen ejecutivo: los 12 casos en una pagina (problema · valor · evidencia) |
 | [docs/docker-strategy.md](docs/docker-strategy.md) | Por que Docker es el modelo operativo oficial |
 | [docs/recruiter-guide.md](docs/recruiter-guide.md) | Guia extendida para lectores no tecnicos |
 
