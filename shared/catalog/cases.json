@@ -161,7 +161,8 @@
       "operational_stacks": [
         "php",
         "python",
-        "node"
+        "node",
+        "java"
       ],
       "runtime_entries": {
         "php": {
@@ -184,6 +185,15 @@
           "readme_path": "cases/01-api-latency-under-load/node/README.md",
           "health_path": "/health",
           "root_path": "/"
+        },
+        "java": {
+          "port": 8400,
+          "compose_path": "compose.java.yml",
+          "readme_path": "cases/01-api-latency-under-load/java/README.md",
+          "health_path": "/01/health",
+          "root_path": "/01/",
+          "isolated_compose": "cases/01-api-latency-under-load/java/compose.yml",
+          "isolated_port": 841
         }
       }
     },
@@ -213,7 +223,8 @@
       "operational_stacks": [
         "php",
         "python",
-        "node"
+        "node",
+        "java"
       ],
       "runtime_entries": {
         "php": {
@@ -236,6 +247,15 @@
           "readme_path": "cases/02-n-plus-one-and-db-bottlenecks/node/README.md",
           "health_path": "/health",
           "root_path": "/"
+        },
+        "java": {
+          "port": 8400,
+          "compose_path": "compose.java.yml",
+          "readme_path": "cases/02-n-plus-one-and-db-bottlenecks/java/README.md",
+          "health_path": "/02/health",
+          "root_path": "/02/",
+          "isolated_compose": "cases/02-n-plus-one-and-db-bottlenecks/java/compose.yml",
+          "isolated_port": 842
         }
       }
     },
@@ -265,7 +285,8 @@
       "operational_stacks": [
         "php",
         "node",
-        "python"
+        "python",
+        "java"
       ],
       "runtime_entries": {
         "php": {
@@ -288,6 +309,15 @@
           "readme_path": "cases/03-poor-observability-and-useless-logs/python/README.md",
           "health_path": "/03/health",
           "root_path": "/03/"
+        },
+        "java": {
+          "port": 8400,
+          "compose_path": "compose.java.yml",
+          "readme_path": "cases/03-poor-observability-and-useless-logs/java/README.md",
+          "health_path": "/03/health",
+          "root_path": "/03/",
+          "isolated_compose": "cases/03-poor-observability-and-useless-logs/java/compose.yml",
+          "isolated_port": 843
         }
       }
     },
@@ -317,7 +347,8 @@
       "operational_stacks": [
         "php",
         "python",
-        "node"
+        "node",
+        "java"
       ],
       "runtime_entries": {
         "php": {
@@ -340,6 +371,15 @@
           "readme_path": "cases/04-timeout-chain-and-retry-storms/node/README.md",
           "health_path": "/health",
           "root_path": "/"
+        },
+        "java": {
+          "port": 8400,
+          "compose_path": "compose.java.yml",
+          "readme_path": "cases/04-timeout-chain-and-retry-storms/java/README.md",
+          "health_path": "/04/health",
+          "root_path": "/04/",
+          "isolated_compose": "cases/04-timeout-chain-and-retry-storms/java/compose.yml",
+          "isolated_port": 844
         }
       }
     },
@@ -369,7 +409,8 @@
       "operational_stacks": [
         "php",
         "python",
-        "node"
+        "node",
+        "java"
       ],
       "runtime_entries": {
         "php": {
@@ -392,6 +433,15 @@
           "readme_path": "cases/05-memory-pressure-and-resource-leaks/node/README.md",
           "health_path": "/health",
           "root_path": "/"
+        },
+        "java": {
+          "port": 8400,
+          "compose_path": "compose.java.yml",
+          "readme_path": "cases/05-memory-pressure-and-resource-leaks/java/README.md",
+          "health_path": "/05/health",
+          "root_path": "/05/",
+          "isolated_compose": "cases/05-memory-pressure-and-resource-leaks/java/compose.yml",
+          "isolated_port": 845
         }
       }
     },
@@ -421,7 +471,8 @@
       "operational_stacks": [
         "php",
         "python",
-        "node"
+        "node",
+        "java"
       ],
       "runtime_entries": {
         "php": {
@@ -444,6 +495,15 @@
           "readme_path": "cases/06-broken-pipeline-and-fragile-delivery/node/README.md",
           "health_path": "/health",
           "root_path": "/"
+        },
+        "java": {
+          "port": 8400,
+          "compose_path": "compose.java.yml",
+          "readme_path": "cases/06-broken-pipeline-and-fragile-delivery/java/README.md",
+          "health_path": "/06/health",
+          "root_path": "/06/",
+          "isolated_compose": "cases/06-broken-pipeline-and-fragile-delivery/java/compose.yml",
+          "isolated_port": 846
         }
       }
     },

@@ -2,6 +2,47 @@
 
 Todos los cambios notables de este laboratorio se registran aqui con foco en madurez tecnica y documental.
 
+## 2026-05-15 - Java 21 entra como 4to stack operativo: casos 01-06 + hub consolidado
+
+Hasta hoy los stacks Java/.NET vivian como scaffolds genericos (un Main.java con `/fast`, `/slow`, `/cpu` sin solucionar el problema del caso). Esta entrega convierte los 6 primeros casos en implementaciones Java reales que resuelven cada problema con primitivas distintivas del lenguaje y los pone detras de un hub consolidado al estilo Python/Node.
+
+### Added
+
+- **`compose.java.yml`** en raiz, puerto `8400`. Mirror simetrico de `compose.python.yml` y `compose.nodejs.yml`: un solo contenedor, un solo puerto, dispatcher interno que enruta `/01..06/*` a subprocesos `java Main` en puertos internos `9401-9406`. Healthcheck en `/01/health`.
+- **`java-dispatcher/`** con `Dockerfile` y `app/Dispatcher.java`. Compila todos los `Main.java` de los 6 casos + el dispatcher en build-time (arranque rapido), spawna cada caso como `Process` con `ProcessBuilder`, proxy via `HttpClient` (JDK built-in). Shutdown hook propaga SIGTERM.
+- **`cases/01..06/java/app/Main.java`** reescritos como implementaciones reales (no scaffolds). Cada uno con `/health`, dos rutas contraste (`-legacy` vs `-optimized`/`-resilient`/`-observable`/`-controlled`), `/diagnostics/summary`, `/metrics`, `/reset-lab`. Sin Maven — single-file por caso, compilado en build con `javac`.
+- **Primitivas Java distintivas por caso:**
+  - 01 (API latency): `ConcurrentHashMap` para summary cache lock-free entre worker y handlers; `LongAdder` para p95/p99; `ScheduledExecutorService` para el worker `report-refresh-java`.
+  - 02 (N+1): `HashMap<Integer,List<Item>>` precomputado como tabla relacional indexada; batch `IN(...)` simulado; `record` types.
+  - 03 (Observability): `ThreadLocal<RequestContext>` para propagar `correlation_id` (equivalente a `ScopedValue` sin preview flags); log estructurado JSON inline; `/logs` endpoint con ultimos 200.
+  - 04 (Timeouts): `CompletableFuture.orTimeout(Duration)` como deadline cooperativo; `AtomicReference<BreakerState>` con CAS para transiciones closed→open→half_open; fallback cacheado.
+  - 05 (Memory): `LinkedHashMap.removeEldestEntry` como LRU built-in del JDK; `Runtime.getRuntime().totalMemory()/freeMemory()/maxMemory()` para medir heap directo; `System.gc()` opcional en `/reset-lab`.
+  - 06 (Pipeline): `record EnvState` y `record Deployment` inmutables; `ConcurrentHashMap` por ambiente; state machine como guards en codigo (preflight → smoke → promote | rollback).
+- **6 `README.md` Java per caso** (no stubs) con tabla de primitivas, snippet de contraste, rutas, ejemplos hub + aislado, y diferencias de runtime vs PHP/Python/Node.
+- **Healthcheck en los 6 `compose.yml` per-case** (`/health` cada 10s, 10 reintentos). Modo aislado (`docker compose -f cases/0X/java/compose.yml up`) sigue funcionando con puertos host `841-846`.
+
+### Changed
+
+- `.github/workflows/ci.yml`:
+  - `compose-config` matrix amplia a 46 archivos (suma `compose.java.yml` + los 6 java per-case).
+  - `hub-probe` matrix incluye `java-hub` con la lista de cases parametrizada (`01 02 03 04 05 06`), reusando el mismo job pero respetando que Java es parcial.
+- `shared/catalog/cases.json`: cases 01-06 ahora listan `java` en `operational_stacks` con `runtime_entries.java` (port 8400, compose.java.yml, isolated_compose, isolated_port).
+- `docs/case-catalog.md` regenerado desde `cases.json`.
+- `README.md`: tabla de hubs marca Java como **PARCIAL (casos 01-06)**, comandos de levantamiento incluyen `docker compose -f compose.java.yml up`, conteo de endpoints sube a 42 (12 PHP + 12 Python + 12 Node + 6 Java) detras de 4 puertos.
+- `ROADMAP.md`: Fotografia actual y Fase 2 reflejan Java 21 como 4to stack operativo parcial; mencion explicita de las primitivas por caso. Anuncio de que casos 07-12 Java quedan pendientes.
+
+### Why
+
+El roadmap historicamente mencionaba "sumar Java o .NET para algun caso especifico". Tras cerrar PHP/Python/Node con paridad completa, Java entra como contraste fuerte: tipado estatico + GC + thread pool real + `CompletableFuture` + `ConcurrentHashMap` son primitivas que los otros stacks no expresan limpio. Hacerlo via hub (no 12 contenedores) preserva la simetria arquitectonica establecida con Python/Node — sigue habiendo "un compose por lenguaje" como afirma `docs/docker-strategy.md`.
+
+### Smoke test
+
+- `javac` sobre los 6 Main.java + Dispatcher.java → OK local.
+- Boot local sin Docker (`java Main` directo) del caso 01 java: `/health`, `/report-legacy`, `/report-optimized`, `/batch/status`, `/metrics` todos responden 200 con payload coherente. Worker `report-refresh-java` refrescando 1531 customer summaries en ~4ms. Contraste medible: legacy ~18ms (4 db_hits) vs optimized ~3ms (2 db_hits).
+- `docker compose -f compose.java.yml config` OK.
+- `docker compose -f cases/0X/java/compose.yml config` OK para los 6.
+- `bash scripts/validate-structure.sh` → OK (estructura + catalogo regenerado).
+
 ## 2026-05-15 - Resumen ejecutivo: los 12 casos en una pagina
 
 Faltaba una vista agregada para lectores no tecnicos (recruiters, lideres de producto, finanzas, CTO sin tiempo). Los `README.md` por caso y `docs/case-catalog.md` cubren bien el detalle tecnico, pero ninguno respondia "¿que problema de negocio resuelve cada uno y que evidencia deja en 5 minutos?" en una sola pasada. Esta entrega abre Fase 3.
