@@ -76,6 +76,12 @@ jobs:
           - cases/04-timeout-chain-and-retry-storms/java/compose.yml
           - cases/05-memory-pressure-and-resource-leaks/java/compose.yml
           - cases/06-broken-pipeline-and-fragile-delivery/java/compose.yml
+          - cases/07-incremental-monolith-modernization/java/compose.yml
+          - cases/08-critical-module-extraction-without-breaking-operations/java/compose.yml
+          - cases/09-unstable-external-integration/java/compose.yml
+          - cases/10-expensive-architecture-for-simple-needs/java/compose.yml
+          - cases/11-heavy-reporting-blocks-operations/java/compose.yml
+          - cases/12-single-point-of-knowledge-and-operational-risk/java/compose.yml
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -202,7 +208,7 @@ jobs:
           - name: java-hub
             compose_file: compose.java.yml
             hub_port: 8400
-            cases: "01 02 03 04 05 06"
+            cases: "01 02 03 04 05 06 07 08 09 10 11 12"
     steps:
       - name: Checkout
         uses: actions/checkout@v4

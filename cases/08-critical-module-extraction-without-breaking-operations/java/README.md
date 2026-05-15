@@ -1,34 +1,54 @@
-# Extracción de módulo crítico sin romper operación — Java
+# Caso 08 — Java 21
 
-## Objetivo de esta variante
-Representar este caso desde el stack **Java**, manteniendo foco en el problema y no solo en la sintaxis.
+Stack Java operativo del caso 08. Cutover gradual con proxy de compatibilidad de contrato + event bus thread-safe.
 
-## Qué debería mostrar esta carpeta
-- una base dockerizada,
-- un punto de entrada mínimo,
-- espacio para instrumentación, pruebas o scripts,
-- notas de diseño específicas del stack.
+## Primitivas nativas
 
-## Qué NO debería hacer
-- mezclar dependencias de otros stacks,
-- levantar todo el laboratorio,
-- esconder decisiones importantes fuera del repositorio.
+| Primitiva | Rol |
+|---|---|
+| `Function<PriceRequestOld, PriceRequestNew>` | Proxy de compatibilidad. Traduce contrato viejo `{cost_usd}` ↔ nuevo `{price, currency}` en vuelo. |
+| `CopyOnWriteArrayList<Consumer<String>>` | EventBus thread-safe — equivalente al `EventEmitter` de Node, sin libreria externa. Reads paralelos sin lock; writes raros copian el array. |
+| `record PriceRequestOld/New` | Snapshots inmutables de cada contrato. |
+| `ConcurrentHashMap<String, Boolean>` | Progreso de cutover por consumer. |
 
-## Puertos de referencia
-- Puerto local sugerido: `848`
+## Contraste
 
-## Comando esperado
-```bash
-docker compose -f compose.yml up -d --build
+**Big-bang** — cambio de contrato rompe consumers sensibles:
+```java
+// Nuevo modulo solo entiende {price, currency}; consumer manda {cost_usd}
+return "contract_violation";   // checkout, partners, backoffice todos rotos
 ```
 
-## Notas del stack
-En Java conviene estudiar este caso considerando:
-- ergonomía del runtime,
-- patrones habituales del ecosistema,
-- observabilidad disponible,
-- costos de complejidad,
-- límites y trade-offs específicos.
+**Compatible** — proxy traduce old→new + event bus notifica avance:
+```java
+PriceRequestNew translated = compatProxy.apply(old);   // {cost_usd}→{price,currency}
+cutoverProgress.put(consumer, true);
+emit("cutover_done:" + consumer);                       // bus notifica suscriptores
+```
 
-## Estado inicial
-Esta carpeta deja una base mínima documentada y ampliable para que el caso evolucione hacia un escenario más realista.
+## Rutas
+
+| Ruta | Que muestra |
+|---|---|
+| `/health` | liveness |
+| `/pricing-bigbang?consumer=checkout&sku=ABC&cost_usd=100` | contract_violation (rompe) |
+| `/pricing-compatible?consumer=checkout&sku=ABC&cost_usd=100` | translated payload + cutover_done=true + emite evento |
+| `/flows` | cutover_progress por consumer + recent_events (max 50) |
+| `/diagnostics/summary` | proxy_hits, contract_tests_passed, bigbang_broken |
+| `/reset-lab` | limpia state |
+
+## Hub
+
+```
+docker compose -f compose.java.yml up -d --build
+curl "http://127.0.0.1:8400/08/pricing-compatible?consumer=checkout&sku=ABC&cost_usd=100"
+curl http://127.0.0.1:8400/08/flows
+```
+
+## Modo aislado
+
+Puerto `848`.
+
+## Por que `CopyOnWriteArrayList` y no `synchronized List`
+
+Reads del event bus son **frecuentes** (cada emit recorre todos los suscriptores). Writes (add/remove subscriber) son **raros**. `CopyOnWriteArrayList` es exactamente este trade-off: lectores no se bloquean nunca; escritores copian todo el array (caro, pero infrecuente). Espejo arquitectonico del `EventEmitter` Node sin dependencias.

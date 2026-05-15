@@ -172,7 +172,7 @@ sleepMicros(700);   // 1 sola vez
 ```
 Espejo de `SELECT * FROM items WHERE order_id IN (?, ?, ?, ...)`. JDBC tiene `setArray()` y batching en `PreparedStatement.addBatch()` que hace lo mismo a nivel protocolo.
 
-**Por que no JDBC real aqui:** mantener los 6 casos Java sin Maven y sin dependencias. JDBC + driver PostgreSQL agregaria 6 MB+ al container y un punto de configuracion. El patron `IN(...)` vs N round-trips se demuestra igual con `HashMap`.
+**Por que no JDBC real aqui:** mantener los 12 casos Java sin Maven y sin dependencias. JDBC + driver PostgreSQL agregaria 6 MB+ al container y un punto de configuracion. El patron `IN(...)` vs N round-trips se demuestra igual con `HashMap`.
 
 ---
 

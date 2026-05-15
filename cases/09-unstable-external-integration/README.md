@@ -27,7 +27,7 @@ Una dependencia externa cambia contrato, limita cuota o entra en mantenimiento, 
 | 🐘 PHP 8 | `OPERATIVO` |
 | 🟢 Node.js | `OPERATIVO` |
 | 🐍 Python | `OPERATIVO` |
-| ☕ Java | 🔧 Estructura lista |
+| ☕ Java 21 | `OPERATIVO` (`Semaphore` budget + snapshot cache + `AtomicReference` breaker) |
 | 🔵 .NET 8 | 🔧 Estructura lista |
 
 ## 🚀 Cómo levantar

@@ -1,4 +1,4 @@
-# Caso 07 — Comparativa multi-stack: Modernización incremental de monolito (PHP · Python · Node.js)
+# Caso 07 — Comparativa multi-stack: Modernización incremental de monolito (PHP · Python · Node.js · Java)
 
 ## El problema que ambos resuelven
 
@@ -146,6 +146,31 @@ handler({ scenario });   // Llama al modulo extraido
 Mover un consumidor al nuevo modulo es **una linea**: `registerNewHandler('mobile', newHandler)`. No requiere instanciar clases, no requiere reload del proceso, no requiere DI container. La tabla de routing es la primitiva del lenguaje (`Map`), y los handlers son funciones de primera clase. La ACL es el **closure** que filtra el contrato: si el contrato cambia, el wrapping vive donde se registra.
 
 **Por que `Map` y no objeto literal:** `Map` preserva orden de insercion, soporta cualquier tipo de clave, y `Map.prototype.get/set` son O(1) garantizados — una propiedad operacional importante cuando se registran muchos consumers.
+
+---
+
+## Java 21: `ConcurrentHashMap<String, Function>` + ACL como closure
+
+**Runtime:** JVM con thread pool. Lecturas de la routing table son frecuentes (cada request consulta); escrituras (registrar nuevo handler) son raras. `ConcurrentHashMap` ofrece reads sin lock y writes atomicos por bucket — exactamente el patron de lectura intensa, escritura ocasional.
+
+**El fallo legacy en Java:**
+```java
+// monolito: shared_schema acoplado, blast radius alto
+int blastRadius = 4;   // 4 modulos afectados al unisono
+int risk = 8;
+```
+
+**La correccion en Java:**
+```java
+Map<String, Function<Request, Response>> routingTable = new ConcurrentHashMap<>();
+routingTable.put("billing:change", req -> new Response("ok-new-module", "new-billing-svc", 1, 1));
+
+Function<Request, Response> handler = routingTable.get(consumer + ":" + op);
+if (handler != null) return handler.apply(req);   // nuevo modulo
+return legacyMonolith(req);                       // fallback acotado con ACL
+```
+
+**Por que `Function` y no interfaz nominal:** `Function<T,R>` es una interfaz funcional del JDK — lambdas y method references la implementan directo. La firma del handler **es** el contrato; agregar un consumer es registrar una lambda. Sin reload del proceso, sin restart.
 
 ---
 

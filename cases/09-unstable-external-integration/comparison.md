@@ -1,4 +1,4 @@
-# Caso 09 — Comparativa multi-stack: Integración externa inestable (PHP · Python · Node.js)
+# Caso 09 — Comparativa multi-stack: Integración externa inestable (PHP · Python · Node.js · Java)
 
 ## El problema que ambos resuelven
 
@@ -178,6 +178,31 @@ if (normalized.price_usd === undefined) {
   normalized.price_usd = normalized.cost ?? 0;   // ??: igual a PHP, no a Python
 }
 ```
+
+---
+
+## Java 21: `Semaphore` budget + `ConcurrentHashMap` snapshot cache + `AtomicReference` breaker
+
+**Runtime:** JVM con thread pool. Cada request compite por permits del budget; lecturas del cache son lock-free; el breaker se transiciona con CAS.
+
+**El fallo legacy en Java:**
+```java
+if (drift) {
+    legacyFailures.increment();
+    return "{\"status\":\"failed\"}";   // sin cache, sin breaker
+}
+```
+
+**La correccion en Java:**
+```java
+Semaphore providerBudget = new Semaphore(BUDGET_PER_WINDOW);
+if (!providerBudget.tryAcquire()) return fromSnapshot(...);   // budget agotado
+if (drift) { breaker.set("open"); return fromSnapshot(...); }
+// success: refresca cache, breaker.set("closed")
+snapshotCache.put(sku, fresh);
+```
+
+**Por que `Semaphore.tryAcquire()` y no contador con CAS:** Un `AtomicInteger` + loop CAS funciona pero hay que escribirlo. `Semaphore.tryAcquire()` es la API que ya implementa "intenta tomar un permit, si no hay, devuelve false sin bloquear". Mas legible y mapea directo al concepto de cuota.
 
 ---
 

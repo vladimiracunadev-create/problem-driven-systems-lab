@@ -533,7 +533,8 @@
       "operational_stacks": [
         "php",
         "python",
-        "node"
+        "node",
+        "java"
       ],
       "runtime_entries": {
         "php": {
@@ -556,6 +557,15 @@
           "readme_path": "cases/07-incremental-monolith-modernization/node/README.md",
           "health_path": "/health",
           "root_path": "/"
+        },
+        "java": {
+          "port": 8400,
+          "compose_path": "compose.java.yml",
+          "readme_path": "cases/07-incremental-monolith-modernization/java/README.md",
+          "health_path": "/07/health",
+          "root_path": "/07/",
+          "isolated_compose": "cases/07-incremental-monolith-modernization/java/compose.yml",
+          "isolated_port": 847
         }
       }
     },
@@ -585,7 +595,8 @@
       "operational_stacks": [
         "php",
         "python",
-        "node"
+        "node",
+        "java"
       ],
       "runtime_entries": {
         "php": {
@@ -608,6 +619,15 @@
           "readme_path": "cases/08-critical-module-extraction-without-breaking-operations/node/README.md",
           "health_path": "/health",
           "root_path": "/"
+        },
+        "java": {
+          "port": 8400,
+          "compose_path": "compose.java.yml",
+          "readme_path": "cases/08-critical-module-extraction-without-breaking-operations/java/README.md",
+          "health_path": "/08/health",
+          "root_path": "/08/",
+          "isolated_compose": "cases/08-critical-module-extraction-without-breaking-operations/java/compose.yml",
+          "isolated_port": 848
         }
       }
     },
@@ -637,7 +657,8 @@
       "operational_stacks": [
         "php",
         "python",
-        "node"
+        "node",
+        "java"
       ],
       "runtime_entries": {
         "php": {
@@ -660,6 +681,15 @@
           "readme_path": "cases/09-unstable-external-integration/node/README.md",
           "health_path": "/health",
           "root_path": "/"
+        },
+        "java": {
+          "port": 8400,
+          "compose_path": "compose.java.yml",
+          "readme_path": "cases/09-unstable-external-integration/java/README.md",
+          "health_path": "/09/health",
+          "root_path": "/09/",
+          "isolated_compose": "cases/09-unstable-external-integration/java/compose.yml",
+          "isolated_port": 849
         }
       }
     },
@@ -689,7 +719,8 @@
       "operational_stacks": [
         "php",
         "python",
-        "node"
+        "node",
+        "java"
       ],
       "runtime_entries": {
         "php": {
@@ -712,6 +743,15 @@
           "readme_path": "cases/10-expensive-architecture-for-simple-needs/node/README.md",
           "health_path": "/health",
           "root_path": "/"
+        },
+        "java": {
+          "port": 8400,
+          "compose_path": "compose.java.yml",
+          "readme_path": "cases/10-expensive-architecture-for-simple-needs/java/README.md",
+          "health_path": "/10/health",
+          "root_path": "/10/",
+          "isolated_compose": "cases/10-expensive-architecture-for-simple-needs/java/compose.yml",
+          "isolated_port": 8410
         }
       }
     },
@@ -741,7 +781,8 @@
       "operational_stacks": [
         "php",
         "python",
-        "node"
+        "node",
+        "java"
       ],
       "runtime_entries": {
         "php": {
@@ -764,6 +805,15 @@
           "readme_path": "cases/11-heavy-reporting-blocks-operations/node/README.md",
           "health_path": "/health",
           "root_path": "/"
+        },
+        "java": {
+          "port": 8400,
+          "compose_path": "compose.java.yml",
+          "readme_path": "cases/11-heavy-reporting-blocks-operations/java/README.md",
+          "health_path": "/11/health",
+          "root_path": "/11/",
+          "isolated_compose": "cases/11-heavy-reporting-blocks-operations/java/compose.yml",
+          "isolated_port": 8411
         }
       }
     },
@@ -793,7 +843,8 @@
       "operational_stacks": [
         "php",
         "python",
-        "node"
+        "node",
+        "java"
       ],
       "runtime_entries": {
         "php": {
@@ -816,6 +867,15 @@
           "readme_path": "cases/12-single-point-of-knowledge-and-operational-risk/node/README.md",
           "health_path": "/health",
           "root_path": "/"
+        },
+        "java": {
+          "port": 8400,
+          "compose_path": "compose.java.yml",
+          "readme_path": "cases/12-single-point-of-knowledge-and-operational-risk/java/README.md",
+          "health_path": "/12/health",
+          "root_path": "/12/",
+          "isolated_compose": "cases/12-single-point-of-knowledge-and-operational-risk/java/compose.yml",
+          "isolated_port": 8412
         }
       }
     }

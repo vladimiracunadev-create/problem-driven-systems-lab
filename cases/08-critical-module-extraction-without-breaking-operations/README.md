@@ -27,7 +27,7 @@ Hay que sacar un módulo sensible del sistema vivo, pero ese módulo sigue sirvi
 | 🐘 PHP 8 | `OPERATIVO` |
 | 🟢 Node.js | `OPERATIVO` |
 | 🐍 Python | `OPERATIVO` |
-| ☕ Java | 🔧 Estructura lista |
+| ☕ Java 21 | `OPERATIVO` (`Function` proxy de compatibilidad + `CopyOnWriteArrayList<Consumer>` event bus) |
 | 🔵 .NET 8 | 🔧 Estructura lista |
 
 ## 🚀 Cómo levantar

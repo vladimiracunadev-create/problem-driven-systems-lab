@@ -2,6 +2,50 @@
 
 Todos los cambios notables de este laboratorio se registran aqui con foco en madurez tecnica y documental.
 
+## 2026-05-15 - Java 21 cierra paridad multi-stack: casos 07-12 operativos
+
+Java 21 pasa de cubrir los primeros 6 casos a cubrir los 12. Paridad multi-stack completa entre PHP, Python, Node.js y Java — los 48 endpoints (12 casos × 4 stacks) operativos detras de 4 hubs simetricos.
+
+### Added (6 Main.java reales con primitiva distintiva por caso)
+
+- **Caso 07** (`Modernizacion incremental`): `ConcurrentHashMap<String, Function<Request, Response>>` como routing table mutable en runtime; `Function` como ACL closure. Espejo del `Map<consumer, handler>` Node.
+- **Caso 08** (`Extraccion critica`): `Function<PriceRequestOld, PriceRequestNew>` como proxy de compatibilidad de contrato + `CopyOnWriteArrayList<Consumer<String>>` como event bus thread-safe (reads paralelos sin lock, writes copian array). Espejo de `Proxy` + `EventEmitter` Node.
+- **Caso 09** (`Integracion externa inestable`): `Semaphore` como budget de cuota (`tryAcquire` no bloqueante) + `ConcurrentHashMap` como snapshot cache + `AtomicReference<String>` como breaker state.
+- **Caso 10** (`Arquitectura cara para algo simple`): CPU real medido como N hops de `StringBuilder` (alocacion + traversal por hop) vs `HashMap.get` O(1). `System.nanoTime()` para medicion directa.
+- **Caso 11** (`Reportes que bloquean operacion`): `ThreadPoolExecutor` acotado a 4 threads como pool principal (saturacion realista); `ExecutorService` dedicado para reporting; `CompletableFuture.supplyAsync(task, executor)` para submission explicita. `mainPool.getActiveCount()` y `getQueue().size()` como senal nativa de saturacion (equivalente al `monitorEventLoopDelay` Node).
+- **Caso 12** (`Punto unico de conocimiento`): `Optional<T>` + `map/flatMap/orElse` como runbook codificado en el sistema de tipos; `AtomicInteger` para coverage y bus_factor. Espejo del optional chaining `?.` Node — el tipo obliga a manejar el caso vacio.
+- **6 README.md Java per caso** con primitivas, contraste de codigo, rutas, modo hub y aislado.
+- **6 secciones Java en `comparison.md`** (cases 07-12) con runtime, snippets legacy/optimizado, primitiva distintiva.
+
+### Changed
+
+- **`java-dispatcher/app/Dispatcher.java`**: lista de cases ampliada de 6 a 12 entradas. Puertos internos `:9401-:9412`.
+- **`java-dispatcher/Dockerfile`**: COPY de los 12 Main.java + 12 invocaciones `javac` separadas (cada Main.class en su `/cases/0X/`).
+- **`compose.java.yml`**: comentario y healthcheck reflejan 12 casos.
+- **6 `compose.yml` per-case** generados para cases 07-12 con healthcheck. Puertos host: `847`, `848`, `849`, `8410`, `8411`, `8412` (sin colisiones con 01/02/03 que usan 841/842/843).
+- **`shared/catalog/cases.json`**: cases 07-12 ahora listan `java` en `operational_stacks` con `runtime_entries.java` completo.
+- **`docs/case-catalog.md`** regenerado.
+- **`README.md`**: tabla compose `OPERATIVO` (era `PARCIAL`); 48 endpoints (era 42); tabla de catalogo con celdas Java pobladas en 07-12 con primitiva especifica en la columna "Que deja como prueba"; sin "(3 stacks)" residual.
+- **`ARCHITECTURE.md`**: tabla de casos operativos con Java ✅ en los 12; pdsl-java-lab con 12 subprocesos `:9401-:9412`.
+- **`docs/architecture.md`**: status table Java ✅ en los 12.
+- **`docs/docker-strategy.md`**: tabla principal y reglas reflejan 12 casos Java.
+- **`docs/executive-summary.md`**: intro + cases 07-12 listan `Java 21` en stacks operativos.
+- **`docs/usage-and-scope.md`**: fila "01 al 12 operativos en Java 21"; paridad ajustada.
+- **`AWS_MIGRATION.md`**: inventario y costos reflejan 12 casos Java (java-lab USD 7); 48 endpoints (12 × 4); ALB suma `/java/01..12/*`; DoD `/java/01..12/health`.
+- **`RECRUITER.md`**: "12 casos × 4 stacks operativos"; comparison.md cubre los 4 stacks en los 12.
+- **`RUNBOOK.md`**: 48 endpoints / 4 hubs; tabla casos aislados suma 6 filas Java (07-12); seccion diagnostico Java actualizada a 12 casos.
+- **`INSTALL.md`**: Java OPERATIVO; URLs `01..12/health`; sin nota de "07-12 pendientes".
+- **`ROADMAP.md`**: Fotografia actual y Fase 2 reflejan paridad completa Java (12 casos).
+- **CI** (`.github/workflows/ci.yml`): `compose-config` matrix suma 6 java composes 07-12; `hub-probe` java-hub cases `"01..12"` (era `"01..06"`).
+
+### Smoke test
+
+Boot real `docker compose -f compose.java.yml up -d` con los 12 casos:
+- Build OK (12 `javac` separados por colision de clase `Main`)
+- Hub healthy en ~3s
+- Los 12 `/0X/health` responden 200 con payload coherente (case + stack)
+- Shutdown limpio via SIGTERM
+
 ## 2026-05-15 - Barrido documental post-Java + verificacion funcional de los 6 casos
 
 Tras agregar Java 21 como 4to stack operativo, varias docs y READMEs seguian afirmando "3 stacks" / "3 hubs" / "Java planificado", y los 6 `comparison.md` por caso eran "PHP · Python · Node.js" sin seccion Java. Esta entrega es un barrido honesto que sincroniza narrativa con estado real + verificacion funcional de los 6 casos Java contra el patron Node.

@@ -37,7 +37,13 @@ public class Dispatcher {
         new CaseInfo("03", 9403, "Observabilidad deficiente",          "/cases/03"),
         new CaseInfo("04", 9404, "Timeout chain y retry storms",       "/cases/04"),
         new CaseInfo("05", 9405, "Presion de memoria y fugas",         "/cases/05"),
-        new CaseInfo("06", 9406, "Pipeline roto y delivery fragil",    "/cases/06")
+        new CaseInfo("06", 9406, "Pipeline roto y delivery fragil",    "/cases/06"),
+        new CaseInfo("07", 9407, "Modernizacion incremental monolito", "/cases/07"),
+        new CaseInfo("08", 9408, "Extraccion critica de modulo",       "/cases/08"),
+        new CaseInfo("09", 9409, "Integracion externa inestable",      "/cases/09"),
+        new CaseInfo("10", 9410, "Arquitectura cara para algo simple", "/cases/10"),
+        new CaseInfo("11", 9411, "Reportes que bloquean operacion",    "/cases/11"),
+        new CaseInfo("12", 9412, "Punto unico de conocimiento",        "/cases/12")
     );
 
     private static final int DISPATCH_PORT = Integer.parseInt(System.getenv().getOrDefault("PORT", "8400"));

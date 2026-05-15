@@ -14,7 +14,7 @@ Portafolio técnico orientado a problemas reales de software: rendimiento, obser
 ## 🎯 Executive Summary
 
 - El laboratorio modela **12 problemas reales de ingeniería**, utilizando fallos de alta fidelidad inyectados (I/O, Memoria, Excepciones) en lugar de simulaciones abstractas.
-- Los casos `01` al `12` son piezas de ingeniería operativa en **PHP, Python y Node.js** con primitivas nativas distintas por lenguaje; los casos `01` al `06` ademas operativos en **Java 21** (`ConcurrentHashMap`, `CompletableFuture.orTimeout`, `LinkedHashMap` LRU, `record` types). El stack PHP incluye **UI nativa** para diagnósticos visuales.
+- Los casos `01` al `12` son piezas de ingeniería operativa en **PHP, Python, Node.js y Java 21** con primitivas nativas distintas por lenguaje (`ConcurrentHashMap`, `CompletableFuture.orTimeout`, `LinkedHashMap` LRU, `record` types, `Optional<T>`, `Semaphore`, `ThreadPoolExecutor` saturation observable, etc.). El stack PHP incluye **UI nativa** para diagnósticos visuales.
 - Implementa patrones profesionales (**Adapter, Strangler, Circuit Breaker, LRU, Cancellation**) resolviendo cuellos de botella reales en cada runtime.
 - Docker es la vía oficial de ejecución limpia y reproducible.
 - [`shared/catalog/cases.json`](shared/catalog/cases.json) es la fuente de verdad del portal, de la documentacion generada y de la narrativa operativa.
@@ -60,8 +60,8 @@ Estado actual:
 - `OPERATIVO` en PHP: todos los casos [01](cases/01-api-latency-under-load/README.md) al [12](cases/12-single-point-of-knowledge-and-operational-risk/README.md), con UI nativa, Prometheus, Grafana y fallos de alta fidelidad.
 - `OPERATIVO` en Python: los 12 casos, con logica funcional equivalente a PHP, stdlib pura y autocontenidos en un solo contenedor.
 - `OPERATIVO` en Node.js: los **12 casos**, con primitivas Node-especificas distintas por caso (event loop lag, `AbortController`, `AbortSignal.timeout`, `process.memoryUsage()`, `Map<consumer, handler>` strangler, `Proxy` de compatibilidad, `EventEmitter`, `monitorEventLoopDelay`, optional chaining como runbook codificado).
-- `OPERATIVO` (parcial) en Java 21: casos **01-06**, con primitivas JDK-distintas por caso (`ConcurrentHashMap` summary cache + `ScheduledExecutorService` worker, batch `IN(...)` con `HashMap` indexado, `ThreadLocal<RequestContext>` para correlation, `CompletableFuture.orTimeout` + `AtomicReference<BreakerState>` con CAS, `LinkedHashMap.removeEldestEntry` LRU built-in, `record` types + state machine). Casos 07-12 pendientes.
-- `DOCUMENTADO / SCAFFOLD`: stack .NET con estructura base y documentacion lista; casos 07-12 Java siguen como scaffolds genericos.
+- `OPERATIVO` en Java 21: los **12 casos**, con primitivas JDK-distintas por caso: `ConcurrentHashMap` summary cache + `ScheduledExecutorService` worker (01), `HashMap` indexado + batch `IN(...)` (02), `ThreadLocal<RequestContext>` correlation (03), `CompletableFuture.orTimeout` + `AtomicReference<BreakerState>` CAS (04), `LinkedHashMap.removeEldestEntry` LRU + `Runtime` metrics (05), `record` types + state machine (06), `ConcurrentHashMap<String,Function>` routing mutable (07), `Function` proxy + `CopyOnWriteArrayList<Consumer>` event bus (08), `Semaphore` budget + snapshot cache + `AtomicReference` breaker (09), `HashMap` O(1) vs N hops `StringBuilder` (10), `ThreadPoolExecutor.getActiveCount()` saturation observable + `ExecutorService` dedicado (11), `Optional<T>` + `map/orElse` como runbook codificado (12).
+- `DOCUMENTADO / SCAFFOLD`: stack .NET con estructura base y documentacion lista.
 
 ## 🔐 Postura de seguridad y modelo de despliegue
 
@@ -89,12 +89,12 @@ Estado actual:
 | [04 - Timeout chain y retry storms](cases/04-timeout-chain-and-retry-storms/README.md) | [⚖️](cases/04-timeout-chain-and-retry-storms/comparison.md) | [👉](cases/04-timeout-chain-and-retry-storms/php/README.md) | [🐍](cases/04-timeout-chain-and-retry-storms/python/README.md) | [🟢](cases/04-timeout-chain-and-retry-storms/node/README.md) | [☕](cases/04-timeout-chain-and-retry-storms/java/README.md) | `OPERATIVO` | Retries agresivos vs CB+fallback; `AbortController` (Node), `CompletableFuture.orTimeout` + `AtomicReference` (Java) |
 | [05 - Presion de memoria y fugas](cases/05-memory-pressure-and-resource-leaks/README.md) | [⚖️](cases/05-memory-pressure-and-resource-leaks/comparison.md) | [👉](cases/05-memory-pressure-and-resource-leaks/php/README.md) | [🐍](cases/05-memory-pressure-and-resource-leaks/python/README.md) | [🟢](cases/05-memory-pressure-and-resource-leaks/node/README.md) | [☕](cases/05-memory-pressure-and-resource-leaks/java/README.md) | `OPERATIVO` | Estado retenido vs eviccion; heap V8+RSS (Node), `LinkedHashMap` LRU + `Runtime` metrics (Java) |
 | [06 - Pipeline roto y delivery fragil](cases/06-broken-pipeline-and-fragile-delivery/README.md) | [⚖️](cases/06-broken-pipeline-and-fragile-delivery/comparison.md) | [👉](cases/06-broken-pipeline-and-fragile-delivery/php/README.md) | [🐍](cases/06-broken-pipeline-and-fragile-delivery/python/README.md) | [🟢](cases/06-broken-pipeline-and-fragile-delivery/node/README.md) | [☕](cases/06-broken-pipeline-and-fragile-delivery/java/README.md) | `OPERATIVO` | Detectar tarde vs preflight+rollback; `record` types + state machine en Java |
-| [07 - Modernización del Monolito](cases/07-incremental-monolith-modernization/README.md) | [⚖️](cases/07-incremental-monolith-modernization/comparison.md) | [👉](cases/07-incremental-monolith-modernization/php/README.md) | [🐍](cases/07-incremental-monolith-modernization/python/README.md) | [🟢](cases/07-incremental-monolith-modernization/node/README.md) | — | `OPERATIVO` (3 stacks) | Strangler fig; tabla de routing por consumer como `Map` mutable en Node |
-| [08 - Extracción Crítica Módulo](cases/08-critical-module-extraction-without-breaking-operations/README.md) | [⚖️](cases/08-critical-module-extraction-without-breaking-operations/comparison.md) | [👉](cases/08-critical-module-extraction-without-breaking-operations/php/README.md) | [🐍](cases/08-critical-module-extraction-without-breaking-operations/python/README.md) | [🟢](cases/08-critical-module-extraction-without-breaking-operations/node/README.md) | — | `OPERATIVO` (3 stacks) | Big bang vs extract-and-proxy + cutover; `Proxy` nativo + `EventEmitter` en Node |
-| [09 - Integración Externa Inestable](cases/09-unstable-external-integration/README.md) | [⚖️](cases/09-unstable-external-integration/comparison.md) | [👉](cases/09-unstable-external-integration/php/README.md) | [🐍](cases/09-unstable-external-integration/python/README.md) | [🟢](cases/09-unstable-external-integration/node/README.md) | — | `OPERATIVO` (3 stacks) | Adapter + cache + breaker; `AbortSignal.timeout` como deadline nativo en Node |
-| [10 - Arquitectura Sobre-Dimensionada](cases/10-expensive-architecture-for-simple-needs/README.md) | [⚖️](cases/10-expensive-architecture-for-simple-needs/comparison.md) | [👉](cases/10-expensive-architecture-for-simple-needs/php/README.md) | [🐍](cases/10-expensive-architecture-for-simple-needs/python/README.md) | [🟢](cases/10-expensive-architecture-for-simple-needs/node/README.md) | — | `OPERATIVO` (3 stacks) | Complejo vs right-sized; CPU real medido en hops de JSON.stringify/parse en Node |
-| [11 - Reportes Pesando la Operación](cases/11-heavy-reporting-blocks-operations/README.md) | [⚖️](cases/11-heavy-reporting-blocks-operations/comparison.md) | [👉](cases/11-heavy-reporting-blocks-operations/php/README.md) | [🐍](cases/11-heavy-reporting-blocks-operations/python/README.md) | [🟢](cases/11-heavy-reporting-blocks-operations/node/README.md) | — | `OPERATIVO` (3 stacks) | Locks vs aislamiento; `monitorEventLoopDelay()` mide el bloqueo real del loop en Node |
-| [12 - Single Point of Knowledge](cases/12-single-point-of-knowledge-and-operational-risk/README.md) | [⚖️](cases/12-single-point-of-knowledge-and-operational-risk/comparison.md) | [👉](cases/12-single-point-of-knowledge-and-operational-risk/php/README.md) | [🐍](cases/12-single-point-of-knowledge-and-operational-risk/python/README.md) | [🟢](cases/12-single-point-of-knowledge-and-operational-risk/node/README.md) | — | `OPERATIVO` (3 stacks) | Bus factor con runbooks; optional chaining `?.` codifica el runbook en el lenguaje en Node |
+| [07 - Modernización del Monolito](cases/07-incremental-monolith-modernization/README.md) | [⚖️](cases/07-incremental-monolith-modernization/comparison.md) | [👉](cases/07-incremental-monolith-modernization/php/README.md) | [🐍](cases/07-incremental-monolith-modernization/python/README.md) | [🟢](cases/07-incremental-monolith-modernization/node/README.md) | [☕](cases/07-incremental-monolith-modernization/java/README.md) | `OPERATIVO` | Strangler fig; `Map<consumer,handler>` mutable (Node), `ConcurrentHashMap<String,Function>` routing (Java) |
+| [08 - Extracción Crítica Módulo](cases/08-critical-module-extraction-without-breaking-operations/README.md) | [⚖️](cases/08-critical-module-extraction-without-breaking-operations/comparison.md) | [👉](cases/08-critical-module-extraction-without-breaking-operations/php/README.md) | [🐍](cases/08-critical-module-extraction-without-breaking-operations/python/README.md) | [🟢](cases/08-critical-module-extraction-without-breaking-operations/node/README.md) | [☕](cases/08-critical-module-extraction-without-breaking-operations/java/README.md) | `OPERATIVO` | Big bang vs extract-and-proxy + cutover; `Proxy` nativo + `EventEmitter` (Node), `Function` proxy + `CopyOnWriteArrayList<Consumer>` event bus (Java) |
+| [09 - Integración Externa Inestable](cases/09-unstable-external-integration/README.md) | [⚖️](cases/09-unstable-external-integration/comparison.md) | [👉](cases/09-unstable-external-integration/php/README.md) | [🐍](cases/09-unstable-external-integration/python/README.md) | [🟢](cases/09-unstable-external-integration/node/README.md) | [☕](cases/09-unstable-external-integration/java/README.md) | `OPERATIVO` | Adapter + cache + breaker; `AbortSignal.timeout` (Node), `Semaphore` budget + `AtomicReference` breaker (Java) |
+| [10 - Arquitectura Sobre-Dimensionada](cases/10-expensive-architecture-for-simple-needs/README.md) | [⚖️](cases/10-expensive-architecture-for-simple-needs/comparison.md) | [👉](cases/10-expensive-architecture-for-simple-needs/php/README.md) | [🐍](cases/10-expensive-architecture-for-simple-needs/python/README.md) | [🟢](cases/10-expensive-architecture-for-simple-needs/node/README.md) | [☕](cases/10-expensive-architecture-for-simple-needs/java/README.md) | `OPERATIVO` | Complejo vs right-sized; CPU real en hops JSON.parse/stringify (Node), N hops `StringBuilder` vs `HashMap` O(1) (Java) |
+| [11 - Reportes Pesando la Operación](cases/11-heavy-reporting-blocks-operations/README.md) | [⚖️](cases/11-heavy-reporting-blocks-operations/comparison.md) | [👉](cases/11-heavy-reporting-blocks-operations/php/README.md) | [🐍](cases/11-heavy-reporting-blocks-operations/python/README.md) | [🟢](cases/11-heavy-reporting-blocks-operations/node/README.md) | [☕](cases/11-heavy-reporting-blocks-operations/java/README.md) | `OPERATIVO` | Locks vs aislamiento; `monitorEventLoopDelay()` (Node), `ThreadPoolExecutor.getActiveCount()` + `ExecutorService` dedicado (Java) |
+| [12 - Single Point of Knowledge](cases/12-single-point-of-knowledge-and-operational-risk/README.md) | [⚖️](cases/12-single-point-of-knowledge-and-operational-risk/comparison.md) | [👉](cases/12-single-point-of-knowledge-and-operational-risk/php/README.md) | [🐍](cases/12-single-point-of-knowledge-and-operational-risk/python/README.md) | [🟢](cases/12-single-point-of-knowledge-and-operational-risk/node/README.md) | [☕](cases/12-single-point-of-knowledge-and-operational-risk/java/README.md) | `OPERATIVO` | Bus factor con runbooks; optional chaining `?.` (Node), `Optional<T>` + `orElse` (Java) |
 
 El catalogo completo detallado se genera desde metadatos automatizados y vive en [docs/case-catalog.md](docs/case-catalog.md). Cada caso se sirve mediante un robusto servidor en PHP listo para consumir tanto por UI Web como por API.
 
@@ -120,10 +120,10 @@ Cada lenguaje tiene su propio compose en la raíz del repositorio. Un comando le
 | [`compose.root.yml`](compose.root.yml) | PHP 8.3 | `8080` portal · `8100` PHP hub · `9091` Prometheus · `3001` Grafana | `OPERATIVO` |
 | [`compose.python.yml`](compose.python.yml) | Python 3.12 | `8200` Python hub | `OPERATIVO` |
 | [`compose.nodejs.yml`](compose.nodejs.yml) | Node.js 20 | `8300` Node hub | `OPERATIVO` |
-| [`compose.java.yml`](compose.java.yml) | Java 21 | `8400` Java hub | `PARCIAL` (casos 01-06) |
+| [`compose.java.yml`](compose.java.yml) | Java 21 | `8400` Java hub | `OPERATIVO` |
 | `compose.dotnet.yml` | .NET 8 | `8500` .NET hub | `PLANIFICADO` |
 
-**Cuatro hubs operativos (uno por lenguaje):** PHP, Python y Node sirven los 12 casos cada uno; Java sirve los casos 01-06. Un solo puerto por hub vía routing por path (`/01/health`...`/12/health`). Los servicios de soporte (DB, Prometheus, Grafana) tienen los suyos propios porque son servicios distintos del lenguaje.
+**Cuatro hubs operativos (uno por lenguaje):** PHP, Python, Node y Java sirven los **12 casos cada uno**. Un solo puerto por hub vía routing por path (`/01/health`...`/12/health`). Los servicios de soporte (DB, Prometheus, Grafana) tienen los suyos propios porque son servicios distintos del lenguaje.
 
 > 🧱 **Los cuatro hubs siguen el mismo patrón arquitectónico:** un contenedor por lenguaje (`pdsl-php-lab`, `pdsl-python-lab`, `pdsl-node-lab`, `pdsl-java-lab`) ejecuta sus casos como subprocesos internos en puertos no expuestos (12 para PHP/Python/Node, 6 para Java). PHP suma ~7 contenedores extras solo porque los **servicios reales** que el caso 01 estudia (PostgreSQL, worker, Prometheus, Grafana) son contenedores aparte por necesidad técnica — no son procesos del lenguaje. Detalles, trade-offs y comparación per-case en [`docs/docker-strategy.md`](docs/docker-strategy.md#-modelo-de-containerización-simétrico-para-los-stacks-operativos).
 
@@ -137,14 +137,14 @@ docker compose -f compose.python.yml up -d --build
 # Node.js: dispatcher (12 casos internos en un contenedor)
 docker compose -f compose.nodejs.yml up -d --build
 
-# Java: dispatcher (6 casos internos en un contenedor — 01 a 06 operativos)
+# Java: dispatcher (12 casos internos en un contenedor)
 docker compose -f compose.java.yml up -d --build
 
 # Portal liviano solamente
 docker compose -f compose.portal.yml up -d --build
 ```
 
-Con esto, los 42 endpoints operativos (12 PHP + 12 Python + 12 Node + 6 Java) viven detras de **4 puertos**: `8100`, `8200`, `8300`, `8400`. El portal (`8080`) y la observabilidad (`9091` Prometheus, `3001` Grafana) suman 3 mas. **7 puertos cubren el laboratorio entero.**
+Con esto, los 48 endpoints operativos (12 casos × 4 stacks) viven detras de **4 puertos**: `8100`, `8200`, `8300`, `8400`. El portal (`8080`) y la observabilidad (`9091` Prometheus, `3001` Grafana) suman 3 mas. **7 puertos cubren el laboratorio entero.**
 
 ### Ejecucion aislada de un solo caso (modo estudio)
 
@@ -184,7 +184,7 @@ Tambien existen atajos con `make`, pero la ruta soportada y mas portable sigue s
 
 ## 🏗️ Arquitectura en una frase
 
-El sistema se organiza como una capa editorial en raiz, un portal de evaluacion con entrada completa PHP o modo liviano, una biblioteca de 12 casos problem-driven y **cuatro stacks operativos** detras de hubs simetricos por lenguaje (PHP/Python/Node en los 12, Java en 01-06). La arquitectura completa esta documentada en [ARCHITECTURE.md](ARCHITECTURE.md) y [docs/architecture.md](docs/architecture.md).
+El sistema se organiza como una capa editorial en raiz, un portal de evaluacion con entrada completa PHP o modo liviano, una biblioteca de 12 casos problem-driven y **cuatro stacks operativos** detras de hubs simetricos por lenguaje (PHP/Python/Node/Java los 12 casos cada uno). La arquitectura completa esta documentada en [ARCHITECTURE.md](ARCHITECTURE.md) y [docs/architecture.md](docs/architecture.md).
 
 ## 🌐 Ecosistema relacionado
 
@@ -200,7 +200,7 @@ El sistema se organiza como una capa editorial en raiz, un portal de evaluacion 
 
 ## 🚫 Lo que este repo no vende
 
-- Paridad multi-stack universal: PHP/Python/Node cubren los 12 casos, Java cubre 01-06, .NET sigue en scaffold (alcance honesto, no promesa).
+- Paridad multi-stack universal: PHP/Python/Node/Java cubren los 12 casos cada uno; .NET sigue en scaffold (alcance honesto, no promesa).
 - Benchmarks absolutos entre lenguajes.
 - Seniority inflada con claims sin evidencia.
 

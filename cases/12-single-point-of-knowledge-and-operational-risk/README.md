@@ -27,7 +27,7 @@ Una parte crítica de la operación depende demasiado de una sola persona, de sc
 | 🐘 PHP 8 | `OPERATIVO` |
 | 🟢 Node.js | `OPERATIVO` |
 | 🐍 Python | `OPERATIVO` |
-| ☕ Java | 🔧 Estructura lista |
+| ☕ Java 21 | `OPERATIVO` (`Optional<T>` + chaining seguro como runbook codificado) |
 | 🔵 .NET 8 | 🔧 Estructura lista |
 
 ## 🚀 Cómo levantar

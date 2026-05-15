@@ -1,4 +1,4 @@
-# Caso 11 — Comparativa multi-stack: Reportes pesados que bloquean la operación (PHP · Python · Node.js)
+# Caso 11 — Comparativa multi-stack: Reportes pesados que bloquean la operación (PHP · Python · Node.js · Java)
 
 ## El problema que ambos resuelven
 
@@ -148,6 +148,31 @@ if (mode === 'isolated') {
 }
 ```
 `setImmediate` es la forma idiomatica Node de decir "deja que otras operaciones pendientes corran antes". Para isolation real, el siguiente paso seria `worker_threads` — un thread paralelo de verdad para CPU-heavy. Lo dejamos como evolucion del caso.
+
+---
+
+## Java 21: `ThreadPoolExecutor` saturation observable + `ExecutorService` dedicado para reporting
+
+**Runtime:** El `HttpServer` JDK usa un `Executor` que entregamos — un `ThreadPoolExecutor` acotado (4 threads) hace que la saturacion sea **realista y observable**. Java no tiene event loop; el equivalente es saturacion del pool.
+
+**El fallo legacy en Java:**
+```java
+// /report-legacy corre SINCRONO en el thread del HttpServer (mainPool)
+for (int i = 0; i < rows; i++) checksum += (i * 13L) % 7;
+// → mainPool.getActiveCount sube; /order-write queda en queue
+```
+
+**La correccion en Java:**
+```java
+ExecutorService reportingPool = Executors.newFixedThreadPool(2);
+
+CompletableFuture<Long> fut = CompletableFuture.supplyAsync(() -> {
+    for (int i = 0; i < rows; i++) checksum += (i * 13L) % 7;
+    return checksum;
+}, reportingPool);    // pool separado, mainPool intacto
+```
+
+**Senal propia del runtime:** `mainPool.getActiveCount()` y `mainPool.getQueue().size()` se exponen en `/activity`. Es el equivalente Java de `monitorEventLoopDelay()` de Node — observabilidad nativa de saturacion sin agente externo.
 
 ---
 

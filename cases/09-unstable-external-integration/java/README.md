@@ -1,34 +1,61 @@
-# Integración externa inestable — Java
+# Caso 09 — Java 21
 
-## Objetivo de esta variante
-Representar este caso desde el stack **Java**, manteniendo foco en el problema y no solo en la sintaxis.
+Stack Java operativo del caso 09. Adapter endurecido con budget de cuota + snapshot cache + breaker.
 
-## Qué debería mostrar esta carpeta
-- una base dockerizada,
-- un punto de entrada mínimo,
-- espacio para instrumentación, pruebas o scripts,
-- notas de diseño específicas del stack.
+## Primitivas nativas
 
-## Qué NO debería hacer
-- mezclar dependencias de otros stacks,
-- levantar todo el laboratorio,
-- esconder decisiones importantes fuera del repositorio.
+| Primitiva | Rol |
+|---|---|
+| `Semaphore` | Budget de cuota: `tryAcquire()` no bloquea — si no hay permits, sirve snapshot. Permits explicitos = cuota explicita. |
+| `ConcurrentHashMap<String, String>` | Snapshot cache thread-safe leida cuando el provider falla o esta agotado. |
+| `AtomicReference<String>` | Estado del breaker (`closed`/`open`/`half_open`) con CAS implicito. |
+| `LongAdder` | Contadores: calls, served_from_cache, budget_denied. |
 
-## Puertos de referencia
-- Puerto local sugerido: `849`
+## Contraste
 
-## Comando esperado
-```bash
-docker compose -f compose.yml up -d --build
+**Legacy** — cada request golpea al provider sin proteccion:
+```java
+if (drift) {
+    legacyFailures.increment();
+    return "{\"status\":\"failed\"}";   // sin fallback
+}
 ```
 
-## Notas del stack
-En Java conviene estudiar este caso considerando:
-- ergonomía del runtime,
-- patrones habituales del ecosistema,
-- observabilidad disponible,
-- costos de complejidad,
-- límites y trade-offs específicos.
+**Hardened** — budget + cache + breaker:
+```java
+if (!providerBudget.tryAcquire()) return fromSnapshot(...);    // budget agotado
+if (drift) { breaker.set("open"); return fromSnapshot(...); }  // provider failing
+String fresh = callProvider(...);                              // success path
+snapshotCache.put(sku, fresh);                                  // refresca cache
+breaker.set("closed");
+```
 
-## Estado inicial
-Esta carpeta deja una base mínima documentada y ampliable para que el caso evolucione hacia un escenario más realista.
+## Rutas
+
+| Ruta | Que muestra |
+|---|---|
+| `/health` | liveness |
+| `/catalog-legacy?sku=widget-A&scenario=drift` | status=failed sin cache |
+| `/catalog-hardened?sku=widget-A&scenario=drift` | served_from=snapshot_cache + breaker:open |
+| `/catalog-hardened?sku=widget-A&scenario=ok` | served_from=provider + refresca cache |
+| `/sync-events` | breaker state + budget_remaining + cache_size |
+| `/diagnostics/summary` | contadores por variante |
+| `/reset-lab` | restaura budget + cierra breaker |
+
+## Hub
+
+```
+docker compose -f compose.java.yml up -d --build
+# agotar budget (5 calls)
+for i in 1 2 3 4 5 6 7; do curl -s "http://127.0.0.1:8400/09/catalog-hardened?sku=widget-A" | head -c 100; echo; done
+# proximo call será served_from=snapshot_cache budget_exhausted
+curl http://127.0.0.1:8400/09/sync-events
+```
+
+## Modo aislado
+
+Puerto `849`.
+
+## Por que `Semaphore` y no contador manual
+
+Un contador `AtomicInteger` con `compareAndSet` funciona pero hay que escribir el loop CAS a mano. `Semaphore.tryAcquire()` es la API que ya implementa "intenta tomar un permit, si no hay, devuelve false sin bloquear". Mas legible, menos bug-prone, y se mapea directo al concepto de cuota.
