@@ -2,6 +2,29 @@
 
 Todos los cambios notables de este laboratorio se registran aqui con foco en madurez tecnica y documental.
 
+## 2026-05-15 - CI: smoke de los 3 hubs (cierra asimetria PHP-only)
+
+Hasta ahora CI solo probaba boot real del hub PHP (`portal-probe`). Los hubs Python (`compose.python.yml`) y Node (`compose.nodejs.yml`) quedaban fuera del smoke, asi como la mayoria de los `compose.yml` per-case de esos dos stacks. Esta entrega cierra esa asimetria sin disparar la matriz de CI.
+
+### Added
+
+- Nuevo job `hub-probe` en `.github/workflows/ci.yml` con matriz de 2 entradas paralelas (`python-hub` en `:8200`, `node-hub` en `:8300`). Cada entrada hace `docker compose up -d --build`, espera `/01/health` y luego probea los 12 casos via `/01..12/health`. Un solo boot por hub valida la paridad de los 12 casos del stack.
+
+### Changed
+
+- `compose-config` matrix ampliada de 16 a 40 archivos: ahora incluye `compose.python.yml`, `compose.nodejs.yml` y los 24 `compose.yml` per-case de Node y Python (antes solo caso 03 de cada uno). Sigue siendo un check barato — solo `docker compose config`.
+- `ROADMAP.md`: Fase 4 marca CI minima como **parcialmente cubierta** (smoke de los 3 hubs + validacion estructural completa); pendiente smoke per-case node/python si llega a hacer falta.
+
+### Why
+
+`portal-probe` (PHP) demostraba boot real del laboratorio entero en cada PR. Sin equivalentes en Python/Node, un regression en el dispatcher Node o en `compose.python.yml` solo se detectaba al correrlos a mano. El job `hub-probe` por stack mantiene el costo CI bajo (2 boots paralelos cubren 24 casos) y replica la garantia que ya existia para PHP.
+
+### Smoke test
+
+- `python -c "import yaml; yaml.safe_load(open('.github/workflows/ci.yml'))"` OK (workflow parsea).
+- `docker compose -f compose.python.yml config` OK; `docker compose -f compose.nodejs.yml config` OK.
+- Los 24 `compose.yml` node+python validan via `docker compose config` localmente.
+
 ## 2026-05-08 - PHP dispatcher operativo: paridad arquitectonica completa con Python/Node
 
 Cierra la asimetria que hasta ayer documentabamos como "deuda reconocida": PHP usaba ~20 contenedores (12 apps separadas + nginx hub + DB + observabilidad), mientras Python y Node usaban 1 contenedor con 12 subprocesos. **Ahora los tres stacks comparten el mismo patron arquitectonico** (1 dispatcher por lenguaje), preservando los servicios reales del caso 01 que NO son procesos PHP.

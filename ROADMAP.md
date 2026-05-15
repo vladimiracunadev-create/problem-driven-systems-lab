@@ -67,9 +67,9 @@ Estado: planificada
 
 ## Fase 4 - Laboratorio expandido
 
-Estado: planificada
+Estado: en progreso
 
 - Nuevos casos sobre seguridad, colas, cache, costos cloud y contratos.
-- CI minima para chequeos estructurales y smoke checks.
+- CI minima para chequeos estructurales y smoke checks — **parcial**: `.github/workflows/ci.yml` valida estructura, parsea los 40 composes (4 hubs + 36 per-case PHP/Node/Python), corre `portal-probe` sobre el hub PHP, `hub-probe` sobre los hubs Python y Node (cada uno valida los 12 casos del stack en un solo boot), y smoke per-case PHP. Pendiente: smoke per-case Node/Python si se vuelve necesario.
 - Publicacion opcional de demos limitadas cuando tenga sentido.
 - Panel visual mas rico para navegar el laboratorio completo.
