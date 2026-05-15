@@ -27,7 +27,7 @@ La analítica y el reporting compiten contra el flujo transaccional sobre los mi
 | 🐘 PHP 8 | `OPERATIVO` |
 | 🟢 Node.js | `OPERATIVO` |
 | 🐍 Python | `OPERATIVO` |
-| ☕ Java | 🔧 Estructura lista |
+| ☕ Java 21 | `OPERATIVO` (`ThreadPoolExecutor` saturation observable + `ExecutorService` dedicado) |
 | 🔵 .NET 8 | 🔧 Estructura lista |
 
 ## 🚀 Cómo levantar

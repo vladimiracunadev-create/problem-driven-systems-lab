@@ -42,7 +42,7 @@ Los cuatro hubs siguen el **mismo patrón**: un contenedor por lenguaje que spaw
 | **PHP** | `compose.root.yml` | **~7 contenedores** (portal + `php-lab` + 2 PostgreSQL + worker + exporter + prometheus + grafana) | `php-dispatcher` con 12 subprocesos `php -S` en `127.0.0.1:9001-9012` | `8100` |
 | **Python** | `compose.python.yml` | **1 contenedor** (`pdsl-python-lab`) | `python-dispatcher` con 12 subprocesos `subprocess.Popen` en `:9001-9012` | `8200` |
 | **Node.js** | `compose.nodejs.yml` | **1 contenedor** (`pdsl-node-lab`) | `node-dispatcher` con 12 subprocesos `child_process.spawn` en `:9101 + :9002-9012` | `8300` |
-| **Java 21** | `compose.java.yml` | **1 contenedor** (`pdsl-java-lab`) | `java-dispatcher` con 6 subprocesos `ProcessBuilder` (`java Main`) en `:9401-:9406` (casos 01-06; 07-12 pendientes) | `8400` |
+| **Java 21** | `compose.java.yml` | **1 contenedor** (`pdsl-java-lab`) | `java-dispatcher` con 12 subprocesos `ProcessBuilder` (`java Main`) en `:9401-:9412` | `8400` |
 
 > **Asimetria residual del PHP**: PHP levanta ~7 contenedores en lugar de 1 porque los casos `01` y `02` necesitan PostgreSQL **real** corriendo en paralelo, mas el worker de caso 01, mas Prometheus + Grafana. Eso son **servicios independientes** (no subprocesos PHP) que el caso 01 estudia. Las 12 apps PHP se colapsan en `php-lab` (1 contenedor); los servicios reales se mantienen separados porque tienen que serlo.
 
@@ -97,7 +97,7 @@ Esta simetria se preserva al migrar a AWS — ver [`AWS_MIGRATION.md`](../AWS_MI
 
 - `compose.root.yml` debe dejar visible el laboratorio PHP completo desde `localhost:8080`.
 - `compose.python.yml` y `compose.nodejs.yml` deben dejar visibles los 12 casos del stack respectivo desde `localhost:8200` y `localhost:8300`.
-- `compose.java.yml` debe dejar visibles los casos 01-06 desde `localhost:8400`.
+- `compose.java.yml` debe dejar visibles los 12 casos desde `localhost:8400`.
 - Los casos `01` al `12` deben poder levantarse con Docker de forma limpia tambien por separado (modo aislado).
 - Cada `compose.yml` debe incluir solo la infraestructura que el problema realmente necesita.
 - La presencia de `compose.compare.yml` no implica que todos los stacks tengan la misma profundidad funcional.

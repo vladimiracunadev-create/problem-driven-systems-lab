@@ -12,10 +12,10 @@
 | PHP — portal + hub + DB + observabilidad | `docker compose -f compose.root.yml up -d --build` | `8080` portal · `8100` hub · `9091` Prometheus · `3001` Grafana |
 | Python — dispatcher unificado | `docker compose -f compose.python.yml up -d --build` | `8200` hub |
 | Node.js — dispatcher unificado | `docker compose -f compose.nodejs.yml up -d --build` | `8300` hub |
-| Java 21 — dispatcher unificado (casos 01-06) | `docker compose -f compose.java.yml up -d --build` | `8400` hub |
+| Java 21 — dispatcher unificado | `docker compose -f compose.java.yml up -d --build` | `8400` hub |
 | Portal liviano | `docker compose -f compose.portal.yml up -d --build` | `8080` |
 
-Los cuatro stacks pueden correr en paralelo sin colisión de puertos. **PHP/Python/Node sirven 12 casos cada uno desde `:8100`/`:8200`/`:8300`; Java sirve casos 01-06 desde `:8400`. 42 endpoints operativos detras de 4 hubs.**
+Los cuatro stacks pueden correr en paralelo sin colisión de puertos. **PHP/Python/Node/Java sirven 12 casos cada uno desde `:8100`/`:8200`/`:8300`/`:8400`. 48 endpoints operativos detras de 4 hubs.**
 
 ### Casos aislados (modo estudio individual)
 
@@ -47,6 +47,12 @@ Cada caso conserva su propio `compose.yml` para reproducir UN problema en aislam
 | Caso 04 Java 21 | `docker compose -f cases/04-timeout-chain-and-retry-storms/java/compose.yml up -d --build` |
 | Caso 05 Java 21 | `docker compose -f cases/05-memory-pressure-and-resource-leaks/java/compose.yml up -d --build` |
 | Caso 06 Java 21 | `docker compose -f cases/06-broken-pipeline-and-fragile-delivery/java/compose.yml up -d --build` |
+| Caso 07 Java 21 | `docker compose -f cases/07-incremental-monolith-modernization/java/compose.yml up -d --build` |
+| Caso 08 Java 21 | `docker compose -f cases/08-critical-module-extraction-without-breaking-operations/java/compose.yml up -d --build` |
+| Caso 09 Java 21 | `docker compose -f cases/09-unstable-external-integration/java/compose.yml up -d --build` |
+| Caso 10 Java 21 | `docker compose -f cases/10-expensive-architecture-for-simple-needs/java/compose.yml up -d --build` |
+| Caso 11 Java 21 | `docker compose -f cases/11-heavy-reporting-blocks-operations/java/compose.yml up -d --build` |
+| Caso 12 Java 21 | `docker compose -f cases/12-single-point-of-knowledge-and-operational-risk/java/compose.yml up -d --build` |
 
 ## ▶️ Arranque recomendado
 
@@ -91,10 +97,10 @@ Cada caso conserva su propio `compose.yml` para reproducir UN problema en aislam
 
 | Componente | URL | Senal esperada |
 | --- | --- | --- |
-| Java hub — índice | `http://localhost:8400/` | Lista de casos JSON (01-06) |
+| Java hub — índice | `http://localhost:8400/` | Lista de los 12 casos JSON |
 | Caso 01 Java | `http://localhost:8400/01/health` | Respuesta saludable |
-| Casos 02–06 Java | `http://localhost:8400/02/health` … `http://localhost:8400/06/health` | Respuesta saludable |
-| Casos 07–12 Java | `http://localhost:8400/07/health` … `http://localhost:8400/12/health` | **404** — no operativos todavia |
+| Caso 02 Java | `http://localhost:8400/02/health` | Respuesta saludable |
+| Casos 03–12 Java | `http://localhost:8400/03/health` … `http://localhost:8400/12/health` | Respuesta saludable |
 
 ### Casos aislados (modo estudio — solo cuando el aislamiento aporta)
 
@@ -103,7 +109,7 @@ Cada caso conserva su propio `compose.yml` para reproducir UN problema en aislam
 | Caso 05 Node.js aislado | `http://localhost:825/health` | Medir `process.memoryUsage()` heap V8 sin contaminacion de otros workloads |
 | Caso 11 Node.js aislado | `http://localhost:8211/health` | Medir `event_loop_lag_ms` sin requests concurrentes diluyendo la senal |
 | Caso 05 Java aislado | `http://localhost:845/health` | Medir `Runtime.totalMemory()` y eviccion del `LinkedHashMap` LRU sin contaminacion |
-| Otros casos aislados | `http://localhost:821-829`, `8210-8212` (Node) · `841-846` (Java) | Disponibles, pero los hubs (`8100`/`8200`/`8300`/`8400`) ya los aislan por path |
+| Otros casos aislados | `http://localhost:821-829`, `8210-8212` (Node) · `841-849`, `8410-8412` (Java) | Disponibles, pero los hubs (`8100`/`8200`/`8300`/`8400`) ya los aislan por path |
 
 ## 🧰 Comandos utiles de operacion
 
@@ -123,7 +129,7 @@ docker compose -f compose.python.yml logs -f case03-python
 docker compose -f compose.nodejs.yml ps
 docker compose -f compose.nodejs.yml logs --tail=100
 
-# Ver estado del stack Java (casos 01-06)
+# Ver estado del stack Java
 docker compose -f compose.java.yml ps
 docker compose -f compose.java.yml logs --tail=100
 

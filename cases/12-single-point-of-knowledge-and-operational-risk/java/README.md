@@ -1,34 +1,62 @@
-# Punto único de conocimiento y riesgo operacional — Java
+# Caso 12 — Java 21
 
-## Objetivo de esta variante
-Representar este caso desde el stack **Java**, manteniendo foco en el problema y no solo en la sintaxis.
+Stack Java operativo del caso 12. `Optional<T>` + chaining seguro como runbook codificado.
 
-## Qué debería mostrar esta carpeta
-- una base dockerizada,
-- un punto de entrada mínimo,
-- espacio para instrumentación, pruebas o scripts,
-- notas de diseño específicas del stack.
+## Primitivas nativas
 
-## Qué NO debería hacer
-- mezclar dependencias de otros stacks,
-- levantar todo el laboratorio,
-- esconder decisiones importantes fuera del repositorio.
+| Primitiva | Rol |
+|---|---|
+| `Optional<T>` + `map`/`flatMap`/`orElse` | Runbook codificado: el lenguaje obliga a manejar el caso "owner ausente". Espejo del optional chaining `?.` de Node. |
+| `record Owner/Incident` | Inmutables — auditable, copy-on-update. |
+| `AtomicInteger coverage / busFactor` | Metricas observables actualizables thread-safe via `/share-knowledge`. |
+| `ConcurrentHashMap<String, Owner>` | Registry de owners thread-safe. |
 
-## Puertos de referencia
-- Puerto local sugerido: `8412`
+## Contraste
 
-## Comando esperado
-```bash
-docker compose -f compose.yml up -d --build
+**Legacy** — acceso ciego a estructura anidada:
+```java
+Owner owner = pickOwnerLegacy(scenario);     // null si owner_absent
+String script = owner.runbook().get(...);    // NPE
+String executed = script.toUpperCase();       // NPE en cadena
+// → catch: mttr 120 min, crashed
 ```
 
-## Notas del stack
-En Java conviene estudiar este caso considerando:
-- ergonomía del runtime,
-- patrones habituales del ecosistema,
-- observabilidad disponible,
-- costos de complejidad,
-- límites y trade-offs específicos.
+**Distributed** — `Optional` + chaining defensivo:
+```java
+Optional<Owner> ownerOpt = pickOwnerDistributed(scenario);   // empty si ausente
+Optional<String> scriptOpt = ownerOpt.map(o -> o.runbook().get(runbookKey));
+String script = scriptOpt.orElse(null);
+// degradacion controlada: usa runbook compartido por equipo → mttr 35-50 min
+```
 
-## Estado inicial
-Esta carpeta deja una base mínima documentada y ampliable para que el caso evolucione hacia un escenario más realista.
+## Rutas
+
+| Ruta | Que muestra |
+|---|---|
+| `/health` | liveness |
+| `/incident-legacy?scenario=owner_absent&runbook=db_failover` | crashed:NullPointerException, mttr=120 |
+| `/incident-distributed?scenario=owner_absent&runbook=db_failover` | handled via team runbook, mttr=35-50 |
+| `/share-knowledge?owner=bob&runbook=db_failover` | coverage sube +15, bus_factor +1 |
+| `/incidents` | historial reciente (max 30) |
+| `/diagnostics/summary` | contraste + coverage + bus_factor |
+
+## Hub
+
+```
+docker compose -f compose.java.yml up -d --build
+# Legacy crashea
+curl "http://127.0.0.1:8400/12/incident-legacy?scenario=owner_absent&runbook=db_failover"
+# Distributed degrada controlado
+curl "http://127.0.0.1:8400/12/incident-distributed?scenario=owner_absent&runbook=db_failover"
+# Compartir conocimiento sube bus_factor
+curl "http://127.0.0.1:8400/12/share-knowledge?owner=bob&runbook=db_failover"
+curl http://127.0.0.1:8400/12/diagnostics/summary    # coverage 45, bus_factor 2
+```
+
+## Modo aislado
+
+Puerto `8412`.
+
+## Por que `Optional` y no null checks manuales
+
+Es la misma decision que `?.` en Node, `?` en Kotlin, `??` en C#: **codificar la posibilidad de ausencia en el sistema de tipos**, no en disciplina del developer. Un `Optional<Owner>` obliga a tomar postura ante el caso vacio; un `Owner owner` no. El crash del legacy no es una falla de Java — es una falla de **no usar las herramientas que Java ya ofrece**.

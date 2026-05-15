@@ -7,13 +7,13 @@
 [![IaC](https://img.shields.io/badge/IaC-Terraform%20%7C%20CDK-7B42BC?logo=terraform&logoColor=white)](https://www.terraform.io/)
 [![Status](https://img.shields.io/badge/Estado-Plan%20de%20migraci%C3%B3n-blue)](#)
 
-> Plan tecnico-operativo y honesto para migrar el laboratorio (42 endpoints operativos: 12 PHP + 12 Python + 12 Node + 6 Java + portal + observabilidad) desde Docker Compose local hacia AWS, con tres rutas alternativas, costos reales estimados y trade-offs explicitos.
+> Plan tecnico-operativo y honesto para migrar el laboratorio (48 endpoints operativos: 12 casos × 4 stacks + portal + observabilidad) desde Docker Compose local hacia AWS, con tres rutas alternativas, costos reales estimados y trade-offs explicitos.
 
 ---
 
 ## 🎯 Executive Summary
 
-- El laboratorio hoy corre como un conjunto de servicios Docker Compose: **portal PHP** + **4 hubs simetricos por lenguaje** (`pdsl-php-lab` :8100, `pdsl-python-lab` :8200, `pdsl-node-lab` :8300 con 12 subprocesos cada uno; `pdsl-java-lab` :8400 con 6 subprocesos para casos 01-06) + **2 instancias PostgreSQL** (casos 01/02 PHP) + **Prometheus** + **Grafana** + **worker** background del caso 01.
+- El laboratorio hoy corre como un conjunto de servicios Docker Compose: **portal PHP** + **4 hubs simetricos por lenguaje** (`pdsl-php-lab` :8100, `pdsl-python-lab` :8200, `pdsl-node-lab` :8300, `pdsl-java-lab` :8400 — cada uno con 12 subprocesos internos) + **2 instancias PostgreSQL** (casos 01/02 PHP) + **Prometheus** + **Grafana** + **worker** background del caso 01.
 - AWS ofrece **al menos tres rutas validas** segun presupuesto, foco pedagogico y madurez operacional deseada (serverless, contenedores manejados, Kubernetes).
 - La opcion recomendada para un portafolio publico orientado a costo/utilidad es **ECS Fargate + RDS PostgreSQL + ALB + CloudWatch + AMP/AMG**, con un costo estimado de **USD ~120–135/mes** ejecutandolo 24x7, o **USD ~65–85/mes** apagado fuera de horario.
 - Toda la migracion se publica como **Infrastructure as Code (Terraform o AWS CDK)** dentro del propio repo, manteniendo la promesa de reproducibilidad.
@@ -36,7 +36,7 @@ Mapa rapido de lo que vive hoy en `compose.root.yml`, `compose.python.yml`, `com
 | `case01-grafana` | grafana 11 | UI | OPERATIVO | **AMG** (Amazon Managed Grafana) |
 | `python-lab` (Python dispatcher, 12 casos internos `:9001-:9012`) | Python 3.12 | 1 contenedor | OPERATIVO | ECS Fargate Service · Lambda Container |
 | `node-lab` (Node dispatcher, 12 casos internos `:9101` + `:9002-:9012`) | Node.js 20 | 1 contenedor | OPERATIVO | ECS Fargate Service · Lambda Container |
-| `java-lab` (Java dispatcher, 6 casos internos `:9401-:9406`) | Java 21 (eclipse-temurin) | 1 contenedor | OPERATIVO (parcial, 01-06) | ECS Fargate Service · Lambda Container |
+| `java-lab` (Java dispatcher, 12 casos internos `:9401-:9412`) | Java 21 (eclipse-temurin) | 1 contenedor | OPERATIVO | ECS Fargate Service · Lambda Container |
 
 **Volumenes con estado**: `pgdata_case01`, `pgdata_case02`, `prometheus_case01`, `grafana_case01` — todos pasan a servicios manejados (RDS / AMP / AMG) y desaparecen como volumenes EFS/EBS.
 
@@ -59,7 +59,7 @@ Internet
                        |                                              `──▶ ECS Fargate · worker-01
                        |── /py/01..12/*      → ECS Fargate · python-lab (1 task, 12 casos internos)
                        |── /node/01..12/*    → ECS Fargate · node-lab   (1 task, 12 casos internos)
-                       `── /java/01..06/*    → ECS Fargate · java-lab   (1 task, 6 casos internos)
+                       `── /java/01..12/*    → ECS Fargate · java-lab   (1 task, 12 casos internos)
 
 Observabilidad           Plataforma                   Seguridad / Edge
 |- CloudWatch Logs       |- ECR  (registry imagenes)  |- CloudFront + AWS WAF (rate limit, OWASP)
@@ -113,7 +113,7 @@ Internet
                 |── deploy: php-cases   (12 pods)
                 |── deploy: python-hub
                 |── deploy: node-hub
-                `── deploy: java-hub (01-06)
+                `── deploy: java-hub
                        |
                        `──▶ RDS  +  AMP  +  AMG
 ```
@@ -188,7 +188,7 @@ Internet
 | ECS Fargate — php-lab | 0.5 vCPU / 1 GB · dispatcher con 12 casos internos | ~ USD 7 |
 | ECS Fargate — python-lab | 0.5 vCPU / 1 GB · dispatcher con 12 casos internos | ~ USD 7 |
 | ECS Fargate — node-lab | 0.5 vCPU / 1 GB · dispatcher con 12 casos internos | ~ USD 7 |
-| ECS Fargate — java-lab | 0.5 vCPU / 1 GB · dispatcher con 6 casos internos (01-06) | ~ USD 7 |
+| ECS Fargate — java-lab | 0.5 vCPU / 1 GB · dispatcher con 12 casos internos | ~ USD 7 |
 | ECS Fargate — worker case01 | 0.25 vCPU / 0.5 GB | ~ USD 3.5 |
 | RDS PostgreSQL — case01 | db.t4g.micro · 20 GB gp3 · single-AZ | ~ USD 13 |
 | RDS PostgreSQL — case02 | db.t4g.micro · 20 GB gp3 · single-AZ | ~ USD 13 |
@@ -204,7 +204,7 @@ Internet
 | Secrets Manager | 4 secrets | ~ USD 1.6 |
 | **Total aproximado 24x7** | | **USD ~135–150 / mes** |
 
-> **Nota sobre los 4 hubs simetricos**: cada hub (PHP/Python/Node/Java) corre sus casos en un solo task Fargate como subprocesos internos, exactamente como en local. Antes del refactor del PHP dispatcher, PHP usaba 12 services separados (~USD 42/mes). Ahora son 4 hubs simetricos × ~USD 7 = USD 28/mes para los 42 endpoints (12 PHP + 12 Python + 12 Node + 6 Java). El trade-off: si un caso tiene memory leak, puede afectar a los otros del mismo hub. Para los servicios reales del caso 01 (PostgreSQL, worker, observabilidad) NO se aplica — siguen siendo contenedores/services independientes porque son servicios distintos del lenguaje.
+> **Nota sobre los 4 hubs simetricos**: cada hub (PHP/Python/Node/Java) corre sus 12 casos en un solo task Fargate como subprocesos internos, exactamente como en local. Antes del refactor del PHP dispatcher, PHP usaba 12 services separados (~USD 42/mes). Ahora son 4 hubs simetricos × ~USD 7 = USD 28/mes para los 48 endpoints (12 casos × 4 stacks). El trade-off: si un caso tiene memory leak, puede afectar a los otros 11 del mismo hub. Para los servicios reales del caso 01 (PostgreSQL, worker, observabilidad) NO se aplica — siguen siendo contenedores/services independientes porque son servicios distintos del lenguaje.
 
 ### Opcion A · ECS Fargate · apagado fuera de horario laboral (cron 8h x 5 dias)
 
@@ -221,14 +221,14 @@ Internet
 
 | Servicio | Asuncion | Costo |
 | --- | --- | --- |
-| Lambda (12 PHP + 12 Python + 12 Node + 6 Java = 42 funciones container) | <10 000 invocaciones / mes total | ~ USD 0–1 |
+| Lambda (12 × 4 stacks = 48 funciones container) | <10 000 invocaciones / mes total | ~ USD 0–1 |
 | API Gateway HTTP API | <1M requests / mes | ~ USD 1 |
 | Aurora Serverless v2 | min 0.5 ACU, ~30 min/dia activo | ~ USD 25–40 |
 | CloudFront / Route 53 / WAF | igual que A | ~ USD 11 |
 | CloudWatch | base | ~ USD 2 |
 | **Total** | | **USD ~40–55 / mes** |
 
-> Lambda escala mejor con la **paridad multi-stack completa**: 42 funciones que comparten edge (CloudFront + WAF) y un solo backend (Aurora Serverless v2). El cold start sigue siendo visible (200-800ms en PHP, 100-300ms en Node, 200-500ms en Python, 800-2000ms en Java sin SnapStart — peor caso del grupo).
+> Lambda escala mejor con la **paridad multi-stack completa**: 48 funciones que comparten edge (CloudFront + WAF) y un solo backend (Aurora Serverless v2). El cold start sigue siendo visible (200-800ms en PHP, 100-300ms en Node, 200-500ms en Python, 800-2000ms en Java sin SnapStart — peor caso del grupo).
 
 ### Opcion C · EKS
 
@@ -326,7 +326,7 @@ psql "postgres://problemlab:***@case01.xxxxx.us-east-1.rds.amazonaws.com:5432/pr
 ### Fase 4 · Cluster ECS y task definitions (Dia 3–4)
 
 - Crear cluster `pdsl-prod` con capacity provider Fargate + Fargate Spot 70/30.
-- Por cada hub: una task definition de 512 CPU / 1024 MiB (ARM64) que corre el dispatcher con sus procesos internos (12 para PHP/Python/Node, 6 para Java). Worker del caso 01 como service separado (256 CPU / 512 MiB).
+- Por cada hub: una task definition de 512 CPU / 1024 MiB (ARM64) que corre el dispatcher con sus 12 procesos internos. Worker del caso 01 como service separado (256 CPU / 512 MiB).
 - Crear 5 services (portal + php-lab + python-lab + node-lab + worker-01) detras de un solo ALB con **listener rules por path**:
 
 | Path rule | Target group | Notas |
@@ -518,7 +518,7 @@ terraform apply -var "domain_name=pdsl.tudominio.dev"
 - [ ] `https://pdsl.tudominio.dev/php/01..12/` responden 200 con la UI nativa.
 - [ ] `https://pdsl.tudominio.dev/py/01..12/health` responden 200 (hub Python).
 - [ ] `https://pdsl.tudominio.dev/node/01..12/health` responden 200 (hub Node).
-- [ ] `https://pdsl.tudominio.dev/java/01..06/health` responden 200 (hub Java).
+- [ ] `https://pdsl.tudominio.dev/java/01..12/health` responden 200 (hub Java).
 - [ ] Grafana publico (read-only) muestra latencia y QPS de caso 01 en vivo, mas `event_loop_lag_ms_p99` del hub Node.
 - [ ] CI/CD: `git push main` → imagen en ECR → service redeploy automatico.
 - [ ] AWS Budget con alerta activa a USD 50 y USD 150.

@@ -1,4 +1,4 @@
-# Caso 10 — Comparativa multi-stack: Arquitectura cara para un problema simple (PHP · Python · Node.js)
+# Caso 10 — Comparativa multi-stack: Arquitectura cara para un problema simple (PHP · Python · Node.js · Java)
 
 ## El problema que ambos resuelven
 
@@ -116,6 +116,30 @@ if (mode === 'complex') {
 let entities = Array.from(...);
 const _ = entities[0]?.id;   // O(1)
 ```
+
+---
+
+## Java 21: CPU real medido en `StringBuilder` loops vs `HashMap.get` O(1)
+
+**Runtime:** JVM con JIT — el JIT optimiza `HashMap.get` agresivamente; el camino complex con N hops de `StringBuilder` no se puede optimizar porque cada hop construye objetos nuevos.
+
+**El fallo legacy en Java:**
+```java
+for (int h = 0; h < hops; h++) {
+    StringBuilder hop = new StringBuilder(2048);
+    for (int i = 0; i < 200; i++) hop.append((char) ('A' + (i % 26)));
+    payload.append(hop);    // construccion + traversal por hop, alocacion real
+}
+if (hops > 20) return /* internal_timeout */;
+```
+
+**La correccion en Java:**
+```java
+Long value = directStore.get(key);   // O(1), 0 hops, 0 alocaciones
+return /* 1 service touched, cost_usd_month=3, lead_time=1 */;
+```
+
+**Por que importa que sea CPU real, no `Thread.sleep`:** un caso simulado con `sleep` no muestra contencion sobre el thread pool. CPU real consume threads del pool y crea backpressure observable via `ThreadPoolExecutor.getActiveCount()`. El lab no inventa el costo — lo demuestra.
 
 ---
 

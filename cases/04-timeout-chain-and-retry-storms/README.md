@@ -121,7 +121,7 @@ curl http://localhost:8200/04/health
 docker compose -f compose.nodejs.yml up -d --build
 curl http://localhost:8300/04/health
 
-# Java (casos 01-06)
+# Java (los 12 casos)
 docker compose -f compose.java.yml up -d --build
 curl http://localhost:8400/04/health
 ```

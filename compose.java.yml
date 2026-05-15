@@ -1,15 +1,14 @@
-# compose.java.yml — Stack Java completo (casos 01-06 operativos)
+# compose.java.yml — Stack Java completo (12 casos operativos)
 #
 # Un solo contenedor, un solo puerto.
 # El dispatcher interno enruta por prefijo de path:
 #
-#   GET http://localhost:8400/       → indice de casos Java
+#   GET http://localhost:8400/       → indice de los 12 casos Java
 #   GET http://localhost:8400/01/... → caso 01
-#   GET http://localhost:8400/06/... → caso 06
+#   GET http://localhost:8400/12/... → caso 12
 #
-# Los 6 servidores de caso corren como subprocesos internos en puertos
-# 9401-9406 que nunca se exponen al host. Cuando se sumen cases 07-12
-# se agregan al dispatcher sin cambiar el contrato externo.
+# Los 12 servidores de caso corren como subprocesos internos en puertos
+# 9401-9412 que nunca se exponen al host.
 #
 # Uso:
 #   docker compose -f compose.java.yml up -d --build

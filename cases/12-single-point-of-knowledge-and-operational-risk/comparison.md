@@ -1,4 +1,4 @@
-# Caso 12 — Comparativa multi-stack: Punto único de conocimiento y riesgo operacional (PHP · Python · Node.js)
+# Caso 12 — Comparativa multi-stack: Punto único de conocimiento y riesgo operacional (PHP · Python · Node.js · Java)
 
 ## El problema que ambos resuelven
 
@@ -157,6 +157,30 @@ const shareKnowledge = (domain, activity) => {
 };
 ```
 Misma formula que PHP/Python. La diferencia esta en como Node maneja el "si no existe": `||` (similar al `or` de Python — ojo con `0`).
+
+---
+
+## Java 21: `Optional<T>` + `map`/`flatMap`/`orElse` como runbook codificado
+
+**Runtime:** El sistema de tipos obliga a tomar postura ante "owner ausente" cuando devolves `Optional<Owner>` en lugar de `Owner` (que puede ser null). El crash legacy no es falla de Java — es falla de no usar las herramientas que Java ya ofrece.
+
+**El fallo legacy en Java:**
+```java
+Owner owner = pickOwnerLegacy(scenario);     // null si owner_absent
+String script = owner.runbook().get(...);     // NPE
+String executed = script.toUpperCase();        // NPE en cadena
+// → catch: mttr 120 min, crashed
+```
+
+**La correccion en Java:**
+```java
+Optional<Owner> ownerOpt = pickOwnerDistributed(scenario);   // empty si ausente
+Optional<String> scriptOpt = ownerOpt.map(o -> o.runbook().get(runbookKey));
+String script = scriptOpt.orElse(null);
+// degradacion controlada: usa team runbook → mttr 35-50 min
+```
+
+**Por que `Optional` y no null checks manuales:** misma decision que `?.` en Node, `?` en Kotlin, `??` en C#: codificar la posibilidad de ausencia en el sistema de tipos, no en disciplina del developer. `Optional<Owner>` obliga a manejar el caso vacio; `Owner owner` no.
 
 ---
 

@@ -21,10 +21,10 @@ Este laboratorio no busca impresionar con cantidad de carpetas. Su valor esta en
 | Observabilidad Experta | Caso `03` implementa trazabilidad nativa, logs estructurados y jerarquías de excepciones en los cuatro stacks (Java usa `ThreadLocal<RequestContext>` para correlation) |
 | Resiliencia Determinista | Casos `04`, `06` y `09` demuestran resiliencia real ante timeouts físicos y errores de compilador; `04` con `AbortController` cooperativo en Node y `CompletableFuture.orTimeout` + circuit breaker en Java |
 | Arquitectura y Fallos de I/O | Casos `07` a `12` cubren bloqueos de escritura (`flock`), deuda de conocimiento y modernización física |
-| Paridad multi-stack honesta | Los **12 casos** operativos en PHP + Python + Node.js con primitivas nativas; los **casos 01-06** ademas operativos en **Java 21** (`ConcurrentHashMap`, `CompletableFuture.orTimeout`, `LinkedHashMap` LRU built-in, `record` types + state machine, `ThreadLocal` correlation). Casos 07-12 Java pendientes — declarado, no escondido. |
+| Paridad multi-stack honesta | Los **12 casos operativos en los 4 stacks**: PHP, Python, Node.js, Java 21. Cada lenguaje con primitivas nativas distintas por caso (`AbortController` Node, `CompletableFuture.orTimeout` Java, `tracemalloc` Python, `flock` PHP, etc.). 48 endpoints operativos. |
 | Interfaz Nativa (Dashboards) | Los 12 casos PHP exponen una **UI Web Interactiva** para visualizar el fallo en vivo desde cualquier navegador |
 | Docker / Infraestructura | Cada caso implementa `compose.yml` propio para entornos de ingeniería aislados; ademas **4 hubs consolidados** (`compose.root.yml` PHP `:8100`, `compose.python.yml` `:8200`, `compose.nodejs.yml` `:8300`, `compose.java.yml` `:8400`) levantan los stacks completos con un comando cada uno |
-| Documentación Pro | Análisis técnicos profundos con funciones de lenguaje, algoritmos y patrones de diseño; `comparison.md` multi-stack PHP · Python · Node.js · Java para casos 01-06; PHP · Python · Node.js para 07-12 |
+| Documentación Pro | Análisis técnicos profundos con funciones de lenguaje, algoritmos y patrones de diseño; `comparison.md` multi-stack PHP · Python · Node.js · Java para los 12 casos |
 | Honestidad Técnica | Distinción explícita de madurez: de simuladores teóricos a piezas de ingeniería verificables |
 
 ## ⚡ Que mirar en 5 minutos

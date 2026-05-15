@@ -27,7 +27,7 @@ El sistema legacy sigue siendo crítico, pero cambiar una parte rompe otras no r
 | 🐘 PHP 8 | `OPERATIVO` |
 | 🟢 Node.js | `OPERATIVO` |
 | 🐍 Python | `OPERATIVO` |
-| ☕ Java | 🔧 Estructura lista |
+| ☕ Java 21 | `OPERATIVO` (`ConcurrentHashMap<String,Function>` routing mutable + `Function` como ACL) |
 | 🔵 .NET 8 | 🔧 Estructura lista |
 
 ## 🚀 Cómo levantar

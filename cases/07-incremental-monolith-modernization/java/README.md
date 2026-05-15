@@ -1,34 +1,53 @@
-# Modernización incremental de monolito — Java
+# Caso 07 — Java 21
 
-## Objetivo de esta variante
-Representar este caso desde el stack **Java**, manteniendo foco en el problema y no solo en la sintaxis.
+Stack Java operativo del caso 07. Strangler con routing por consumer + ACL como closure.
 
-## Qué debería mostrar esta carpeta
-- una base dockerizada,
-- un punto de entrada mínimo,
-- espacio para instrumentación, pruebas o scripts,
-- notas de diseño específicas del stack.
+## Primitivas nativas
 
-## Qué NO debería hacer
-- mezclar dependencias de otros stacks,
-- levantar todo el laboratorio,
-- esconder decisiones importantes fuera del repositorio.
+| Primitiva | Rol |
+|---|---|
+| `ConcurrentHashMap<String, Function<Request, Response>>` | Tabla de routing mutable en runtime. Registrar nuevo modulo = 1 linea, sin reload del proceso. |
+| `Function<Request, Response>` | ACL como closure que filtra contrato — la firma del handler **es** el contrato. |
+| `record Request/Response` | Inmutables, audit-friendly, sin boilerplate. |
+| `LongAdder` | Contadores lock-free de calls / migrations. |
 
-## Puertos de referencia
-- Puerto local sugerido: `847`
+## Contraste
 
-## Comando esperado
-```bash
-docker compose -f compose.yml up -d --build
+**Legacy** — cambio toca shared_schema, blast radius alto:
+```java
+// todos los consumers pegan al mismo monolito
+int blastRadius = 4;  // 4 modulos afectados al unisono
+int risk = 8;
 ```
 
-## Notas del stack
-En Java conviene estudiar este caso considerando:
-- ergonomía del runtime,
-- patrones habituales del ecosistema,
-- observabilidad disponible,
-- costos de complejidad,
-- límites y trade-offs específicos.
+**Strangler** — routing table consulta primero si hay handler nuevo:
+```java
+Function<Request, Response> handler = routingTable.get(consumer + ":" + op);
+if (handler != null) return handler.apply(req);   // routedTo=new-module
+// fallback al monolito con ACL acotada al consumer
+```
 
-## Estado inicial
-Esta carpeta deja una base mínima documentada y ampliable para que el caso evolucione hacia un escenario más realista.
+## Rutas
+
+| Ruta | Que muestra |
+|---|---|
+| `/health` | liveness |
+| `/change-legacy?consumer=billing&op=change` | blast_radius=4 — afecta todo el monolito |
+| `/change-strangler?consumer=billing&op=change` | routed_to=new-billing-svc — monolito intocado |
+| `/flows` | migration_progress por consumer + routing_table_size |
+| `/diagnostics/summary` | contraste legacy vs strangler |
+| `/reset-lab` | reinicia contadores |
+
+## Hub
+
+```
+docker compose -f compose.java.yml up -d --build
+curl "http://127.0.0.1:8400/07/change-strangler?consumer=billing&op=change"
+```
+
+## Modo aislado
+
+```
+docker compose -f cases/07-incremental-monolith-modernization/java/compose.yml up -d --build
+curl "http://127.0.0.1:847/change-strangler?consumer=billing&op=change"
+```

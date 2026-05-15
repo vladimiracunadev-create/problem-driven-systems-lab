@@ -27,7 +27,7 @@ El negocio necesita resolver algo relativamente acotado, pero la solución técn
 | 🐘 PHP 8 | `OPERATIVO` |
 | 🟢 Node.js | `OPERATIVO` |
 | 🐍 Python | `OPERATIVO` |
-| ☕ Java | 🔧 Estructura lista |
+| ☕ Java 21 | `OPERATIVO` (`HashMap` O(1) vs N hops `StringBuilder`; CPU real medido) |
 | 🔵 .NET 8 | 🔧 Estructura lista |
 
 ## 🚀 Cómo levantar

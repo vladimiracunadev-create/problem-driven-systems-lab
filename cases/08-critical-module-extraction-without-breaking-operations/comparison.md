@@ -1,4 +1,4 @@
-# Caso 08 — Comparativa multi-stack: Extracción de módulo crítico sin romper la operación (PHP · Python · Node.js)
+# Caso 08 — Comparativa multi-stack: Extracción de módulo crítico sin romper la operación (PHP · Python · Node.js · Java)
 
 ## El problema que ambos resuelven
 
@@ -133,6 +133,30 @@ cutoverBus.on('advance', ({ consumer, before, after }) => {
 cutoverBus.emit('advance', { consumer, before: cur, after: next });
 ```
 Otros listeners (alerting, audit log, slack notifier) pueden engancharse al `cutoverBus` sin tocar el flujo principal — pub/sub nativo.
+
+---
+
+## Java 21: `Function` proxy de compatibilidad + `CopyOnWriteArrayList<Consumer>` event bus
+
+**Runtime:** JVM con thread pool. El event bus tiene lectores frecuentes (cada emit recorre suscriptores) y escritores raros (add/remove subscriber) — `CopyOnWriteArrayList` es exactamente este trade-off.
+
+**El fallo legacy en Java:**
+```java
+// nuevo modulo solo entiende {price, currency}; consumer manda {cost_usd}
+return "contract_violation";   // checkout, partners, backoffice todos rotos
+```
+
+**La correccion en Java:**
+```java
+Function<PriceRequestOld, PriceRequestNew> compatProxy = old ->
+    new PriceRequestNew(old.sku(), old.costUsd() * 1.0, "USD");
+
+PriceRequestNew translated = compatProxy.apply(old);   // {cost_usd}→{price,currency}
+cutoverProgress.put(consumer, true);
+emit("cutover_done:" + consumer);                       // CopyOnWriteArrayList<Consumer<String>>
+```
+
+**Por que `Function` y no `java.lang.reflect.Proxy`:** `Proxy` dinamico es overkill para traducir contratos planos — requiere `InvocationHandler` y reflection. `Function<Old,New>` es declarativo, tipado, sin overhead. Mismo efecto, menos boilerplate.
 
 ---
 
