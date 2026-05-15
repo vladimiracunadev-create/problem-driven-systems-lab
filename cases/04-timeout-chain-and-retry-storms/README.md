@@ -79,6 +79,38 @@ Estructura dockerizada lista; sin paridad funcional todavía.
 
 ---
 
+## 🗺️ Diagrama — Retry storm vs Circuit Breaker
+
+**Legacy: el retry storm amplifica la caida del provider.**
+```text
+            cliente                                 provider (degradado)
+              │                                        ┃
+              ├─ request 1 ─────800 ms──fail───────────▶ ┃ (suma carga)
+              ├─ request 2 ─────800 ms──fail───────────▶ ┃ (suma mas)
+              ├─ request 3 ─────800 ms──fail───────────▶ ┃
+              ├─ request 4 ─────800 ms──fail───────────▶ ┃
+              ├─ request 5 ─────800 ms──fail───────────▶ ┃ ←── 5 × M concurrentes
+              └─▶ failed despues de 4 s                  ┗━━━━━ overload total
+```
+
+**Resilient: breaker corta el camino tras N fallos. El provider deja de recibir presion.**
+```text
+                   ┌─────────────── breaker.state ───────────────┐
+                   │                                              │
+              closed ──── N fallos consecutivos ───▶  open ──── cooldown ───▶ half_open
+                ▲                                       │                       │
+                │                                       │  proximo call:        │
+                │                                       │  fallback inmediato   │
+                │                                       │  (sin tocar provider) │
+                │                                       │                       │
+                └─────────── success en half_open ──────┴───────────────────────┘
+
+  legacy:  cada request paga 800 ms × 5 intentos = 4 s. Provider muere mas rapido.
+  resilient: tras 3 fails, breaker=open. Proximos requests responden en us con fallback.
+```
+
+---
+
 ## ⚖️ Trade-offs
 
 - Más protección implica más estados y mayor complejidad operativa.
