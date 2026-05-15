@@ -31,6 +31,8 @@ jobs:
         compose_file:
           - compose.root.yml
           - compose.portal.yml
+          - compose.python.yml
+          - compose.nodejs.yml
           - cases/01-api-latency-under-load/php/compose.yml
           - cases/02-n-plus-one-and-db-bottlenecks/php/compose.yml
           - cases/03-poor-observability-and-useless-logs/php/compose.yml
@@ -43,8 +45,30 @@ jobs:
           - cases/10-expensive-architecture-for-simple-needs/php/compose.yml
           - cases/11-heavy-reporting-blocks-operations/php/compose.yml
           - cases/12-single-point-of-knowledge-and-operational-risk/php/compose.yml
+          - cases/01-api-latency-under-load/node/compose.yml
+          - cases/02-n-plus-one-and-db-bottlenecks/node/compose.yml
           - cases/03-poor-observability-and-useless-logs/node/compose.yml
+          - cases/04-timeout-chain-and-retry-storms/node/compose.yml
+          - cases/05-memory-pressure-and-resource-leaks/node/compose.yml
+          - cases/06-broken-pipeline-and-fragile-delivery/node/compose.yml
+          - cases/07-incremental-monolith-modernization/node/compose.yml
+          - cases/08-critical-module-extraction-without-breaking-operations/node/compose.yml
+          - cases/09-unstable-external-integration/node/compose.yml
+          - cases/10-expensive-architecture-for-simple-needs/node/compose.yml
+          - cases/11-heavy-reporting-blocks-operations/node/compose.yml
+          - cases/12-single-point-of-knowledge-and-operational-risk/node/compose.yml
+          - cases/01-api-latency-under-load/python/compose.yml
+          - cases/02-n-plus-one-and-db-bottlenecks/python/compose.yml
           - cases/03-poor-observability-and-useless-logs/python/compose.yml
+          - cases/04-timeout-chain-and-retry-storms/python/compose.yml
+          - cases/05-memory-pressure-and-resource-leaks/python/compose.yml
+          - cases/06-broken-pipeline-and-fragile-delivery/python/compose.yml
+          - cases/07-incremental-monolith-modernization/python/compose.yml
+          - cases/08-critical-module-extraction-without-breaking-operations/python/compose.yml
+          - cases/09-unstable-external-integration/python/compose.yml
+          - cases/10-expensive-architecture-for-simple-needs/python/compose.yml
+          - cases/11-heavy-reporting-blocks-operations/python/compose.yml
+          - cases/12-single-point-of-knowledge-and-operational-risk/python/compose.yml
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -153,3 +177,47 @@ jobs:
       - name: Shutdown laboratorio PHP completo
         if: always()
         run: docker compose -f compose.root.yml down -v
+
+  hub-probe:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: python-hub
+            compose_file: compose.python.yml
+            hub_port: 8200
+          - name: node-hub
+            compose_file: compose.nodejs.yml
+            hub_port: 8300
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build and boot ${{ matrix.name }}
+        run: docker compose -f ${{ matrix.compose_file }} up -d --build
+
+      - name: Probe 12 cases via ${{ matrix.name }}
+        shell: bash
+        run: |
+          for attempt in {1..50}; do
+            if curl -fsS "http://127.0.0.1:${{ matrix.hub_port }}/01/health" > /dev/null; then
+              break
+            fi
+            sleep 2
+            if [ "$attempt" = "50" ]; then
+              docker compose -f "${{ matrix.compose_file }}" logs
+              exit 1
+            fi
+          done
+          for cid in 01 02 03 04 05 06 07 08 09 10 11 12; do
+            if ! curl -fsS "http://127.0.0.1:${{ matrix.hub_port }}/${cid}/health" > /dev/null; then
+              echo "case ${cid} failed health via ${{ matrix.name }}"
+              docker compose -f "${{ matrix.compose_file }}" logs
+              exit 1
+            fi
+          done
+
+      - name: Shutdown ${{ matrix.name }}
+        if: always()
+        run: docker compose -f ${{ matrix.compose_file }} down -v
