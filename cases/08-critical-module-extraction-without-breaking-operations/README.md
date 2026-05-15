@@ -20,6 +20,39 @@ Hay que sacar un módulo sensible del sistema vivo, pero ese módulo sigue sirvi
 - `pricing-compatible` usa contrato estable, proxy y cutover gradual por consumidor.
 - `extraction/state`, `flows` y `diagnostics/summary` dejan visible progreso, shadow traffic y presión de compatibilidad.
 
+## 🗺️ Diagrama — Cutover gradual con proxy de compatibilidad
+
+```text
+  Big-bang (sin proxy):                    Compatible (con proxy + cutover):
+
+  consumer (legacy contract)               consumer (legacy contract)
+   {sku, cost_usd}                          {sku, cost_usd}
+        │                                        │
+        ▼                                        ▼
+  ╔════════════════════╗                  ┌──────────────────────────┐
+  ║  new module        ║                  │  Function<Old, New>      │  ← compatProxy
+  ║  espera:           ║                  │  {cost_usd} → {price,    │
+  ║  {price,currency}  ║                  │              currency}   │
+  ╚═════════╤══════════╝                  └────────────┬─────────────┘
+            │                                          │
+            ▼                                          ▼
+   ❌ contract_violation                  ╔════════════════════════╗
+   checkout / partners / backoffice       ║  new module            ║
+   TODOS rotos al unisono                 ║  recibe contrato nuevo │
+                                          ╚═════════╤══════════════╝
+                                                    │
+                                                    ▼
+                                          cutoverProgress.put(consumer, true)
+                                                    │
+                                                    ▼
+                                        emit("cutover_done:checkout")
+                                          ──▶ CopyOnWriteArrayList<Consumer>
+                                              ──▶ subscriber 1, 2, ..., N
+
+  Cutover gradual: consumers migran uno a uno. El proxy garantiza que ningun
+  consumer rompa mientras esten en el contrato viejo. EventBus notifica avance.
+```
+
 ## 🛠️ Stacks disponibles
 
 | Stack | Estado |

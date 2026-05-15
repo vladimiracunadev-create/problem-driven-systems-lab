@@ -20,6 +20,53 @@ Una dependencia externa cambia contrato, limita cuota o entra en mantenimiento, 
 - `catalog-hardened` usa adapter, normalización de payload y cache operativa.
 - `integration/state`, `sync-events` y `diagnostics/summary` muestran cuota, mappings y eventos de cuarentena.
 
+## 🗺️ Diagrama — Adapter endurecido: budget → cache → breaker → schema mapping
+
+```text
+                       request: /catalog-hardened?sku=widget-A
+                                          │
+                                          ▼
+                            ┌─────────────────────────┐
+                            │ providerBudget.tryAcquire()│   ← Semaphore (max N/window)
+                            └────────────┬────────────┘
+                       permits == 0       │      permit obtenido
+                  ┌─────────┘             │              └─────────────────────────┐
+                  ▼                                                                 ▼
+        ╔════════════════════════╗                              ┌────────────────────────────────┐
+        ║ served_from: cache     ║                              │ breaker.get() == "open"?       │
+        ║ reason: budget_exhausted║                              └──────┬──────────────────┬──────┘
+        ╚════════════════════════╝                                     │ si               │ no
+                  ▲                                                     ▼                  ▼
+                  │                                       ╔════════════════════╗   call provider real
+                  │                                       ║ served_from: cache ║   (simulado en lab)
+                  │                                       ║ breaker:open       ║          │
+                  │                                       ╚════════════════════╝          ▼
+                  │                                                                ┌─────────────────┐
+                  │   ┌────────────────────────────────────────────────────────────┤  provider falla?│
+                  │   │                                                            └────┬────────────┘
+                  │   │                                                                 │
+                  │   │                                                       no        │ si
+                  │   │                                                ┌────────────────┴────────────┐
+                  │   │                                                ▼                              ▼
+                  │   │                                       ┌─────────────────┐         ┌──────────────────────┐
+                  │   │                                       │ snapshotCache   │         │ breaker.set("open")  │
+                  │   │                                       │   .put(fresh)   │         │ AtomicReference CAS  │
+                  │   │                                       │ breaker.set     │         └──────────┬───────────┘
+                  │   │                                       │   ("closed")    │                    │
+                  │   │                                       └────────┬────────┘                    │
+                  │   │                                                │                              │
+                  │   │                                                ▼                              ▼
+                  │   │                                       ╔══════════════════╗      ╔════════════════════╗
+                  │   │                                       ║ served_from:     ║      ║ served_from: cache ║
+                  │   │                                       ║   provider       ║      ║ snapshot (stale)   ║
+                  │   │                                       ╚══════════════════╝      ╚═══════╤════════════╝
+                  │   │                                                                          │
+                  └───┴──────────────────────────────────────────────────────────────────────────┘
+
+  Legacy: cualquier fallo del provider = falla visible al cliente.
+  Hardened: budget protege cuota; cache protege disponibilidad; breaker protege al provider.
+```
+
 ## 🛠️ Stacks disponibles
 
 | Stack | Estado |

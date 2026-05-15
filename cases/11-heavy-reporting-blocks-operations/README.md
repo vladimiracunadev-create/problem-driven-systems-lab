@@ -20,6 +20,38 @@ La analítica y el reporting compiten contra el flujo transaccional sobre los mi
 - `report-isolated` desplaza la presión hacia cola, replica o snapshot.
 - `order-write`, `reporting/state` y `diagnostics/summary` dejan visible si la operación conserva aire o ya está sufriendo.
 
+## 🗺️ Diagrama — Reporting bloqueando el pool principal vs aislamiento por pool
+
+```text
+  Legacy: report y order-write comparten pool                Isolated: pools separados
+
+  ┌──────────────────────────────────┐                       ┌──────────────────────────────────┐
+  │       mainPool (4 threads)       │                       │       mainPool (4 threads)       │
+  │  ┌────┐ ┌────┐ ┌────┐ ┌────┐     │                       │  ┌────┐ ┌────┐ ┌────┐ ┌────┐     │
+  │  │ T1 │ │ T2 │ │ T3 │ │ T4 │     │                       │  │ T1 │ │ T2 │ │ T3 │ │ T4 │     │
+  │  │REP │ │REP │ │REP │ │REP │     │                       │  │ ok │ │ ok │ │ ok │ │ ok │     │
+  │  │5 s │ │5 s │ │5 s │ │5 s │     │  ←─ 4 reports         │  │free│ │free│ │free│ │free│     │
+  │  └────┘ └────┘ └────┘ └────┘     │      ocupan TODO      │  └────┘ └────┘ └────┘ └────┘     │
+  │                                  │                       │                                  │
+  │  queue: [ ORDER, ORDER, ... ]    │  ←─ /order-write      │  queue: [ ]                      │
+  │         ⏳ espera turno          │      espera           │                                  │
+  └──────────────────────────────────┘                       └──────────────────────────────────┘
+                                                                       │
+                                                                       │ supplyAsync(task, reportingPool)
+                                                                       ▼
+                                                            ┌──────────────────────────────────┐
+                                                            │     reportingPool (2 threads)    │
+                                                            │  ┌────┐ ┌────┐                   │
+                                                            │  │REP │ │REP │                   │
+                                                            │  │5 s │ │5 s │   ← reports vivan │
+                                                            │  └────┘ └────┘     aqui          │
+                                                            └──────────────────────────────────┘
+
+           /order-write degraded=true                                 /order-write degraded=false
+           getActiveCount = 4 (full)                                  getActiveCount = 1 (libre)
+           getQueue = N (creciendo)                                   getQueue = 0
+```
+
 ## 🛠️ Stacks disponibles
 
 | Stack | Estado |
