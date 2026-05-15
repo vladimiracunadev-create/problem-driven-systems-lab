@@ -12,9 +12,10 @@
 | PHP — portal + hub + DB + observabilidad | `docker compose -f compose.root.yml up -d --build` | `8080` portal · `8100` hub · `9091` Prometheus · `3001` Grafana |
 | Python — dispatcher unificado | `docker compose -f compose.python.yml up -d --build` | `8200` hub |
 | Node.js — dispatcher unificado | `docker compose -f compose.nodejs.yml up -d --build` | `8300` hub |
+| Java 21 — dispatcher unificado (casos 01-06) | `docker compose -f compose.java.yml up -d --build` | `8400` hub |
 | Portal liviano | `docker compose -f compose.portal.yml up -d --build` | `8080` |
 
-Los tres stacks pueden correr en paralelo sin colisión de puertos. **Tres hubs cubren los 36 endpoints (12 casos × 3 stacks).**
+Los cuatro stacks pueden correr en paralelo sin colisión de puertos. **PHP/Python/Node sirven 12 casos cada uno desde `:8100`/`:8200`/`:8300`; Java sirve casos 01-06 desde `:8400`. 42 endpoints operativos detras de 4 hubs.**
 
 ### Casos aislados (modo estudio individual)
 
@@ -40,6 +41,12 @@ Cada caso conserva su propio `compose.yml` para reproducir UN problema en aislam
 | Caso 10 Node.js | `docker compose -f cases/10-expensive-architecture-for-simple-needs/node/compose.yml up -d --build` |
 | Caso 11 Node.js | `docker compose -f cases/11-heavy-reporting-blocks-operations/node/compose.yml up -d --build` |
 | Caso 12 Node.js | `docker compose -f cases/12-single-point-of-knowledge-and-operational-risk/node/compose.yml up -d --build` |
+| Caso 01 Java 21 | `docker compose -f cases/01-api-latency-under-load/java/compose.yml up -d --build` |
+| Caso 02 Java 21 | `docker compose -f cases/02-n-plus-one-and-db-bottlenecks/java/compose.yml up -d --build` |
+| Caso 03 Java 21 | `docker compose -f cases/03-poor-observability-and-useless-logs/java/compose.yml up -d --build` |
+| Caso 04 Java 21 | `docker compose -f cases/04-timeout-chain-and-retry-storms/java/compose.yml up -d --build` |
+| Caso 05 Java 21 | `docker compose -f cases/05-memory-pressure-and-resource-leaks/java/compose.yml up -d --build` |
+| Caso 06 Java 21 | `docker compose -f cases/06-broken-pipeline-and-fragile-delivery/java/compose.yml up -d --build` |
 
 ## ▶️ Arranque recomendado
 
@@ -80,13 +87,23 @@ Cada caso conserva su propio `compose.yml` para reproducir UN problema en aislam
 | Caso 02 Node.js | `http://localhost:8300/02/health` | Respuesta saludable |
 | Casos 03–12 Node.js | `http://localhost:8300/03/health` … `http://localhost:8300/12/health` | Respuesta saludable |
 
+### Java 21 (compose.java.yml)
+
+| Componente | URL | Senal esperada |
+| --- | --- | --- |
+| Java hub — índice | `http://localhost:8400/` | Lista de casos JSON (01-06) |
+| Caso 01 Java | `http://localhost:8400/01/health` | Respuesta saludable |
+| Casos 02–06 Java | `http://localhost:8400/02/health` … `http://localhost:8400/06/health` | Respuesta saludable |
+| Casos 07–12 Java | `http://localhost:8400/07/health` … `http://localhost:8400/12/health` | **404** — no operativos todavia |
+
 ### Casos aislados (modo estudio — solo cuando el aislamiento aporta)
 
 | Componente | URL | Cuando usarlo |
 | --- | --- | --- |
 | Caso 05 Node.js aislado | `http://localhost:825/health` | Medir `process.memoryUsage()` heap V8 sin contaminacion de otros workloads |
 | Caso 11 Node.js aislado | `http://localhost:8211/health` | Medir `event_loop_lag_ms` sin requests concurrentes diluyendo la senal |
-| Otros casos aislados | `http://localhost:821-829`, `8210-8212` | Disponibles, pero los hubs (`8100`/`8200`/`8300`) ya los aislan por path |
+| Caso 05 Java aislado | `http://localhost:845/health` | Medir `Runtime.totalMemory()` y eviccion del `LinkedHashMap` LRU sin contaminacion |
+| Otros casos aislados | `http://localhost:821-829`, `8210-8212` (Node) · `841-846` (Java) | Disponibles, pero los hubs (`8100`/`8200`/`8300`/`8400`) ya los aislan por path |
 
 ## 🧰 Comandos utiles de operacion
 
@@ -101,6 +118,14 @@ docker compose -f compose.python.yml logs --tail=100
 
 # Ver logs de un caso Python especifico
 docker compose -f compose.python.yml logs -f case03-python
+
+# Ver estado del stack Node.js
+docker compose -f compose.nodejs.yml ps
+docker compose -f compose.nodejs.yml logs --tail=100
+
+# Ver estado del stack Java (casos 01-06)
+docker compose -f compose.java.yml ps
+docker compose -f compose.java.yml logs --tail=100
 
 # Portal
 docker compose -f compose.portal.yml ps
@@ -132,6 +157,12 @@ docker compose -f compose.root.yml down
 
 # Bajar stack completo Python
 docker compose -f compose.python.yml down
+
+# Bajar stack completo Node.js
+docker compose -f compose.nodejs.yml down
+
+# Bajar stack completo Java
+docker compose -f compose.java.yml down
 
 # Bajar portal
 docker compose -f compose.portal.yml down
