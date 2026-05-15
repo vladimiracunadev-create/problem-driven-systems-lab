@@ -58,9 +58,9 @@ Avance actual (multi-stack PHP + Python + Node.js):
 
 ## Fase 3 - Valor de portafolio
 
-Estado: planificada
+Estado: en progreso
 
-- Integrar vistas ejecutivas por caso.
+- Integrar vistas ejecutivas por caso — **parcial**: `docs/executive-summary.md` consolida los 12 casos en una pagina (problema · valor · evidencia · honestidad) anclada a `shared/catalog/cases.json` como fuente de verdad. Pendiente: vistas ejecutivas individuales por caso si la evaluacion lo pide.
 - Agregar diagramas de arquitectura donde realmente ayuden.
 - Documentar mas postmortems y comparaciones before/after.
 - Traducir documentacion clave al ingles si el flujo de evaluacion lo exige.

@@ -2,6 +2,23 @@
 
 Todos los cambios notables de este laboratorio se registran aqui con foco en madurez tecnica y documental.
 
+## 2026-05-15 - Resumen ejecutivo: los 12 casos en una pagina
+
+Faltaba una vista agregada para lectores no tecnicos (recruiters, lideres de producto, finanzas, CTO sin tiempo). Los `README.md` por caso y `docs/case-catalog.md` cubren bien el detalle tecnico, pero ninguno respondia "¿que problema de negocio resuelve cada uno y que evidencia deja en 5 minutos?" en una sola pasada. Esta entrega abre Fase 3.
+
+### Added
+
+- `docs/executive-summary.md`: pagina unica con tabla resumen + seccion por caso (problema · valor · evidencia · honestidad · link al detalle). Contenido derivado de `shared/catalog/cases.json` para mantener consistencia con la fuente de verdad. Incluye seccion final "Que NO encontraras" para honestidad de scope y rutas rapidas por audiencia.
+
+### Changed
+
+- `README.md`: fila "Recruiter / hiring manager" en la tabla "Como evaluarlo rapido" ahora apunta `RECRUITER.md` → `docs/executive-summary.md`. Nueva entrada en la tabla de documentos.
+- `ROADMAP.md`: Fase 3 pasa de **planificada** a **en progreso** con la vista agregada cubierta.
+
+### Why
+
+`RECRUITER.md` es la puerta de entrada para evaluacion ejecutiva, pero queda en nivel "narrativa del producto". El catalogo tecnico vive en `docs/case-catalog.md`. Faltaba el puente: una pagina donde alguien escanea los 12 casos en orden y entiende **valor de negocio + evidencia** sin entrar a leer 12 README. Esa pieza ahora existe.
+
 ## 2026-05-15 - CI: smoke de los 3 hubs (cierra asimetria PHP-only)
 
 Hasta ahora CI solo probaba boot real del hub PHP (`portal-probe`). Los hubs Python (`compose.python.yml`) y Node (`compose.nodejs.yml`) quedaban fuera del smoke, asi como la mayoria de los `compose.yml` per-case de esos dos stacks. Esta entrega cierra esa asimetria sin disparar la matriz de CI.
