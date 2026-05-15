@@ -88,9 +88,9 @@ El stack Node.js resuelve el N+1 anidado con primitivas naturales:
 
 Ver [`node/README.md`](node/README.md). Puerto local: `822`.
 
-### Java 21
+### Java 21 (implementacion operativa)
 
-Stack Java operativo. Ver [`java/README.md`](java/README.md). Hub: `http://localhost:8400/02/`. Aislado: puerto `842`.
+Stack Java operativo con `HashMap<Integer, List<Item>>` precomputado actuando como tabla relacional indexada, batch `IN(...)` simulado en memoria como espejo de `PreparedStatement.executeQuery(...)` JDBC, `record` types inmutables (`Order`, `Item`), y `LongAdder` para contadores p95/p99 lock-free. Mismas rutas de contraste (`/orders-legacy`, `/orders-optimized`, `/diagnostics/summary`). Sin Maven, single-file. Ver [`java/README.md`](java/README.md). Hub: `http://localhost:8400/02/`. Aislado: puerto `842`.
 
 ### .NET (espacio de crecimiento)
 

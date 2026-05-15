@@ -63,9 +63,9 @@ Los stacks PHP, Node.js y Python ya implementan este caso con dos modos del mism
 - `checkout-observable` -> logs estructurados, `request_id`, `trace_id`, métricas y trazas locales
 - `/logs/legacy`, `/logs/observable`, `/traces` y `/diagnostics/summary` -> permiten comparar qué tan diagnosticable es el incidente
 
-### Java 21
+### Java 21 (implementacion operativa)
 
-Stack Java operativo. Ver [`java/README.md`](java/README.md). Hub: `http://localhost:8400/03/`. Aislado: puerto `843`.
+Stack Java operativo con `ThreadLocal<RequestContext>` para propagar `correlation_id` durante todo el handler sin pasarlo por parametros (equivalente a `ScopedValue` de JDK 21 sin requerir preview flags), `UUID.randomUUID()` por request, y JSON estructurado construido con `StringBuilder` (sin Log4j/SLF4J — single-file sin deps). `/logs` devuelve los ultimos 200 logs estructurados al estilo Loki compacto. Limpieza con `CTX.remove()` en `finally` evita leak del contexto al proximo handler en el mismo thread. Ver [`java/README.md`](java/README.md). Hub: `http://localhost:8400/03/`. Aislado: puerto `843`.
 
 ### .NET (espacio de crecimiento)
 
