@@ -88,7 +88,11 @@ El stack Node.js resuelve el N+1 anidado con primitivas naturales:
 
 Ver [`node/README.md`](node/README.md). Puerto local: `822`.
 
-### Java / .NET
+### Java 21
+
+Stack Java operativo. Ver [`java/README.md`](java/README.md). Hub: `http://localhost:8400/02/`. Aislado: puerto `842`.
+
+### .NET (espacio de crecimiento)
 
 Se mantienen como base de crecimiento para llevar el caso a paridad multi-stack en una fase posterior.
 
@@ -118,7 +122,7 @@ Se mantienen como base de crecimiento para llevar el caso a paridad multi-stack 
 | 🐘 PHP 8 | ✅ Implementado (Docker + PostgreSQL) |
 | 🟢 Node.js | ✅ Implementado (Docker + datos en memoria + event_loop_lag) |
 | 🐍 Python | ✅ Implementado (Docker + SQLite local + metricas) |
-| ☕ Java | 🔧 Estructura lista |
+| ☕ Java 21 | `OPERATIVO` (`HashMap` indexado + batch `IN(...)` simulado, ver `java/README.md`) |
 | 🔵 .NET 8 | 🔧 Estructura lista |
 
 ---

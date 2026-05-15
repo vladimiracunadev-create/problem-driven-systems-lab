@@ -34,8 +34,8 @@ Cada lenguaje tiene su propio archivo compose en la raíz. Un solo comando levan
 | [`compose.root.yml`](compose.root.yml) | PHP 8.3 | `8080` portal · `8100` PHP hub · `9091` Prometheus · `3001` Grafana | `OPERATIVO` |
 | [`compose.python.yml`](compose.python.yml) | Python 3.12 | `8200` Python hub | `OPERATIVO` |
 | [`compose.nodejs.yml`](compose.nodejs.yml) | Node.js 20 | `8300` Node hub | `OPERATIVO` |
-| `compose.java.yml` | Java / JVM | 851–859, 8510–8512 | `PLANIFICADO` |
-| `compose.dotnet.yml` | .NET 8 | 861–869, 8610–8612 | `PLANIFICADO` |
+| [`compose.java.yml`](compose.java.yml) | Java 21 | `8400` Java hub | `PARCIAL` (casos 01-06) |
+| `compose.dotnet.yml` | .NET 8 | `8500` .NET hub | `PLANIFICADO` |
 
 ## 🐘 Laboratorio PHP completo
 
@@ -88,6 +88,25 @@ Para apagar:
 ```bash
 docker compose -f compose.nodejs.yml down
 ```
+
+## ☕ Laboratorio Java (casos 01-06)
+
+```bash
+docker compose -f compose.java.yml up -d --build
+```
+
+URLs esperadas:
+
+- Java hub: `http://localhost:8400/`
+- Casos Java: `http://localhost:8400/01/health` ... `http://localhost:8400/06/health`
+
+Para apagar:
+
+```bash
+docker compose -f compose.java.yml down
+```
+
+Casos 07-12 Java no estan operativos todavia — ese rango devolvera 404 desde el hub.
 
 ## 🪶 Portal liviano solamente
 
@@ -199,6 +218,7 @@ docker compose -f compose.portal.yml down
 ## ⚖️ Alcance honesto de la instalacion
 
 - La ruta oficialmente soportada es Docker para los casos implementados.
-- PHP y Python levantan los 12 casos cada uno con un solo compose en la raiz.
-- Cada lenguaje futuro (Node.js, Java, .NET) seguira el mismo patron: `compose.{lang}.yml` en la raiz con puertos asignados en un bloque propio.
+- PHP, Python y Node.js levantan los 12 casos cada uno con un solo compose en la raiz.
+- Java levanta los casos 01-06 con `compose.java.yml` (puerto `8400`); casos 07-12 Java pendientes.
+- .NET sigue como scaffold; cuando se implemente seguira el mismo patron con `compose.dotnet.yml` (puerto `8500`).
 - Levantar un caso aislado sigue siendo la mejor ruta cuando quieres diagnostico fino o menos consumo de recursos.

@@ -19,10 +19,11 @@
 | Casos `01` al `12` operativos en PHP | si |
 | Casos `01` al `12` operativos en Python | si |
 | Casos `01` al `12` operativos en Node.js | si |
+| Casos `01` al `06` operativos en Java 21 | si |
 | Docker por caso y por stack como ruta oficial | si |
 | Portal raiz para navegar el laboratorio | si |
 | Familia documental profesional en la raiz | si |
-| Paridad funcional completa entre todos los lenguajes | parcial — Java y .NET siguen como scaffold |
+| Paridad funcional completa entre todos los lenguajes | parcial — Java cubre 01-06 (faltan 07-12); .NET sigue como scaffold |
 
 ## 🚫 Limites conscientes
 

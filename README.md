@@ -122,7 +122,7 @@ Cada lenguaje tiene su propio compose en la raíz del repositorio. Un comando le
 | [`compose.java.yml`](compose.java.yml) | Java 21 | `8400` Java hub | `PARCIAL` (casos 01-06) |
 | `compose.dotnet.yml` | .NET 8 | `8500` .NET hub | `PLANIFICADO` |
 
-**Tres hubs garantizan el lab completo (uno por lenguaje):** un solo puerto sirve los 12 casos vía routing por path (`/01/health`...`/12/health`). Los servicios de soporte (DB, Prometheus, Grafana) tienen los suyos propios porque son servicios distintos.
+**Cuatro hubs operativos (uno por lenguaje):** PHP, Python y Node sirven los 12 casos cada uno; Java sirve los casos 01-06. Un solo puerto por hub vía routing por path (`/01/health`...`/12/health`). Los servicios de soporte (DB, Prometheus, Grafana) tienen los suyos propios porque son servicios distintos del lenguaje.
 
 > 🧱 **Los tres hubs siguen el mismo patrón arquitectónico:** un contenedor por lenguaje (`pdsl-php-lab`, `pdsl-python-lab`, `pdsl-node-lab`) ejecuta los 12 casos como subprocesos internos en puertos no expuestos. PHP suma ~7 contenedores extras solo porque los **servicios reales** que el caso 01 estudia (PostgreSQL, worker, Prometheus, Grafana) son contenedores aparte por necesidad técnica — no son procesos del lenguaje. Detalles, trade-offs y comparación per-case en [`docs/docker-strategy.md`](docs/docker-strategy.md#-modelo-de-containerización-simétrico-para-los-3-stacks).
 
@@ -168,7 +168,7 @@ Tambien existen atajos con `make`, pero la ruta soportada y mas portable sigue s
 | --- | --- |
 | [RECRUITER.md](RECRUITER.md) | Ruta ejecutiva para evaluacion rapida |
 | [ARCHITECTURE.md](ARCHITECTURE.md) | Vista ejecutiva de la arquitectura actual |
-| [AWS_MIGRATION.md](AWS_MIGRATION.md) | ☁️ Plan de migracion a AWS (ECS Fargate · Lambda · EKS) con los 3 hubs PHP/Python/Node, costos reales, paso a paso y mapping de hallazgos `SECURITY.md` → mitigaciones AWS |
+| [AWS_MIGRATION.md](AWS_MIGRATION.md) | ☁️ Plan de migracion a AWS (ECS Fargate · Lambda · EKS) con los hubs PHP/Python/Node/Java, costos reales, paso a paso y mapping de hallazgos `SECURITY.md` → mitigaciones AWS |
 | [INSTALL.md](INSTALL.md) | Instalacion y puesta en marcha recomendada |
 | [RUNBOOK.md](RUNBOOK.md) | Operacion diaria y chequeos iniciales |
 | [SECURITY.md](SECURITY.md) | Politica de seguridad y reporte responsable |
@@ -199,7 +199,7 @@ El sistema se organiza como una capa editorial en raiz, un portal de evaluacion 
 
 ## 🚫 Lo que este repo no vende
 
-- Paridad funcional completa en todos los stacks (Java, .NET siguen en scaffold).
+- Paridad funcional completa en los 12 casos para PHP/Python/Node; Java operativo en casos 01-06; .NET aun en scaffold.
 - Benchmarks absolutos entre lenguajes.
 - Seniority inflada con claims sin evidencia.
 

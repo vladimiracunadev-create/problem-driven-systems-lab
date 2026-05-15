@@ -27,7 +27,7 @@ Una integración lenta o inestable dispara retries agresivos, bloquea threads o 
 | 🐘 PHP 8 | `OPERATIVO` (timeout corto + backoff + circuit breaker + fallback) |
 | 🐍 Python 3.12 | `OPERATIVO` (misma logica con stdlib + telemetria local) |
 | 🟢 Node.js 20 | `OPERATIVO` (`AbortController`/`AbortSignal` como timeout cooperativo + CB + fallback) |
-| ☕ Java | 🔧 Estructura lista |
+| ☕ Java 21 | `OPERATIVO` (`CompletableFuture.orTimeout` + circuit breaker con `AtomicReference`) |
 | 🔵 .NET 8 | 🔧 Estructura lista |
 
 ## 🚀 Cómo levantar

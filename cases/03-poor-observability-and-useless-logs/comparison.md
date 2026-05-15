@@ -1,4 +1,4 @@
-# Caso 03 — Comparativa multi-stack: Observabilidad deficiente y logs inútiles (PHP · Python · Node.js)
+# Caso 03 — Comparativa multi-stack: Observabilidad deficiente y logs inútiles (PHP · Python · Node.js · Java)
 
 ## El problema que ambos resuelven
 
@@ -188,6 +188,39 @@ class WorkflowFailure extends Error {
 }
 ```
 Misma filosofia que PHP/Python. Node soporta clases ES6 nativamente y el `extends Error` preserva la stack trace.
+
+---
+
+## Java 21: `ThreadLocal<RequestContext>` para correlation, log estructurado JSON inline, `/logs` endpoint
+
+**Runtime:** JVM con thread pool. Cada request entra a un thread propio; `ThreadLocal` propaga el contexto durante toda la cadena de llamadas dentro del handler sin pasarlo por parametros.
+
+**Motor de logs:** Sin libreria (Log4j/SLF4J quedan fuera para no agregar deps). `StringBuilder` manual produce JSON estructurado escrito a un `Deque<String>` sincronizado con cap=200. `/logs` devuelve los ultimos 200 al estilo Loki/journald compacto.
+
+**El fallo legacy en Java:**
+```java
+System.out.println("[INFO] processing checkout");
+if (total > 500) {
+    System.out.println("[ERROR] checkout failed");   // sin id, sin total, sin razon
+}
+```
+Stdout sin contexto. Bajo carga concurrente con N threads, los `println` se intercalan — imposible asociar "checkout failed" a una request especifica.
+
+**La correccion en Java:**
+```java
+CTX.set(new RequestContext(corrId, "checkout-observable", Instant.now().toString()));
+try {
+    structuredLog("error", "checkout_failed", Map.of(
+        "total", String.valueOf(total),
+        "reason", "exceeds_limit",
+        "limit", "500"));
+} finally {
+    CTX.remove();   // critico: evita leak del contexto al proximo handler en este thread
+}
+```
+`structuredLog()` lee `ThreadLocal<RequestContext>` y agrega `correlation_id` y `route` al JSON. `CTX.remove()` en `finally` es la disciplina necesaria — sin esto el thread retiene contexto del request anterior y los logs proximos quedan mal taggeados.
+
+**ScopedValue (JDK 21):** la API moderna para esto es `ScopedValue.where(CTX, value).run(handler)`. Aqui usamos `ThreadLocal` porque requiere menos flags de compilacion. La migracion es ~10 lineas. `ScopedValue` es especialmente util con virtual threads (Loom): millones de virtual threads × `ThreadLocal` consume mucha memoria, `ScopedValue` no.
 
 ---
 

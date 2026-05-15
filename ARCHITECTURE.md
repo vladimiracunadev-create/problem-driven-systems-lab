@@ -62,9 +62,10 @@ Cada lenguaje operativo tiene su compose raiz — un comando levanta los 12 caso
 - `compose.root.yml` — PHP: portal (`8080`) + hub nginx (`8100`) + PostgreSQL (01–02) + Prometheus (`9091`) + Grafana (`3001`)
 - `compose.python.yml` — Python: 12 casos en un solo contenedor dispatcher (`8200`), stdlib pura, sin dependencias externas
 - `compose.nodejs.yml` — Node.js 20: 12 casos en un solo contenedor dispatcher (`8300`), stdlib pura, sin dependencias externas
+- `compose.java.yml` — Java 21: casos 01-06 en un solo contenedor dispatcher (`8400`), JDK built-in (`HttpServer`, `HttpClient`), sin Maven
 - `compose.portal.yml` — portal liviano solamente (`8080`)
 
-Los stacks pueden correr en paralelo sin colisión de puertos. Cada lenguaje futuro (Java, .NET) seguirá el mismo patron: `compose.{lang}.yml` en la raiz con su bloque de puertos propio (`8400`, `8500`).
+Los stacks pueden correr en paralelo sin colisión de puertos. .NET seguirá el mismo patron con `compose.dotnet.yml` (puerto `8500`).
 
 El portal:
 - `portal/app/index.html` presenta la interfaz principal
@@ -86,33 +87,34 @@ El laboratorio ha evolucionado de simulaciones matemáticas a **escenarios de fa
 
 ## 📦 Casos operativos actuales
 
-| Caso | PHP | Python | Node.js | Implementacion PHP (referencia) |
-| --- | --- | --- | --- | --- |
-| `01` | ✅ | ✅ | ✅ | PostgreSQL + worker + Prometheus + Grafana |
-| `02` | ✅ | ✅ | ✅ | PostgreSQL |
-| `03` | ✅ | ✅ | ✅ | telemetria, trazabilidad y logs estructurados |
-| `04` | ✅ | ✅ | ✅ | timeout corto, retry storm, circuit breaker y fallback |
-| `05` | ✅ | ✅ | ✅ | presion progresiva de memoria, comparacion legacy vs optimized |
-| `06` | ✅ | ✅ | ✅ | pipeline legacy vs controlled, preflight y rollback |
-| `07` | ✅ | ✅ | ✅ | modernizacion incremental, strangler, progreso por consumidor |
-| `08` | ✅ | ✅ | ✅ | extraccion big bang vs compatible, proxy y cutover gradual |
-| `09` | ✅ | ✅ | ✅ | integracion externa con adapter, idempotencia y validacion de contrato |
-| `10` | ✅ | ✅ | ✅ | comparacion complex vs right-sized, costo y lead time visibles |
-| `11` | ✅ | ✅ | ✅ | reporting legacy vs aislado, presion observable sobre la operacion |
-| `12` | ✅ | ✅ | ✅ | runbooks, bus factor y continuidad operacional observable |
+| Caso | PHP | Python | Node.js | Java | Implementacion PHP (referencia) |
+| --- | --- | --- | --- | --- | --- |
+| `01` | ✅ | ✅ | ✅ | ✅ | PostgreSQL + worker + Prometheus + Grafana |
+| `02` | ✅ | ✅ | ✅ | ✅ | PostgreSQL |
+| `03` | ✅ | ✅ | ✅ | ✅ | telemetria, trazabilidad y logs estructurados |
+| `04` | ✅ | ✅ | ✅ | ✅ | timeout corto, retry storm, circuit breaker y fallback |
+| `05` | ✅ | ✅ | ✅ | ✅ | presion progresiva de memoria, comparacion legacy vs optimized |
+| `06` | ✅ | ✅ | ✅ | ✅ | pipeline legacy vs controlled, preflight y rollback |
+| `07` | ✅ | ✅ | ✅ | — | modernizacion incremental, strangler, progreso por consumidor |
+| `08` | ✅ | ✅ | ✅ | — | extraccion big bang vs compatible, proxy y cutover gradual |
+| `09` | ✅ | ✅ | ✅ | — | integracion externa con adapter, idempotencia y validacion de contrato |
+| `10` | ✅ | ✅ | ✅ | — | comparacion complex vs right-sized, costo y lead time visibles |
+| `11` | ✅ | ✅ | ✅ | — | reporting legacy vs aislado, presion observable sobre la operacion |
+| `12` | ✅ | ✅ | ✅ | — | runbooks, bus factor y continuidad operacional observable |
 
 **✅ OPERATIVO** = logica real, Docker funcional, evidencia observable.
 **scaffold** = estructura y documentacion lista, sin implementacion funcional todavia.
 
 Cada caso incluye ademas un `comparison.md` que explica en profundidad como PHP, Python y Node.js abordan el mismo problema de forma distinta a nivel de lenguaje.
 
-### 🧱 Modelo de containerizacion (simetrico para los 3 stacks)
+### 🧱 Modelo de containerizacion (simetrico para los 4 stacks operativos)
 
-Los tres hubs (`compose.root.yml` PHP, `compose.python.yml` Python, `compose.nodejs.yml` Node.js) siguen el **mismo patrón**: un contenedor por lenguaje ejecuta los 12 casos como subprocesos internos.
+Los cuatro hubs (`compose.root.yml` PHP, `compose.python.yml` Python, `compose.nodejs.yml` Node.js, `compose.java.yml` Java) siguen el **mismo patrón**: un contenedor por lenguaje ejecuta sus casos como subprocesos internos (12 para PHP/Python/Node, 6 para Java).
 
 - **PHP** → `pdsl-php-lab` con dispatcher en `:8100` y 12 procesos `php -S` en `:9001-:9012` internos. Suma ~6 contenedores extras (PostgreSQL × 2, worker, Prometheus, Grafana, exporter) **porque son servicios reales que el caso 01 estudia**, no procesos PHP. Total ~7 contenedores.
 - **Python** → `pdsl-python-lab` con dispatcher en `:8200` y 12 subprocesos `subprocess.Popen` internos. 1 contenedor.
 - **Node.js** → `pdsl-node-lab` con dispatcher en `:8300` y 12 subprocesos `child_process.spawn` internos. 1 contenedor.
+- **Java** → `pdsl-java-lab` con dispatcher en `:8400` y 6 subprocesos `ProcessBuilder` (`java Main`) internos en `:9401-:9406`. Compilacion `javac` en build-time. 1 contenedor.
 
 Refactor reciente: PHP pasó de ~20 contenedores (12 apps + nginx hub) a ~7 contenedores (1 dispatcher + servicios reales). RAM cae de ~2.5 GB a ~1 GB. **Trade-offs y rationale en [`docs/docker-strategy.md`](docs/docker-strategy.md#-modelo-de-containerización-simétrico-para-los-3-stacks).**
 

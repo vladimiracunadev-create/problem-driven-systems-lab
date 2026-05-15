@@ -74,9 +74,13 @@ El stack Node.js resuelve el mismo problema con primitivas naturales del runtime
 
 Ver detalles en [`node/README.md`](node/README.md). Puerto local: `821`.
 
-### Java / .NET (espacio de crecimiento)
+### Java 21 (implementacion operativa)
 
-Los stacks Java y .NET tienen estructura dockerizada lista, pero todavia no representan paridad funcional con PHP, Python y Node en este caso.
+Stack Java operativo con `ConcurrentHashMap` como summary cache lock-free entre worker y handlers, `LongAdder` para contadores, `ScheduledExecutorService` para el worker `report-refresh-java`. Mismas rutas de contraste (`/report-legacy`, `/report-optimized`, `/batch/status`, `/job-runs`). Ver [`java/README.md`](java/README.md). Hub: `http://localhost:8400/01/`. Aislado: puerto `841`.
+
+### .NET (espacio de crecimiento)
+
+Stack .NET con estructura dockerizada lista, todavia sin paridad funcional con los 4 stacks operativos.
 
 ---
 

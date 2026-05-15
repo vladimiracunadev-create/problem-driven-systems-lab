@@ -1,4 +1,4 @@
-# Caso 01 — Comparativa multi-stack: API lenta bajo carga (PHP · Python · Node.js)
+# Caso 01 — Comparativa multi-stack: API lenta bajo carga (PHP · Python · Node.js · Java)
 
 ## El problema que ambos resuelven
 
@@ -114,6 +114,41 @@ Una sola lectura batch, agrupacion en memoria con `Map.get()` O(1), ensamblado f
 **Worker:** `setInterval(refresh, 20000).unref()` embebido en el proceso. El `unref()` permite que el proceso muera limpio si solo queda el timer. Comparte estructuras en memoria con los handlers — no necesita lock porque Node es single-thread.
 
 **Observabilidad:** endpoint `/metrics-prometheus` con `event_loop_lag_ms` como senal propia del runtime (medida con `setImmediate` callback). No existe equivalente en PHP-FPM ni Python — es lo que delata el bloqueo agregado del loop.
+
+---
+
+## Java 21: thread-per-request en JVM, datos en memoria, worker `ScheduledExecutorService`
+
+**Runtime:** JVM con thread pool (cached executor). Cada request HTTP corre en un thread del pool — paralelismo real limitado por nucleos, no por GIL como Python. Estado compartido entre threads requiere primitivas concurrentes explicitas (`ConcurrentHashMap`, `AtomicReference`, `LongAdder`).
+
+**Motor de datos:** Datos en memoria (`ArrayList<Order>`, `HashMap<Integer,Customer>`). Mismo patron que Node: foco en el cuello sin meter PostgreSQL.
+
+**El fallo legacy en Java:**
+```java
+for (Order o : orders)
+    if (lowerRegion(o.region).startsWith("n")) scanned.add(o);   // scan O(N) no sargable
+for (int i = 0; i < take; i++) {
+    Customer c = lookupCustomerOneByOne(o.customerId);            // busqueda lineal
+    sleepMicros(1200);                                            // roundtrip simulado
+}
+```
+Bajo carga concurrente, **cada thread del pool** ejecuta este loop con sleeps secuenciales. El pool se llena rapido (N threads × 1.2ms × hits). Diferencia clave vs Node: aqui el bloqueo es por-thread, no del proceso entero.
+
+**La correccion en Java:**
+```java
+List<Order> matched = ordersByRegionPrefix.getOrDefault("n", List.of());  // O(1)
+Map<Integer, Customer> batch = new HashMap<>();
+for (int i = 0; i < take; i++) {
+    if (!batch.containsKey(cid)) batch.put(cid, customerById.get(cid));   // O(1)
+}
+sleepMicros(700);                                                          // 1 sola vez
+CustomerSummary s = summaryCache.get(o.customerId);                        // ConcurrentHashMap
+```
+`summaryCache` es `ConcurrentHashMap<Integer, CustomerSummary>` actualizado por el worker. Los handlers leen sin lock — esa es la garantia que da `ConcurrentHashMap` y que `synchronized Map` no daria sin contencion.
+
+**Worker:** `ScheduledExecutorService` corriendo cada 5s en thread daemon. El handler lee `summaryCache` mientras el worker actualiza — sin contencion gracias al modelo de la estructura.
+
+**Observabilidad:** `LongAdder` para contadores lock-free (mejor throughput que `synchronized int` bajo carga). p95/p99 calculados sobre buffer circular sincronizado.
 
 ---
 

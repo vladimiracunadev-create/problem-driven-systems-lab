@@ -27,7 +27,7 @@ El proceso acumula memoria y recursos de forma silenciosa hasta degradar el serv
 | 🐘 PHP 8 | `OPERATIVO` (memory_get_usage + retencion explicita en modulo) |
 | 🐍 Python 3.12 | `OPERATIVO` (`tracemalloc` + `gc.collect()` + cache acotado) |
 | 🟢 Node.js 20 | `OPERATIVO` (`process.memoryUsage()` con heap V8 + RSS + external) |
-| ☕ Java | 🔧 Estructura lista |
+| ☕ Java 21 | `OPERATIVO` (`LinkedHashMap.removeEldestEntry` LRU built-in + `Runtime` memory metrics) |
 | 🔵 .NET 8 | 🔧 Estructura lista |
 
 ## 🚀 Cómo levantar
