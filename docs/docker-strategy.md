@@ -33,15 +33,16 @@ El laboratorio no se levanta como un unico sistema enorme. Se trabaja por capas:
 | Mejor diagnostico | Cada problema se observa con menos interferencia |
 | Portafolio mas claro | Puedes mostrar un caso concreto sin cargar todo el mundo |
 
-## 🧱 Modelo de containerización (simétrico para los 3 stacks)
+## 🧱 Modelo de containerización (simétrico para los stacks operativos)
 
-Los tres hubs siguen el **mismo patrón**: un contenedor por lenguaje que spawnea los 12 casos como subprocesos internos. Los servicios reales (DB, worker, observabilidad) viven aparte porque NO son procesos del lenguaje — son servicios independientes que el caso estudia.
+Los cuatro hubs siguen el **mismo patrón**: un contenedor por lenguaje que spawnea sus casos como subprocesos internos. Los servicios reales (DB, worker, observabilidad) viven aparte porque NO son procesos del lenguaje — son servicios independientes que el caso estudia.
 
 | Stack | Compose | Contenedores Docker que levanta | Mecanismo interno | Puerto host |
 | --- | --- | --- | --- | --- |
 | **PHP** | `compose.root.yml` | **~7 contenedores** (portal + `php-lab` + 2 PostgreSQL + worker + exporter + prometheus + grafana) | `php-dispatcher` con 12 subprocesos `php -S` en `127.0.0.1:9001-9012` | `8100` |
 | **Python** | `compose.python.yml` | **1 contenedor** (`pdsl-python-lab`) | `python-dispatcher` con 12 subprocesos `subprocess.Popen` en `:9001-9012` | `8200` |
 | **Node.js** | `compose.nodejs.yml` | **1 contenedor** (`pdsl-node-lab`) | `node-dispatcher` con 12 subprocesos `child_process.spawn` en `:9101 + :9002-9012` | `8300` |
+| **Java 21** | `compose.java.yml` | **1 contenedor** (`pdsl-java-lab`) | `java-dispatcher` con 6 subprocesos `ProcessBuilder` (`java Main`) en `:9401-:9406` (casos 01-06; 07-12 pendientes) | `8400` |
 
 > **Asimetria residual del PHP**: PHP levanta ~7 contenedores en lugar de 1 porque los casos `01` y `02` necesitan PostgreSQL **real** corriendo en paralelo, mas el worker de caso 01, mas Prometheus + Grafana. Eso son **servicios independientes** (no subprocesos PHP) que el caso 01 estudia. Las 12 apps PHP se colapsan en `php-lab` (1 contenedor); los servicios reales se mantienen separados porque tienen que serlo.
 
@@ -57,9 +58,9 @@ Antes (commit historico): **~20 contenedores Docker**. Despues del dispatcher PH
 | `case01-db`, `case02-db` (PostgreSQL) | sin cambio |
 | `case01-prometheus`, `case01-grafana`, `case01-postgres-exporter` | sin cambio |
 
-### Por que los 3 stacks ahora son simetricos
+### Por que los 4 stacks ahora son simetricos
 
-- **El dispatcher resuelve el problema de "muchos contenedores por lenguaje"**. Para PHP, Python y Node, la unidad logica es "el lenguaje sirve los 12 casos". Eso es 1 contenedor con N subprocesos, NO 12 contenedores.
+- **El dispatcher resuelve el problema de "muchos contenedores por lenguaje"**. Para PHP, Python, Node y Java, la unidad logica es "el lenguaje sirve N casos". Eso es 1 contenedor con N subprocesos, NO N contenedores.
 - **Los servicios reales del caso 01** (PostgreSQL, worker, observabilidad) son independientes del lenguaje. Si manana se agrega caso 01 en Python con su propio Postgres, ese Postgres seria otro contenedor — no un subproceso del Python lab.
 - **Los per-case `compose.yml`** siguen funcionando para "modo aislado" (estudiar UN caso sin ruido) — es la unidad atomica de reproducibilidad.
 
@@ -78,13 +79,13 @@ Antes (commit historico): **~20 contenedores Docker**. Despues del dispatcher PH
 | Si tu caso tiene... | Modelo correcto |
 | --- | --- |
 | DB propia, worker dedicado, observabilidad pesada | **Servicios separados + 1 hub para los procesos del lenguaje** (modelo actual) |
-| Solo lógica de aplicación, sin estado externo | **1 contenedor con N procesos internos** (cualquiera de los 3 hubs) |
+| Solo lógica de aplicación, sin estado externo | **1 contenedor con N procesos internos** (cualquiera de los 4 hubs) |
 | Necesidad estricta de aislamiento de memoria entre casos | **Per-case compose** o N contenedores con cgroups |
 | Necesidad de minimizar RAM en idle | **1 hub con dispatcher** — un solo runtime cargado |
 | Posibilidad de leak en un caso afecte a otros | **N contenedores con `mem_limit`** — failure domain por caso |
 | Casos cooperativos que comparten dataset | **1 contenedor** — pueden compartir memoria/cache |
 
-Esta simetria se preserva al migrar a AWS — ver [`AWS_MIGRATION.md`](../AWS_MIGRATION.md): los 3 hubs se mapean a 3 ECS Fargate services (uno por lenguaje), y los servicios reales del caso 01 se mapean a RDS PostgreSQL + ECS worker + AMP/AMG.
+Esta simetria se preserva al migrar a AWS — ver [`AWS_MIGRATION.md`](../AWS_MIGRATION.md): los hubs se mapean a ECS Fargate services (uno por lenguaje), y los servicios reales del caso 01 se mapean a RDS PostgreSQL + ECS worker + AMP/AMG.
 
 ## 🚫 Lo que se evita conscientemente
 
@@ -96,6 +97,7 @@ Esta simetria se preserva al migrar a AWS — ver [`AWS_MIGRATION.md`](../AWS_MI
 
 - `compose.root.yml` debe dejar visible el laboratorio PHP completo desde `localhost:8080`.
 - `compose.python.yml` y `compose.nodejs.yml` deben dejar visibles los 12 casos del stack respectivo desde `localhost:8200` y `localhost:8300`.
+- `compose.java.yml` debe dejar visibles los casos 01-06 desde `localhost:8400`.
 - Los casos `01` al `12` deben poder levantarse con Docker de forma limpia tambien por separado (modo aislado).
 - Cada `compose.yml` debe incluir solo la infraestructura que el problema realmente necesita.
 - La presencia de `compose.compare.yml` no implica que todos los stacks tengan la misma profundidad funcional.

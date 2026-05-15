@@ -23,13 +23,13 @@
 | 11 | Reportes pesados que bloquean operacion | Operaciones | Aislamiento de cargas: reporting deja de degradar la operacion. |
 | 12 | Punto unico de conocimiento | Operaciones | Continuidad operacional y reduccion de dependencia critica en personas. |
 
-Los 12 casos estan **OPERATIVOS** en al menos un stack y la mayoria con paridad PHP + Python + Node.js. Detalle de paridad: [`docs/case-catalog.md`](case-catalog.md).
+Los 12 casos estan **OPERATIVOS** en al menos un stack: PHP/Python/Node.js cubren los 12; Java 21 cubre los casos 01-06. Detalle de paridad: [`docs/case-catalog.md`](case-catalog.md).
 
 ---
 
 ## Caso 01 — API lenta bajo carga
 
-**Categoria:** Rendimiento · **Stacks operativos:** PHP, Python, Node.js
+**Categoria:** Rendimiento · **Stacks operativos:** PHP, Python, Node.js, Java 21
 
 **Problema.** La API responde bien con pocos usuarios, pero degrada latencia y estabilidad al aumentar la concurrencia. Filtros no sargables + patron N+1 + worker concurrente compitiendo por la DB.
 
@@ -45,7 +45,7 @@ Los 12 casos estan **OPERATIVOS** en al menos un stack y la mayoria con paridad 
 
 ## Caso 02 — N+1 queries y cuellos de botella en DB
 
-**Categoria:** Rendimiento · **Stacks operativos:** PHP, Python, Node.js
+**Categoria:** Rendimiento · **Stacks operativos:** PHP, Python, Node.js, Java 21
 
 **Problema.** Demasiadas consultas por solicitud o acceso a datos ineficiente — el clasico N+1 dentro de bucles + relaciones cargadas innecesariamente.
 
@@ -61,7 +61,7 @@ Los 12 casos estan **OPERATIVOS** en al menos un stack y la mayoria con paridad 
 
 ## Caso 03 — Observabilidad deficiente y logs inutiles
 
-**Categoria:** Observabilidad · **Stacks operativos:** PHP, Python, Node.js
+**Categoria:** Observabilidad · **Stacks operativos:** PHP, Python, Node.js, Java 21
 
 **Problema.** Hay errores, pero no hay trazabilidad para identificar causa raiz rapido. Logs sin correlacion + sin contexto + sin metricas.
 
@@ -77,7 +77,7 @@ Los 12 casos estan **OPERATIVOS** en al menos un stack y la mayoria con paridad 
 
 ## Caso 04 — Cadena de timeouts y tormentas de reintentos
 
-**Categoria:** Resiliencia · **Stacks operativos:** PHP, Python, Node.js
+**Categoria:** Resiliencia · **Stacks operativos:** PHP, Python, Node.js, Java 21
 
 **Problema.** Una integracion lenta dispara reintentos sin control → bloqueos → cascadas de fallas entre servicios.
 
@@ -93,7 +93,7 @@ Los 12 casos estan **OPERATIVOS** en al menos un stack y la mayoria con paridad 
 
 ## Caso 05 — Presion de memoria y fugas de recursos
 
-**Categoria:** Rendimiento · **Stacks operativos:** PHP, Python, Node.js
+**Categoria:** Rendimiento · **Stacks operativos:** PHP, Python, Node.js, Java 21
 
 **Problema.** El sistema acumula memoria, descriptores o conexiones de forma progresiva hasta degradar o caerse. Problemas silenciosos que **no fallan de inmediato**.
 
@@ -109,7 +109,7 @@ Los 12 casos estan **OPERATIVOS** en al menos un stack y la mayoria con paridad 
 
 ## Caso 06 — Pipeline roto y entrega fragil
 
-**Categoria:** Entrega · **Stacks operativos:** PHP, Python, Node.js
+**Categoria:** Entrega · **Stacks operativos:** PHP, Python, Node.js, Java 21
 
 **Problema.** El software funciona en dev, pero falla al desplegar, promover o revertir. Drift entre ambientes, secretos perdidos, smoke tests que pasan tarde.
 
@@ -223,7 +223,7 @@ Los 12 casos estan **OPERATIVOS** en al menos un stack y la mayoria con paridad 
 
 Honestidad explicita para no vender lo que no es:
 
-- **No es un benchmark de lenguajes.** Los 3 stacks resuelven el mismo problema; el contraste muestra primitivas nativas, no "cual es mas rapido".
+- **No es un benchmark de lenguajes.** Los 4 stacks (PHP/Python/Node en los 12, Java en 01-06) resuelven el mismo problema; el contraste muestra primitivas nativas, no "cual es mas rapido".
 - **No reemplaza plataformas reales.** Tracing distribuido, CI/CD enterprise, mallas de servicios y feature flags globales quedan fuera. Lo que si esta: reproduccion fiel de la **logica operativa** de cada problema.
 - **No es production-grade tal cual.** Modelo de amenaza: localhost / LAN confiable. Para Internet ver [SECURITY.md](../SECURITY.md) (auth, rate limit, TLS son responsabilidad de quien expone).
 - **No promete paridad multi-stack en futuros casos.** PHP + Python + Node.js cubren los 12 hoy. Java/.NET existen como scaffolds y se sumaran por caso solo si aportan contraste real.
