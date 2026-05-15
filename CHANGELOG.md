@@ -2,6 +2,33 @@
 
 Todos los cambios notables de este laboratorio se registran aqui con foco en madurez tecnica y documental.
 
+## 2026-05-15 - Barrido documental post-Java + verificacion funcional de los 6 casos
+
+Tras agregar Java 21 como 4to stack operativo, varias docs y READMEs seguian afirmando "3 stacks" / "3 hubs" / "Java planificado", y los 6 `comparison.md` por caso eran "PHP · Python · Node.js" sin seccion Java. Esta entrega es un barrido honesto que sincroniza narrativa con estado real + verificacion funcional de los 6 casos Java contra el patron Node.
+
+### Changed
+
+- `README.md`: "Tres hubs" → "Cuatro hubs operativos"; "36 endpoints / 3 puertos" → "42 endpoints / 4 puertos"; fila `compose.java.yml` `PARCIAL (casos 01-06)`; nota AWS_MIGRATION ahora dice "hubs PHP/Python/Node/Java".
+- `ARCHITECTURE.md`: tabla de casos operativos con columna Java (✅ en 01-06, — en 07-12); seccion "Modelo de containerizacion" pasa a "4 stacks"; agrega `pdsl-java-lab` con `ProcessBuilder` en `:9401-:9406`; lista de composes raiz incluye `compose.java.yml`.
+- `docs/architecture.md`: lista de composes raiz suma Java; **corrige tabla de estado operativo** — antes mostraba `node=scaffold` en cases 06-12 (Node ya era operativo en los 12); ahora Java ✅ en 01-06 y Node ✅ en los 12; tabla "Modelo de ejecucion" incluye `compose.nodejs.yml` y `compose.java.yml`.
+- `docs/usage-and-scope.md`: fila nueva "Casos 01-06 operativos en Java 21"; nota de paridad ajustada a "Java 01-06; .NET scaffold".
+- `INSTALL.md`: tabla muestra Java `PARCIAL (01-06)` en `8400` (antes `851-859 PLANIFICADO`); nueva seccion "Laboratorio Java" con comando `up`; alcance honesto al final menciona Java 01-06 y deuda 07-12.
+- **6 README.md de caso (`cases/01..06/README.md`)**: fila "☕ Java | 🔧 Estructura lista" → "☕ Java 21 | OPERATIVO (\<primitiva\>)" con la primitiva especifica del caso. Caso 01 ademas tiene seccion narrativa Java con `ConcurrentHashMap`/`LongAdder`/`ScheduledExecutorService`.
+- **6 comparison.md (`cases/01..06/comparison.md`)**: titulo suma `· Java`; seccion Java agregada con runtime, snippet legacy, snippet correccion, primitiva distintiva (~40 lineas por caso). Tablas finales "Diferencias de decision" se dejan estables — el contenido nuevo cubre el contraste sin refactorizar el resumen.
+
+### Verified
+
+Smoke funcional de los 6 casos Java corriendo `java Main` directo (sin Docker):
+
+- **Caso 01**: `/report-legacy` retorna rows sin `lifetime_orders`; `/report-optimized` retorna rows con `lifetime_orders` y `lifetime_amount` (la cache `ConcurrentHashMap` esta poblada por el worker — 1531 customer summaries por ciclo).
+- **Caso 02**: `/orders-legacy` con `db_hits=N+1`; `/orders-optimized` con `db_hits=2` (1 orders + 1 batch IN).
+- **Caso 03**: `/checkout-legacy` retorna `status:error` sin id; `/checkout-observable` retorna `correlation_id` UUID que tambien aparece en `/logs` con campos estructurados.
+- **Caso 04**: `/quote-legacy?fail=on` retorna `status:failed, attempts:5`; `/quote-resilient?fail=on` retorna `status:fallback` con `breaker:closed`; tras 3 fallos consecutivos pasa a `short_circuited` con `breaker:open`.
+- **Caso 05**: `/batch-legacy` incrementa `retained_count` monoticamente; `/batch-optimized` se mantiene en `cap=1000`.
+- **Caso 06**: `/deploy-legacy?scenario=secret_drift` deja `prod` en `degraded`; `/deploy-controlled?scenario=secret_drift` deja `prod` en la version previa (`rolled_back`).
+
+No son demos: cada uno computa, muta estado y devuelve evidencia distinta entre legacy y optimizada.
+
 ## 2026-05-15 - Java 21 entra como 4to stack operativo: casos 01-06 + hub consolidado
 
 Hasta hoy los stacks Java/.NET vivian como scaffolds genericos (un Main.java con `/fast`, `/slow`, `/cpu` sin solucionar el problema del caso). Esta entrega convierte los 6 primeros casos en implementaciones Java reales que resuelven cada problema con primitivas distintivas del lenguaje y los pone detras de un hub consolidado al estilo Python/Node.

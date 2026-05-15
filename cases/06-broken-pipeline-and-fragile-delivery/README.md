@@ -27,7 +27,7 @@ El software funciona en desarrollo, pero falla al promover cambios, validar conf
 | 🐘 PHP 8 | `OPERATIVO` |
 | 🟢 Node.js | `OPERATIVO` |
 | 🐍 Python | `OPERATIVO` |
-| ☕ Java | 🔧 Estructura lista |
+| ☕ Java 21 | `OPERATIVO` (`record` types + state machine preflight/smoke/rollback) |
 | 🔵 .NET 8 | 🔧 Estructura lista |
 
 ## 🚀 Cómo levantar

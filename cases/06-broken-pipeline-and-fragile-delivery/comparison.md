@@ -1,4 +1,4 @@
-# Caso 06 — Comparativa multi-stack: Pipeline roto y entrega frágil (PHP · Python · Node.js)
+# Caso 06 — Comparativa multi-stack: Pipeline roto y entrega frágil (PHP · Python · Node.js · Java)
 
 ## El problema que ambos resuelven
 
@@ -160,6 +160,40 @@ if (scenario === 'failing_smoke') {
   env.health = 'healthy';
 }
 ```
+
+---
+
+## Java 21: `record` types inmutables + `ConcurrentHashMap` por ambiente + state machine como guards
+
+**Runtime:** JVM con thread pool. Los `record` types (`EnvState`, `Deployment`) son inmutables — cada deploy crea una nueva instancia, no muta la anterior. Esto descarta una clase entera de bugs de concurrencia.
+
+**Motor de estado:** `ConcurrentHashMap<String, EnvState>` por ambiente (`staging`, `prod`). Lectura paralela sin lock; escrituras atomicas con `put`. El historial es un `Deque<Deployment>` sincronizado con cap=30.
+
+**El fallo legacy en Java:**
+```java
+if (isBadScenario(scenario)) {
+    environments.put(env, new EnvState(env, version, "degraded"));   // queda roto
+    legacyBroken.increment();
+    return /* "deployed_but_broken" */;
+}
+```
+Sin preflight, sin smoke. Si el scenario es `secret_drift` o `breaking_change`, el ambiente queda `degraded` con la nueva version. El siguiente deploy heredara este estado.
+
+**La correccion en Java:**
+```java
+EnvState before = environments.get(env);
+if (scenario.equals("missing_artifact") || scenario.equals("secret_drift_detected")) {
+    return /* blocked_in_preflight */;   // no toca environments
+}
+if (isBadScenario(scenario)) {
+    controlledRollbacks.increment();
+    return /* rolled_back_to_<before.version> */;   // environments[env] queda en before
+}
+environments.put(env, new EnvState(env, version, "healthy"));   // promote solo si smoke OK
+```
+Tres ramas explicitas: preflight bloquea (sin tocar estado), smoke falla (rollback al `before.version`), todo OK (promote). El historial registra las 3 con `Deployment` records — auditable.
+
+**Por que `record` aqui:** `EnvState` y `Deployment` son value objects. `equals/hashCode/toString` auto-generados. Serializan directo a JSON sin mappers. Y siendo inmutables, el snapshot que captura `before` en preflight se mantiene aunque otro thread haga `environments.put()` paralelo.
 
 ---
 

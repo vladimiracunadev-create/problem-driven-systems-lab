@@ -1,4 +1,4 @@
-# Caso 04 — Comparativa multi-stack: Timeout chain y retry storms (PHP · Python · Node.js)
+# Caso 04 — Comparativa multi-stack: Timeout chain y retry storms (PHP · Python · Node.js · Java)
 
 ## El problema que ambos resuelven
 
@@ -100,6 +100,38 @@ const backoffForAttempt = (policy, attempt) => {
 Misma formula que PHP/Python. La diferencia: `await sleep(wait)` cede al loop pero no bloquea otros handlers — el proceso sigue atendiendo otras requests durante el backoff.
 
 **Estado del circuit breaker:** persiste en `/tmp/pdsl-case04-node/dependency_state.json`. Como Node es single-thread, no requiere lock — cada lectura/escritura del JSON es atomica desde el punto de vista de los handlers async, mientras no se intercale `await` entre lectura y escritura.
+
+---
+
+## Java 21: `CompletableFuture.orTimeout()` + `AtomicReference<BreakerState>` con CAS
+
+**Runtime:** JVM con thread pool. `CompletableFuture` ejecuta el call al provider en otro thread y puede completarse exceptionally por timeout sin requerir cooperacion del callee (a diferencia de `AbortSignal` Node que necesita que el handler chequee la senal).
+
+**Primitiva de timeout:** `CompletableFuture.orTimeout(Duration)` (JDK 9+) marca el future con `TimeoutException` si no completa en el plazo. El `supplyAsync` task sigue corriendo en background hasta que termine — el handler ya retorno con fallback. Para HTTP real con `HttpClient.send()` la API es `HttpRequest.newBuilder().timeout(Duration.ofMs(300))`.
+
+**El fallo legacy en Java:**
+```java
+for (int attempt = 1; attempt <= 5; attempt++) {
+    legacyRetries.increment();
+    try { return callProvider(fail, 800); }
+    catch (Exception e) { /* sin backoff, sin breaker */ }
+}
+```
+5 reintentos secuenciales × 800ms = 4 segundos bloqueando un thread del pool. Bajo carga concurrente con M requests → 5M roundtrips al provider con `fail=on`. Retry storm clasico.
+
+**La correccion en Java:**
+```java
+BreakerState st = breaker.get();
+if ("open".equals(st.state) && cooldownNotElapsed(st)) {
+    return fallback(lastFallbackPrice.get());   // sin tocar al provider
+}
+CompletableFuture<Long> fut = CompletableFuture
+    .supplyAsync(() -> callProviderUnchecked(fail, 800))
+    .orTimeout(300, TimeUnit.MILLISECONDS);
+```
+Tras 3 fallos consecutivos `breaker.set(new BreakerState("open", fails, now()))` — el siguiente request lee el `AtomicReference`, ve `open`, devuelve fallback en microsegundos. `AtomicReference.set()` es atomico (CAS-backed); no hay lock global.
+
+**Por que `record BreakerState`:** Inmutable. Cada transicion es una nueva instancia. Evita race conditions de "leyo state pero failCount era stale" — capturas el estado completo en una sola lectura del `AtomicReference`.
 
 ---
 

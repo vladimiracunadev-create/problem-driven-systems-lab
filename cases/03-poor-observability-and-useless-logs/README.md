@@ -63,7 +63,11 @@ Los stacks PHP, Node.js y Python ya implementan este caso con dos modos del mism
 - `checkout-observable` -> logs estructurados, `request_id`, `trace_id`, métricas y trazas locales
 - `/logs/legacy`, `/logs/observable`, `/traces` y `/diagnostics/summary` -> permiten comparar qué tan diagnosticable es el incidente
 
-### 🔧 Java / .NET
+### Java 21
+
+Stack Java operativo. Ver [`java/README.md`](java/README.md). Hub: `http://localhost:8400/03/`. Aislado: puerto `843`.
+
+### .NET (espacio de crecimiento)
 
 Se mantienen como base de crecimiento para llevar el caso a otros runtimes sin degradarlo a un demo superficial.
 
@@ -93,7 +97,7 @@ Se mantienen como base de crecimiento para llevar el caso a otros runtimes sin d
 | 🐘 PHP 8 | ✅ Implementado (Docker + telemetría útil) |
 | 🟢 Node.js | ✅ Implementado (legacy vs observable) |
 | 🐍 Python | ✅ Implementado (legacy vs observable) |
-| ☕ Java | 🔧 Estructura lista |
+| ☕ Java 21 | `OPERATIVO` (`ThreadLocal<RequestContext>` con correlation_id + log estructurado JSON) |
 | 🔵 .NET 8 | 🔧 Estructura lista |
 
 ---

@@ -1,4 +1,4 @@
-# Caso 02 — Comparativa multi-stack: N+1 y cuellos de botella en base de datos (PHP · Python · Node.js)
+# Caso 02 — Comparativa multi-stack: N+1 y cuellos de botella en base de datos (PHP · Python · Node.js · Java)
 
 ## El problema que ambos resuelven
 
@@ -144,6 +144,35 @@ const itemsByOrder = await timedQuery(() => {
 for (const order of baseOrders) order.items = itemsByOrder.get(order.id) || [];
 ```
 Dos lecturas. Joins en memoria con `Map.get()` O(1) y `Set.has()` para filtros de pertenencia. La ausencia de un ORM hace explicita la decision — no hay magia que la oculte.
+
+---
+
+## Java 21: HashMap precomputado como tabla indexada, batch `IN(...)` simulado
+
+**Runtime:** JVM con thread pool. Cada handler corre en thread propio; los seed maps quedan inmutables tras `seedData()` — lectura paralela segura sin lock.
+
+**Motor de datos:** En memoria con `List<Order>` y `HashMap<Integer, List<Item>>`. La estructura `itemsByOrderId` es la version Java de un join precomputado (lo que JDBC + `IN(...)` traerian de PostgreSQL).
+
+**El fallo legacy en Java:**
+```java
+for (int i = 0; i < take; i++) {
+    Order o = orders.get(i);
+    List<Item> items = lookupItemsOneByOne(o.id);   // 1 query por order → N+1
+    sleepMicros(900);                               // costo de roundtrip
+}
+```
+N+1 clasico. En Java productivo seria `PreparedStatement.executeQuery()` dentro del bucle — cada iteracion crea statement, lo manda, lee result set, lo cierra.
+
+**La correccion en Java:**
+```java
+List<Integer> ids = collectIds(orders, take);
+Map<Integer, List<Item>> batch = new HashMap<>();
+for (Integer id : ids) batch.put(id, itemsByOrderId.getOrDefault(id, List.of()));
+sleepMicros(700);   // 1 sola vez
+```
+Espejo de `SELECT * FROM items WHERE order_id IN (?, ?, ?, ...)`. JDBC tiene `setArray()` y batching en `PreparedStatement.addBatch()` que hace lo mismo a nivel protocolo.
+
+**Por que no JDBC real aqui:** mantener los 6 casos Java sin Maven y sin dependencias. JDBC + driver PostgreSQL agregaria 6 MB+ al container y un punto de configuracion. El patron `IN(...)` vs N round-trips se demuestra igual con `HashMap`.
 
 ---
 

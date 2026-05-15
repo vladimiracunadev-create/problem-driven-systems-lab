@@ -1,4 +1,4 @@
-# Caso 05 — Comparativa multi-stack: Presión de memoria y fugas de recursos (PHP · Python · Node.js)
+# Caso 05 — Comparativa multi-stack: Presión de memoria y fugas de recursos (PHP · Python · Node.js · Java)
 
 ## El problema que ambos resuelven
 
@@ -172,6 +172,37 @@ if (mode === 'optimized') {
 }
 ```
 `raw` vive en scope local de la iteracion. Despues de calcular el digest, el scope termina y V8 marca el buffer como reclamable. Solo el digest (16 chars) queda en el `Map` con eviction. Si Node corre con `--expose-gc`, `globalThis.gc()` fuerza un ciclo; sin el flag, V8 reclama solo (la presion baja casi igual).
+
+---
+
+## Java 21: heap del JVM + `LinkedHashMap` LRU built-in + `Runtime` metrics
+
+**Runtime:** JVM con GC generacional (G1 por defecto en JDK 21). El "leak" en Java NO es que el SO pierda memoria — es que el GC no puede recolectar porque las referencias siguen alcanzables desde una raiz (`static field`). El heap puede crecer hasta `-Xmx` y a partir de ahi `OutOfMemoryError`.
+
+**Motor de memoria:** `Runtime.getRuntime()` expone tres numeros: `totalMemory()` (heap actualmente asignado), `freeMemory()` (libre dentro del heap actual), `maxMemory()` (limite via `-Xmx`). Sin agente, sin JFR, sin perfilador — basta con stdlib.
+
+**El fallo legacy en Java:**
+```java
+private static final List<byte[]> legacyAccumulator =
+    Collections.synchronizedList(new ArrayList<>());
+
+byte[] payload = new byte[sizeKb * 1024];
+legacyAccumulator.add(payload);   // referencia retenida → GC no puede liberar
+```
+La `static List` es raiz GC. Cada `add` retiene el `byte[]`. Tras N requests, `totalMemory()` sube monoticamente hasta tocar `maxMemory()` → `OutOfMemoryError: Java heap space`. **El GC corre, pero no encuentra nada que recolectar.**
+
+**La correccion en Java:**
+```java
+private static final Map<Integer, byte[]> optimizedCache =
+    Collections.synchronizedMap(new LinkedHashMap<>(OPTIMIZED_CAP, 0.75f, true) {
+        @Override protected boolean removeEldestEntry(Map.Entry<Integer, byte[]> e) {
+            return size() > OPTIMIZED_CAP;   // eviccion automatica → GC libera el oldest
+        }
+    });
+```
+`LinkedHashMap.removeEldestEntry` es **LRU built-in del JDK** — una linea agrega politica de eviccion. Cuando rebasa el cap, el `Map` quita la entrada mas antigua; la referencia muere; el GC en la proxima pasada libera memoria.
+
+**Senales propias del runtime:** `heap_used_mb`, `heap_total_mb`, `heap_max_mb`. Diferencia con Node `process.memoryUsage()`: Node expone `heapUsed/heapTotal/rss/external` separados (V8 + Node buffers). Java agrega todo en el heap del JVM — no hay "buffers off-heap" excepto si usas `ByteBuffer.allocateDirect()` (fuera de scope de este caso).
 
 ---
 
