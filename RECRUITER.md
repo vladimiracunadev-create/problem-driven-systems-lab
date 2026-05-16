@@ -25,15 +25,16 @@ Este laboratorio no busca impresionar con cantidad de carpetas. Su valor esta en
 | Interfaz Nativa (Dashboards) | Los 12 casos PHP exponen una **UI Web Interactiva** para visualizar el fallo en vivo desde cualquier navegador |
 | Docker / Infraestructura | Cada caso implementa `compose.yml` propio para entornos de ingeniería aislados; ademas **4 hubs consolidados** (`compose.root.yml` PHP `:8100`, `compose.python.yml` `:8200`, `compose.nodejs.yml` `:8300`, `compose.java.yml` `:8400`) levantan los stacks completos con un comando cada uno |
 | Documentación Pro | Análisis técnicos profundos con funciones de lenguaje, algoritmos y patrones de diseño; `comparison.md` multi-stack PHP · Python · Node.js · Java para los 12 casos |
+| Criterio Operacional | **12 postmortems narrativos** (uno por caso) en formato incidente real: severidad, timeline, causa raíz, lo que funcionó vs lo que no, action items, métrica antes/después. Muestra cómo se *piensa* el incidente, no solo cómo se resuelve. Ver [`docs/executive-summary.md`](docs/executive-summary.md#postmortems-narrativos-por-caso) |
 | Honestidad Técnica | Distinción explícita de madurez: de simuladores teóricos a piezas de ingeniería verificables |
 
 ## ⚡ Que mirar en 5 minutos
 
 1. Abre [README.md](README.md) para entender la historia general del laboratorio.
-2. Revisa [docs/positioning-and-objective.md](docs/positioning-and-objective.md) para ver que problema profesional resuelve este repo.
-3. Mira uno de estos casos: [01](cases/01-api-latency-under-load/README.md) ([👉 Senior Analysis](cases/01-api-latency-under-load/php/README.md)), [04](cases/04-timeout-chain-and-retry-storms/README.md) ([👉 Senior Analysis](cases/04-timeout-chain-and-retry-storms/php/README.md)), [05](cases/05-memory-pressure-and-resource-leaks/README.md) ([👉 Senior Analysis](cases/05-memory-pressure-and-resource-leaks/php/README.md)) o [06](cases/06-broken-pipeline-and-fragile-delivery/README.md) ([👉 Senior Analysis](cases/06-broken-pipeline-and-fragile-delivery/php/README.md)).
-4. Abre [docs/case-catalog.md](docs/case-catalog.md) para ver el estado del resto del laboratorio.
-5. Revisa [RUNBOOK.md](RUNBOOK.md) para confirmar que la operacion esta pensada con criterio realista.
+2. Revisa [docs/executive-summary.md](docs/executive-summary.md) — los 12 casos en una página + tabla de postmortems.
+3. Lee 1 postmortem completo: [caso 04 (SEV-1 retry storm)](cases/04-timeout-chain-and-retry-storms/docs/postmortem.md) o [caso 11 (SEV-1 reporte mensual tumba checkout)](cases/11-heavy-reporting-blocks-operations/docs/postmortem.md).
+4. Mira el caso técnicamente: [04](cases/04-timeout-chain-and-retry-storms/README.md) ([👉 Senior Analysis](cases/04-timeout-chain-and-retry-storms/php/README.md)) — el postmortem te dio el *por qué*, el README te da el *qué cambió*.
+5. Abre [docs/case-catalog.md](docs/case-catalog.md) para ver el estado del resto del laboratorio y [RUNBOOK.md](RUNBOOK.md) para criterio operacional.
 
 ## ✅ Que senales profesionales deja el repo
 
