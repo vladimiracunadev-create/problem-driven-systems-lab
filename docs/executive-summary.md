@@ -226,11 +226,30 @@ Honestidad explicita para no vender lo que no es:
 - **No es un benchmark de lenguajes.** Los 4 stacks (PHP/Python/Node/Java) resuelven los 12 problemas con primitivas nativas distintas; el contraste muestra criterio, no "cual es mas rapido".
 - **No reemplaza plataformas reales.** Tracing distribuido, CI/CD enterprise, mallas de servicios y feature flags globales quedan fuera. Lo que si esta: reproduccion fiel de la **logica operativa** de cada problema.
 - **No es production-grade tal cual.** Modelo de amenaza: localhost / LAN confiable. Para Internet ver [SECURITY.md](../SECURITY.md) (auth, rate limit, TLS son responsabilidad de quien expone).
-- **No promete paridad multi-stack en futuros casos.** PHP + Python + Node.js cubren los 12 hoy. Java/.NET existen como scaffolds y se sumaran por caso solo si aportan contraste real.
+- **No promete paridad multi-stack en futuros casos.** PHP + Python + Node.js + Java cubren los 12 hoy. .NET existe como scaffold y se sumara por caso solo si aporta contraste real.
+
+## Postmortems narrativos por caso
+
+Cada caso tiene un `postmortem.md` en formato incidente real (severidad, timeline, causa raiz, action items, metrica antes/despues). Es el otro lado del criterio: como se piensa el incidente, no solo como se resuelve.
+
+| # | Postmortem | Severidad |
+|---|---|---|
+| 01 | [API de reportes inestable bajo concurrencia](../cases/01-api-latency-under-load/docs/postmortem.md) | SEV-2 |
+| 02 | [Round-trips por request inflados x10](../cases/02-n-plus-one-and-db-bottlenecks/docs/postmortem.md) | SEV-3 |
+| 03 | [Incidente sin causa raiz identificable en 4 horas](../cases/03-poor-observability-and-useless-logs/docs/postmortem.md) | SEV-2 |
+| 04 | [Retry storm tumba al proveedor de pricing](../cases/04-timeout-chain-and-retry-storms/docs/postmortem.md) | SEV-1 |
+| 05 | [OOM kill cada 18 horas en produccion](../cases/05-memory-pressure-and-resource-leaks/docs/postmortem.md) | SEV-2 |
+| 06 | [Deploy con secret drift deja staging y prod distintos](../cases/06-broken-pipeline-and-fragile-delivery/docs/postmortem.md) | SEV-2 |
+| 07 | [Cambio en billing rompe pricing, inventory y reporting](../cases/07-incremental-monolith-modernization/docs/postmortem.md) | SEV-2 |
+| 08 | [Extraccion de pricing rompe 3 consumers al unisono](../cases/08-critical-module-extraction-without-breaking-operations/docs/postmortem.md) | SEV-1 |
+| 09 | [Provider cambia schema sin aviso, catalogo degradado 6 h](../cases/09-unstable-external-integration/docs/postmortem.md) | SEV-2 |
+| 10 | [Lead time de 16 dias para agregar un boolean](../cases/10-expensive-architecture-for-simple-needs/docs/postmortem.md) | SEV-3 |
+| 11 | [Reporte mensual tumba el checkout 47 min](../cases/11-heavy-reporting-blocks-operations/docs/postmortem.md) | SEV-1 |
+| 12 | [Pre-prod caido 6 h porque la persona estaba de vacaciones](../cases/12-single-point-of-knowledge-and-operational-risk/docs/postmortem.md) | SEV-2 |
 
 ## Rutas rapidas
 
-- **Reclutador / lider no tecnico:** esta pagina + [`RECRUITER.md`](../RECRUITER.md).
-- **CTO / arquitecto:** [`ARCHITECTURE.md`](../ARCHITECTURE.md) → 1-2 casos en detalle.
+- **Reclutador / lider no tecnico:** esta pagina + [`RECRUITER.md`](../RECRUITER.md) + los 12 postmortems.
+- **CTO / arquitecto:** [`ARCHITECTURE.md`](../ARCHITECTURE.md) → 1-2 casos en detalle → postmortem del caso.
 - **Developer:** [`INSTALL.md`](../INSTALL.md) → `make portal-up` → recorrer el portal.
-- **Operacion / SRE:** [`RUNBOOK.md`](../RUNBOOK.md) + [`SECURITY.md`](../SECURITY.md).
+- **Operacion / SRE:** [`RUNBOOK.md`](../RUNBOOK.md) + [`SECURITY.md`](../SECURITY.md) + postmortems para entender el modelo de incidente.
