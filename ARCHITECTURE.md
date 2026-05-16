@@ -116,7 +116,133 @@ Los cuatro hubs (`compose.root.yml` PHP, `compose.python.yml` Python, `compose.n
 - **Node.js** → `pdsl-node-lab` con dispatcher en `:8300` y 12 subprocesos `child_process.spawn` internos. 1 contenedor.
 - **Java** → `pdsl-java-lab` con dispatcher en `:8400` y 12 subprocesos `ProcessBuilder` (`java Main`) internos en `:9401-:9412`. Compilacion `javac` en build-time. 1 contenedor.
 
-Refactor reciente: PHP pasó de ~20 contenedores (12 apps + nginx hub) a ~7 contenedores (1 dispatcher + servicios reales). RAM cae de ~2.5 GB a ~1 GB. **Trade-offs y rationale en [`docs/docker-strategy.md`](docs/docker-strategy.md#-modelo-de-containerización-simétrico-para-los-3-stacks).**
+#### 🗺️ Diagrama A — Los 4 hubs y sus subprocesos internos
+
+```text
+                       ┌───────────────── host (puertos expuestos) ─────────────────┐
+                       │                                                            │
+                       │   :8080      :8100      :8200      :8300      :8400        │
+                       │   portal     PHP hub    Py hub     Node hub   Java hub     │
+                       │     │          │          │          │          │          │
+                       └─────┼──────────┼──────────┼──────────┼──────────┼──────────┘
+                             │          │          │          │          │
+                  ┌──────────┴──────┐   │          │          │          │
+                  ▼                 │   ▼          ▼          ▼          ▼
+            ┌──────────────┐        │ ┌──────────────────────────────────────┐
+            │  portal-php8 │        │ │ pdsl-php-lab (php-dispatcher)        │
+            │  (Apache)    │        │ │  ├─ php -S :9001  case 01 worker     │
+            └──────────────┘        │ │  ├─ php -S :9002  case 02            │
+                                    │ │  ├─ ...                              │
+                                    │ │  └─ php -S :9012  case 12            │
+                                    │ └──────────────────────────────────────┘
+                                    │
+                                    │  servicios reales del caso 01 (no PHP):
+                                    └─▶ case01-db (PostgreSQL)  case01-worker
+                                        case02-db (PostgreSQL)  prometheus
+                                        postgres-exporter       grafana
+
+                                      ┌──────────────────────────────────────┐
+                                      │ pdsl-python-lab (python-dispatcher)  │
+                                      │  ├─ subprocess.Popen :9001  case 01  │
+                                      │  ├─ ...                              │
+                                      │  └─ subprocess.Popen :9012  case 12  │
+                                      └──────────────────────────────────────┘
+                                      ┌──────────────────────────────────────┐
+                                      │ pdsl-node-lab (node-dispatcher)      │
+                                      │  ├─ child_process.spawn :9101 case01 │
+                                      │  ├─ ... :9002-:9012                  │
+                                      │  └─ caso 01 en :9101 (Windows quirk) │
+                                      └──────────────────────────────────────┘
+                                      ┌──────────────────────────────────────┐
+                                      │ pdsl-java-lab (java-dispatcher)      │
+                                      │  ├─ ProcessBuilder :9401  case 01    │
+                                      │  ├─ ...                              │
+                                      │  └─ ProcessBuilder :9412  case 12    │
+                                      └──────────────────────────────────────┘
+
+  Patron simetrico: 1 contenedor por lenguaje × 12 subprocesos internos en
+  puertos NO expuestos. Solo los 5 puertos del top quedan visibles al host.
+```
+
+#### 🗺️ Diagrama B — Request lifecycle: cliente → hub → caso
+
+```text
+   cliente (curl / browser)
+        │
+        │  GET http://localhost:8400/04/quote-resilient?fail=on
+        ▼
+   :8400 (puerto host)
+        │  Docker port mapping → contenedor pdsl-java-lab
+        ▼
+   ┌─────────────────────────────────────┐
+   │  java-dispatcher (Dispatcher.java)   │
+   │                                      │
+   │  1. parse path: /04/quote-resilient  │
+   │  2. extract caseId = "04"            │
+   │  3. lookup CASES.get("04")           │
+   │     → CaseInfo(port=9404, ...)       │
+   │  4. forward via HttpClient a         │
+   │     http://127.0.0.1:9404/quote-…    │
+   └─────────────┬───────────────────────┘
+                 │  loopback interno (no expuesto al host)
+                 ▼
+   ┌─────────────────────────────────────┐
+   │  case04 server (java Main)           │
+   │  HttpServer JDK escuchando :9404     │
+   │                                      │
+   │  handler: /quote-resilient           │
+   │  ├─ chequea breaker (AtomicRef)      │
+   │  ├─ CompletableFuture.orTimeout      │
+   │  └─ devuelve JSON                    │
+   └─────────────┬───────────────────────┘
+                 │
+                 ▼
+   dispatcher copia headers + body de respuesta
+        │
+        ▼
+   cliente recibe response
+
+  Mismo patron en los 4 hubs. Los subprocesos de caso son aislados:
+  un memory leak en case05 NO afecta a case04, pero comparten el contenedor
+  del lenguaje (failure domain por hub, no por caso).
+```
+
+#### 🗺️ Diagrama C — Validation pipeline: cases.json → CI
+
+```text
+       shared/catalog/cases.json  (fuente de verdad)
+                │
+                ├─────────────────────────────────────────────────────────┐
+                ▼                                                          │
+   ┌──────────────────────────┐         ┌──────────────────────────────┐  │
+   │ portal/app/catalog.php   │         │ scripts/                     │  │
+   │  → JSON al index.html    │         │ generate_case_catalog.php    │  │
+   │ portal/app/probe.php     │         │  → docs/case-catalog.md      │  │
+   │  → health en vivo        │         └──────────────────────────────┘  │
+   └──────────────────────────┘                                            │
+                                                                           │
+                              scripts/validate-structure.sh                │
+                                            │                              │
+                                            ├──── chequea estructura ──────┘
+                                            │     (carpetas, archivos
+                                            │      requeridos, etc.)
+                                            │
+                                            └──── chequea catalogo sync
+                                                  (--check flag)
+                                            ▲
+                                            │
+                          .github/workflows/ci.yml
+                            ├── structure       (validate-structure)
+                            ├── compose-config  (40+ archivos)
+                            ├── compose-smoke   (PHP per-case)
+                            ├── portal-probe    (PHP hub via /01/health)
+                            └── hub-probe       (Python/Node/Java hubs)
+
+  Drift entre lo que dice el repo, lo que muestra el portal y lo que se
+  ejecuta queda bloqueado: CI no merge si cualquiera de los 3 se sale.
+```
+
+Refactor reciente: PHP pasó de ~20 contenedores (12 apps + nginx hub) a ~7 contenedores (1 dispatcher + servicios reales). RAM cae de ~2.5 GB a ~1 GB. **Trade-offs y rationale en [`docs/docker-strategy.md`](docs/docker-strategy.md#-modelo-de-containerización-simétrico-para-los-stacks-operativos).**
 
 ## 🔁 Flujo de datos y sincronizacion
 
