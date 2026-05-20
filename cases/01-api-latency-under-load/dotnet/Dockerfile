@@ -1,12 +1,12 @@
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
-COPY app/ProblemLab.csproj .
+COPY app/Case01.csproj .
 COPY app/Program.cs .
-RUN dotnet publish ProblemLab.csproj -c Release -o /out
+RUN dotnet publish Case01.csproj -c Release --no-self-contained -o /out
 
 FROM mcr.microsoft.com/dotnet/aspnet:8.0
 WORKDIR /app
 COPY --from=build /out .
 ENV ASPNETCORE_URLS=http://0.0.0.0:8080
 EXPOSE 8080
-ENTRYPOINT ["dotnet", "ProblemLab.dll"]
+ENTRYPOINT ["dotnet", "Case01.dll"]

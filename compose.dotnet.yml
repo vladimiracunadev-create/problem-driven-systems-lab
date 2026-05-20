@@ -1,0 +1,35 @@
+# compose.dotnet.yml — Stack .NET 8 (casos 01-06 operativos)
+#
+# Un solo contenedor, un solo puerto.
+# El dispatcher interno enruta por prefijo de path:
+#
+#   GET http://localhost:8500/       → indice de los casos .NET
+#   GET http://localhost:8500/01/... → caso 01
+#   GET http://localhost:8500/06/... → caso 06
+#
+# Los 6 servidores de caso corren como subprocesos internos en puertos
+# 9501-9506 que nunca se exponen al host.
+#
+# Uso:
+#   docker compose -f compose.dotnet.yml up -d --build
+#   docker compose -f compose.dotnet.yml down
+#   docker compose -f compose.dotnet.yml logs -f
+
+services:
+  dotnet-lab:
+    build:
+      context: .
+      dockerfile: dotnet-dispatcher/Dockerfile
+    container_name: pdsl-dotnet-lab
+    ports:
+      - "8500:8500"
+    environment:
+      APP_STACK: ".NET 8"
+      PORT: "8500"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:8500/01/health > /dev/null || exit 1"]
+      interval: 10s
+      timeout: 3s
+      retries: 12
+      start_period: 30s
+    restart: unless-stopped

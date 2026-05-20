@@ -61,7 +61,8 @@ Estado actual:
 - `OPERATIVO` en Python: los 12 casos, con logica funcional equivalente a PHP, stdlib pura y autocontenidos en un solo contenedor.
 - `OPERATIVO` en Node.js: los **12 casos**, con primitivas Node-especificas distintas por caso (event loop lag, `AbortController`, `AbortSignal.timeout`, `process.memoryUsage()`, `Map<consumer, handler>` strangler, `Proxy` de compatibilidad, `EventEmitter`, `monitorEventLoopDelay`, optional chaining como runbook codificado).
 - `OPERATIVO` en Java 21: los **12 casos**, con primitivas JDK-distintas por caso: `ConcurrentHashMap` summary cache + `ScheduledExecutorService` worker (01), `HashMap` indexado + batch `IN(...)` (02), `ThreadLocal<RequestContext>` correlation (03), `CompletableFuture.orTimeout` + `AtomicReference<BreakerState>` CAS (04), `LinkedHashMap.removeEldestEntry` LRU + `Runtime` metrics (05), `record` types + state machine (06), `ConcurrentHashMap<String,Function>` routing mutable (07), `Function` proxy + `CopyOnWriteArrayList<Consumer>` event bus (08), `Semaphore` budget + snapshot cache + `AtomicReference` breaker (09), `HashMap` O(1) vs N hops `StringBuilder` (10), `ThreadPoolExecutor.getActiveCount()` saturation observable + `ExecutorService` dedicado (11), `Optional<T>` + `map/orElse` como runbook codificado (12).
-- `DOCUMENTADO / SCAFFOLD`: stack .NET con estructura base y documentacion lista.
+- `OPERATIVO` en .NET 8: casos **01-06**, con primitivas BCL-distintas por caso: `ConcurrentDictionary` summary cache + `Task.Delay` worker con `CancellationToken` (01), `Dictionary` indexado + ensamblado batch en memoria (02), `AsyncLocal<RequestContext>` para correlation_id en pipeline async (03), `CancellationTokenSource` con timeout + breaker `Interlocked` CAS (04), LRU manual con `Dictionary + LinkedList` + `Process.WorkingSet64` (05), `ConcurrentDictionary<string,EnvState>` + máquina de estados con rollback automático (06).
+- `DOCUMENTADO / SCAFFOLD`: casos 07-12 de .NET (estructura base lista, sin implementación funcional aún).
 
 ## 🔐 Postura de seguridad y modelo de despliegue
 
@@ -121,11 +122,11 @@ Cada lenguaje tiene su propio compose en la raíz del repositorio. Un comando le
 | [`compose.python.yml`](compose.python.yml) | Python 3.12 | `8200` Python hub | `OPERATIVO` |
 | [`compose.nodejs.yml`](compose.nodejs.yml) | Node.js 20 | `8300` Node hub | `OPERATIVO` |
 | [`compose.java.yml`](compose.java.yml) | Java 21 | `8400` Java hub | `OPERATIVO` |
-| `compose.dotnet.yml` | .NET 8 | `8500` .NET hub | `PLANIFICADO` |
+| [`compose.dotnet.yml`](compose.dotnet.yml) | .NET 8 | `8500` .NET hub | `OPERATIVO` (01-06) |
 
-**Cuatro hubs operativos (uno por lenguaje):** PHP, Python, Node y Java sirven los **12 casos cada uno**. Un solo puerto por hub vía routing por path (`/01/health`...`/12/health`). Los servicios de soporte (DB, Prometheus, Grafana) tienen los suyos propios porque son servicios distintos del lenguaje.
+**Cinco hubs operativos (uno por lenguaje):** PHP, Python, Node y Java sirven los **12 casos cada uno**; .NET sirve los **6 primeros**. Un solo puerto por hub vía routing por path (`/01/health`...`/12/health`). Los servicios de soporte (DB, Prometheus, Grafana) tienen los suyos propios porque son servicios distintos del lenguaje.
 
-> 🧱 **Los cuatro hubs siguen el mismo patrón arquitectónico:** un contenedor por lenguaje (`pdsl-php-lab`, `pdsl-python-lab`, `pdsl-node-lab`, `pdsl-java-lab`) ejecuta sus casos como subprocesos internos en puertos no expuestos (12 para PHP/Python/Node, 6 para Java). PHP suma ~7 contenedores extras solo porque los **servicios reales** que el caso 01 estudia (PostgreSQL, worker, Prometheus, Grafana) son contenedores aparte por necesidad técnica — no son procesos del lenguaje. Detalles, trade-offs y comparación per-case en [`docs/docker-strategy.md`](docs/docker-strategy.md#-modelo-de-containerización-simétrico-para-los-stacks-operativos).
+> 🧱 **Los cinco hubs siguen el mismo patrón arquitectónico:** un contenedor por lenguaje (`pdsl-php-lab`, `pdsl-python-lab`, `pdsl-node-lab`, `pdsl-java-lab`, `pdsl-dotnet-lab`) ejecuta sus casos como subprocesos internos en puertos no expuestos (12 para PHP/Python/Node, 6 para Java y .NET). PHP suma ~7 contenedores extras solo porque los **servicios reales** que el caso 01 estudia (PostgreSQL, worker, Prometheus, Grafana) son contenedores aparte por necesidad técnica — no son procesos del lenguaje. Detalles, trade-offs y comparación per-case en [`docs/docker-strategy.md`](docs/docker-strategy.md#-modelo-de-containerización-simétrico-para-los-stacks-operativos).
 
 ```bash
 # PHP: portal + dispatcher (12 casos internos en un contenedor) + DB + Prometheus + Grafana

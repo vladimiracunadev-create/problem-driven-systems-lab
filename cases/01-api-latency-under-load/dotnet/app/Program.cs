@@ -1,212 +1,419 @@
+using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Diagnostics;
-using System.Text.Json;
+using System.Linq;
+using System.Net;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 
-var metrics = new MetricsStore(3000);
-var builder = WebApplication.CreateBuilder(args);
-var app = builder.Build();
+// Caso 01 — API lenta bajo carga (stack .NET 8).
+//
+// Espejo del Main.java equivalente. Mismos endpoints, misma semantica, JSON con
+// el mismo shape. Primitivas .NET idiomáticas:
+//   - ConcurrentDictionary como cache de summary (lectores no se bloquean con worker)
+//   - Interlocked + lock(samples) para metricas
+//   - BackgroundService-style: Task.Run periódico con CancellationToken
 
-string PayloadOfKb(int kb) => new string('x', Math.Max(0, kb) * 1024);
-long CpuWork(int iterations)
+internal static class Program
 {
-    long value = 0;
-    for (var i = 0; i < iterations; i++)
-    {
-        value += i % 13;
-    }
-    return value;
-}
+    private const string CaseName = "01 - API lenta bajo carga";
+    private static readonly string Stack = Environment.GetEnvironmentVariable("APP_STACK") ?? ".NET 8";
+    private const int SummaryRefreshSeconds = 5;
+    private const int MaxSamples = 3000;
+    private const int MaxJobRuns = 30;
 
-IResult BuildResponse(string path, Func<object> factory, Stopwatch sw, int statusCode = 200, bool record = true)
-{
-    var body = factory();
-    sw.Stop();
-    var elapsedMs = Math.Round(sw.Elapsed.TotalMilliseconds, 2);
-    if (record)
-    {
-        metrics.Record(path, statusCode, elapsedMs);
-    }
+    private sealed record Customer(int Id, string Name, string Tier);
+    private sealed record Order(int Id, int CustomerId, string Region, double Amount);
+    private sealed class CustomerSummary { public int OrderCount; public double TotalAmount; }
 
-    var merged = JsonSerializer.Deserialize<Dictionary<string, object?>>(JsonSerializer.Serialize(body))!;
-    merged["elapsed_ms"] = elapsedMs;
-    merged["pid"] = Environment.ProcessId;
-    merged["timestamp_utc"] = DateTimeOffset.UtcNow;
-    return Results.Json(merged, statusCode: statusCode);
-}
+    private static readonly List<Customer> Customers = new();
+    private static readonly List<Order> Orders = new();
+    private static readonly ConcurrentDictionary<int, CustomerSummary> SummaryCache = new();
+    private static readonly Dictionary<int, Customer> CustomerById = new();
+    private static readonly Dictionary<string, List<Order>> OrdersByRegionPrefix = new();
 
-app.MapGet("/", () =>
-{
-    var sw = Stopwatch.StartNew();
-    return BuildResponse("/", () => new
+    private static readonly Metrics LegacyMetrics = new();
+    private static readonly Metrics OptimizedMetrics = new();
+    private static readonly WorkerState Worker = new();
+    private static readonly LinkedList<JobRun> JobRuns = new();
+    private static readonly object JobRunsLock = new();
+
+    private static async Task Main()
     {
-        lab = "Problem-Driven Systems Lab",
-        @case = "01 - API lenta bajo carga",
-        stack = ".NET 8",
-        goal = "Simular endpoints rápidos y lentos para estudiar latencia, percentiles y comportamiento bajo carga.",
-        recommended_flow = new[]
+        SeedData();
+        var port = int.TryParse(Environment.GetEnvironmentVariable("PORT"), out var p) ? p : 8080;
+        var listener = new HttpListener();
+        listener.Prefixes.Add($"http://+:{port}/");
+        try { listener.Start(); }
+        catch (HttpListenerException)
         {
-            "Levantar un solo stack primero para entender el caso.",
-            "Usar compose.compare.yml solo cuando quieras comparar comportamientos.",
-            "Medir con /metrics antes y después de generar carga."
-        },
-        routes = new Dictionary<string, string>
-        {
-            ["/"] = "Resumen del caso y rutas disponibles.",
-            ["/health"] = "Chequeo simple.",
-            ["/fast"] = "Respuesta rápida y liviana.",
-            ["/slow?delay_ms=200&payload_kb=4"] = "Simula latencia I/O y payload mayor.",
-            ["/cpu?iterations=3500000"] = "Simula trabajo CPU-bound.",
-            ["/mixed?delay_ms=120&iterations=1500000&payload_kb=8"] = "Combina espera, CPU y payload.",
-            ["/metrics"] = "Métricas acumuladas en memoria.",
-            ["/reset-metrics"] = "Reinicia contadores del caso."
+            listener = new HttpListener();
+            listener.Prefixes.Add($"http://*:{port}/");
+            listener.Start();
         }
-    }, sw);
-});
+        Console.WriteLine($"[case01-dotnet] listening on {port}");
 
-app.MapGet("/health", () =>
-{
-    var sw = Stopwatch.StartNew();
-    return BuildResponse("/health", () => new { status = "ok", stack = ".NET 8", @case = "01 - API lenta bajo carga" }, sw);
-});
+        var cts = new CancellationTokenSource();
+        Console.CancelKeyPress += (_, e) => { e.Cancel = true; cts.Cancel(); try { listener.Stop(); } catch {} };
 
-app.MapGet("/fast", () =>
-{
-    var sw = Stopwatch.StartNew();
-    return BuildResponse("/fast", () => new { endpoint = "fast", message = "Respuesta ligera diseñada para contrastar con rutas lentas." }, sw);
-});
+        _ = Task.Run(() => WorkerLoopAsync(cts.Token));
 
-app.MapGet("/slow", async (int? delay_ms, int? payload_kb) =>
-{
-    var sw = Stopwatch.StartNew();
-    var delayMs = Math.Clamp(delay_ms ?? 250, 0, 60000);
-    var payloadKb = Math.Clamp(payload_kb ?? 8, 0, 256);
-    await Task.Delay(delayMs);
-    return BuildResponse("/slow", () => new
-    {
-        endpoint = "slow",
-        delay_ms = delayMs,
-        payload_kb = payloadKb,
-        message = "Esta ruta simula espera de red, I/O o dependencia externa.",
-        payload = PayloadOfKb(payloadKb)
-    }, sw);
-});
-
-app.MapGet("/cpu", (int? iterations) =>
-{
-    var sw = Stopwatch.StartNew();
-    var value = Math.Clamp(iterations ?? 3500000, 1, 20000000);
-    return BuildResponse("/cpu", () => new
-    {
-        endpoint = "cpu",
-        iterations = value,
-        checksum = CpuWork(value),
-        message = "Esta ruta simula presión de CPU en una ruta crítica."
-    }, sw);
-});
-
-app.MapGet("/mixed", async (int? delay_ms, int? iterations, int? payload_kb) =>
-{
-    var sw = Stopwatch.StartNew();
-    var delayMs = Math.Clamp(delay_ms ?? 120, 0, 60000);
-    var iter = Math.Clamp(iterations ?? 1500000, 1, 20000000);
-    var payloadKb = Math.Clamp(payload_kb ?? 12, 0, 256);
-    await Task.Delay(delayMs);
-    return BuildResponse("/mixed", () => new
-    {
-        endpoint = "mixed",
-        delay_ms = delayMs,
-        iterations = iter,
-        checksum = CpuWork(iter),
-        payload_kb = payloadKb,
-        message = "Mezcla espera, trabajo CPU y payload para emular una ruta más realista.",
-        payload = PayloadOfKb(payloadKb)
-    }, sw);
-});
-
-app.MapGet("/metrics", () =>
-{
-    var sw = Stopwatch.StartNew();
-    return BuildResponse("/metrics", () => metrics.Snapshot(".NET 8"), sw, record: false);
-});
-
-app.MapGet("/reset-metrics", () =>
-{
-    var sw = Stopwatch.StartNew();
-    metrics.Reset();
-    return BuildResponse("/reset-metrics", () => new { status = "reset", message = "Métricas reiniciadas para el stack .NET 8." }, sw, record: false);
-});
-
-app.Run();
-
-internal sealed class MetricsStore
-{
-    private readonly int _maxSamples;
-    private readonly List<double> _samples = new();
-    private readonly object _lock = new();
-    private int _requests;
-    private string? _lastPath;
-    private int _lastStatus = 200;
-    private DateTimeOffset? _lastUpdated;
-
-    public MetricsStore(int maxSamples)
-    {
-        _maxSamples = maxSamples;
+        while (!cts.IsCancellationRequested)
+        {
+            HttpListenerContext ctx;
+            try { ctx = await listener.GetContextAsync(); }
+            catch { break; }
+            _ = Task.Run(() => Handle(ctx));
+        }
     }
 
-    public void Record(string path, int status, double elapsedMs)
+    private static async Task WorkerLoopAsync(CancellationToken ct)
     {
-        lock (_lock)
+        await Task.Delay(1000, ct).ContinueWith(_ => { });
+        while (!ct.IsCancellationRequested)
         {
-            _requests++;
-            _samples.Add(elapsedMs);
-            if (_samples.Count > _maxSamples)
+            RefreshSummary();
+            try { await Task.Delay(SummaryRefreshSeconds * 1000, ct); } catch { break; }
+        }
+    }
+
+    private static void RefreshSummary()
+    {
+        var sw = Stopwatch.StartNew();
+        var next = new Dictionary<int, CustomerSummary>();
+        foreach (var o in Orders)
+        {
+            if (!next.TryGetValue(o.CustomerId, out var s)) { s = new CustomerSummary(); next[o.CustomerId] = s; }
+            s.OrderCount++;
+            s.TotalAmount = Round2(s.TotalAmount + o.Amount);
+        }
+        foreach (var kv in next) SummaryCache[kv.Key] = kv.Value;
+        sw.Stop();
+        var durMs = (long)sw.Elapsed.TotalMilliseconds;
+        Worker.Update("ok", durMs, $"refreshed {next.Count} customer summaries");
+        lock (JobRunsLock)
+        {
+            JobRuns.AddFirst(new JobRun(DateTime.UtcNow.ToString("o"), "ok", durMs, next.Count));
+            while (JobRuns.Count > MaxJobRuns) JobRuns.RemoveLast();
+        }
+    }
+
+    private static void Handle(HttpListenerContext ctx)
+    {
+        var sw = Stopwatch.StartNew();
+        var path = ctx.Request.Url?.AbsolutePath ?? "/";
+        var q = QueryParams(ctx.Request.Url?.Query);
+        int status = 200;
+        string body;
+        Metrics? tracked = null;
+        try
+        {
+            switch (path)
             {
-                _samples.RemoveAt(0);
+                case "/":
+                case "/index":
+                    body = IndexJson(); break;
+                case "/health":
+                    body = $"{{\"status\":\"ok\",\"stack\":\"{Stack}\",\"case\":\"{CaseName}\"}}"; break;
+                case "/report-legacy":
+                    body = ReportLegacy(Bounded(q.GetValueOrDefault("limit", "20"), 1, 200));
+                    tracked = LegacyMetrics; break;
+                case "/report-optimized":
+                    body = ReportOptimized(Bounded(q.GetValueOrDefault("limit", "20"), 1, 200));
+                    tracked = OptimizedMetrics; break;
+                case "/batch/status":
+                    body = Worker.ToJson(); break;
+                case "/job-runs":
+                    body = JobRunsJson(); break;
+                case "/diagnostics/summary":
+                    body = DiagnosticsJson(); break;
+                case "/metrics":
+                    body = MetricsJson(); break;
+                case "/reset-lab":
+                    LegacyMetrics.Reset(); OptimizedMetrics.Reset();
+                    lock (JobRunsLock) JobRuns.Clear();
+                    body = $"{{\"status\":\"reset\",\"stack\":\"{Stack}\"}}"; break;
+                default:
+                    status = 404; body = $"{{\"error\":\"not_found\",\"path\":\"{Escape(path)}\"}}"; break;
             }
-            _lastPath = path;
-            _lastStatus = status;
-            _lastUpdated = DateTimeOffset.UtcNow;
         }
+        catch (Exception e) { status = 500; body = $"{{\"error\":\"internal\",\"detail\":\"{Escape(e.Message)}\"}}"; }
+
+        sw.Stop();
+        if (tracked != null) tracked.Record(Round2(sw.Elapsed.TotalMilliseconds));
+        SendJson(ctx, status, body);
     }
 
-    public void Reset()
+    private static string IndexJson() =>
+        "{" +
+        "\"lab\":\"Problem-Driven Systems Lab\"," +
+        $"\"case\":\"{CaseName}\"," +
+        $"\"stack\":\"{Stack}\"," +
+        "\"native_primitives\":[\"ConcurrentDictionary (summary cache)\",\"Interlocked (counters)\",\"Task.Delay loop (worker)\"]," +
+        "\"routes\":{" +
+        "\"/health\":\"liveness check\"," +
+        "\"/report-legacy?limit=20\":\"N+1 + filtro no sargable\"," +
+        "\"/report-optimized?limit=20\":\"batch en memoria + lectura O(1) de summary cache\"," +
+        "\"/batch/status\":\"estado del worker\"," +
+        "\"/job-runs\":\"historial de corridas del worker\"," +
+        "\"/diagnostics/summary\":\"contraste legacy vs optimized\"," +
+        "\"/metrics\":\"avg/p95/p99 por ruta\"," +
+        "\"/reset-lab\":\"reinicia contadores e historico\"}}";
+
+    private static string ReportLegacy(int limit)
     {
-        lock (_lock)
+        long dbHits = 0;
+        var sw = Stopwatch.StartNew();
+        var scanned = new List<Order>();
+        foreach (var o in Orders)
+            if (LowerRegion(o.Region).StartsWith("n")) scanned.Add(o);
+        dbHits++;
+        int take = Math.Min(limit, scanned.Count);
+        var sb = new StringBuilder(8192);
+        sb.Append("{\"variant\":\"legacy\",\"rows\":[");
+        for (int i = 0; i < take; i++)
         {
-            _requests = 0;
-            _samples.Clear();
-            _lastPath = null;
-            _lastStatus = 200;
-            _lastUpdated = DateTimeOffset.UtcNow;
+            var o = scanned[i];
+            var c = LookupCustomerOneByOne(o.CustomerId);
+            dbHits++;
+            SleepMicros(1200);
+            if (i > 0) sb.Append(',');
+            sb.Append("{\"order_id\":").Append(o.Id)
+              .Append(",\"customer\":\"").Append(Escape(c?.Name ?? "")).Append('"')
+              .Append(",\"tier\":\"").Append(c?.Tier ?? "").Append('"')
+              .Append(",\"region\":\"").Append(o.Region).Append('"')
+              .Append(",\"amount\":").Append(F(o.Amount)).Append('}');
         }
+        sw.Stop();
+        sb.Append("],\"db_hits\":").Append(dbHits)
+          .Append(",\"elapsed_ms\":").Append(F(Round2(sw.Elapsed.TotalMilliseconds)))
+          .Append(",\"note\":\"N+1 + scan no sargable; cada hit cuesta tiempo real.\"}");
+        return sb.ToString();
     }
 
-    public object Snapshot(string stack)
+    private static string ReportOptimized(int limit)
     {
-        lock (_lock)
+        long dbHits = 0;
+        var sw = Stopwatch.StartNew();
+        if (!OrdersByRegionPrefix.TryGetValue("n", out var matched)) matched = new List<Order>();
+        dbHits++;
+        int take = Math.Min(limit, matched.Count);
+        var batch = new Dictionary<int, Customer>();
+        for (int i = 0; i < take; i++)
         {
-            var ordered = _samples.OrderBy(x => x).ToList();
-            var avg = _samples.Count > 0 ? Math.Round(_samples.Average(), 2) : 0.0;
-            double Percentile(int percent)
+            var cid = matched[i].CustomerId;
+            if (!batch.ContainsKey(cid) && CustomerById.TryGetValue(cid, out var cc)) batch[cid] = cc;
+        }
+        dbHits++;
+        SleepMicros(700);
+        var sb = new StringBuilder(8192);
+        sb.Append("{\"variant\":\"optimized\",\"rows\":[");
+        for (int i = 0; i < take; i++)
+        {
+            var o = matched[i];
+            batch.TryGetValue(o.CustomerId, out var c);
+            SummaryCache.TryGetValue(o.CustomerId, out var s);
+            if (i > 0) sb.Append(',');
+            sb.Append("{\"order_id\":").Append(o.Id)
+              .Append(",\"customer\":\"").Append(Escape(c?.Name ?? "")).Append('"')
+              .Append(",\"tier\":\"").Append(c?.Tier ?? "").Append('"')
+              .Append(",\"region\":\"").Append(o.Region).Append('"')
+              .Append(",\"amount\":").Append(F(o.Amount))
+              .Append(",\"lifetime_orders\":").Append(s?.OrderCount ?? 0)
+              .Append(",\"lifetime_amount\":").Append(F(s?.TotalAmount ?? 0.0))
+              .Append('}');
+        }
+        sw.Stop();
+        sb.Append("],\"db_hits\":").Append(dbHits)
+          .Append(",\"elapsed_ms\":").Append(F(Round2(sw.Elapsed.TotalMilliseconds)))
+          .Append(",\"summary_cache_size\":").Append(SummaryCache.Count)
+          .Append(",\"note\":\"1 lookup indexado + 1 batch + O(1) sobre summary cache mantenida por worker.\"}");
+        return sb.ToString();
+    }
+
+    private static string DiagnosticsJson() =>
+        "{" +
+        $"\"stack\":\"{Stack}\"," +
+        $"\"case\":\"{CaseName}\"," +
+        $"\"legacy\":{LegacyMetrics.ToJson("legacy")}," +
+        $"\"optimized\":{OptimizedMetrics.ToJson("optimized")}," +
+        $"\"summary_cache_size\":{SummaryCache.Count}," +
+        $"\"worker\":{Worker.ToJson()}}}";
+
+    private static string MetricsJson() =>
+        $"{{\"legacy\":{LegacyMetrics.ToJson("legacy")},\"optimized\":{OptimizedMetrics.ToJson("optimized")}}}";
+
+    private static string JobRunsJson()
+    {
+        var sb = new StringBuilder(1024);
+        sb.Append("{\"runs\":[");
+        lock (JobRunsLock)
+        {
+            bool first = true;
+            foreach (var r in JobRuns)
             {
-                if (ordered.Count == 0) return 0.0;
-                var index = Math.Clamp((int)Math.Ceiling((percent / 100.0) * ordered.Count) - 1, 0, ordered.Count - 1);
-                return Math.Round(ordered[index], 2);
+                if (!first) sb.Append(',');
+                sb.Append(r.ToJson());
+                first = false;
             }
-
-            return new
-            {
-                stack,
-                @case = "01 - API lenta bajo carga",
-                requests_tracked = _requests,
-                sample_count = _samples.Count,
-                avg_ms = avg,
-                p95_ms = Percentile(95),
-                p99_ms = Percentile(99),
-                last_path = _lastPath,
-                last_status = _lastStatus,
-                last_updated = _lastUpdated,
-                note = "Métrica simple, en proceso único, pensada para laboratorio. No reemplaza observabilidad real."
-            };
         }
+        sb.Append("],\"max_runs_kept\":").Append(MaxJobRuns).Append('}');
+        return sb.ToString();
+    }
+
+    private static void SeedData()
+    {
+        long seed = 102030L;
+        string[] regions = { "north", "south", "east", "west" };
+        string[] tiers = { "bronze", "silver", "gold" };
+        for (int i = 1; i <= 1600; i++)
+        {
+            seed = (seed * 9301 + 49297) % 233280;
+            var tier = tiers[(int)(seed % tiers.Length)];
+            var c = new Customer(i, $"Customer {i}", tier);
+            Customers.Add(c);
+            CustomerById[i] = c;
+        }
+        for (int i = 1; i <= 4800; i++)
+        {
+            seed = (seed * 9301 + 49297) % 233280;
+            int cid = 1 + (int)(seed % Customers.Count);
+            var region = regions[(int)((seed / 7) % regions.Length)];
+            double amount = Round2(20.0 + (seed % 1000));
+            var o = new Order(i, cid, region, amount);
+            Orders.Add(o);
+            var key = region.Substring(0, 1);
+            if (!OrdersByRegionPrefix.TryGetValue(key, out var list)) { list = new List<Order>(); OrdersByRegionPrefix[key] = list; }
+            list.Add(o);
+        }
+    }
+
+    private static Customer? LookupCustomerOneByOne(int id)
+    {
+        foreach (var c in Customers) if (c.Id == id) return c;
+        return null;
+    }
+
+    private static string LowerRegion(string? r) => r == null ? "" : r.ToLowerInvariant();
+
+    private sealed class WorkerState
+    {
+        private string _status = "init";
+        private long _lastDurationMs = -1;
+        private string _lastMessage = "worker not started yet";
+        private string? _lastHeartbeat;
+        private readonly object _lock = new();
+        public void Update(string s, long durMs, string msg)
+        {
+            lock (_lock)
+            {
+                _status = s; _lastDurationMs = durMs; _lastMessage = msg;
+                _lastHeartbeat = DateTime.UtcNow.ToString("o");
+            }
+        }
+        public string ToJson()
+        {
+            lock (_lock)
+            {
+                return "{" +
+                    "\"worker_name\":\"report-refresh-dotnet\"," +
+                    $"\"last_status\":\"{Escape(_status)}\"," +
+                    $"\"last_duration_ms\":{_lastDurationMs}," +
+                    $"\"last_message\":\"{Escape(_lastMessage)}\"," +
+                    $"\"last_heartbeat\":\"{Escape(_lastHeartbeat)}\"}}";
+            }
+        }
+    }
+
+    private sealed record JobRun(string At, string Status, long DurationMs, int CustomersRefreshed)
+    {
+        public string ToJson() =>
+            $"{{\"at\":\"{Escape(At)}\",\"status\":\"{Escape(Status)}\",\"duration_ms\":{DurationMs},\"customers_refreshed\":{CustomersRefreshed}}}";
+    }
+
+    private sealed class Metrics
+    {
+        private long _requests;
+        private readonly List<double> _samples = new();
+        private readonly object _lock = new();
+        public void Record(double elapsedMs)
+        {
+            Interlocked.Increment(ref _requests);
+            lock (_lock)
+            {
+                _samples.Add(elapsedMs);
+                while (_samples.Count > MaxSamples) _samples.RemoveAt(0);
+            }
+        }
+        public void Reset()
+        {
+            Interlocked.Exchange(ref _requests, 0);
+            lock (_lock) _samples.Clear();
+        }
+        public string ToJson(string label)
+        {
+            List<double> snap;
+            long req = Interlocked.Read(ref _requests);
+            lock (_lock) snap = new List<double>(_samples);
+            return $"{{\"label\":\"{label}\"," +
+                   $"\"requests\":{req}," +
+                   $"\"sample_count\":{snap.Count}," +
+                   $"\"avg_ms\":{F(Avg(snap))}," +
+                   $"\"p95_ms\":{F(Percentile(snap, 95))}," +
+                   $"\"p99_ms\":{F(Percentile(snap, 99))}}}";
+        }
+    }
+
+    private static double Avg(List<double> v) { if (v.Count == 0) return 0.0; double s = 0; foreach (var x in v) s += x; return Round2(s / v.Count); }
+    private static double Percentile(List<double> v, int percent)
+    {
+        if (v.Count == 0) return 0.0;
+        var ordered = v.OrderBy(x => x).ToList();
+        int idx = Math.Max(0, Math.Min(ordered.Count - 1, (int)Math.Ceiling((percent / 100.0) * ordered.Count) - 1));
+        return Round2(ordered[idx]);
+    }
+    private static double Round2(double v) => Math.Round(v, 2);
+    private static string F(double v) => v.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture);
+
+    private static int Bounded(string raw, int min, int max)
+    {
+        if (!int.TryParse(raw, out var n)) return min;
+        return Math.Max(min, Math.Min(n, max));
+    }
+    private static void SleepMicros(int micros)
+    {
+        long ticks = micros * (Stopwatch.Frequency / 1_000_000L);
+        long start = Stopwatch.GetTimestamp();
+        while (Stopwatch.GetTimestamp() - start < ticks) Thread.SpinWait(50);
+    }
+    private static string Escape(string? v) => v == null ? "" : v.Replace("\\", "\\\\").Replace("\"", "\\\"");
+    private static Dictionary<string, string> QueryParams(string? raw)
+    {
+        var d = new Dictionary<string, string>();
+        if (string.IsNullOrEmpty(raw)) return d;
+        if (raw.StartsWith("?")) raw = raw.Substring(1);
+        foreach (var pair in raw.Split('&', StringSplitOptions.RemoveEmptyEntries))
+        {
+            var parts = pair.Split('=', 2);
+            var k = WebUtility.UrlDecode(parts[0]) ?? "";
+            var v = parts.Length > 1 ? (WebUtility.UrlDecode(parts[1]) ?? "") : "";
+            d[k] = v;
+        }
+        return d;
+    }
+    private static void SendJson(HttpListenerContext ctx, int status, string body)
+    {
+        try
+        {
+            var bytes = Encoding.UTF8.GetBytes(body);
+            ctx.Response.StatusCode = status;
+            ctx.Response.ContentType = "application/json; charset=utf-8";
+            ctx.Response.ContentLength64 = bytes.Length;
+            ctx.Response.OutputStream.Write(bytes, 0, bytes.Length);
+        }
+        catch { }
+        finally { try { ctx.Response.OutputStream.Close(); } catch { } }
     }
 }
