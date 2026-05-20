@@ -1,7 +1,7 @@
 # 🏗️ Caso 07 — Modernización incremental de monolito
 
 [![Estado](https://img.shields.io/badge/Estado-Multi--stack%20operativo-success)](php/README.md)
-[![Stacks](https://img.shields.io/badge/Stacks-PHP%20%C2%B7%20Python%20%C2%B7%20Node%20%C2%B7%20Java-blue)](#-stacks-disponibles)
+[![Stacks](https://img.shields.io/badge/Stacks-PHP%20%C2%B7%20Python%20%C2%B7%20Node%20%C2%B7%20Java%20%C2%B7%20.NET-blue)](#-stacks-disponibles)
 [![Categoría](https://img.shields.io/badge/Categoría-Arquitectura-violet)](../../README.md)
 
 > [!IMPORTANT]
@@ -107,9 +107,9 @@ Misma lógica con `dict[str, Callable]` como routing table. Ver [`python/README.
 
 `ConcurrentHashMap<String, Function<Request, Response>>` como routing table — reads paralelos sin lock, writes atómicos por bucket. `Function<T,R>` como ACL closure: la firma del handler **es** el contrato; agregar consumer = registrar lambda. Ver [`java/README.md`](java/README.md). Modo aislado: puerto `847`. Hub: `http://localhost:8400/07/`.
 
-### .NET (espacio de crecimiento)
+### .NET 8
 
-Estructura dockerizada lista; sin paridad funcional todavía.
+`ConcurrentDictionary<string, Func<Request, Response>>` como routing table — reads paralelos sin lock, writes atomicos por bucket. `Func<Request, Response>` delegate como ACL closure: la firma del delegate **es** el contrato; agregar consumer = `routingTable[key] = lambda`. `record Request/Response` inmutables. Ver [`dotnet/README.md`](dotnet/README.md). Modo aislado: puerto `857`. Hub: `http://localhost:8500/07/`.
 
 ---
 
@@ -135,7 +135,7 @@ Permite **renovar plataformas reales sin detener operación** ni asumir una rees
 | 🐍 Python 3.12 | `OPERATIVO` (`dict[str, Callable]` routing + stdlib pura) |
 | 🟢 Node.js 20 | `OPERATIVO` (`Map<consumer, handler>` mutable en runtime + ACL como closure) |
 | ☕ Java 21 | `OPERATIVO` (`ConcurrentHashMap<String, Function>` routing + `Function` ACL) |
-| 🔵 .NET 8 | 🔧 Estructura lista |
+| 🔵 .NET 8 | `OPERATIVO` (`ConcurrentDictionary<string, Func<Request,Response>>` routing + `record` types) |
 
 ---
 

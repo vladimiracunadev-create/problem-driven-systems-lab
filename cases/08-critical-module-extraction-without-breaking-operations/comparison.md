@@ -1,4 +1,4 @@
-# Caso 08 — Comparativa multi-stack: Extracción de módulo crítico sin romper la operación (PHP · Python · Node.js · Java)
+# Caso 08 — Comparativa multi-stack: Extracción de módulo crítico sin romper la operación (PHP · Python · Node.js · Java · .NET)
 
 ## El problema que ambos resuelven
 
@@ -157,6 +157,48 @@ emit("cutover_done:" + consumer);                       // CopyOnWriteArrayList<
 ```
 
 **Por que `Function` y no `java.lang.reflect.Proxy`:** `Proxy` dinamico es overkill para traducir contratos planos — requiere `InvocationHandler` y reflection. `Function<Old,New>` es declarativo, tipado, sin overhead. Mismo efecto, menos boilerplate.
+
+---
+
+## .NET 8: Func<Old,New> como proxy + ImmutableList<Action<string>> como event bus
+
+**Runtime:** .NET 8 sobre `HttpListener`. CLR `ThreadPool` con state compartido. Cutover gradual con proxy de traduccion + bus de eventos thread-safe.
+
+**El fallo big-bang en C#:**
+```csharp
+// Nuevo modulo solo entiende {Price, Currency}; consumer manda {CostUsd}
+return "contract_violation";   // checkout, partners, backoffice todos rotos
+```
+Cambio de contrato sin proxy → todos los consumidores sensibles rotos al mismo tiempo.
+
+**La correccion en C#:**
+```csharp
+private static readonly Func<PriceRequestOld, PriceRequestNew> compatProxy =
+    old => new PriceRequestNew(old.Sku, old.CostUsd * 1.0, "USD");
+
+PriceRequestNew translated = compatProxy(old);   // {CostUsd}→{Price,Currency}
+cutoverProgress[consumer] = true;
+Emit($"cutover_done:{consumer}");                 // event bus thread-safe
+```
+
+**Event bus thread-safe con `ImmutableList<Action<string>>`:**
+```csharp
+private static ImmutableList<Action<string>> subscribers = ImmutableList<Action<string>>.Empty;
+
+public static void Subscribe(Action<string> h) =>
+    ImmutableInterlocked.Update(ref subscribers, list => list.Add(h));
+
+public static void Emit(string evt) {
+    foreach (var h in Volatile.Read(ref subscribers)) h(evt);   // lectores sin lock
+}
+```
+
+**Notas idiomaticas vs los otros stacks:**
+- `Func<Old,New>` es 1:1 con `Function<Old,New>` Java o las arrow functions Node.
+- `record PriceRequestOld(string Sku, double CostUsd)` / `record PriceRequestNew(string Sku, double Price, string Currency)` son inmutables con `with`-expressions.
+- `ImmutableList<T>` (System.Collections.Immutable) es el equivalente exacto del `CopyOnWriteArrayList` Java: lectores nunca bloquean, escritores generan nueva lista persistente.
+- `ImmutableInterlocked.Update` es CAS-loop encapsulado — mas seguro que reimplementarlo a mano.
+- A diferencia de Node, .NET no tiene `Proxy` nativo de metaprogramacion en el callsite (existe `DispatchProxy` pero es para escenarios mas pesados); el adapter explicito via `Func<>` es el patron idiomatico.
 
 ---
 

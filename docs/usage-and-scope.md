@@ -20,10 +20,11 @@
 | Casos `01` al `12` operativos en Python | si |
 | Casos `01` al `12` operativos en Node.js | si |
 | Casos `01` al `12` operativos en Java 21 | si |
+| Casos `01` al `12` operativos en .NET 8 | si |
 | Docker por caso y por stack como ruta oficial | si |
 | Portal raiz para navegar el laboratorio | si |
 | Familia documental profesional en la raiz | si |
-| Paridad funcional completa entre todos los lenguajes | parcial — PHP/Python/Node/Java cubren los 12 casos; .NET sigue como scaffold |
+| Paridad funcional completa entre todos los lenguajes | si — los 5 stacks (PHP/Python/Node/Java/.NET) cubren los 12 casos cada uno con primitivas idiomaticas distintas |
 
 ## 🚫 Limites conscientes
 

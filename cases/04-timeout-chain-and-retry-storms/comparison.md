@@ -1,4 +1,4 @@
-# Caso 04 — Comparativa multi-stack: Timeout chain y retry storms (PHP · Python · Node.js · Java)
+# Caso 04 — Comparativa multi-stack: Timeout chain y retry storms (PHP · Python · Node.js · Java · .NET)
 
 ## El problema que ambos resuelven
 
@@ -132,6 +132,49 @@ CompletableFuture<Long> fut = CompletableFuture
 Tras 3 fallos consecutivos `breaker.set(new BreakerState("open", fails, now()))` — el siguiente request lee el `AtomicReference`, ve `open`, devuelve fallback en microsegundos. `AtomicReference.set()` es atomico (CAS-backed); no hay lock global.
 
 **Por que `record BreakerState`:** Inmutable. Cada transicion es una nueva instancia. Evita race conditions de "leyo state pero failCount era stale" — capturas el estado completo en una sola lectura del `AtomicReference`.
+
+---
+
+## .NET 8: CancellationToken cooperativo + Interlocked CAS sobre el breaker
+
+**Runtime:** .NET 8 sobre `HttpListener`. CLR `ThreadPool` despachando handlers async. Las primitivas idiomaticas son `Task` + `CancellationToken` para deadlines y `Interlocked.CompareExchange` para transiciones de estado sin lock.
+
+**El fallo legacy en C#:**
+```csharp
+for (int attempt = 1; attempt <= 5; attempt++) {
+    Interlocked.Increment(ref legacyRetries);
+    try { return CallProvider(fail, 800); }
+    catch { /* sin backoff, sin breaker, sin fallback */ }
+}
+```
+Cinco intentos secuenciales sin proteccion. Tres requests concurrentes = 15 intentos contra un provider ya caido.
+
+**La correccion en C#:**
+```csharp
+var st = Volatile.Read(ref breakerState);   // snapshot atomico
+if (st.State == "open" && CooldownNotElapsed(st)) {
+    Interlocked.Increment(ref shortCircuits);
+    return Fallback(lastFallbackPrice);   // sin tocar al provider
+}
+
+using var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(300));
+try {
+    var result = await Task.Run(() => CallProvider(fail, 800), cts.Token);
+    Interlocked.CompareExchange(ref breakerState, new BreakerState("closed", 0, default), st);
+    return result;
+} catch (OperationCanceledException) {
+    var failed = new BreakerState("open", st.FailCount + 1, DateTime.UtcNow);
+    Interlocked.CompareExchange(ref breakerState, failed, st);   // CAS — si otro thread ya cambio, reintenta
+    return Fallback(lastFallbackPrice);
+}
+```
+`CancellationToken` cancela el `Task` cooperativamente; el `Interlocked.CompareExchange` reemplaza el `AtomicReference.compareAndSet` Java.
+
+**Notas idiomaticas vs los otros stacks:**
+- `CancellationToken` es el equivalente exacto del `AbortSignal` Node y del `CompletableFuture.orTimeout` Java. Las tres APIs cancelan cooperativamente sin matar threads.
+- `Interlocked.CompareExchange<T>` reemplaza el `AtomicReference.compareAndSet` Java o el patron CAS manual.
+- `record BreakerState(string State, int FailCount, DateTime OpenedAt)` con `with`-expressions hace explicito que cada transicion es una nueva instancia — mismo patron de Java.
+- A diferencia de PHP/Python, `await` no bloquea el thread durante el backoff — el `ThreadPool` puede atender otras requests, como Node.
 
 ---
 

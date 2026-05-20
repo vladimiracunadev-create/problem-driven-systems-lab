@@ -8,7 +8,8 @@
 - Casos `01` al `12` operativos en Python.
 - Casos `01` al `12` operativos en Node.js, cada uno con la primitiva nativa que mejor expresa el problema: `event_loop_lag_ms` y `process.memoryUsage()` para presion real, `AbortController`/`AbortSignal.timeout` para cancelacion y deadlines, `Map<consumer, handler>` para strangler, `Proxy` para compatibilidad de contrato, `EventEmitter` para cutover events, `monitorEventLoopDelay()` para impacto sobre el loop, optional chaining como runbook codificado.
 - Casos `01` al `12` operativos en Java 21 con primitivas distintas por caso: `ConcurrentHashMap`+`LongAdder`+`ScheduledExecutorService` (01), batch IN + `HashMap` indexado (02), `ThreadLocal<RequestContext>` correlation (03), `CompletableFuture.orTimeout`+`AtomicReference<BreakerState>` CAS (04), `LinkedHashMap.removeEldestEntry` LRU+`Runtime` metrics (05), `record` types + state machine (06), `ConcurrentHashMap<String,Function>` routing mutable (07), `Function` proxy+`CopyOnWriteArrayList<Consumer>` event bus (08), `Semaphore` budget+snapshot cache+`AtomicReference` breaker (09), `HashMap` O(1) vs N hops `StringBuilder` (10), `ThreadPoolExecutor.getActiveCount()` saturation observable+`ExecutorService` dedicado (11), `Optional<T>`+`map/orElse` como runbook codificado (12).
-- **Cuatro hubs operativos (uno por lenguaje):** `compose.root.yml` (PHP `8100`), `compose.python.yml` (Python `8200`), `compose.nodejs.yml` (Node.js `8300`), `compose.java.yml` (Java `8400`). Cada hub sirve los 12 casos via routing por path.
+- Casos `01` al `12` operativos en .NET 8 con primitivas BCL distintas por caso: `ConcurrentDictionary`+`Interlocked`+`Task.Delay`/`CancellationToken` worker (01), `Dictionary` indexado + ensamblado batch en memoria (02), `AsyncLocal<RequestContext>` correlation en pipeline async (03), `CancellationTokenSource` + `Interlocked.CompareExchange` breaker CAS (04), LRU manual `Dictionary`+`LinkedList` + `Process.WorkingSet64`+`GC.GetTotalMemory` (05), `ConcurrentDictionary<string,EnvState>` + state machine con `with`-expressions para rollback (06), `ConcurrentDictionary<string,Func<Request,Response>>` routing mutable + `record` types (07), `Func<Old,New>` proxy + `ImmutableList<Action<string>>` event bus (08), `SemaphoreSlim` budget + snapshot cache + `Interlocked.CompareExchange` breaker (09), `Dictionary` O(1) vs N hops `JsonSerializer` con presion LOH (10), `ConcurrentExclusiveSchedulerPair` o `Thread` dedicado + `ThreadPool.GetAvailableWorkerThreads` (11), `?.`+`??` con Nullable Reference Types como runbook codificado en el sistema de tipos (12).
+- **Cinco hubs operativos (uno por lenguaje):** `compose.root.yml` (PHP `8100`), `compose.python.yml` (Python `8200`), `compose.nodejs.yml` (Node.js `8300`), `compose.java.yml` (Java `8400`), `compose.dotnet.yml` (.NET `8500`). Cada hub sirve los 12 casos via routing por path.
 - Docker por caso disponible para modo estudio aislado (memoria, event loop) sin contaminacion de otros workloads.
 - Familia documental profesional incorporada en la raiz del repo.
 - Catalogo y portal conectados por metadatos compartidos.
@@ -39,9 +40,9 @@ Estado: en progreso
 - Completar implementaciones funcionales por caso y stack con mayor logica de negocio.
 - Agregar medicion reproducible donde el problema lo requiera.
 - Sumar mas observabilidad compartida cuando aporte valor real.
-- Casos `01` al `12` con paridad multi-stack PHP + Python + Node.js.
-- **Java 21 operativo en los 12 casos** con primitivas JDK distintivas por caso (ConcurrentHashMap, CompletableFuture.orTimeout, LinkedHashMap LRU, record types, Semaphore, Optional<T>, ThreadPoolExecutor saturation observable). Paridad multi-stack completa en PHP/Python/Node/Java.
-- Sumar .NET para algun caso especifico cuando aporte contraste tecnico real.
+- Casos `01` al `12` con paridad multi-stack PHP + Python + Node.js + Java 21 + .NET 8.
+- **Java 21 operativo en los 12 casos** con primitivas JDK distintivas por caso (ConcurrentHashMap, CompletableFuture.orTimeout, LinkedHashMap LRU, record types, Semaphore, Optional<T>, ThreadPoolExecutor saturation observable).
+- **.NET 8 operativo en los 12 casos** con primitivas BCL distintivas por caso (ConcurrentDictionary, CancellationTokenSource, LRU manual Dictionary+LinkedList, record types, SemaphoreSlim, `?.`+`??` con Nullable Reference Types, ThreadPool.GetAvailableWorkerThreads). Paridad multi-stack completa en los cinco hubs.
 
 Avance actual (multi-stack PHP + Python + Node.js):
 

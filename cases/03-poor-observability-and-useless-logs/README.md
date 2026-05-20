@@ -67,9 +67,9 @@ Los stacks PHP, Node.js y Python ya implementan este caso con dos modos del mism
 
 Stack Java operativo con `ThreadLocal<RequestContext>` para propagar `correlation_id` durante todo el handler sin pasarlo por parametros (equivalente a `ScopedValue` de JDK 21 sin requerir preview flags), `UUID.randomUUID()` por request, y JSON estructurado construido con `StringBuilder` (sin Log4j/SLF4J — single-file sin deps). `/logs` devuelve los ultimos 200 logs estructurados al estilo Loki compacto. Limpieza con `CTX.remove()` en `finally` evita leak del contexto al proximo handler en el mismo thread. Ver [`java/README.md`](java/README.md). Hub: `http://localhost:8400/03/`. Aislado: puerto `843`.
 
-### .NET (espacio de crecimiento)
+### .NET 8 (implementacion operativa)
 
-Se mantienen como base de crecimiento para llevar el caso a otros runtimes sin degradarlo a un demo superficial.
+Stack .NET operativo con `AsyncLocal<RequestContext>` para propagar `correlation_id` a traves de `await` sobre el `ThreadPool` (equivalente moderno del `ThreadLocal` Java en codigo async), `Guid.NewGuid()` por request, y JSON estructurado con `System.Text.Json` (sin Serilog/NLog — sin dependencias externas). `/logs` devuelve los ultimos 200 logs estructurados. Ver [`dotnet/README.md`](dotnet/README.md). Hub: `http://localhost:8500/03/`. Aislado: puerto `853`.
 
 ---
 
@@ -98,7 +98,7 @@ Se mantienen como base de crecimiento para llevar el caso a otros runtimes sin d
 | 🟢 Node.js | ✅ Implementado (legacy vs observable) |
 | 🐍 Python | ✅ Implementado (legacy vs observable) |
 | ☕ Java 21 | `OPERATIVO` (`ThreadLocal<RequestContext>` con correlation_id + log estructurado JSON) |
-| 🔵 .NET 8 | 🔧 Estructura lista |
+| 🔵 .NET 8 | `OPERATIVO` (`AsyncLocal<RequestContext>` + `System.Text.Json` estructurado) |
 
 ---
 

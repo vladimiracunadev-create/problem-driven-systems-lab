@@ -1,7 +1,7 @@
 # 👤 Caso 12 — Punto único de conocimiento y riesgo operacional
 
 [![Estado](https://img.shields.io/badge/Estado-Multi--stack%20operativo-success)](php/README.md)
-[![Stacks](https://img.shields.io/badge/Stacks-PHP%20%C2%B7%20Python%20%C2%B7%20Node%20%C2%B7%20Java-blue)](#-stacks-disponibles)
+[![Stacks](https://img.shields.io/badge/Stacks-PHP%20%C2%B7%20Python%20%C2%B7%20Node%20%C2%B7%20Java%20%C2%B7%20.NET-blue)](#-stacks-disponibles)
 [![Categoría](https://img.shields.io/badge/Categoría-Operaciones-darkgreen)](../../README.md)
 
 > [!IMPORTANT]
@@ -113,9 +113,9 @@ Optional chaining (`a?.b?.c ?? default`) como **runbook codificado en el lenguaj
 
 `Optional<T>` + `map`/`flatMap`/`orElse` como runbook codificado en el sistema de tipos. El crash legacy no es falla de Java — es falla de no usar las herramientas que Java ya ofrece. `record Owner/Incident` inmutables; `AtomicInteger` para coverage y bus_factor. Ver [`java/README.md`](java/README.md). Modo aislado: puerto `8412`. Hub: `http://localhost:8400/12/`.
 
-### .NET (espacio de crecimiento)
+### .NET 8
 
-Estructura dockerizada lista; sin paridad funcional todavía.
+Operadores `?.` (null-conditional) + `??` (null-coalescing) con Nullable Reference Types habilitado (`<Nullable>enable</Nullable>`) — el compilador advierte sobre desreferencias de `Owner?` sin chequear. El crash legacy no es falla de .NET — es falla de no usar las herramientas que C# moderno ya ofrece. `record Owner/Incident` inmutables; `Interlocked.Add` para coverage y bus_factor. Ver [`dotnet/README.md`](dotnet/README.md). Modo aislado: puerto `8512`. Hub: `http://localhost:8500/12/`.
 
 ---
 
@@ -141,7 +141,7 @@ Reduce **riesgo organizacional**, mejora continuidad y hace al producto más sos
 | 🐍 Python 3.12 | `OPERATIVO` (try/except + dict owners) |
 | 🟢 Node.js 20 | `OPERATIVO` (optional chaining `?.` como runbook codificado) |
 | ☕ Java 21 | `OPERATIVO` (`Optional<T>` + `map/flatMap/orElse` + `record` types) |
-| 🔵 .NET 8 | 🔧 Estructura lista |
+| 🔵 .NET 8 | `OPERATIVO` (`?.` + `??` con Nullable Reference Types + `record` types) |
 
 ---
 

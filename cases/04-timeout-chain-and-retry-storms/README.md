@@ -1,7 +1,7 @@
 # ⏱️ Caso 04 — Cadena de timeouts y tormentas de reintentos
 
 [![Estado](https://img.shields.io/badge/Estado-Multi--stack%20operativo-success)](php/README.md)
-[![Stacks](https://img.shields.io/badge/Stacks-PHP%20%C2%B7%20Python%20%C2%B7%20Node%20%C2%B7%20Java-blue)](#-stacks-disponibles)
+[![Stacks](https://img.shields.io/badge/Stacks-PHP%20%C2%B7%20Python%20%C2%B7%20Node%20%C2%B7%20Java%20%C2%B7%20.NET-blue)](#-stacks-disponibles)
 [![Categoría](https://img.shields.io/badge/Categoría-Resiliencia-orange)](../../README.md)
 
 > [!IMPORTANT]
@@ -73,9 +73,9 @@ Misma lógica que PHP con `stdlib`: `time.sleep` para latencias, `threading.Lock
 
 `CompletableFuture.orTimeout(Duration)` como deadline a nivel future (cancela cooperativamente al pasar el plazo). `AtomicReference<BreakerState>` con CAS para transiciones `closed → open → half_open` sin lock global. `record BreakerState(state, failCount, openedAt)` inmutable evita race conditions de "leí state pero failCount era stale". Ver [`java/README.md`](java/README.md). Modo aislado: puerto `844`. Hub Java: `http://localhost:8400/04/`.
 
-### .NET (espacio de crecimiento)
+### .NET 8
 
-Estructura dockerizada lista; sin paridad funcional todavía.
+`CancellationTokenSource(TimeSpan)` como deadline cooperativo a nivel `Task` (cancela cooperativamente al pasar el plazo). `Interlocked.CompareExchange` para transiciones `closed → open → half_open` sin lock. `record BreakerState(string State, int FailCount, DateTime OpenedAt)` inmutable evita race conditions. Ver [`dotnet/README.md`](dotnet/README.md). Modo aislado: puerto `854`. Hub .NET: `http://localhost:8500/04/`.
 
 ---
 
@@ -133,7 +133,7 @@ Evita caídas en cascada y mejora resiliencia frente a terceros o componentes in
 | 🐍 Python 3.12 | `OPERATIVO` (`threading.Lock`, `time.time()` cooldown, stdlib pura) |
 | 🟢 Node.js 20 | `OPERATIVO` (`AbortController`/`AbortSignal` cooperativo + CB en memoria) |
 | ☕ Java 21 | `OPERATIVO` (`CompletableFuture.orTimeout` + `AtomicReference<BreakerState>` CAS) |
-| 🔵 .NET 8 | 🔧 Estructura lista |
+| 🔵 .NET 8 | `OPERATIVO` (`CancellationTokenSource` + `Interlocked.CompareExchange` sobre `record BreakerState`) |
 
 ---
 
@@ -156,6 +156,10 @@ curl http://localhost:8300/04/health
 # Java (los 12 casos)
 docker compose -f compose.java.yml up -d --build
 curl http://localhost:8400/04/health
+
+# .NET 8 (los 12 casos)
+docker compose -f compose.dotnet.yml up -d --build
+curl http://localhost:8500/04/health
 ```
 
 **Modo aislado (un caso, un puerto):**

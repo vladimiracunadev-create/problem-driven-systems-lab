@@ -1,7 +1,7 @@
 # 🌐 Caso 09 — Integración externa inestable
 
 [![Estado](https://img.shields.io/badge/Estado-Multi--stack%20operativo-success)](php/README.md)
-[![Stacks](https://img.shields.io/badge/Stacks-PHP%20%C2%B7%20Python%20%C2%B7%20Node%20%C2%B7%20Java-blue)](#-stacks-disponibles)
+[![Stacks](https://img.shields.io/badge/Stacks-PHP%20%C2%B7%20Python%20%C2%B7%20Node%20%C2%B7%20Java%20%C2%B7%20.NET-blue)](#-stacks-disponibles)
 [![Categoría](https://img.shields.io/badge/Categoría-Resiliencia-orange)](../../README.md)
 
 > [!IMPORTANT]
@@ -122,9 +122,9 @@ Misma lógica con stdlib + `dict` como cache + `threading.Lock` para budget. Ver
 
 `Semaphore` como budget de cuota (`tryAcquire()` no bloquea — si no hay permits, sirve snapshot). `ConcurrentHashMap` como snapshot cache thread-safe. `AtomicReference<String>` como breaker con CAS implícito. Ver [`java/README.md`](java/README.md). Modo aislado: puerto `849`. Hub: `http://localhost:8400/09/`.
 
-### .NET (espacio de crecimiento)
+### .NET 8
 
-Estructura dockerizada lista; sin paridad funcional todavía.
+`SemaphoreSlim.Wait(0)` como budget de cuota (no bloquea — si no hay permits, sirve snapshot). `ConcurrentDictionary<string,string>` como snapshot cache thread-safe. `Interlocked.CompareExchange` sobre el estado del breaker (`closed`/`open`/`half_open`) con CAS explicito. Ver [`dotnet/README.md`](dotnet/README.md). Modo aislado: puerto `859`. Hub: `http://localhost:8500/09/`.
 
 ---
 
@@ -150,7 +150,7 @@ Estructura dockerizada lista; sin paridad funcional todavía.
 | 🐍 Python 3.12 | `OPERATIVO` (stdlib + threading.Lock + dict cache) |
 | 🟢 Node.js 20 | `OPERATIVO` (`AbortSignal.timeout` + CB en memoria) |
 | ☕ Java 21 | `OPERATIVO` (`Semaphore` budget + snapshot cache + `AtomicReference` breaker) |
-| 🔵 .NET 8 | 🔧 Estructura lista |
+| 🔵 .NET 8 | `OPERATIVO` (`SemaphoreSlim` budget + `ConcurrentDictionary` cache + `Interlocked.CompareExchange` breaker) |
 
 ---
 

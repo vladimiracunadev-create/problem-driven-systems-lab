@@ -1,4 +1,4 @@
-# Caso 12 — Comparativa multi-stack: Punto único de conocimiento y riesgo operacional (PHP · Python · Node.js · Java)
+# Caso 12 — Comparativa multi-stack: Punto único de conocimiento y riesgo operacional (PHP · Python · Node.js · Java · .NET)
 
 ## El problema que ambos resuelven
 
@@ -181,6 +181,38 @@ String script = scriptOpt.orElse(null);
 ```
 
 **Por que `Optional` y no null checks manuales:** misma decision que `?.` en Node, `?` en Kotlin, `??` en C#: codificar la posibilidad de ausencia en el sistema de tipos, no en disciplina del developer. `Optional<Owner>` obliga a manejar el caso vacio; `Owner owner` no.
+
+---
+
+## .NET 8: ?. (null-conditional) + ?? (null-coalescing) + Nullable Reference Types
+
+**Runtime:** .NET 8 sobre `HttpListener`. CLR `ThreadPool`. Registry de owners thread-safe + runbooks compartidos como fallback.
+
+**El fallo legacy en C#:**
+```csharp
+Owner owner = PickOwnerLegacy(scenario);       // null si owner_absent
+string script = owner.Runbook[runbookKey];      // NullReferenceException
+string executed = script.ToUpperInvariant();    // NRE en cadena
+// → catch: mttr 120 min, crashed
+```
+
+**La correccion en C#:**
+```csharp
+Owner? owner = PickOwnerDistributed(scenario);                     // null permitido
+string? script = owner?.Runbook?.GetValueOrDefault(runbookKey);    // null si falta cualquier eslabon
+string fallback = script ?? teamRunbooks[runbookKey];              // degrada al runbook compartido
+// degradacion controlada → mttr 35-50 min
+```
+
+`?.` corta la cadena ante el primer null; `??` provee el fallback. Con `<Nullable>enable</Nullable>` en el csproj, el compilador emite warning si se desreferencia `Owner?` sin chequear — el problema se ve en build, no en runtime.
+
+**Notas idiomaticas vs los otros stacks:**
+- `?.` C# es 1:1 con `?.` Node y Kotlin/Swift. Resuelve lo mismo que `Optional.map().orElse()` Java pero con sintaxis ligera.
+- `??` C# es 1:1 con `??` Node (ECMAScript 2020) — fusion estricta solo sobre `null` (a diferencia de Python `or` que es falsy-loose).
+- `Interlocked.Add(ref coverage, 15)` reemplaza `AtomicInteger.addAndGet(15)` Java.
+- `ConcurrentDictionary<string, Owner>` reemplaza el `ConcurrentHashMap<String, Owner>` Java.
+- `record Owner(string Name, Dictionary<string, string> Runbook)` con `with`-expressions es 1:1 con el `record` Java.
+- La diferencia profunda con Java: el modelo de tipos nulables en C# moderno **es del compilador**, no de runtime — `Owner?` y `Owner` son el mismo tipo en IL, pero el compilador rastrea el flow analysis y advierte sobre desreferencias inseguras.
 
 ---
 

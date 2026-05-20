@@ -1,4 +1,4 @@
-# Caso 10 — Comparativa multi-stack: Arquitectura cara para un problema simple (PHP · Python · Node.js · Java)
+# Caso 10 — Comparativa multi-stack: Arquitectura cara para un problema simple (PHP · Python · Node.js · Java · .NET)
 
 ## El problema que ambos resuelven
 
@@ -140,6 +140,36 @@ return /* 1 service touched, cost_usd_month=3, lead_time=1 */;
 ```
 
 **Por que importa que sea CPU real, no `Thread.sleep`:** un caso simulado con `sleep` no muestra contencion sobre el thread pool. CPU real consume threads del pool y crea backpressure observable via `ThreadPoolExecutor.getActiveCount()`. El lab no inventa el costo — lo demuestra.
+
+---
+
+## .NET 8: Dictionary O(1) vs N hops JsonSerializer
+
+**Runtime:** .NET 8 sobre `HttpListener`. CLR `ThreadPool`. El "complex" cobra CPU real con `JsonSerializer.Serialize`/`Deserialize` por hop — no `Task.Delay()`.
+
+**El fallo complex en C#:**
+```csharp
+var payload = new Dictionary<string, object> { ["key"] = key, ["value"] = 0 };
+for (int h = 0; h < hops; h++) {
+    var blob = JsonSerializer.Serialize(payload);     // alocacion real
+    payload = JsonSerializer.Deserialize<Dictionary<string, object>>(blob)!;
+    payload["last_hop"] = h;
+}
+if (hops > 20) return /* internal_timeout */;
+```
+A partir de blobs grandes, las alocaciones pasan al LOH (Large Object Heap, >85 KB) y disparan colecciones Gen2 — costo doble: CPU del serializer + presion del GC.
+
+**La correccion en C#:**
+```csharp
+long value = directStore.TryGetValue(key, out var v) ? v : 0;   // O(1), 0 hops
+return /* 1 service touched, cost_usd_month=3, lead_time=1 */;
+```
+
+**Notas idiomaticas vs los otros stacks:**
+- `Dictionary<K,V>.TryGetValue` reemplaza `HashMap.get()` Java o `STORE[key]` Node.
+- `JsonSerializer` (System.Text.Json) reemplaza `JSON.stringify`/`parse` Node o `StringBuilder` loops Java — el costo cualitativo es el mismo.
+- `Stopwatch` o `Environment.TickCount64` reemplazan `System.nanoTime()` Java.
+- A diferencia de Node, el costo no se ve directamente en latencia de otras requests (CLR usa pool real); pero saturarlo si afecta `ThreadPool.GetAvailableWorkerThreads`, lo que el caso 11 explota.
 
 ---
 

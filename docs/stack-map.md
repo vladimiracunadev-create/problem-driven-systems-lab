@@ -18,8 +18,8 @@ El objetivo es mostrar cómo **el mismo problema se manifiesta y se resuelve de 
 | PHP | 🐘 | 8.x | Ideal para casos de APIs web, ORMs y patrones MVC |
 | Node.js | 🟢 | 20 LTS | Single-thread + event loop; primitivas estandar (`AbortController`, `AbortSignal.timeout`, `Proxy`, `EventEmitter`, `monitorEventLoopDelay`, `process.memoryUsage`) que mapean a problemas de cancelacion, contratos, eventos y observabilidad sin libreria externa |
 | Python | 🐍 | 3.x | Data, análisis, scripting y rapidez de prototipado |
-| Java | ☕ | JVM | Tipado fuerte, ecosistema empresarial, Spring |
-| .NET | 🔵 | 8.x | Ecosistema Microsoft, rendimiento y tipado fuerte |
+| Java | ☕ | 21 | Tipado fuerte, primitivas concurrentes ricas (`ConcurrentHashMap`, `CompletableFuture.orTimeout`, `LinkedHashMap` LRU, `Optional<T>`, `Semaphore`, `ThreadPoolExecutor`); paralelismo real sin GIL |
+| .NET | 🔵 | 8 | Tipado fuerte con Nullable Reference Types, primitivas BCL idiomaticas (`ConcurrentDictionary`, `CancellationTokenSource`, `AsyncLocal<T>`, `Interlocked.CompareExchange`, `SemaphoreSlim`, `ImmutableList<T>`, `ThreadPool.GetAvailableWorkerThreads`); `record` types + `with`-expressions; `await` que no bloquea threads |
 
 ---
 

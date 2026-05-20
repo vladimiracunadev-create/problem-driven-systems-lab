@@ -52,9 +52,10 @@ Cada lenguaje operativo tiene su propio compose en la raíz — un comando levan
 - `compose.python.yml` — Python: dispatcher único con 12 casos internos (`8200`), stdlib pura, sin dependencias externas
 - `compose.nodejs.yml` — Node.js 20: dispatcher único con 12 casos internos (`8300`), stdlib pura, sin dependencias externas
 - `compose.java.yml` — Java 21: dispatcher único con 12 casos internos (`8400`), JDK built-in (`HttpServer`, `HttpClient`), sin Maven
+- `compose.dotnet.yml` — .NET 8: dispatcher único con 12 casos internos (`8500`), BCL built-in (`HttpListener`, `System.Text.Json`), sin paquetes externos
 - `compose.portal.yml` — portal liviano solamente (`8080`)
 
-Los cuatro stacks operativos pueden correr en paralelo sin colisión de puertos. .NET seguirá el mismo patrón con `compose.dotnet.yml` (puerto `8500`).
+Los cinco stacks operativos pueden correr en paralelo sin colisión de puertos.
 
 La capa visual sigue viviendo en `portal/`, con:
 
@@ -92,6 +93,7 @@ scripts/validate-structure.sh ──▶ .github/workflows/ci.yml ◀── catal
 | `compose.python.yml` | dispatcher Python (`8200`) con los 12 casos internos, stdlib pura, sin dependencias externas |
 | `compose.nodejs.yml` | dispatcher Node.js (`8300`) con los 12 casos internos, stdlib pura |
 | `compose.java.yml` | dispatcher Java (`8400`) con los 12 casos internos, JDK built-in (sin Maven) |
+| `compose.dotnet.yml` | dispatcher .NET 8 (`8500`) con los 12 casos internos, BCL built-in (sin paquetes externos) |
 | `compose.portal.yml` | portal liviano |
 | `cases/<caso>/<stack>/compose.yml` | escenario concreto y aislado (desarrollo o revision individual) |
 | `cases/<caso>/compose.compare.yml` | comparacion entre stacks del mismo caso |
@@ -102,18 +104,18 @@ La familia PHP reutiliza un runtime comun en `docker/php/Dockerfile`. La familia
 
 | Caso | php | python | node | java | dotnet |
 | --- | --- | --- | --- | --- | --- |
-| `01` | ✅ OPERATIVO | ✅ OPERATIVO | ✅ OPERATIVO | ✅ OPERATIVO | scaffold |
-| `02` | ✅ OPERATIVO | ✅ OPERATIVO | ✅ OPERATIVO | ✅ OPERATIVO | scaffold |
-| `03` | ✅ OPERATIVO | ✅ OPERATIVO | ✅ OPERATIVO | ✅ OPERATIVO | scaffold |
-| `04` | ✅ OPERATIVO | ✅ OPERATIVO | ✅ OPERATIVO | ✅ OPERATIVO | scaffold |
-| `05` | ✅ OPERATIVO | ✅ OPERATIVO | ✅ OPERATIVO | ✅ OPERATIVO | scaffold |
-| `06` | ✅ OPERATIVO | ✅ OPERATIVO | ✅ OPERATIVO | ✅ OPERATIVO | scaffold |
-| `07` | ✅ OPERATIVO | ✅ OPERATIVO | ✅ OPERATIVO | ✅ OPERATIVO | scaffold |
-| `08` | ✅ OPERATIVO | ✅ OPERATIVO | ✅ OPERATIVO | ✅ OPERATIVO | scaffold |
-| `09` | ✅ OPERATIVO | ✅ OPERATIVO | ✅ OPERATIVO | ✅ OPERATIVO | scaffold |
-| `10` | ✅ OPERATIVO | ✅ OPERATIVO | ✅ OPERATIVO | ✅ OPERATIVO | scaffold |
-| `11` | ✅ OPERATIVO | ✅ OPERATIVO | ✅ OPERATIVO | ✅ OPERATIVO | scaffold |
-| `12` | ✅ OPERATIVO | ✅ OPERATIVO | ✅ OPERATIVO | ✅ OPERATIVO | scaffold |
+| `01` | ✅ OPERATIVO | ✅ OPERATIVO | ✅ OPERATIVO | ✅ OPERATIVO | ✅ OPERATIVO |
+| `02` | ✅ OPERATIVO | ✅ OPERATIVO | ✅ OPERATIVO | ✅ OPERATIVO | ✅ OPERATIVO |
+| `03` | ✅ OPERATIVO | ✅ OPERATIVO | ✅ OPERATIVO | ✅ OPERATIVO | ✅ OPERATIVO |
+| `04` | ✅ OPERATIVO | ✅ OPERATIVO | ✅ OPERATIVO | ✅ OPERATIVO | ✅ OPERATIVO |
+| `05` | ✅ OPERATIVO | ✅ OPERATIVO | ✅ OPERATIVO | ✅ OPERATIVO | ✅ OPERATIVO |
+| `06` | ✅ OPERATIVO | ✅ OPERATIVO | ✅ OPERATIVO | ✅ OPERATIVO | ✅ OPERATIVO |
+| `07` | ✅ OPERATIVO | ✅ OPERATIVO | ✅ OPERATIVO | ✅ OPERATIVO | ✅ OPERATIVO |
+| `08` | ✅ OPERATIVO | ✅ OPERATIVO | ✅ OPERATIVO | ✅ OPERATIVO | ✅ OPERATIVO |
+| `09` | ✅ OPERATIVO | ✅ OPERATIVO | ✅ OPERATIVO | ✅ OPERATIVO | ✅ OPERATIVO |
+| `10` | ✅ OPERATIVO | ✅ OPERATIVO | ✅ OPERATIVO | ✅ OPERATIVO | ✅ OPERATIVO |
+| `11` | ✅ OPERATIVO | ✅ OPERATIVO | ✅ OPERATIVO | ✅ OPERATIVO | ✅ OPERATIVO |
+| `12` | ✅ OPERATIVO | ✅ OPERATIVO | ✅ OPERATIVO | ✅ OPERATIVO | ✅ OPERATIVO |
 
 **OPERATIVO** = lógica real, Docker funcional, evidencia observable.
 **scaffold** = estructura y documentación lista, sin implementación funcional todavía.

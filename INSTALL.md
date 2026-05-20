@@ -35,7 +35,7 @@ Cada lenguaje tiene su propio archivo compose en la raíz. Un solo comando levan
 | [`compose.python.yml`](compose.python.yml) | Python 3.12 | `8200` Python hub | `OPERATIVO` |
 | [`compose.nodejs.yml`](compose.nodejs.yml) | Node.js 20 | `8300` Node hub | `OPERATIVO` |
 | [`compose.java.yml`](compose.java.yml) | Java 21 | `8400` Java hub | `OPERATIVO` |
-| `compose.dotnet.yml` | .NET 8 | `8500` .NET hub | `PLANIFICADO` |
+| [`compose.dotnet.yml`](compose.dotnet.yml) | .NET 8 | `8500` .NET hub | `OPERATIVO` |
 
 ## 🐘 Laboratorio PHP completo
 
@@ -104,6 +104,23 @@ Para apagar:
 
 ```bash
 docker compose -f compose.java.yml down
+```
+
+## 🟦 Laboratorio .NET completo
+
+```bash
+docker compose -f compose.dotnet.yml up -d --build
+```
+
+URLs esperadas:
+
+- .NET hub: `http://localhost:8500/`
+- Casos .NET: `http://localhost:8500/01/health` ... `http://localhost:8500/12/health`
+
+Para apagar:
+
+```bash
+docker compose -f compose.dotnet.yml down
 ```
 
 ## 🪶 Portal liviano solamente
@@ -218,5 +235,5 @@ docker compose -f compose.portal.yml down
 - La ruta oficialmente soportada es Docker para los casos implementados.
 - PHP, Python y Node.js levantan los 12 casos cada uno con un solo compose en la raiz.
 - Java levanta los 12 casos con `compose.java.yml` (puerto `8400`).
-- .NET sigue como scaffold; cuando se implemente seguira el mismo patron con `compose.dotnet.yml` (puerto `8500`).
+- .NET levanta los 12 casos con `compose.dotnet.yml` (puerto `8500`).
 - Levantar un caso aislado sigue siendo la mejor ruta cuando quieres diagnostico fino o menos consumo de recursos.

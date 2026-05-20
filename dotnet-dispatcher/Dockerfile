@@ -1,6 +1,6 @@
-# dotnet-dispatcher — un solo contenedor con dispatcher + 6 casos (.NET 8).
+# dotnet-dispatcher — un solo contenedor con dispatcher + 12 casos (.NET 8).
 #
-# Espejo del patron java-dispatcher: stage build compila dispatcher y los 6
+# Espejo del patron java-dispatcher: stage build compila dispatcher y los 12
 # Case0X.csproj por separado, stage runtime los junta en /app/{dispatcher,cases/0X}.
 
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
@@ -14,6 +14,12 @@ COPY cases/03-poor-observability-and-useless-logs/dotnet/app/Case03.csproj      
 COPY cases/04-timeout-chain-and-retry-storms/dotnet/app/Case04.csproj                     /src/case04/Case04.csproj
 COPY cases/05-memory-pressure-and-resource-leaks/dotnet/app/Case05.csproj                 /src/case05/Case05.csproj
 COPY cases/06-broken-pipeline-and-fragile-delivery/dotnet/app/Case06.csproj               /src/case06/Case06.csproj
+COPY cases/07-incremental-monolith-modernization/dotnet/app/Case07.csproj                 /src/case07/Case07.csproj
+COPY cases/08-critical-module-extraction-without-breaking-operations/dotnet/app/Case08.csproj /src/case08/Case08.csproj
+COPY cases/09-unstable-external-integration/dotnet/app/Case09.csproj                      /src/case09/Case09.csproj
+COPY cases/10-expensive-architecture-for-simple-needs/dotnet/app/Case10.csproj            /src/case10/Case10.csproj
+COPY cases/11-heavy-reporting-blocks-operations/dotnet/app/Case11.csproj                  /src/case11/Case11.csproj
+COPY cases/12-single-point-of-knowledge-and-operational-risk/dotnet/app/Case12.csproj     /src/case12/Case12.csproj
 
 # Copiar fuentes
 COPY dotnet-dispatcher/app/Program.cs                                                     /src/dispatcher/Program.cs
@@ -23,6 +29,12 @@ COPY cases/03-poor-observability-and-useless-logs/dotnet/app/Program.cs         
 COPY cases/04-timeout-chain-and-retry-storms/dotnet/app/Program.cs                        /src/case04/Program.cs
 COPY cases/05-memory-pressure-and-resource-leaks/dotnet/app/Program.cs                    /src/case05/Program.cs
 COPY cases/06-broken-pipeline-and-fragile-delivery/dotnet/app/Program.cs                  /src/case06/Program.cs
+COPY cases/07-incremental-monolith-modernization/dotnet/app/Program.cs                    /src/case07/Program.cs
+COPY cases/08-critical-module-extraction-without-breaking-operations/dotnet/app/Program.cs /src/case08/Program.cs
+COPY cases/09-unstable-external-integration/dotnet/app/Program.cs                         /src/case09/Program.cs
+COPY cases/10-expensive-architecture-for-simple-needs/dotnet/app/Program.cs               /src/case10/Program.cs
+COPY cases/11-heavy-reporting-blocks-operations/dotnet/app/Program.cs                     /src/case11/Program.cs
+COPY cases/12-single-point-of-knowledge-and-operational-risk/dotnet/app/Program.cs        /src/case12/Program.cs
 
 RUN dotnet publish /src/dispatcher/Dispatcher.csproj -c Release --no-self-contained -o /publish/dispatcher \
  && dotnet publish /src/case01/Case01.csproj         -c Release --no-self-contained -o /publish/case01 \
@@ -30,7 +42,13 @@ RUN dotnet publish /src/dispatcher/Dispatcher.csproj -c Release --no-self-contai
  && dotnet publish /src/case03/Case03.csproj         -c Release --no-self-contained -o /publish/case03 \
  && dotnet publish /src/case04/Case04.csproj         -c Release --no-self-contained -o /publish/case04 \
  && dotnet publish /src/case05/Case05.csproj         -c Release --no-self-contained -o /publish/case05 \
- && dotnet publish /src/case06/Case06.csproj         -c Release --no-self-contained -o /publish/case06
+ && dotnet publish /src/case06/Case06.csproj         -c Release --no-self-contained -o /publish/case06 \
+ && dotnet publish /src/case07/Case07.csproj         -c Release --no-self-contained -o /publish/case07 \
+ && dotnet publish /src/case08/Case08.csproj         -c Release --no-self-contained -o /publish/case08 \
+ && dotnet publish /src/case09/Case09.csproj         -c Release --no-self-contained -o /publish/case09 \
+ && dotnet publish /src/case10/Case10.csproj         -c Release --no-self-contained -o /publish/case10 \
+ && dotnet publish /src/case11/Case11.csproj         -c Release --no-self-contained -o /publish/case11 \
+ && dotnet publish /src/case12/Case12.csproj         -c Release --no-self-contained -o /publish/case12
 
 FROM mcr.microsoft.com/dotnet/aspnet:8.0
 WORKDIR /app
@@ -46,6 +64,12 @@ COPY --from=build /publish/case03     /app/cases/03
 COPY --from=build /publish/case04     /app/cases/04
 COPY --from=build /publish/case05     /app/cases/05
 COPY --from=build /publish/case06     /app/cases/06
+COPY --from=build /publish/case07     /app/cases/07
+COPY --from=build /publish/case08     /app/cases/08
+COPY --from=build /publish/case09     /app/cases/09
+COPY --from=build /publish/case10     /app/cases/10
+COPY --from=build /publish/case11     /app/cases/11
+COPY --from=build /publish/case12     /app/cases/12
 
 EXPOSE 8500
 ENV PORT=8500

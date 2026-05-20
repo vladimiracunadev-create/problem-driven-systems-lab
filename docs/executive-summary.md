@@ -23,13 +23,13 @@
 | 11 | Reportes pesados que bloquean operacion | Operaciones | Aislamiento de cargas: reporting deja de degradar la operacion. |
 | 12 | Punto unico de conocimiento | Operaciones | Continuidad operacional y reduccion de dependencia critica en personas. |
 
-Los 12 casos estan **OPERATIVOS** en los 4 stacks: PHP/Python/Node.js/Java 21. Detalle de paridad: [`docs/case-catalog.md`](case-catalog.md).
+Los 12 casos estan **OPERATIVOS** en los 5 stacks: PHP/Python/Node.js/Java 21/.NET 8. Detalle de paridad: [`docs/case-catalog.md`](case-catalog.md).
 
 ---
 
 ## Caso 01 — API lenta bajo carga
 
-**Categoria:** Rendimiento · **Stacks operativos:** PHP, Python, Node.js, Java 21
+**Categoria:** Rendimiento · **Stacks operativos:** PHP, Python, Node.js, Java 21, .NET 8
 
 **Problema.** La API responde bien con pocos usuarios, pero degrada latencia y estabilidad al aumentar la concurrencia. Filtros no sargables + patron N+1 + worker concurrente compitiendo por la DB.
 
@@ -45,7 +45,7 @@ Los 12 casos estan **OPERATIVOS** en los 4 stacks: PHP/Python/Node.js/Java 21. D
 
 ## Caso 02 — N+1 queries y cuellos de botella en DB
 
-**Categoria:** Rendimiento · **Stacks operativos:** PHP, Python, Node.js, Java 21
+**Categoria:** Rendimiento · **Stacks operativos:** PHP, Python, Node.js, Java 21, .NET 8
 
 **Problema.** Demasiadas consultas por solicitud o acceso a datos ineficiente — el clasico N+1 dentro de bucles + relaciones cargadas innecesariamente.
 
@@ -61,7 +61,7 @@ Los 12 casos estan **OPERATIVOS** en los 4 stacks: PHP/Python/Node.js/Java 21. D
 
 ## Caso 03 — Observabilidad deficiente y logs inutiles
 
-**Categoria:** Observabilidad · **Stacks operativos:** PHP, Python, Node.js, Java 21
+**Categoria:** Observabilidad · **Stacks operativos:** PHP, Python, Node.js, Java 21, .NET 8
 
 **Problema.** Hay errores, pero no hay trazabilidad para identificar causa raiz rapido. Logs sin correlacion + sin contexto + sin metricas.
 
@@ -77,7 +77,7 @@ Los 12 casos estan **OPERATIVOS** en los 4 stacks: PHP/Python/Node.js/Java 21. D
 
 ## Caso 04 — Cadena de timeouts y tormentas de reintentos
 
-**Categoria:** Resiliencia · **Stacks operativos:** PHP, Python, Node.js, Java 21
+**Categoria:** Resiliencia · **Stacks operativos:** PHP, Python, Node.js, Java 21, .NET 8
 
 **Problema.** Una integracion lenta dispara reintentos sin control → bloqueos → cascadas de fallas entre servicios.
 
@@ -93,7 +93,7 @@ Los 12 casos estan **OPERATIVOS** en los 4 stacks: PHP/Python/Node.js/Java 21. D
 
 ## Caso 05 — Presion de memoria y fugas de recursos
 
-**Categoria:** Rendimiento · **Stacks operativos:** PHP, Python, Node.js, Java 21
+**Categoria:** Rendimiento · **Stacks operativos:** PHP, Python, Node.js, Java 21, .NET 8
 
 **Problema.** El sistema acumula memoria, descriptores o conexiones de forma progresiva hasta degradar o caerse. Problemas silenciosos que **no fallan de inmediato**.
 
@@ -109,7 +109,7 @@ Los 12 casos estan **OPERATIVOS** en los 4 stacks: PHP/Python/Node.js/Java 21. D
 
 ## Caso 06 — Pipeline roto y entrega fragil
 
-**Categoria:** Entrega · **Stacks operativos:** PHP, Python, Node.js, Java 21
+**Categoria:** Entrega · **Stacks operativos:** PHP, Python, Node.js, Java 21, .NET 8
 
 **Problema.** El software funciona en dev, pero falla al desplegar, promover o revertir. Drift entre ambientes, secretos perdidos, smoke tests que pasan tarde.
 
@@ -125,7 +125,7 @@ Los 12 casos estan **OPERATIVOS** en los 4 stacks: PHP/Python/Node.js/Java 21. D
 
 ## Caso 07 — Modernizacion incremental de monolito
 
-**Categoria:** Arquitectura · **Stacks operativos:** PHP, Python, Node.js, Java 21
+**Categoria:** Arquitectura · **Stacks operativos:** PHP, Python, Node.js, Java 21, .NET 8
 
 **Problema.** El legacy sigue siendo critico, pero su evolucion es lenta, riesgosa y cara. Cada cambio amenaza con romper algo no relacionado.
 
@@ -141,7 +141,7 @@ Los 12 casos estan **OPERATIVOS** en los 4 stacks: PHP/Python/Node.js/Java 21. D
 
 ## Caso 08 — Extraccion de modulo critico sin romper operacion
 
-**Categoria:** Arquitectura · **Stacks operativos:** PHP, Python, Node.js, Java 21
+**Categoria:** Arquitectura · **Stacks operativos:** PHP, Python, Node.js, Java 21, .NET 8
 
 **Problema.** Hay que desacoplar una parte clave, pero esa parte participa en flujos sensibles (checkout, partners, backoffice) y no admite quiebres.
 
@@ -157,7 +157,7 @@ Los 12 casos estan **OPERATIVOS** en los 4 stacks: PHP/Python/Node.js/Java 21. D
 
 ## Caso 09 — Integracion externa inestable
 
-**Categoria:** Resiliencia · **Stacks operativos:** PHP, Python, Node.js, Java 21
+**Categoria:** Resiliencia · **Stacks operativos:** PHP, Python, Node.js, Java 21, .NET 8
 
 **Problema.** Una API externa introduce latencia, errores intermitentes o reglas cambiantes que afectan el sistema propio. No controlamos al tercero.
 
@@ -173,7 +173,7 @@ Los 12 casos estan **OPERATIVOS** en los 4 stacks: PHP/Python/Node.js/Java 21. D
 
 ## Caso 10 — Arquitectura cara para un problema simple
 
-**Categoria:** Arquitectura · **Stacks operativos:** PHP, Python, Node.js, Java 21
+**Categoria:** Arquitectura · **Stacks operativos:** PHP, Python, Node.js, Java 21, .NET 8
 
 **Problema.** La solucion tecnica consume mas servicios, complejidad y costo del que el problema de negocio realmente necesita. Sobre-ingenieria disfrazada de "estandar".
 
@@ -189,7 +189,7 @@ Los 12 casos estan **OPERATIVOS** en los 4 stacks: PHP/Python/Node.js/Java 21. D
 
 ## Caso 11 — Reportes pesados que bloquean la operacion
 
-**Categoria:** Operaciones · **Stacks operativos:** PHP, Python, Node.js, Java 21
+**Categoria:** Operaciones · **Stacks operativos:** PHP, Python, Node.js, Java 21, .NET 8
 
 **Problema.** Reporting compite con operacion transaccional y degrada el sistema completo. Aparece tarde y cuesta caro porque no se detecta hasta que ya bloquea ventas.
 
@@ -205,7 +205,7 @@ Los 12 casos estan **OPERATIVOS** en los 4 stacks: PHP/Python/Node.js/Java 21. D
 
 ## Caso 12 — Punto unico de conocimiento y riesgo operacional
 
-**Categoria:** Operaciones · **Stacks operativos:** PHP, Python, Node.js, Java 21
+**Categoria:** Operaciones · **Stacks operativos:** PHP, Python, Node.js, Java 21, .NET 8
 
 **Problema.** Una persona o procedimiento concentra tanto conocimiento que el sistema se vuelve fragil ante ausencias o rotacion. **Bus factor = 1**.
 
@@ -223,10 +223,10 @@ Los 12 casos estan **OPERATIVOS** en los 4 stacks: PHP/Python/Node.js/Java 21. D
 
 Honestidad explicita para no vender lo que no es:
 
-- **No es un benchmark de lenguajes.** Los 4 stacks (PHP/Python/Node/Java) resuelven los 12 problemas con primitivas nativas distintas; el contraste muestra criterio, no "cual es mas rapido".
+- **No es un benchmark de lenguajes.** Los 5 stacks (PHP/Python/Node/Java/.NET) resuelven los 12 problemas con primitivas nativas distintas; el contraste muestra criterio, no "cual es mas rapido".
 - **No reemplaza plataformas reales.** Tracing distribuido, CI/CD enterprise, mallas de servicios y feature flags globales quedan fuera. Lo que si esta: reproduccion fiel de la **logica operativa** de cada problema.
 - **No es production-grade tal cual.** Modelo de amenaza: localhost / LAN confiable. Para Internet ver [SECURITY.md](../SECURITY.md) (auth, rate limit, TLS son responsabilidad de quien expone).
-- **No promete paridad multi-stack en futuros casos.** PHP + Python + Node.js + Java cubren los 12 hoy. .NET existe como scaffold y se sumara por caso solo si aporta contraste real.
+- **Paridad multi-stack completa hoy.** PHP + Python + Node.js + Java + .NET cubren los 12 casos cada uno con primitivas idiomaticas distintas. Cualquier caso nuevo se incorpora siguiendo el mismo patron.
 
 ## Postmortems narrativos por caso
 

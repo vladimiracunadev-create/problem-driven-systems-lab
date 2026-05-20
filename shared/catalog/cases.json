@@ -130,8 +130,8 @@
     {
       "key": "dotnet",
       "label": ".NET",
-      "headline": "Aun sin casos operativos profundizados.",
-      "note": "La estructura existe, pero la madurez real todavia esta en evolucion."
+      "headline": "Stack operativo real con primitivas BCL distintivas por caso.",
+      "note": ".NET 8 sirve los 12 casos detras del hub `:8500` con paridad funcional 1:1 frente a Java."
     }
   ],
   "cases": [
@@ -142,7 +142,7 @@
       "title": "API lenta bajo carga",
       "category": "Rendimiento",
       "status": "OPERATIVO",
-      "level_detail": "PHP + PostgreSQL + worker + Prometheus + Grafana; Python con SQLite local, worker y metricas; Node.js 20 con datos en memoria, worker setInterval y metrica de event loop lag",
+      "level_detail": "PHP + PostgreSQL + worker + Prometheus + Grafana; Python con SQLite local, worker y metricas; Node.js 20 con datos en memoria, worker setInterval y metrica de event loop lag; Java 21 con ConcurrentHashMap summary cache + ScheduledExecutorService worker; .NET 8 con ConcurrentDictionary summary cache + Task.Delay worker con CancellationToken",
       "summary": "La aplicacion responde bien con pocos usuarios, pero degrada su latencia y estabilidad al aumentar la concurrencia.",
       "case_readme_path": "cases/01-api-latency-under-load/README.md",
       "business_outcome": "Reduce latencia visible y evita sobredimensionar infraestructura a ciegas.",
@@ -162,7 +162,8 @@
         "php",
         "python",
         "node",
-        "java"
+        "java",
+        "dotnet"
       ],
       "runtime_entries": {
         "php": {
@@ -194,6 +195,15 @@
           "root_path": "/01/",
           "isolated_compose": "cases/01-api-latency-under-load/java/compose.yml",
           "isolated_port": 841
+        },
+        "dotnet": {
+          "port": 8500,
+          "compose_path": "compose.dotnet.yml",
+          "readme_path": "cases/01-api-latency-under-load/dotnet/README.md",
+          "health_path": "/01/health",
+          "root_path": "/01/",
+          "isolated_compose": "cases/01-api-latency-under-load/dotnet/compose.yml",
+          "isolated_port": 851
         }
       }
     },
@@ -204,7 +214,7 @@
       "title": "N+1 queries y cuellos de botella en base de datos",
       "category": "Rendimiento",
       "status": "OPERATIVO",
-      "level_detail": "PHP + PostgreSQL; Python con SQLite local y metricas de queries; Node.js 20 con datos en memoria, batch en Map y metrica de event loop lag",
+      "level_detail": "PHP + PostgreSQL; Python con SQLite local y metricas de queries; Node.js 20 con datos en memoria, batch en Map y metrica de event loop lag; Java 21 con HashMap indexado y batch IN(...); .NET 8 con Dictionary indexado y ensamblado batch en memoria",
       "summary": "La aplicacion ejecuta demasiadas consultas por solicitud o usa el acceso a datos de forma ineficiente, generando saturacion de base de datos.",
       "case_readme_path": "cases/02-n-plus-one-and-db-bottlenecks/README.md",
       "business_outcome": "Reduce round-trips, costo por request y desgaste innecesario sobre la base de datos.",
@@ -224,7 +234,8 @@
         "php",
         "python",
         "node",
-        "java"
+        "java",
+        "dotnet"
       ],
       "runtime_entries": {
         "php": {
@@ -256,6 +267,15 @@
           "root_path": "/02/",
           "isolated_compose": "cases/02-n-plus-one-and-db-bottlenecks/java/compose.yml",
           "isolated_port": 842
+        },
+        "dotnet": {
+          "port": 8500,
+          "compose_path": "compose.dotnet.yml",
+          "readme_path": "cases/02-n-plus-one-and-db-bottlenecks/dotnet/README.md",
+          "health_path": "/02/health",
+          "root_path": "/02/",
+          "isolated_compose": "cases/02-n-plus-one-and-db-bottlenecks/dotnet/compose.yml",
+          "isolated_port": 852
         }
       }
     },
@@ -266,7 +286,7 @@
       "title": "Observabilidad deficiente y logs inutiles",
       "category": "Observabilidad",
       "status": "OPERATIVO",
-      "level_detail": "PHP + Node.js + Python con logs estructurados, trazas y metricas",
+      "level_detail": "PHP + Node.js + Python con logs estructurados, trazas y metricas; Java 21 con ThreadLocal<RequestContext> para correlation ID; .NET 8 con AsyncLocal<RequestContext> para correlation_id en pipeline async",
       "summary": "Existen errores e incidentes, pero no hay trazabilidad suficiente para identificar causa raiz de forma rapida y confiable.",
       "case_readme_path": "cases/03-poor-observability-and-useless-logs/README.md",
       "business_outcome": "Reduce MTTR y convierte incidentes vagos en fallas diagnosticables con evidencia.",
@@ -286,7 +306,8 @@
         "php",
         "node",
         "python",
-        "java"
+        "java",
+        "dotnet"
       ],
       "runtime_entries": {
         "php": {
@@ -318,6 +339,15 @@
           "root_path": "/03/",
           "isolated_compose": "cases/03-poor-observability-and-useless-logs/java/compose.yml",
           "isolated_port": 843
+        },
+        "dotnet": {
+          "port": 8500,
+          "compose_path": "compose.dotnet.yml",
+          "readme_path": "cases/03-poor-observability-and-useless-logs/dotnet/README.md",
+          "health_path": "/03/health",
+          "root_path": "/03/",
+          "isolated_compose": "cases/03-poor-observability-and-useless-logs/dotnet/compose.yml",
+          "isolated_port": 853
         }
       }
     },
@@ -328,7 +358,7 @@
       "title": "Cadena de timeouts y tormentas de reintentos",
       "category": "Resiliencia",
       "status": "OPERATIVO",
-      "level_detail": "PHP 8.3 con retries legacy vs timeout corto, backoff, circuit breaker y fallback; Python con misma logica; Node.js 20 con AbortController/AbortSignal, circuit breaker y fallback",
+      "level_detail": "PHP 8.3 con retries legacy vs timeout corto, backoff, circuit breaker y fallback; Python con misma logica; Node.js 20 con AbortController/AbortSignal, circuit breaker y fallback; Java 21 con CompletableFuture.orTimeout + AtomicReference<BreakerState> CAS; .NET 8 con CancellationTokenSource con timeout + breaker Interlocked CAS",
       "summary": "Una integracion lenta o inestable dispara reintentos, bloqueos y cascadas de fallas entre servicios.",
       "case_readme_path": "cases/04-timeout-chain-and-retry-storms/README.md",
       "business_outcome": "Ayuda a reducir fallas en cascada y a disenar limites mas sanos de timeout, retry y backoff.",
@@ -348,7 +378,8 @@
         "php",
         "python",
         "node",
-        "java"
+        "java",
+        "dotnet"
       ],
       "runtime_entries": {
         "php": {
@@ -380,6 +411,15 @@
           "root_path": "/04/",
           "isolated_compose": "cases/04-timeout-chain-and-retry-storms/java/compose.yml",
           "isolated_port": 844
+        },
+        "dotnet": {
+          "port": 8500,
+          "compose_path": "compose.dotnet.yml",
+          "readme_path": "cases/04-timeout-chain-and-retry-storms/dotnet/README.md",
+          "health_path": "/04/health",
+          "root_path": "/04/",
+          "isolated_compose": "cases/04-timeout-chain-and-retry-storms/dotnet/compose.yml",
+          "isolated_port": 854
         }
       }
     },
@@ -390,7 +430,7 @@
       "title": "Presion de memoria y fugas de recursos",
       "category": "Rendimiento",
       "status": "OPERATIVO",
-      "level_detail": "PHP 8.3 con estado retenido, presion progresiva y comparacion legacy vs optimized; Python con tracemalloc; Node.js 20 con process.memoryUsage() midiendo heap V8 y RSS reales",
+      "level_detail": "PHP 8.3 con estado retenido, presion progresiva y comparacion legacy vs optimized; Python con tracemalloc; Node.js 20 con process.memoryUsage() midiendo heap V8 y RSS reales; Java 21 con LinkedHashMap.removeEldestEntry LRU + Runtime metrics; .NET 8 con LRU manual basado en Dictionary + LinkedList + Process.WorkingSet64",
       "summary": "El sistema consume memoria, descriptores o conexiones de forma progresiva hasta degradar o caerse.",
       "case_readme_path": "cases/05-memory-pressure-and-resource-leaks/README.md",
       "business_outcome": "Sirve para razonar estabilidad, limites de recursos y degradacion progresiva antes del colapso.",
@@ -410,7 +450,8 @@
         "php",
         "python",
         "node",
-        "java"
+        "java",
+        "dotnet"
       ],
       "runtime_entries": {
         "php": {
@@ -442,6 +483,15 @@
           "root_path": "/05/",
           "isolated_compose": "cases/05-memory-pressure-and-resource-leaks/java/compose.yml",
           "isolated_port": 845
+        },
+        "dotnet": {
+          "port": 8500,
+          "compose_path": "compose.dotnet.yml",
+          "readme_path": "cases/05-memory-pressure-and-resource-leaks/dotnet/README.md",
+          "health_path": "/05/health",
+          "root_path": "/05/",
+          "isolated_compose": "cases/05-memory-pressure-and-resource-leaks/dotnet/compose.yml",
+          "isolated_port": 855
         }
       }
     },
@@ -452,7 +502,7 @@
       "title": "Pipeline roto y entrega fragil",
       "category": "Entrega",
       "status": "OPERATIVO",
-      "level_detail": "PHP 8.3 con deploy legacy vs controlled, preflight y rollback",
+      "level_detail": "PHP 8.3 con deploy legacy vs controlled, preflight y rollback; Java 21 con record types + state machine; .NET 8 con ConcurrentDictionary<string,EnvState> + maquina de estados con rollback automatico",
       "summary": "El software funciona en desarrollo, pero falla al desplegar, promover cambios o revertir incidentes con seguridad.",
       "case_readme_path": "cases/06-broken-pipeline-and-fragile-delivery/README.md",
       "business_outcome": "Ayuda a reducir riesgo en despliegues y a fortalecer rollback, promotion y entrega continua.",
@@ -472,7 +522,8 @@
         "php",
         "python",
         "node",
-        "java"
+        "java",
+        "dotnet"
       ],
       "runtime_entries": {
         "php": {
@@ -504,6 +555,15 @@
           "root_path": "/06/",
           "isolated_compose": "cases/06-broken-pipeline-and-fragile-delivery/java/compose.yml",
           "isolated_port": 846
+        },
+        "dotnet": {
+          "port": 8500,
+          "compose_path": "compose.dotnet.yml",
+          "readme_path": "cases/06-broken-pipeline-and-fragile-delivery/dotnet/README.md",
+          "health_path": "/06/health",
+          "root_path": "/06/",
+          "isolated_compose": "cases/06-broken-pipeline-and-fragile-delivery/dotnet/compose.yml",
+          "isolated_port": 856
         }
       }
     },
@@ -514,7 +574,7 @@
       "title": "Modernizacion incremental de monolito",
       "category": "Arquitectura",
       "status": "OPERATIVO",
-      "level_detail": "PHP 8.3 con cambio legacy vs strangler, cobertura progresiva y blast radius observable",
+      "level_detail": "PHP 8.3 con cambio legacy vs strangler, cobertura progresiva y blast radius observable; Java 21 con ConcurrentHashMap<String,Function> routing table mutable; .NET 8 con Func<Request,Response> delegate routing + record types",
       "summary": "El sistema legacy sigue siendo critico, pero su evolucion se vuelve lenta, riesgosa y costosa.",
       "case_readme_path": "cases/07-incremental-monolith-modernization/README.md",
       "business_outcome": "Permite modernizar un monolito sin convertir cada cambio en una reescritura riesgosa.",
@@ -534,7 +594,8 @@
         "php",
         "python",
         "node",
-        "java"
+        "java",
+        "dotnet"
       ],
       "runtime_entries": {
         "php": {
@@ -566,6 +627,15 @@
           "root_path": "/07/",
           "isolated_compose": "cases/07-incremental-monolith-modernization/java/compose.yml",
           "isolated_port": 847
+        },
+        "dotnet": {
+          "port": 8500,
+          "compose_path": "compose.dotnet.yml",
+          "readme_path": "cases/07-incremental-monolith-modernization/dotnet/README.md",
+          "health_path": "/07/health",
+          "root_path": "/07/",
+          "isolated_compose": "cases/07-incremental-monolith-modernization/dotnet/compose.yml",
+          "isolated_port": 857
         }
       }
     },
@@ -576,7 +646,7 @@
       "title": "Extraccion de modulo critico sin romper operacion",
       "category": "Arquitectura",
       "status": "OPERATIVO",
-      "level_detail": "PHP 8.3 con extraccion big bang vs compatible, proxy y cutover gradual",
+      "level_detail": "PHP 8.3 con extraccion big bang vs compatible, proxy y cutover gradual; Java 21 con Function proxy + CopyOnWriteArrayList<Consumer> event bus; .NET 8 con ImmutableList<T> + event Action event bus y cutover gradual",
       "summary": "Se necesita desacoplar una parte clave del sistema, pero esa parte participa en flujos sensibles y no admite quiebres.",
       "case_readme_path": "cases/08-critical-module-extraction-without-breaking-operations/README.md",
       "business_outcome": "Permite extraer un modulo critico sin cortar checkout, partners ni backoffice.",
@@ -596,7 +666,8 @@
         "php",
         "python",
         "node",
-        "java"
+        "java",
+        "dotnet"
       ],
       "runtime_entries": {
         "php": {
@@ -628,6 +699,15 @@
           "root_path": "/08/",
           "isolated_compose": "cases/08-critical-module-extraction-without-breaking-operations/java/compose.yml",
           "isolated_port": 848
+        },
+        "dotnet": {
+          "port": 8500,
+          "compose_path": "compose.dotnet.yml",
+          "readme_path": "cases/08-critical-module-extraction-without-breaking-operations/dotnet/README.md",
+          "health_path": "/08/health",
+          "root_path": "/08/",
+          "isolated_compose": "cases/08-critical-module-extraction-without-breaking-operations/dotnet/compose.yml",
+          "isolated_port": 858
         }
       }
     },
@@ -638,7 +718,7 @@
       "title": "Integracion externa inestable",
       "category": "Resiliencia",
       "status": "OPERATIVO",
-      "level_detail": "PHP 8.3 con integracion directa vs adapter endurecido, cache y cuota observable",
+      "level_detail": "PHP 8.3 con integracion directa vs adapter endurecido, cache y cuota observable; Java 21 con Semaphore budget + snapshot cache + AtomicReference breaker; .NET 8 con MemoryCache + SemaphoreSlim budget + Interlocked CAS breaker",
       "summary": "Una API, servicio o proveedor externo introduce latencia, errores intermitentes o reglas cambiantes que afectan el sistema propio.",
       "case_readme_path": "cases/09-unstable-external-integration/README.md",
       "business_outcome": "Permite razonar protecciones frente a dependencias externas que no controlamos.",
@@ -658,7 +738,8 @@
         "php",
         "python",
         "node",
-        "java"
+        "java",
+        "dotnet"
       ],
       "runtime_entries": {
         "php": {
@@ -690,6 +771,15 @@
           "root_path": "/09/",
           "isolated_compose": "cases/09-unstable-external-integration/java/compose.yml",
           "isolated_port": 849
+        },
+        "dotnet": {
+          "port": 8500,
+          "compose_path": "compose.dotnet.yml",
+          "readme_path": "cases/09-unstable-external-integration/dotnet/README.md",
+          "health_path": "/09/health",
+          "root_path": "/09/",
+          "isolated_compose": "cases/09-unstable-external-integration/dotnet/compose.yml",
+          "isolated_port": 859
         }
       }
     },
@@ -700,7 +790,7 @@
       "title": "Arquitectura cara para un problema simple",
       "category": "Arquitectura",
       "status": "OPERATIVO",
-      "level_detail": "PHP 8.3 con comparacion complex vs right-sized, costo y lead time visibles",
+      "level_detail": "PHP 8.3 con comparacion complex vs right-sized, costo y lead time visibles; Java 21 con HashMap O(1) vs N hops StringBuilder; .NET 8 con lookup directo (Dictionary) vs N hops JsonSerializer",
       "summary": "La solucion tecnica consume mas servicios, complejidad y costo del que el problema de negocio realmente necesita.",
       "case_readme_path": "cases/10-expensive-architecture-for-simple-needs/README.md",
       "business_outcome": "Ayuda a tomar decisiones tecnologicas mas proporcionales al problema de negocio.",
@@ -720,7 +810,8 @@
         "php",
         "python",
         "node",
-        "java"
+        "java",
+        "dotnet"
       ],
       "runtime_entries": {
         "php": {
@@ -752,6 +843,15 @@
           "root_path": "/10/",
           "isolated_compose": "cases/10-expensive-architecture-for-simple-needs/java/compose.yml",
           "isolated_port": 8410
+        },
+        "dotnet": {
+          "port": 8500,
+          "compose_path": "compose.dotnet.yml",
+          "readme_path": "cases/10-expensive-architecture-for-simple-needs/dotnet/README.md",
+          "health_path": "/10/health",
+          "root_path": "/10/",
+          "isolated_compose": "cases/10-expensive-architecture-for-simple-needs/dotnet/compose.yml",
+          "isolated_port": 8510
         }
       }
     },
@@ -762,7 +862,7 @@
       "title": "Reportes pesados que bloquean la operacion",
       "category": "Operaciones",
       "status": "OPERATIVO",
-      "level_detail": "PHP 8.3 con reporting legacy vs aislado y efecto directo sobre escrituras",
+      "level_detail": "PHP 8.3 con reporting legacy vs aislado y efecto directo sobre escrituras; Java 21 con ThreadPoolExecutor saturacion observable + ExecutorService dedicado; .NET 8 con ConcurrentExclusiveSchedulerPair o Thread dedicado + ThreadPool.GetAvailableWorkerThreads",
       "summary": "Consultas y procesos de reporting compiten con la operacion transaccional y degradan el sistema completo.",
       "case_readme_path": "cases/11-heavy-reporting-blocks-operations/README.md",
       "business_outcome": "Permite discutir aislamiento de cargas, reporting y proteccion de flujos operativos.",
@@ -782,7 +882,8 @@
         "php",
         "python",
         "node",
-        "java"
+        "java",
+        "dotnet"
       ],
       "runtime_entries": {
         "php": {
@@ -814,6 +915,15 @@
           "root_path": "/11/",
           "isolated_compose": "cases/11-heavy-reporting-blocks-operations/java/compose.yml",
           "isolated_port": 8411
+        },
+        "dotnet": {
+          "port": 8500,
+          "compose_path": "compose.dotnet.yml",
+          "readme_path": "cases/11-heavy-reporting-blocks-operations/dotnet/README.md",
+          "health_path": "/11/health",
+          "root_path": "/11/",
+          "isolated_compose": "cases/11-heavy-reporting-blocks-operations/dotnet/compose.yml",
+          "isolated_port": 8511
         }
       }
     },
@@ -824,7 +934,7 @@
       "title": "Punto unico de conocimiento y riesgo operacional",
       "category": "Operaciones",
       "status": "OPERATIVO",
-      "level_detail": "PHP 8.3 con incidentes legacy vs conocimiento distribuido, runbooks y bus factor",
+      "level_detail": "PHP 8.3 con incidentes legacy vs conocimiento distribuido, runbooks y bus factor; Java 21 con Optional<T> + map/orElse como runbook codificado; .NET 8 con operadores ?. y ?? (null-coalescing) como runbook codificado en el sistema de tipos",
       "summary": "Una persona, modulo o procedimiento concentra tanto conocimiento que el sistema se vuelve fragil ante ausencias o rotacion.",
       "case_readme_path": "cases/12-single-point-of-knowledge-and-operational-risk/README.md",
       "business_outcome": "Ayuda a discutir continuidad operacional, documentacion y reduccion de dependencia critica en personas.",
@@ -844,7 +954,8 @@
         "php",
         "python",
         "node",
-        "java"
+        "java",
+        "dotnet"
       ],
       "runtime_entries": {
         "php": {
@@ -876,6 +987,15 @@
           "root_path": "/12/",
           "isolated_compose": "cases/12-single-point-of-knowledge-and-operational-risk/java/compose.yml",
           "isolated_port": 8412
+        },
+        "dotnet": {
+          "port": 8500,
+          "compose_path": "compose.dotnet.yml",
+          "readme_path": "cases/12-single-point-of-knowledge-and-operational-risk/dotnet/README.md",
+          "health_path": "/12/health",
+          "root_path": "/12/",
+          "isolated_compose": "cases/12-single-point-of-knowledge-and-operational-risk/dotnet/compose.yml",
+          "isolated_port": 8512
         }
       }
     }

@@ -17,14 +17,14 @@ Este laboratorio no busca impresionar con cantidad de carpetas. Su valor esta en
 
 | Area | Evidencia visible |
 | --- | --- |
-| Rendimiento Real | Casos `01`, `02` y `05` resuelven latencia, N+1 y saturación física de memoria (OOM/Drift) en PHP, Python, Node.js y Java |
-| Observabilidad Experta | Caso `03` implementa trazabilidad nativa, logs estructurados y jerarquías de excepciones en los cuatro stacks (Java usa `ThreadLocal<RequestContext>` para correlation) |
-| Resiliencia Determinista | Casos `04`, `06` y `09` demuestran resiliencia real ante timeouts físicos y errores de compilador; `04` con `AbortController` cooperativo en Node y `CompletableFuture.orTimeout` + circuit breaker en Java |
+| Rendimiento Real | Casos `01`, `02` y `05` resuelven latencia, N+1 y saturación física de memoria (OOM/Drift) en PHP, Python, Node.js, Java y .NET |
+| Observabilidad Experta | Caso `03` implementa trazabilidad nativa, logs estructurados y jerarquías de excepciones en los cinco stacks (Java usa `ThreadLocal<RequestContext>` y .NET usa `AsyncLocal<RequestContext>` para correlation) |
+| Resiliencia Determinista | Casos `04`, `06` y `09` demuestran resiliencia real ante timeouts físicos y errores de compilador; `04` con `AbortController` cooperativo en Node, `CompletableFuture.orTimeout` + circuit breaker en Java, y `CancellationTokenSource` + `Interlocked.CompareExchange` breaker en .NET |
 | Arquitectura y Fallos de I/O | Casos `07` a `12` cubren bloqueos de escritura (`flock`), deuda de conocimiento y modernización física |
-| Paridad multi-stack honesta | Los **12 casos operativos en los 4 stacks**: PHP, Python, Node.js, Java 21. Cada lenguaje con primitivas nativas distintas por caso (`AbortController` Node, `CompletableFuture.orTimeout` Java, `tracemalloc` Python, `flock` PHP, etc.). 48 endpoints operativos. |
+| Paridad multi-stack honesta | Los **12 casos operativos en los 5 stacks**: PHP, Python, Node.js, Java 21, .NET 8. Cada lenguaje con primitivas nativas distintas por caso (`AbortController` Node, `CompletableFuture.orTimeout` Java, `CancellationTokenSource` .NET, `tracemalloc` Python, `flock` PHP, etc.). 60 endpoints operativos. |
 | Interfaz Nativa (Dashboards) | Los 12 casos PHP exponen una **UI Web Interactiva** para visualizar el fallo en vivo desde cualquier navegador |
-| Docker / Infraestructura | Cada caso implementa `compose.yml` propio para entornos de ingeniería aislados; ademas **4 hubs consolidados** (`compose.root.yml` PHP `:8100`, `compose.python.yml` `:8200`, `compose.nodejs.yml` `:8300`, `compose.java.yml` `:8400`) levantan los stacks completos con un comando cada uno |
-| Documentación Pro | Análisis técnicos profundos con funciones de lenguaje, algoritmos y patrones de diseño; `comparison.md` multi-stack PHP · Python · Node.js · Java para los 12 casos |
+| Docker / Infraestructura | Cada caso implementa `compose.yml` propio para entornos de ingeniería aislados; ademas **5 hubs consolidados** (`compose.root.yml` PHP `:8100`, `compose.python.yml` `:8200`, `compose.nodejs.yml` `:8300`, `compose.java.yml` `:8400`, `compose.dotnet.yml` `:8500`) levantan los stacks completos con un comando cada uno |
+| Documentación Pro | Análisis técnicos profundos con funciones de lenguaje, algoritmos y patrones de diseño; `comparison.md` multi-stack PHP · Python · Node.js · Java · .NET para los 12 casos |
 | Criterio Operacional | **12 postmortems narrativos** (uno por caso) en formato incidente real: severidad, timeline, causa raíz, lo que funcionó vs lo que no, action items, métrica antes/después. Muestra cómo se *piensa* el incidente, no solo cómo se resuelve. Ver [`docs/executive-summary.md`](docs/executive-summary.md#postmortems-narrativos-por-caso) |
 | Honestidad Técnica | Distinción explícita de madurez: de simuladores teóricos a piezas de ingeniería verificables |
 

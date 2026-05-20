@@ -1,34 +1,61 @@
-# Arquitectura cara para un problema simple — .NET 8
+# Caso 10 — .NET 8
 
-## Objetivo de esta variante
-Representar este caso desde el stack **.NET 8**, manteniendo foco en el problema y no solo en la sintaxis.
+Stack .NET operativo del caso 10. CPU real medido como N hops de serializacion `JsonSerializer` vs `Dictionary` O(1).
 
-## Qué debería mostrar esta carpeta
-- una base dockerizada,
-- un punto de entrada mínimo,
-- espacio para instrumentación, pruebas o scripts,
-- notas de diseño específicas del stack.
+## Primitivas .NET nativas
 
-## Qué NO debería hacer
-- mezclar dependencias de otros stacks,
-- levantar todo el laboratorio,
-- esconder decisiones importantes fuera del repositorio.
+| Primitiva | Rol |
+|---|---|
+| `Dictionary<string, long>.TryGetValue` | Acceso O(1) — el "right-sized" del caso. |
+| `JsonSerializer.Serialize` + traversal loops | CPU real cobrado por hop de la version compleja (serializacion + parsing). |
+| `Stopwatch` / `Environment.TickCount64` | Medicion directa del CPU time por request. |
+| `Interlocked.Increment` | Contadores por variante. |
 
-## Puertos de referencia
-- Puerto local sugerido: `8510`
+## Contraste
 
-## Comando esperado
-```bash
-docker compose -f compose.yml up -d --build
+**Complex** — N hops con serializacion costosa por hop:
+```csharp
+for (int h = 0; h < hops; h++) {
+    var blob = JsonSerializer.Serialize(payload);   // alocacion + traversal
+    payload = JsonSerializer.Deserialize<Dictionary<string,object>>(blob)!;
+    // mas trabajo simulado por hop
+}
+// hops > 20 → internal_timeout (seasonal_peak)
 ```
 
-## Notas del stack
-En .NET 8 conviene estudiar este caso considerando:
-- ergonomía del runtime,
-- patrones habituales del ecosistema,
-- observabilidad disponible,
-- costos de complejidad,
-- límites y trade-offs específicos.
+**Right-sized** — Dictionary O(1):
+```csharp
+long? value = directStore.TryGetValue(key, out var v) ? v : null;
+return /* 1 service touched */;
+```
 
-## Estado inicial
-Esta carpeta deja una base mínima documentada y ampliable para que el caso evolucione hacia un escenario más realista.
+## Rutas
+
+| Ruta | Que muestra |
+|---|---|
+| `/health` | liveness |
+| `/feature-complex?key=feature-1&hops=8` | elapsed_ms alto, cost_usd_month_est = hops * 25, lead_time = hops * 2 |
+| `/feature-complex?key=feature-1&hops=25` | internal_timeout — sobrearquitectura bajo seasonal_peak |
+| `/feature-right-sized?key=feature-1` | elapsed_ms minimo, cost_usd_month_est = 3, lead_time = 1 |
+| `/decisions` | ADRs del lab (justificacion de no sobreingenierar) |
+| `/diagnostics/summary` | contraste de calls, timeouts, decisiones |
+
+## Hub
+
+```
+docker compose -f compose.dotnet.yml up -d --build
+curl "http://127.0.0.1:8500/10/feature-complex?key=feature-1&hops=8"
+curl "http://127.0.0.1:8500/10/feature-right-sized?key=feature-1"
+curl http://127.0.0.1:8500/10/decisions
+```
+
+## Modo aislado
+
+```
+docker compose -f cases/10-expensive-architecture-for-simple-needs/dotnet/compose.yml up -d --build
+curl http://127.0.0.1:8510/health
+```
+
+## Que mide el CPU real
+
+A diferencia de un caso simulado con `Task.Delay()`, aqui el trabajo es CPU real (`JsonSerializer.Serialize`/`Deserialize` con alocacion en LOH a partir de cierto tamano). Bajo carga concurrente, el `complex` consume threads del `ThreadPool` y crea contencion observable; ademas, las alocaciones grandes pasan al LOH y disparan colecciones Gen2. `right_sized` es essentialmente gratis. El lab no inventa el costo — lo demuestra. Mismo principio que el `StringBuilder` loops de Java.

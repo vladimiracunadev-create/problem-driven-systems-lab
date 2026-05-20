@@ -1,34 +1,72 @@
-# Pipeline roto y entrega frágil — .NET 8
+# Caso 06 — .NET 8
 
-## Objetivo de esta variante
-Representar este caso desde el stack **.NET 8**, manteniendo foco en el problema y no solo en la sintaxis.
+Stack .NET operativo del caso 06. Contraste entre deploy directo (sin preflight, sin rollback) vs pipeline controlado (preflight → smoke → promote | rollback).
 
-## Qué debería mostrar esta carpeta
-- una base dockerizada,
-- un punto de entrada mínimo,
-- espacio para instrumentación, pruebas o scripts,
-- notas de diseño específicas del stack.
+## Primitivas .NET nativas
 
-## Qué NO debería hacer
-- mezclar dependencias de otros stacks,
-- levantar todo el laboratorio,
-- esconder decisiones importantes fuera del repositorio.
+| Primitiva | Rol |
+|---|---|
+| `record EnvState(string Name, string Version, string Health)` | Snapshot inmutable por ambiente con `with`-expressions para rollback. |
+| `record Deployment(DateTime At, string Variant, string Env, string Version, string Scenario, string Result)` | Cada deploy queda como `record` en el historial. |
+| `ConcurrentDictionary<string,EnvState>` | Estado de ambientes accesible desde el `ThreadPool` sin lock global. |
+| `Interlocked.Increment` | Contadores por variante: `legacy_deploys`, `controlled_rollbacks`, `controlled_blocked`. |
 
-## Puertos de referencia
-- Puerto local sugerido: `856`
+## Contraste
 
-## Comando esperado
-```bash
-docker compose -f compose.yml up -d --build
+**Legacy** — deploy directo, deja roto si falla:
+```csharp
+if (IsBadScenario(scenario)) {
+    environments[env] = new EnvState(env, version, "degraded");
+    Interlocked.Increment(ref legacyBroken);
+    return /* "deployed_but_broken" */;
+}
 ```
 
-## Notas del stack
-En .NET 8 conviene estudiar este caso considerando:
-- ergonomía del runtime,
-- patrones habituales del ecosistema,
-- observabilidad disponible,
-- costos de complejidad,
-- límites y trade-offs específicos.
+**Controlled** — state machine con preflight + smoke + rollback:
+```csharp
+if (scenario is "missing_artifact" or "secret_drift_detected") {
+    return /* blocked_in_preflight */;   // no toca el ambiente
+}
+if (IsBadScenario(scenario)) {
+    Interlocked.Increment(ref controlledRollbacks);
+    return /* rolled_back_to_<before.Version> */;   // ambiente queda en version previa
+}
+environments[env] = new EnvState(env, version, "healthy");   // promote
+```
 
-## Estado inicial
-Esta carpeta deja una base mínima documentada y ampliable para que el caso evolucione hacia un escenario más realista.
+## Rutas
+
+| Ruta | Que muestra |
+|---|---|
+| `/health` | liveness |
+| `/deploy-legacy?env=prod&version=v1.1.0&scenario=secret_drift` | deja `prod` degradado |
+| `/deploy-controlled?env=prod&version=v1.1.0&scenario=secret_drift` | rollback automatico al version previo |
+| `/deploy-controlled?env=prod&version=v1.1.0&scenario=missing_artifact` | bloqueado en preflight, ambiente intocado |
+| `/environments` | estado actual por ambiente |
+| `/deployments` | historial reciente (max 30) |
+| `/diagnostics/summary` | contraste total por variante |
+| `/reset-lab` | restaura ambientes a `v1.0.0 healthy` |
+
+## Hub
+
+```
+docker compose -f compose.dotnet.yml up -d --build
+# legacy deja prod roto
+curl "http://127.0.0.1:8500/06/deploy-legacy?env=prod&version=v1.1.0&scenario=secret_drift"
+curl http://127.0.0.1:8500/06/environments
+# reset + controlled: prod sigue en version previa
+curl http://127.0.0.1:8500/06/reset-lab
+curl "http://127.0.0.1:8500/06/deploy-controlled?env=prod&version=v1.1.0&scenario=secret_drift"
+curl http://127.0.0.1:8500/06/environments
+```
+
+## Modo aislado
+
+```
+docker compose -f cases/06-broken-pipeline-and-fragile-delivery/dotnet/compose.yml up -d --build
+curl http://127.0.0.1:856/health
+```
+
+## Por que `record` aqui
+
+Los `record` types (C# 9+) son ideales para deployment events: inmutables, `Equals`/`GetHashCode`/`ToString` auto-generados, y se serializan directo a JSON con `System.Text.Json` sin DTOs adicionales. El historial de `/deployments` es esencialmente un append-only log de `record Deployment`. Las `with`-expressions permiten construir el `EnvState` post-rollback sin mutar el snapshot original.

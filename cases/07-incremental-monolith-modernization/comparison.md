@@ -1,4 +1,4 @@
-# Caso 07 — Comparativa multi-stack: Modernización incremental de monolito (PHP · Python · Node.js · Java)
+# Caso 07 — Comparativa multi-stack: Modernización incremental de monolito (PHP · Python · Node.js · Java · .NET)
 
 ## El problema que ambos resuelven
 
@@ -171,6 +171,37 @@ return legacyMonolith(req);                       // fallback acotado con ACL
 ```
 
 **Por que `Function` y no interfaz nominal:** `Function<T,R>` es una interfaz funcional del JDK — lambdas y method references la implementan directo. La firma del handler **es** el contrato; agregar un consumer es registrar una lambda. Sin reload del proceso, sin restart.
+
+---
+
+## .NET 8: ConcurrentDictionary con Func<Request,Response> como tabla de routing mutable
+
+**Runtime:** .NET 8 sobre `HttpListener`. CLR `ThreadPool`. La tabla de routing vive en memoria del proceso unico, compartida entre handlers.
+
+**El fallo legacy en C#:**
+```csharp
+// todos los consumers pegan al mismo monolito
+int blastRadius = 4;   // 4 modulos afectados al unisono
+int risk = 8;
+```
+Cualquier cambio en `shared_schema` toca billing, partners, checkout, backoffice — sin contencion en la tabla porque no hay tabla, todo pasa por el monolito.
+
+**La correccion en C#:**
+```csharp
+private static readonly ConcurrentDictionary<string, Func<Request, Response>> routingTable = new();
+routingTable["billing:change"] = req => new Response("ok-new-module", "new-billing-svc", 1, 1);
+
+if (routingTable.TryGetValue($"{consumer}:{op}", out var handler))
+    return handler(req);   // nuevo modulo
+return LegacyMonolith(req);   // fallback acotado con ACL
+```
+`Func<Request, Response>` es delegate generico — cualquier lambda lo implementa. La firma del handler **es** el contrato. Migrar un consumer = `routingTable[$"{consumer}:{op}"] = lambda`.
+
+**Notas idiomaticas vs los otros stacks:**
+- `Func<T,R>` es 1:1 con `Function<T,R>` Java o las arrow functions Node.
+- `ConcurrentDictionary<K,V>.TryGetValue` reemplaza `ConcurrentHashMap.get()` Java + null check.
+- `record Request/Response` (C# 9+) son inmutables con `with`-expressions — equivalente directo de los `record` Java.
+- A diferencia de PHP/Python, agregar un handler no necesita reload del proceso ni archivo de configuracion — vive en la memoria del proceso unico mientras este corre.
 
 ---
 

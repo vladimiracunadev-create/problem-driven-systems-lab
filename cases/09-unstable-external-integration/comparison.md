@@ -1,4 +1,4 @@
-# Caso 09 — Comparativa multi-stack: Integración externa inestable (PHP · Python · Node.js · Java)
+# Caso 09 — Comparativa multi-stack: Integración externa inestable (PHP · Python · Node.js · Java · .NET)
 
 ## El problema que ambos resuelven
 
@@ -203,6 +203,45 @@ snapshotCache.put(sku, fresh);
 ```
 
 **Por que `Semaphore.tryAcquire()` y no contador con CAS:** Un `AtomicInteger` + loop CAS funciona pero hay que escribirlo. `Semaphore.tryAcquire()` es la API que ya implementa "intenta tomar un permit, si no hay, devuelve false sin bloquear". Mas legible y mapea directo al concepto de cuota.
+
+---
+
+## .NET 8: SemaphoreSlim como budget + Interlocked.CompareExchange sobre el breaker
+
+**Runtime:** .NET 8 sobre `HttpListener`. CLR `ThreadPool` despachando handlers async. Budget de cuota, cache snapshot y breaker, todos en memoria del proceso.
+
+**El fallo legacy en C#:**
+```csharp
+if (drift) {
+    Interlocked.Increment(ref legacyFailures);
+    return "{\"status\":\"failed\"}";   // sin fallback, sin cache
+}
+```
+Cada request golpea al provider sin proteccion. Provider caido → cascada de fallos.
+
+**La correccion en C#:**
+```csharp
+private static readonly SemaphoreSlim providerBudget = new(BUDGET_PER_WINDOW);
+private static readonly ConcurrentDictionary<string,string> snapshotCache = new();
+private static string breakerState = "closed";
+
+if (!providerBudget.Wait(0)) return FromSnapshot(sku);       // budget agotado
+if (drift) {
+    Interlocked.Exchange(ref breakerState, "open");
+    return FromSnapshot(sku);
+}
+string fresh = CallProvider(sku);
+snapshotCache[sku] = fresh;                                   // refresca cache
+Interlocked.Exchange(ref breakerState, "closed");
+```
+
+**Notas idiomaticas vs los otros stacks:**
+- `SemaphoreSlim.Wait(0)` es 1:1 con el `Semaphore.tryAcquire()` Java — devuelve `false` si no hay permits, sin bloquear.
+- `Interlocked.Exchange<T>(ref state, newValue)` reemplaza el `AtomicReference.set()` Java.
+- `Interlocked.CompareExchange` es CAS explicito si la transicion debe ser condicional ("solo abrir si esta closed").
+- `ConcurrentDictionary<K,V>` reemplaza el `ConcurrentHashMap<K,V>` Java.
+- `CancellationToken` (con `CancellationTokenSource.CreateLinkedTokenSource(...)`) es el equivalente del `AbortSignal` Node — `HttpClient.SendAsync(req, ct)` lo respeta nativamente para timeout del provider.
+- `MemoryCache` de `Microsoft.Extensions.Caching.Memory` es opcion mas pesada con TTL automatico — para este caso, `ConcurrentDictionary` plano es suficiente.
 
 ---
 

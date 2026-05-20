@@ -2,7 +2,39 @@
 
 Todos los cambios notables de este laboratorio se registran aqui con foco en madurez tecnica y documental.
 
-## 2026-05-15 - Java 21 cierra paridad multi-stack: casos 07-12 operativos
+## 2026-05-20 - .NET 8 cierra paridad multi-stack: los 12 casos operativos en los 5 stacks
+
+.NET 8 pasa de cubrir los primeros 6 casos a cubrir los 12. **Paridad multi-stack completa** entre PHP, Python, Node.js, Java 21 y .NET 8 — los 60 endpoints (12 casos × 5 stacks) operativos detras de 5 hubs simetricos.
+
+### Added (6 Program.cs reales con primitiva BCL distintiva por caso)
+
+- **Caso 07** (`Modernizacion incremental`): `ConcurrentDictionary<string, Func<Request, Response>>` como routing table mutable en runtime; `Func<Request,Response>` delegate como ACL closure; `record Request/Response`. Espejo del `ConcurrentHashMap<String,Function>` Java.
+- **Caso 08** (`Extraccion critica`): `Func<PriceRequestOld, PriceRequestNew>` como proxy de compatibilidad de contrato + `ImmutableList<Action<string>>` con `ImmutableInterlocked.Update` como event bus thread-safe (reads sin lock, writes generan nueva lista persistente). Espejo del `Function` proxy + `CopyOnWriteArrayList` Java.
+- **Caso 09** (`Integracion externa inestable`): `SemaphoreSlim.Wait(0)` como budget de cuota no bloqueante + `ConcurrentDictionary` como snapshot cache + `Interlocked.CompareExchange` sobre el estado del breaker.
+- **Caso 10** (`Arquitectura cara para algo simple`): CPU real medido como N hops de `JsonSerializer.Serialize`/`Deserialize` (alocacion + parsing, presion al LOH cuando los blobs superan 85 KB) vs `Dictionary.TryGetValue` O(1). `Stopwatch` para medicion directa.
+- **Caso 11** (`Reportes que bloquean operacion`): `ConcurrentExclusiveSchedulerPair.ExclusiveScheduler` o `Thread` dedicado como aislamiento del trabajo CPU-bound; `Task.Factory.StartNew(task, ..., scheduler)` para submission explicita; `ThreadPool.GetAvailableWorkerThreads` como senal nativa de saturacion (equivalente al `monitorEventLoopDelay` Node y al `ThreadPoolExecutor.getActiveCount()` Java).
+- **Caso 12** (`Punto unico de conocimiento`): operadores `?.` (null-conditional) + `??` (null-coalescing) con Nullable Reference Types habilitado (`<Nullable>enable</Nullable>`) como runbook codificado en el sistema de tipos — el compilador advierte sobre desreferencias inseguras. Espejo del `Optional<T>` Java y del optional chaining `?.` Node.
+- **12 README.md .NET per caso** reescritos en formato Senior espejado al de Java: primitivas BCL, contraste legacy vs solucion con snippets C#, tabla de rutas, comando hub (`http://localhost:8500/0X/...`), modo aislado y notas idiomaticas comparativas con los otros 4 stacks.
+- **12 secciones `.NET 8`** agregadas a cada `comparison.md` con runtime, snippets legacy/optimizado en C#, primitivas distintivas (`AsyncLocal<T>` vs `ThreadLocal<T>`, `ConcurrentDictionary` vs `ConcurrentHashMap`, `Interlocked.CompareExchange` vs `AtomicReference.compareAndSet`, `SemaphoreSlim` vs `Semaphore`, `?.`+`??` vs `Optional<T>`).
+
+### Changed
+
+- **`dotnet-dispatcher/`**: lista de cases ampliada a 12. Puertos internos `:9501-:9512`. (Maneja el otro agente.)
+- **`compose.dotnet.yml`**: comentario y healthcheck reflejan 12 casos. (Maneja el otro agente.)
+- **12 `compose.yml` per-case .NET** generados con healthcheck. Puertos host: `851`, `852`, `853`, `854`, `855`, `856` (01-06 ya estaban), `857`, `858`, `859`, `8510`, `8511`, `8512`. (Maneja el otro agente.)
+- **`shared/catalog/cases.json`**: los 12 casos ahora listan `dotnet` en `operational_stacks` con `runtime_entries.dotnet` completo (`port`, `compose_path`, `readme_path`, `health_path`, `root_path`, `isolated_compose`, `isolated_port`). `level_detail` de cada caso suma mencion a la primitiva .NET distintiva. Entrada `languages.dotnet` actualizada a estado operativo.
+- **`docs/case-catalog.md`** regenerado manualmente con los 5 stacks por caso.
+- **`README.md`**: tabla de stacks compose `.NET 8 OPERATIVO` (era `OPERATIVO (01-06)`); 60 endpoints (era 48); 5 puertos hub (era 4); 8 puertos cubren el lab entero (era 7); tabla de catalogo con columna `🟦 .NET` por caso y links a `cases/0X-.../dotnet/README.md`; bullet `OPERATIVO en .NET 8` describe los 12 casos con primitivas; quita "DOCUMENTADO / SCAFFOLD: casos 07-12 de .NET"; "Lo que este repo no vende" reformulado a paridad multi-stack universal a nivel funcional.
+- **`ARCHITECTURE.md`**: tabla de casos operativos con `.NET ✅` en los 12; `pdsl-dotnet-lab` con 12 subprocesos `:9501-:9512`; capa 3 lista los 5 composes operativos.
+- **`ROADMAP.md`**: Fotografia actual y Fase 2 reflejan paridad completa .NET (12 casos) con primitivas BCL distintivas por caso.
+- **`RECRUITER.md`**: "12 casos × 5 stacks operativos"; comparison.md cubre los 5 stacks en los 12; 60 endpoints (era 48).
+- **`INSTALL.md`**: tabla de hubs `.NET 8 OPERATIVO`; agrega seccion `## 🟦 Laboratorio .NET completo` con comandos hub; sin nota de "scaffold .NET".
+- **12 `cases/0X/README.md`**: badge `Stacks` suma `.NET`; fila `🔵 .NET 8` de la tabla "Stacks disponibles" cambia de "🔧 Estructura lista" a `OPERATIVO` con la primitiva BCL distintiva; seccion "### .NET 8 (implementacion operativa)" reemplaza la antigua "### .NET (espacio de crecimiento)" con descripcion concreta de primitivas, link al README .NET del caso, puerto aislado y URL del hub `:8500`.
+
+### Out of scope (mantenidos sin cambios)
+
+- Implementaciones PHP, Python, Node, Java: sin tocar.
+- CI workflows: sin actualizar en este pase (los maneja el agente que escribe codigo .NET).
 
 Java 21 pasa de cubrir los primeros 6 casos a cubrir los 12. Paridad multi-stack completa entre PHP, Python, Node.js y Java — los 48 endpoints (12 casos × 4 stacks) operativos detras de 4 hubs simetricos.
 

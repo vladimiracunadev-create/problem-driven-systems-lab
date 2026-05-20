@@ -1,4 +1,4 @@
-# Caso 01 — Comparativa multi-stack: API lenta bajo carga (PHP · Python · Node.js · Java)
+# Caso 01 — Comparativa multi-stack: API lenta bajo carga (PHP · Python · Node.js · Java · .NET)
 
 ## El problema que ambos resuelven
 
@@ -152,14 +152,55 @@ CustomerSummary s = summaryCache.get(o.customerId);                        // Co
 
 ---
 
+## .NET 8: ThreadPool del CLR, ConcurrentDictionary como summary cache, worker Task.Delay con CancellationToken
+
+**Runtime:** .NET 8 sobre `HttpListener` (BCL). El CLR despacha cada request al `ThreadPool` — worker threads reales, paralelismo limitado por nucleos (no por GIL como Python, no por single-thread como Node). Estado compartido entre threads requiere primitivas concurrentes explicitas (`ConcurrentDictionary`, `Interlocked`, `AsyncLocal`).
+
+**Motor de datos:** Datos en memoria (`List<Order>`, `Dictionary<int,Customer>`). Mismo patron que Node y Java: foco en el cuello sin meter PostgreSQL ni EF Core en la ecuacion.
+
+**El fallo legacy en C#:**
+```csharp
+foreach (var o in orders)
+    if (o.Region.ToLowerInvariant().StartsWith("n")) scanned.Add(o);   // scan O(N) no sargable
+for (int i = 0; i < take; i++) {
+    Customer c = LookupCustomerOneByOne(o.CustomerId);   // busqueda lineal
+    Thread.SpinWait(1200);                                // roundtrip simulado
+}
+```
+Bajo carga concurrente, **cada worker del ThreadPool** ejecuta este loop con sleeps secuenciales. El pool crece bajo demanda pero con penalty (creacion de threads + warmup). Diferencia clave vs Node: el bloqueo es por-thread, no del proceso entero. Diferencia vs Java: el comportamiento es equivalente — la JVM y el CLR comparten el modelo thread-per-request.
+
+**La correccion en C#:**
+```csharp
+var matched = ordersByRegionPrefix.GetValueOrDefault("n", new List<Order>());   // O(1)
+var batch = new Dictionary<int, Customer>();
+for (int i = 0; i < take; i++) {
+    if (!batch.ContainsKey(cid)) batch[cid] = customerById[cid];                 // O(1)
+}
+SleepMicros(700);                                                                // 1 sola vez
+CustomerSummary s = summaryCache[o.CustomerId];                                  // ConcurrentDictionary
+```
+`summaryCache` es `ConcurrentDictionary<int, CustomerSummary>` actualizado por el worker. Los handlers leen sin lock — esa es la garantia que da `ConcurrentDictionary` y que `Dictionary` con `lock` no daria sin contencion.
+
+**Worker:** `Task.Run(async () => { while (!ct.IsCancellationRequested) { await Task.Delay(5000, ct); ... } })`. El `CancellationToken` propaga shutdown limpio en SIGTERM (idiomatico .NET, sin shutdown hook como Java).
+
+**Observabilidad:** `Interlocked.Increment(ref counter)` para contadores lock-free — equivalente directo del `LongAdder` Java sin la sobrecarga del `synchronized int`. p95/p99 calculados sobre buffer circular protegido con `lock`.
+
+**Notas idiomaticas vs los otros stacks:**
+- `ConcurrentDictionary<K,V>` cumple el rol de `ConcurrentHashMap<K,V>` Java — misma garantia de lectura sin lock.
+- `Interlocked.Increment` es el equivalente de `LongAdder.increment()` Java o `AtomicInteger.incrementAndGet()`.
+- `Task.Delay` + `CancellationToken` reemplaza el `ScheduledExecutorService` + shutdown hook de Java.
+- A diferencia de Node, el CLR permite paralelismo real sin necesidad de `worker_threads`. A diferencia de Python, no hay GIL que serialice bytecode.
+
+---
+
 ## Diferencias de decisión, no de corrección
 
-| Aspecto | PHP | Python | Node.js | Razon |
-|---|---|---|---|---|
-| Motor DB | PostgreSQL 16 (externo) | SQLite (embebida) | Datos en memoria + I/O simulado | PHP usa motor productivo. Python tiene `sqlite3` en stdlib. Node mantiene foco en el patron sin compilar bindings nativos. |
-| Worker | Contenedor Docker separado | `threading.Thread` en proceso | `setInterval(...).unref()` en proceso | FPM no comparte estado. Python y Node si pueden — Node sin lock por single-thread. |
-| Observabilidad | Prometheus + Grafana | `/metrics-prometheus` | `/metrics-prometheus` + `event_loop_lag_ms` | Solo Node expone lag del loop, propio del runtime. |
-| Concurrencia | FPM workers (multiproceso) | Threads en un proceso (GIL) | Single-thread event loop | Tres modelos. Mismo patron N+1, distintas senales bajo carga. |
-| Costo de await secuencial | Bloquea el proceso FPM completo | Bloquea el thread, libera GIL en I/O | Cede al loop pero penaliza throughput global del proceso | El comportamiento bajo carga concurrente es lo que mas diferencia los runtimes. |
+| Aspecto | PHP | Python | Node.js | Java | .NET | Razon |
+|---|---|---|---|---|---|---|
+| Motor DB | PostgreSQL 16 (externo) | SQLite (embebida) | Datos en memoria + I/O simulado | Datos en memoria | Datos en memoria | PHP usa motor productivo. Python tiene `sqlite3` en stdlib. Node/Java/.NET mantienen foco en el patron. |
+| Worker | Contenedor Docker separado | `threading.Thread` en proceso | `setInterval(...).unref()` en proceso | `ScheduledExecutorService` | `Task.Delay` + `CancellationToken` | FPM no comparte estado. Los demas si — Node sin lock por single-thread; Java/.NET con primitivas concurrentes. |
+| Observabilidad | Prometheus + Grafana | `/metrics-prometheus` | `/metrics-prometheus` + `event_loop_lag_ms` | `LongAdder` + buffer p95/p99 | `Interlocked` + buffer p95/p99 | Solo Node expone lag del loop. Java y .NET exponen contadores lock-free. |
+| Concurrencia | FPM workers (multiproceso) | Threads en un proceso (GIL) | Single-thread event loop | JVM ThreadPool (paralelismo real) | CLR ThreadPool (paralelismo real) | Cinco modelos. Mismo patron N+1, distintas senales bajo carga. |
+| Costo de await secuencial | Bloquea el proceso FPM completo | Bloquea el thread, libera GIL en I/O | Cede al loop pero penaliza throughput global | Bloquea el thread del pool, otros siguen | Bloquea el thread del pool, otros siguen | El comportamiento bajo carga concurrente es lo que mas diferencia los runtimes. |
 
-**El patron que los tres demuestran es identico:** N+1 vs batch loading. La diferencia observable (`db_queries`, `db_time_ms`) es la misma. Lo que cambia es **donde duele**: en PHP el pool FPM se agota; en Python el thread queda en I/O; en Node se acumula lag del event loop.
+**El patron que los cinco demuestran es identico:** N+1 vs batch loading. La diferencia observable (`db_queries`, `db_time_ms`) es la misma. Lo que cambia es **donde duele**: en PHP el pool FPM se agota; en Python el thread queda en I/O; en Node se acumula lag del event loop; en Java/.NET se saturan los worker threads del pool.

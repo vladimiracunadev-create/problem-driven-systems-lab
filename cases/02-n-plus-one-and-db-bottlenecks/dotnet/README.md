@@ -1,34 +1,60 @@
-# N+1 queries y cuellos de botella en base de datos — .NET 8
+# Caso 02 — .NET 8
 
-## Objetivo de esta variante
-Representar este caso desde el stack **.NET 8**, manteniendo foco en el problema y no solo en la sintaxis.
+Stack .NET operativo del caso 02. Patron N+1 reproducido en memoria, contraste con batch `IN(...)` simulado.
 
-## Qué debería mostrar esta carpeta
-- una base dockerizada,
-- un punto de entrada mínimo,
-- espacio para instrumentación, pruebas o scripts,
-- notas de diseño específicas del stack.
+## Primitivas .NET nativas
 
-## Qué NO debería hacer
-- mezclar dependencias de otros stacks,
-- levantar todo el laboratorio,
-- esconder decisiones importantes fuera del repositorio.
+| Primitiva | Rol |
+|---|---|
+| `Dictionary<int, List<Item>>` | `itemsByOrderId` precomputado actua como tabla relacional indexada. |
+| `record` types | `Order`, `Item` inmutables sin boilerplate. |
+| `Interlocked.Increment` | Contadores por ruta lock-free. |
+| `HttpListener` (BCL) | Sin frameworks. Build single-file, runtime minimo. |
 
-## Puertos de referencia
-- Puerto local sugerido: `852`
+## Contraste
 
-## Comando esperado
-```bash
-docker compose -f compose.yml up -d --build
+**Legacy** — N+1 dentro del bucle:
+```csharp
+for (int i = 0; i < take; i++) {
+    var o = orders[i];
+    var items = LookupItemsOneByOne(o.Id);   // 1 query por order
+    SleepMicros(900);                         // costo de roundtrip
+}
 ```
 
-## Notas del stack
-En .NET 8 conviene estudiar este caso considerando:
-- ergonomía del runtime,
-- patrones habituales del ecosistema,
-- observabilidad disponible,
-- costos de complejidad,
-- límites y trade-offs específicos.
+**Optimized** — batch `IN(...)` + ensamblado O(1):
+```csharp
+var ids = CollectIds(orders, take);
+var batch = new Dictionary<int, List<Item>>();
+foreach (var id in ids) batch[id] = itemsByOrderId.GetValueOrDefault(id, new());
+SleepMicros(700);   // un solo roundtrip
+```
 
-## Estado inicial
-Esta carpeta deja una base mínima documentada y ampliable para que el caso evolucione hacia un escenario más realista.
+## Rutas
+
+| Ruta | Que muestra |
+|---|---|
+| `/health` | liveness |
+| `/orders-legacy?limit=20` | 1 query orders + N queries items |
+| `/orders-optimized?limit=20` | 1 query orders + 1 batch IN |
+| `/diagnostics/summary` | totales + contraste avg/p95/p99 |
+| `/metrics` | avg/p95/p99 por ruta |
+| `/reset-lab` | reinicia contadores |
+
+## Hub
+
+```
+docker compose -f compose.dotnet.yml up -d --build
+curl "http://127.0.0.1:8500/02/orders-optimized?limit=10"
+```
+
+## Modo aislado
+
+```
+docker compose -f cases/02-n-plus-one-and-db-bottlenecks/dotnet/compose.yml up -d --build
+curl http://127.0.0.1:852/health
+```
+
+## Diferencia con PHP/Python/Node/Java
+
+PHP usa PDO + PostgreSQL real. Python usa sqlite3 + `DB_LOCK`. Node usa `Map`+`Set` en memoria. Java usa `HashMap` en memoria. La version .NET tambien se queda en memoria y enfoca el contraste en el patron de carga, no en EF Core vs Dapper. Mismo problema, idioma distinto.

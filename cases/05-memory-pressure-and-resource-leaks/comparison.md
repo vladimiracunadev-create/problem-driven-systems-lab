@@ -1,4 +1,4 @@
-# Caso 05 — Comparativa multi-stack: Presión de memoria y fugas de recursos (PHP · Python · Node.js · Java)
+# Caso 05 — Comparativa multi-stack: Presión de memoria y fugas de recursos (PHP · Python · Node.js · Java · .NET)
 
 ## El problema que ambos resuelven
 
@@ -203,6 +203,54 @@ private static final Map<Integer, byte[]> optimizedCache =
 `LinkedHashMap.removeEldestEntry` es **LRU built-in del JDK** — una linea agrega politica de eviccion. Cuando rebasa el cap, el `Map` quita la entrada mas antigua; la referencia muere; el GC en la proxima pasada libera memoria.
 
 **Senales propias del runtime:** `heap_used_mb`, `heap_total_mb`, `heap_max_mb`. Diferencia con Node `process.memoryUsage()`: Node expone `heapUsed/heapTotal/rss/external` separados (V8 + Node buffers). Java agrega todo en el heap del JVM — no hay "buffers off-heap" excepto si usas `ByteBuffer.allocateDirect()` (fuera de scope de este caso).
+
+---
+
+## .NET 8: LRU manual con Dictionary + LinkedList, Process.WorkingSet64 como senal
+
+**Runtime:** .NET 8 sobre `HttpListener`. CLR con GC generacional (Gen0/Gen1/Gen2 + LOH). Una fuga es referencia alcanzable desde una raiz `static` — el GC no la puede recolectar.
+
+**El fallo legacy en C#:**
+```csharp
+private static readonly List<byte[]> legacyAccumulator = new();
+private static readonly object syncLeak = new();
+
+var payload = new byte[sizeKb * 1024];
+lock (syncLeak) { legacyAccumulator.Add(payload); }   // nunca se libera
+```
+Cada request agrega un nuevo `byte[]` al `static List<>`. Las referencias siguen alcanzables → GC nunca libera → `WorkingSet64` crece monotonicamente. Si los payloads pasan de 85 KB van al LOH (Large Object Heap) y la presion se nota mas (Gen2 se dispara).
+
+**La correccion en C#:**
+```csharp
+private const int OPTIMIZED_CAP = 1000;
+private static readonly Dictionary<int, LinkedListNode<(int K, byte[] V)>> index = new();
+private static readonly LinkedList<(int K, byte[] V)> order = new();
+
+lock (sync) {
+    if (index.TryGetValue(k, out var node)) { order.Remove(node); order.AddFirst(node); }
+    else {
+        var n = order.AddFirst((k, payload));
+        index[k] = n;
+        if (index.Count > OPTIMIZED_CAP) {
+            var last = order.Last!;
+            order.RemoveLast();
+            index.Remove(last.Value.K);   // eviccion → GC libera el oldest
+        }
+    }
+}
+```
+.NET no tiene `LinkedHashMap.removeEldestEntry` como Java, asi que la LRU se compone manual con `Dictionary<K, LinkedListNode<...>>` + `LinkedList<...>`: lookup O(1) por dictionary, reordenamiento O(1) por linked list. Misma garantia que la version Java en una decena de lineas mas.
+
+**Senales propias del runtime:**
+- `Process.GetCurrentProcess().WorkingSet64` — RSS visto por el OS.
+- `GC.GetTotalMemory(forceFullCollection: false)` — memoria gestionada actual del CLR.
+- `GC.CollectionCount(2)` — cuantos GC Gen2 se han disparado (senal de presion seria).
+- `GC.Collect()` disponible en `/reset-lab` para forzar comparacion antes/despues.
+
+**Notas idiomaticas vs los otros stacks:**
+- A diferencia de Java, .NET no trae LRU built-in en el BCL (hay que componerla a mano o usar `MemoryCache` con su politica de size limit).
+- A diferencia de PHP, el proceso vive indefinido — la fuga persiste como en Python/Node/Java.
+- `using var` + `IDisposable` es la disciplina .NET para liberar recursos no gestionados (sockets, handles). El leak del caso es deliberado para referencia, no para uso real.
 
 ---
 

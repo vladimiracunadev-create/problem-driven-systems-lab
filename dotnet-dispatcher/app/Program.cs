@@ -15,10 +15,10 @@ using System.Threading.Tasks;
 // Espejo del patron java-dispatcher / python-dispatcher / node-dispatcher:
 //   - Spawnea cada caso como subproceso interno (`dotnet /app/cases/0X/Case0X.dll`).
 //   - Listening publico en :8500.
-//   - Enruta por prefijo de path: /01/* → :9501, /02/* → :9502, ..., /06/* → :9506.
+//   - Enruta por prefijo de path: /01/* → :9501, /02/* → :9502, ..., /12/* → :9512.
 //   - Los puertos internos nunca se exponen al host.
 //
-// Casos operativos hoy: 01-06.
+// Casos operativos hoy: 01-12.
 
 internal static class Program
 {
@@ -32,6 +32,12 @@ internal static class Program
         new CaseInfo("04", 9504, "Timeout chain y retry storms",    "/app/cases/04"),
         new CaseInfo("05", 9505, "Presion de memoria y fugas",      "/app/cases/05"),
         new CaseInfo("06", 9506, "Pipeline roto y delivery fragil", "/app/cases/06"),
+        new CaseInfo("07", 9507, "Modernizacion incremental de monolito",   "/app/cases/07"),
+        new CaseInfo("08", 9508, "Extraccion critica de modulo",            "/app/cases/08"),
+        new CaseInfo("09", 9509, "Integracion externa inestable",           "/app/cases/09"),
+        new CaseInfo("10", 9510, "Arquitectura cara para algo simple",      "/app/cases/10"),
+        new CaseInfo("11", 9511, "Reportes pesados que bloquean operacion", "/app/cases/11"),
+        new CaseInfo("12", 9512, "Punto unico de conocimiento",             "/app/cases/12"),
     };
 
     private static readonly int DispatchPort =
@@ -145,7 +151,7 @@ internal static class Program
             }
             if (path.Length < 3 || path[0] != '/')
             {
-                await SendJsonAsync(ctx, 404, "{\"error\":\"not_found\",\"hint\":\"usa /01/..., /02/..., ..., /06/...\"}");
+                await SendJsonAsync(ctx, 404, "{\"error\":\"not_found\",\"hint\":\"usa /01/..., /02/..., ..., /12/...\"}");
                 return;
             }
             var caseId = path.Substring(1, 2);

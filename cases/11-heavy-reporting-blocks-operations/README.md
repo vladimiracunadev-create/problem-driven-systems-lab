@@ -1,7 +1,7 @@
 # 📊 Caso 11 — Reportes pesados que bloquean la operación
 
 [![Estado](https://img.shields.io/badge/Estado-Multi--stack%20operativo-success)](php/README.md)
-[![Stacks](https://img.shields.io/badge/Stacks-PHP%20%C2%B7%20Python%20%C2%B7%20Node%20%C2%B7%20Java-blue)](#-stacks-disponibles)
+[![Stacks](https://img.shields.io/badge/Stacks-PHP%20%C2%B7%20Python%20%C2%B7%20Node%20%C2%B7%20Java%20%C2%B7%20.NET-blue)](#-stacks-disponibles)
 [![Categoría](https://img.shields.io/badge/Categoría-Operaciones-darkgreen)](../../README.md)
 
 > [!IMPORTANT]
@@ -107,9 +107,9 @@ Mismo contraste con threading. Ver [`python/README.md`](python/README.md). Modo 
 
 `ThreadPoolExecutor` acotado a 4 threads como pool principal (saturación realista); `ExecutorService` dedicado de 2 threads para reporting. `CompletableFuture.supplyAsync(task, executor)` para submission explícita al pool correcto. `getActiveCount()` y `getQueue().size()` son la señal nativa de saturación, equivalente al `monitorEventLoopDelay` de Node. Ver [`java/README.md`](java/README.md). Modo aislado: puerto `8411`. Hub: `http://localhost:8400/11/`.
 
-### .NET (espacio de crecimiento)
+### .NET 8
 
-Estructura dockerizada lista; sin paridad funcional todavía.
+`ConcurrentExclusiveSchedulerPair.ExclusiveScheduler` (o `Thread` dedicado) como aislamiento del trabajo CPU-bound de reporting. `Task.Factory.StartNew(task, ..., scheduler)` para submission explicita. `ThreadPool.GetAvailableWorkerThreads` revela la saturacion del pool principal — equivalente .NET de `monitorEventLoopDelay` Node y de `ThreadPoolExecutor.getActiveCount()` Java. Ver [`dotnet/README.md`](dotnet/README.md). Modo aislado: puerto `8511`. Hub: `http://localhost:8500/11/`.
 
 ---
 
@@ -135,7 +135,7 @@ Estructura dockerizada lista; sin paridad funcional todavía.
 | 🐍 Python 3.12 | `OPERATIVO` (threading + métricas locales) |
 | 🟢 Node.js 20 | `OPERATIVO` (`monitorEventLoopDelay()` + `setImmediate` para ceder) |
 | ☕ Java 21 | `OPERATIVO` (`ThreadPoolExecutor` saturation observable + `ExecutorService` dedicado) |
-| 🔵 .NET 8 | 🔧 Estructura lista |
+| 🔵 .NET 8 | `OPERATIVO` (`ConcurrentExclusiveSchedulerPair` + `ThreadPool.GetAvailableWorkerThreads`) |
 
 ---
 

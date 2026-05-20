@@ -1,7 +1,7 @@
 # 🚚 Caso 06 — Pipeline roto y entrega frágil
 
 [![Estado](https://img.shields.io/badge/Estado-Multi--stack%20operativo-success)](php/README.md)
-[![Stacks](https://img.shields.io/badge/Stacks-PHP%20%C2%B7%20Python%20%C2%B7%20Node%20%C2%B7%20Java-blue)](#-stacks-disponibles)
+[![Stacks](https://img.shields.io/badge/Stacks-PHP%20%C2%B7%20Python%20%C2%B7%20Node%20%C2%B7%20Java%20%C2%B7%20.NET-blue)](#-stacks-disponibles)
 [![Categoría](https://img.shields.io/badge/Categoría-Entrega-purple)](../../README.md)
 
 > [!IMPORTANT]
@@ -74,9 +74,9 @@ Misma lógica con stdlib. `dict` por ambiente, lista de deployments para histori
 
 `record EnvState(name, version, health)` y `record Deployment(at, variant, env, version, scenario, result)` **inmutables** — cada deploy crea instancias nuevas, no muta. Eso descarta una clase entera de bugs de concurrencia: el snapshot que captura `before` en preflight se mantiene aunque otro thread haga `put()` paralelo. `ConcurrentHashMap<String, EnvState>` por ambiente; state machine como guards explícitos (preflight → smoke → promote | rollback). Ver [`java/README.md`](java/README.md). Modo aislado: puerto `846`. Hub: `http://localhost:8400/06/`.
 
-### .NET (espacio de crecimiento)
+### .NET 8
 
-Estructura dockerizada lista; sin paridad funcional todavía.
+`record EnvState(string Name, string Version, string Health)` y `record Deployment(...)` **inmutables** con `with`-expressions para rollback sin mutar. `ConcurrentDictionary<string, EnvState>` por ambiente; state machine con guards explicitos (preflight → smoke → promote | rollback). `Interlocked.Increment` para contadores. Ver [`dotnet/README.md`](dotnet/README.md). Modo aislado: puerto `856`. Hub: `http://localhost:8500/06/`.
 
 ---
 
@@ -102,7 +102,7 @@ Permite **publicar con menos riesgo**, reducir incidentes operativos y mejorar l
 | 🐍 Python 3.12 | `OPERATIVO` (misma lógica con stdlib, dict por ambiente) |
 | 🟢 Node.js 20 | `OPERATIVO` (`AbortController` para cancelación cooperativa entre pasos) |
 | ☕ Java 21 | `OPERATIVO` (`record` types inmutables + state machine + `ConcurrentHashMap`) |
-| 🔵 .NET 8 | 🔧 Estructura lista |
+| 🔵 .NET 8 | `OPERATIVO` (`record EnvState` + `ConcurrentDictionary` + `with`-expressions para rollback) |
 
 ---
 

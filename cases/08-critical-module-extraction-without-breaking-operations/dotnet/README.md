@@ -1,34 +1,57 @@
-# Extracción de módulo crítico sin romper operación — .NET 8
+# Caso 08 — .NET 8
 
-## Objetivo de esta variante
-Representar este caso desde el stack **.NET 8**, manteniendo foco en el problema y no solo en la sintaxis.
+Stack .NET operativo del caso 08. Cutover gradual con proxy de compatibilidad de contrato + event bus thread-safe basado en `event Action`.
 
-## Qué debería mostrar esta carpeta
-- una base dockerizada,
-- un punto de entrada mínimo,
-- espacio para instrumentación, pruebas o scripts,
-- notas de diseño específicas del stack.
+## Primitivas .NET nativas
 
-## Qué NO debería hacer
-- mezclar dependencias de otros stacks,
-- levantar todo el laboratorio,
-- esconder decisiones importantes fuera del repositorio.
+| Primitiva | Rol |
+|---|---|
+| `Func<PriceRequestOld, PriceRequestNew>` | Proxy de compatibilidad. Traduce contrato viejo `{cost_usd}` ↔ nuevo `{price, currency}` en vuelo. |
+| `event Action<string>` + `ImmutableList<Action<string>>` | EventBus thread-safe. Reads paralelos sin lock; writes (subscribe/unsubscribe) generan una copia. Espejo del `EventEmitter` Node y del `CopyOnWriteArrayList` Java. |
+| `record PriceRequestOld/New` | Snapshots inmutables de cada contrato. |
+| `ConcurrentDictionary<string, bool>` | Progreso de cutover por consumer. |
 
-## Puertos de referencia
-- Puerto local sugerido: `858`
+## Contraste
 
-## Comando esperado
-```bash
-docker compose -f compose.yml up -d --build
+**Big-bang** — cambio de contrato rompe consumers sensibles:
+```csharp
+// Nuevo modulo solo entiende {Price, Currency}; consumer manda {CostUsd}
+return "contract_violation";   // checkout, partners, backoffice todos rotos
 ```
 
-## Notas del stack
-En .NET 8 conviene estudiar este caso considerando:
-- ergonomía del runtime,
-- patrones habituales del ecosistema,
-- observabilidad disponible,
-- costos de complejidad,
-- límites y trade-offs específicos.
+**Compatible** — proxy traduce old→new + event bus notifica avance:
+```csharp
+PriceRequestNew translated = compatProxy(old);   // {CostUsd}→{Price,Currency}
+cutoverProgress[consumer] = true;
+Emit($"cutover_done:{consumer}");                 // bus notifica suscriptores
+```
 
-## Estado inicial
-Esta carpeta deja una base mínima documentada y ampliable para que el caso evolucione hacia un escenario más realista.
+## Rutas
+
+| Ruta | Que muestra |
+|---|---|
+| `/health` | liveness |
+| `/pricing-bigbang?consumer=checkout&sku=ABC&cost_usd=100` | contract_violation (rompe) |
+| `/pricing-compatible?consumer=checkout&sku=ABC&cost_usd=100` | translated payload + cutover_done=true + emite evento |
+| `/flows` | cutover_progress por consumer + recent_events (max 50) |
+| `/diagnostics/summary` | proxy_hits, contract_tests_passed, bigbang_broken |
+| `/reset-lab` | limpia state |
+
+## Hub
+
+```
+docker compose -f compose.dotnet.yml up -d --build
+curl "http://127.0.0.1:8500/08/pricing-compatible?consumer=checkout&sku=ABC&cost_usd=100"
+curl http://127.0.0.1:8500/08/flows
+```
+
+## Modo aislado
+
+```
+docker compose -f cases/08-critical-module-extraction-without-breaking-operations/dotnet/compose.yml up -d --build
+curl http://127.0.0.1:858/health
+```
+
+## Por que `ImmutableList<Action<string>>` y no `List<Action<string>>` con lock
+
+Reads del event bus son **frecuentes** (cada emit recorre todos los suscriptores). Writes (add/remove subscriber) son **raros**. `ImmutableList<T>` es exactamente este trade-off: lectores nunca se bloquean ni copian; escritores generan una nueva lista persistente (caro, pero infrecuente). Espejo arquitectonico del `EventEmitter` Node y del `CopyOnWriteArrayList<Consumer>` Java — el mismo problema resuelto con la primitiva idiomatica de cada plataforma.

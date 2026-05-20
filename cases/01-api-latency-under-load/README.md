@@ -78,9 +78,9 @@ Ver detalles en [`node/README.md`](node/README.md). Puerto local: `821`.
 
 Stack Java operativo con `ConcurrentHashMap` como summary cache lock-free entre worker y handlers, `LongAdder` para contadores, `ScheduledExecutorService` para el worker `report-refresh-java`. Mismas rutas de contraste (`/report-legacy`, `/report-optimized`, `/batch/status`, `/job-runs`). Ver [`java/README.md`](java/README.md). Hub: `http://localhost:8400/01/`. Aislado: puerto `841`.
 
-### .NET (espacio de crecimiento)
+### .NET 8 (implementacion operativa)
 
-Stack .NET con estructura dockerizada lista, todavia sin paridad funcional con los 4 stacks operativos.
+Stack .NET operativo con `ConcurrentDictionary` como summary cache lock-free entre worker y handlers, `Interlocked.Increment` para contadores, `Task.Delay` + `CancellationToken` para el worker `report-refresh-dotnet`. Mismas rutas de contraste (`/report-legacy`, `/report-optimized`, `/batch/status`, `/job-runs`). Ver [`dotnet/README.md`](dotnet/README.md). Hub: `http://localhost:8500/01/`. Aislado: puerto `851`.
 
 ---
 

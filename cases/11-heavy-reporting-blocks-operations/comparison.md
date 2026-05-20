@@ -1,4 +1,4 @@
-# Caso 11 — Comparativa multi-stack: Reportes pesados que bloquean la operación (PHP · Python · Node.js · Java)
+# Caso 11 — Comparativa multi-stack: Reportes pesados que bloquean la operación (PHP · Python · Node.js · Java · .NET)
 
 ## El problema que ambos resuelven
 
@@ -173,6 +173,48 @@ CompletableFuture<Long> fut = CompletableFuture.supplyAsync(() -> {
 ```
 
 **Senal propia del runtime:** `mainPool.getActiveCount()` y `mainPool.getQueue().size()` se exponen en `/activity`. Es el equivalente Java de `monitorEventLoopDelay()` de Node — observabilidad nativa de saturacion sin agente externo.
+
+---
+
+## .NET 8: ConcurrentExclusiveSchedulerPair + ThreadPool.GetAvailableWorkerThreads
+
+**Runtime:** .NET 8 sobre `HttpListener`. CLR `ThreadPool` global compartido por todos los handlers. Reporting CPU-bound sin aislamiento → satura el pool → `/order-write` espera.
+
+**El fallo legacy en C#:**
+```csharp
+// /report-legacy corre SINCRONO en el worker thread del HttpListener (mainPool)
+long checksum = 0;
+for (int i = 0; i < rows; i++) checksum += (i * 13L) % 7;
+// → ThreadPool.GetAvailableWorkerThreads cae; /order-write queda esperando
+```
+
+**La correccion en C#:**
+```csharp
+private static readonly ConcurrentExclusiveSchedulerPair reportingPair = new();
+
+var checksum = await Task.Factory.StartNew(() => {
+    long c = 0;
+    for (int i = 0; i < rows; i++) c += (i * 13L) % 7;
+    return c;
+}, CancellationToken.None, TaskCreationOptions.LongRunning, reportingPair.ExclusiveScheduler);
+// ThreadPool global intacto; reporting corre en el scheduler exclusivo
+```
+
+Alternativa: `Thread` dedicado con `Thread.IsBackground = true` para trabajo realmente long-running. Otra opcion: `Channel<T>` para encolar trabajo y consumirlo desde un worker dedicado.
+
+**Senal propia del runtime:**
+```csharp
+ThreadPool.GetMaxThreads(out int maxWorker, out _);
+ThreadPool.GetAvailableWorkerThreads(out int availWorker, out _);
+int busy = maxWorker - availWorker;
+```
+Se exponen en `/activity`. Es el equivalente .NET de `monitorEventLoopDelay()` Node y de `ThreadPoolExecutor.getActiveCount()` Java — observabilidad nativa de saturacion sin agente externo.
+
+**Notas idiomaticas vs los otros stacks:**
+- `ConcurrentExclusiveSchedulerPair.ExclusiveScheduler` reemplaza el `Executors.newFixedThreadPool(2)` Java — aislamiento del pool principal.
+- `ThreadPool.GetAvailableWorkerThreads` es la primitiva mas cercana a `monitorEventLoopDelay()` Node y `ThreadPoolExecutor.getActiveCount()` Java. Sin agentes APM.
+- A diferencia de Node, el CLR usa thread pool real (no event loop) — la saturacion se observa como "menos workers disponibles", no como "lag del loop".
+- A diferencia de Java, el `ThreadPool` del CLR es global por proceso (no se instancian pools por dominio), asi que aislar requiere `TaskScheduler` custom o `Thread` dedicado.
 
 ---
 

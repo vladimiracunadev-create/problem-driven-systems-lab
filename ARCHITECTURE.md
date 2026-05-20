@@ -7,7 +7,7 @@
 El laboratorio se organiza hoy como un sistema de cuatro capas:
 
 1. una capa editorial y operativa en la raiz;
-2. un portal local ligero para evaluacion guiada, mas entradas completas por lenguaje (PHP y Python operativos, cada uno con su propio compose raiz);
+2. un portal local ligero para evaluacion guiada, mas entradas completas por lenguaje (PHP, Python, Node.js, Java 21 y .NET 8 operativos, cada uno con su propio compose raiz);
 3. un catalogo maestro en metadatos compartidos;
 4. casos problem-driven con stacks aislados por Docker.
 
@@ -63,9 +63,10 @@ Cada lenguaje operativo tiene su compose raiz — un comando levanta los 12 caso
 - `compose.python.yml` — Python: 12 casos en un solo contenedor dispatcher (`8200`), stdlib pura, sin dependencias externas
 - `compose.nodejs.yml` — Node.js 20: 12 casos en un solo contenedor dispatcher (`8300`), stdlib pura, sin dependencias externas
 - `compose.java.yml` — Java 21: 12 casos en un solo contenedor dispatcher (`8400`), JDK built-in (`HttpServer`, `HttpClient`), sin Maven
+- `compose.dotnet.yml` — .NET 8: 12 casos en un solo contenedor dispatcher (`8500`), BCL built-in (`HttpListener`, `System.Text.Json`), sin paquetes externos
 - `compose.portal.yml` — portal liviano solamente (`8080`)
 
-Los stacks pueden correr en paralelo sin colisión de puertos. .NET seguirá el mismo patron con `compose.dotnet.yml` (puerto `8500`).
+Los cinco stacks pueden correr en paralelo sin colisión de puertos — comparten el mismo patrón hub.
 
 El portal:
 - `portal/app/index.html` presenta la interfaz principal
@@ -87,34 +88,35 @@ El laboratorio ha evolucionado de simulaciones matemáticas a **escenarios de fa
 
 ## 📦 Casos operativos actuales
 
-| Caso | PHP | Python | Node.js | Java | Implementacion PHP (referencia) |
-| --- | --- | --- | --- | --- | --- |
-| `01` | ✅ | ✅ | ✅ | ✅ | PostgreSQL + worker + Prometheus + Grafana |
-| `02` | ✅ | ✅ | ✅ | ✅ | PostgreSQL |
-| `03` | ✅ | ✅ | ✅ | ✅ | telemetria, trazabilidad y logs estructurados |
-| `04` | ✅ | ✅ | ✅ | ✅ | timeout corto, retry storm, circuit breaker y fallback |
-| `05` | ✅ | ✅ | ✅ | ✅ | presion progresiva de memoria, comparacion legacy vs optimized |
-| `06` | ✅ | ✅ | ✅ | ✅ | pipeline legacy vs controlled, preflight y rollback |
-| `07` | ✅ | ✅ | ✅ | ✅ | modernizacion incremental, strangler, progreso por consumidor |
-| `08` | ✅ | ✅ | ✅ | ✅ | extraccion big bang vs compatible, proxy y cutover gradual |
-| `09` | ✅ | ✅ | ✅ | ✅ | integracion externa con adapter, idempotencia y validacion de contrato |
-| `10` | ✅ | ✅ | ✅ | ✅ | comparacion complex vs right-sized, costo y lead time visibles |
-| `11` | ✅ | ✅ | ✅ | ✅ | reporting legacy vs aislado, presion observable sobre la operacion |
-| `12` | ✅ | ✅ | ✅ | ✅ | runbooks, bus factor y continuidad operacional observable |
+| Caso | PHP | Python | Node.js | Java | .NET | Implementacion PHP (referencia) |
+| --- | --- | --- | --- | --- | --- | --- |
+| `01` | ✅ | ✅ | ✅ | ✅ | ✅ | PostgreSQL + worker + Prometheus + Grafana |
+| `02` | ✅ | ✅ | ✅ | ✅ | ✅ | PostgreSQL |
+| `03` | ✅ | ✅ | ✅ | ✅ | ✅ | telemetria, trazabilidad y logs estructurados |
+| `04` | ✅ | ✅ | ✅ | ✅ | ✅ | timeout corto, retry storm, circuit breaker y fallback |
+| `05` | ✅ | ✅ | ✅ | ✅ | ✅ | presion progresiva de memoria, comparacion legacy vs optimized |
+| `06` | ✅ | ✅ | ✅ | ✅ | ✅ | pipeline legacy vs controlled, preflight y rollback |
+| `07` | ✅ | ✅ | ✅ | ✅ | ✅ | modernizacion incremental, strangler, progreso por consumidor |
+| `08` | ✅ | ✅ | ✅ | ✅ | ✅ | extraccion big bang vs compatible, proxy y cutover gradual |
+| `09` | ✅ | ✅ | ✅ | ✅ | ✅ | integracion externa con adapter, idempotencia y validacion de contrato |
+| `10` | ✅ | ✅ | ✅ | ✅ | ✅ | comparacion complex vs right-sized, costo y lead time visibles |
+| `11` | ✅ | ✅ | ✅ | ✅ | ✅ | reporting legacy vs aislado, presion observable sobre la operacion |
+| `12` | ✅ | ✅ | ✅ | ✅ | ✅ | runbooks, bus factor y continuidad operacional observable |
 
 **✅ OPERATIVO** = logica real, Docker funcional, evidencia observable.
 **scaffold** = estructura y documentacion lista, sin implementacion funcional todavia.
 
-Cada caso incluye ademas un `comparison.md` que explica en profundidad como PHP, Python y Node.js abordan el mismo problema de forma distinta a nivel de lenguaje.
+Cada caso incluye ademas un `comparison.md` que explica en profundidad como PHP, Python, Node.js, Java y .NET abordan el mismo problema de forma distinta a nivel de lenguaje.
 
-### 🧱 Modelo de containerizacion (simetrico para los 4 stacks operativos)
+### 🧱 Modelo de containerizacion (simetrico para los 5 stacks operativos)
 
-Los cuatro hubs (`compose.root.yml` PHP, `compose.python.yml` Python, `compose.nodejs.yml` Node.js, `compose.java.yml` Java) siguen el **mismo patrón**: un contenedor por lenguaje ejecuta sus casos como subprocesos internos (12 para PHP/Python/Node, 6 para Java).
+Los cinco hubs (`compose.root.yml` PHP, `compose.python.yml` Python, `compose.nodejs.yml` Node.js, `compose.java.yml` Java, `compose.dotnet.yml` .NET) siguen el **mismo patrón**: un contenedor por lenguaje ejecuta sus 12 casos como subprocesos internos.
 
 - **PHP** → `pdsl-php-lab` con dispatcher en `:8100` y 12 procesos `php -S` en `:9001-:9012` internos. Suma ~6 contenedores extras (PostgreSQL × 2, worker, Prometheus, Grafana, exporter) **porque son servicios reales que el caso 01 estudia**, no procesos PHP. Total ~7 contenedores.
 - **Python** → `pdsl-python-lab` con dispatcher en `:8200` y 12 subprocesos `subprocess.Popen` internos. 1 contenedor.
 - **Node.js** → `pdsl-node-lab` con dispatcher en `:8300` y 12 subprocesos `child_process.spawn` internos. 1 contenedor.
 - **Java** → `pdsl-java-lab` con dispatcher en `:8400` y 12 subprocesos `ProcessBuilder` (`java Main`) internos en `:9401-:9412`. Compilacion `javac` en build-time. 1 contenedor.
+- **.NET** → `pdsl-dotnet-lab` con dispatcher en `:8500` y 12 subprocesos `dotnet` internos en `:9501-:9512`. Compilacion `dotnet build` en build-time. 1 contenedor.
 
 #### 🗺️ Diagrama A — Los 4 hubs y sus subprocesos internos
 

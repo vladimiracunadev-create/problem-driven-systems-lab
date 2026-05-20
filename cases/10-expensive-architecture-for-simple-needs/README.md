@@ -1,7 +1,7 @@
 # 💸 Caso 10 — Arquitectura cara para un problema simple
 
 [![Estado](https://img.shields.io/badge/Estado-Multi--stack%20operativo-success)](php/README.md)
-[![Stacks](https://img.shields.io/badge/Stacks-PHP%20%C2%B7%20Python%20%C2%B7%20Node%20%C2%B7%20Java-blue)](#-stacks-disponibles)
+[![Stacks](https://img.shields.io/badge/Stacks-PHP%20%C2%B7%20Python%20%C2%B7%20Node%20%C2%B7%20Java%20%C2%B7%20.NET-blue)](#-stacks-disponibles)
 [![Categoría](https://img.shields.io/badge/Categoría-Arquitectura-violet)](../../README.md)
 
 > [!IMPORTANT]
@@ -102,9 +102,9 @@ CPU real medido como N rondas de `JSON.stringify`/`parse` sobre arrays grandes e
 
 CPU real medido en `StringBuilder` loops por hop (alocación + traversal). `HashMap.get(key)` O(1) en right-sized. `System.nanoTime()` para medición directa; el JIT optimiza el lookup pero no el StringBuilder, mostrando el costo real. Ver [`java/README.md`](java/README.md). Modo aislado: puerto `8410`. Hub: `http://localhost:8400/10/`.
 
-### .NET (espacio de crecimiento)
+### .NET 8
 
-Estructura dockerizada lista; sin paridad funcional todavía.
+CPU real medido en hops de `JsonSerializer.Serialize`/`Deserialize` (alocacion + parsing, con presion al LOH cuando los blobs superan 85 KB). `Dictionary<string,long>.TryGetValue` O(1) en right-sized. `Stopwatch` para medicion directa. Ver [`dotnet/README.md`](dotnet/README.md). Modo aislado: puerto `8510`. Hub: `http://localhost:8500/10/`.
 
 ---
 
@@ -130,7 +130,7 @@ Estructura dockerizada lista; sin paridad funcional todavía.
 | 🐍 Python 3.12 | `OPERATIVO` (stdlib + serialization manual) |
 | 🟢 Node.js 20 | `OPERATIVO` (`JSON.stringify`/`parse` cycles como CPU real) |
 | ☕ Java 21 | `OPERATIVO` (`StringBuilder` loops vs `HashMap` O(1); CPU real medido) |
-| 🔵 .NET 8 | 🔧 Estructura lista |
+| 🔵 .NET 8 | `OPERATIVO` (lookup `Dictionary` O(1) vs N hops `JsonSerializer` con presion LOH) |
 
 ---
 

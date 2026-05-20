@@ -1,4 +1,4 @@
-# Caso 02 — Comparativa multi-stack: N+1 y cuellos de botella en base de datos (PHP · Python · Node.js · Java)
+# Caso 02 — Comparativa multi-stack: N+1 y cuellos de botella en base de datos (PHP · Python · Node.js · Java · .NET)
 
 ## El problema que ambos resuelven
 
@@ -176,13 +176,45 @@ Espejo de `SELECT * FROM items WHERE order_id IN (?, ?, ?, ...)`. JDBC tiene `se
 
 ---
 
+## .NET 8: Dictionary indexado, ensamblado batch en memoria
+
+**Runtime:** .NET 8 sobre `HttpListener`. El CLR despacha al `ThreadPool`. Datos en memoria (`List<Order>`, `Dictionary<int, List<Item>>`), mismo enfoque que Java y Node: el contraste es del patron de acceso, no del motor.
+
+**El fallo legacy en C#:**
+```csharp
+for (int i = 0; i < take; i++) {
+    var o = orders[i];
+    var items = LookupItemsOneByOne(o.Id);   // 1 "query" por order
+    SleepMicros(900);                         // costo de roundtrip
+}
+```
+Mismo patron `1 + N` que los otros stacks. Bajo carga el worker thread queda I/O-bound y el `ThreadPool.GetAvailableWorkerThreads` cae.
+
+**La correccion en C#:**
+```csharp
+var ids = CollectIds(orders, take);
+var batch = new Dictionary<int, List<Item>>();
+foreach (var id in ids) batch[id] = itemsByOrderId.GetValueOrDefault(id, new());
+SleepMicros(700);   // un solo roundtrip
+```
+Espejo de `SELECT ... WHERE order_id IN (...)`. Con EF Core real esto seria `.Where(x => ids.Contains(x.OrderId)).ToList()` que el provider traduce a `IN(...)` automaticamente.
+
+**Notas idiomaticas vs los otros stacks:**
+- `Dictionary<K,V>.GetValueOrDefault()` cumple el rol de `HashMap.getOrDefault()` Java o `Map.get()` Node.
+- `Interlocked.Increment(ref counter)` reemplaza el `LongAdder` Java o `AtomicInteger`.
+- A diferencia de Java, los `record` types en C# permiten `with`-expressions para clonar con modificacion sin mutar — util si el ensamblado necesita enriquecer cada `Order` con sus items.
+
+**Por que no EF Core real aqui:** mantener el container .NET single-binary, sin SQL Server. El patron `IN(...)` vs N round-trips se demuestra igual con `Dictionary`.
+
+---
+
 ## Diferencias de decisión, no de corrección
 
-| Aspecto | PHP | Python | Node.js | Razon |
-|---|---|---|---|---|
-| Motor DB | PostgreSQL 16 | SQLite embebida | Datos en memoria + I/O simulado | PHP usa motor productivo. Python embebido en stdlib. Node mantiene foco en el patron. |
-| Agrupación | `array_column()` + `foreach` | `dict.setdefault()` + list comprehension | `Map.get()` + `[].map()` + `Set.has()` | Tres idiomas, mismo algoritmo O(N). |
-| Medición real | `pg_stat_statements` via Grafana | `db_queries` contado por el servidor | `db_queries` + `event_loop_lag_ms` | Solo Node expone lag del loop como senal nativa. |
-| Costo del N+1 anidado | Bloquea el proceso FPM completo | Bloquea el thread (GIL libre en I/O) | Cede al loop pero degrada throughput global | Tres modelos de concurrencia, mismo patron, distinta senal bajo carga. |
+| Aspecto | PHP | Python | Node.js | Java | .NET | Razon |
+|---|---|---|---|---|---|---|
+| Motor DB | PostgreSQL 16 | SQLite embebida | Datos en memoria + I/O simulado | Datos en memoria | Datos en memoria | PHP usa motor productivo. Los demas mantienen foco en el patron sin meter motor de datos. |
+| Agrupación | `array_column()` + `foreach` | `dict.setdefault()` + list comprehension | `Map.get()` + `[].map()` + `Set.has()` | `HashMap.getOrDefault()` | `Dictionary.GetValueOrDefault()` | Cinco idiomas, mismo algoritmo O(N). |
+| Medición real | `pg_stat_statements` via Grafana | `db_queries` contado por el servidor | `db_queries` + `event_loop_lag_ms` | `db_queries` + `LongAdder` | `db_queries` + `Interlocked` counters | Solo Node expone lag del loop como senal nativa. |
+| Costo del N+1 anidado | Bloquea el proceso FPM completo | Bloquea el thread (GIL libre en I/O) | Cede al loop pero degrada throughput global | Bloquea el worker del pool | Bloquea el worker del pool | Cinco modelos de concurrencia, mismo patron, distinta senal bajo carga. |
 
-**El patron que los tres demuestran es identico:** el costo de N+1 escala con N*M independientemente del lenguaje o motor. La corrección — batch loading + agrupación en memoria — también es identica en concepto. La diferencia observable bajo carga concurrente es **donde duele**.
+**El patron que los cinco demuestran es identico:** el costo de N+1 escala con N*M independientemente del lenguaje o motor. La corrección — batch loading + agrupación en memoria — también es identica en concepto. La diferencia observable bajo carga concurrente es **donde duele**.

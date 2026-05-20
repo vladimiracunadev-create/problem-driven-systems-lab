@@ -1,7 +1,7 @@
 # 🧠 Caso 05 — Presión de memoria y fugas de recursos
 
 [![Estado](https://img.shields.io/badge/Estado-Multi--stack%20operativo-success)](php/README.md)
-[![Stacks](https://img.shields.io/badge/Stacks-PHP%20%C2%B7%20Python%20%C2%B7%20Node%20%C2%B7%20Java-blue)](#-stacks-disponibles)
+[![Stacks](https://img.shields.io/badge/Stacks-PHP%20%C2%B7%20Python%20%C2%B7%20Node%20%C2%B7%20Java%20%C2%B7%20.NET-blue)](#-stacks-disponibles)
 [![Categoría](https://img.shields.io/badge/Categoría-Rendimiento-red)](../../README.md)
 
 > [!IMPORTANT]
@@ -74,9 +74,9 @@ Usa `tracemalloc.start()` para diff snapshots, `sys.getsizeof()` para medir obje
 
 **`LinkedHashMap` con `removeEldestEntry`** es LRU built-in del JDK — una línea agrega política de eviction. `Runtime.getRuntime().totalMemory()/freeMemory()/maxMemory()` mide el heap del JVM directo, sin agente. El leak legacy es una `static List<byte[]>` retenida por una raíz GC: el GC corre, no encuentra nada que liberar, el heap crece monótonamente hasta `-Xmx`. Ver [`java/README.md`](java/README.md). Modo aislado: puerto `845`. Hub: `http://localhost:8400/05/`.
 
-### .NET (espacio de crecimiento)
+### .NET 8 (LRU manual + `Process.WorkingSet64` + GC metrics)
 
-Estructura dockerizada lista; sin paridad funcional todavía.
+LRU acotada compuesta a mano con `Dictionary<K, LinkedListNode<...>>` + `LinkedList<...>` — O(1) en lookup y reordenamiento. `Process.GetCurrentProcess().WorkingSet64` mide el RSS visto por el OS; `GC.GetTotalMemory()` mide lo que el CLR considera vivo; `GC.CollectionCount(2)` revela presion de Gen2 (incluido LOH si los payloads superan 85 KB). El leak legacy es una `static List<byte[]>` retenida por una raiz GC: el GC corre, no encuentra nada que liberar, `WorkingSet64` crece monotonicamente. Ver [`dotnet/README.md`](dotnet/README.md). Modo aislado: puerto `855`. Hub: `http://localhost:8500/05/`.
 
 ---
 
@@ -103,7 +103,7 @@ Disminuye **incidentes silenciosos**, reinicios inesperados y consumo innecesari
 | 🐍 Python 3.12 | `OPERATIVO` (`tracemalloc` + `gc.collect()` + cache acotado) |
 | 🟢 Node.js 20 | `OPERATIVO` (`process.memoryUsage()` con heap V8 + RSS + external) |
 | ☕ Java 21 | `OPERATIVO` (`LinkedHashMap.removeEldestEntry` LRU built-in + `Runtime` metrics) |
-| 🔵 .NET 8 | 🔧 Estructura lista |
+| 🔵 .NET 8 | `OPERATIVO` (LRU manual `Dictionary`+`LinkedList` + `Process.WorkingSet64` + `GC.GetTotalMemory`) |
 
 ---
 
@@ -115,6 +115,7 @@ docker compose -f compose.root.yml    up -d --build && curl http://localhost:810
 docker compose -f compose.python.yml  up -d --build && curl http://localhost:8200/05/health   # Python
 docker compose -f compose.nodejs.yml  up -d --build && curl http://localhost:8300/05/health   # Node
 docker compose -f compose.java.yml    up -d --build && curl http://localhost:8400/05/health   # Java
+docker compose -f compose.dotnet.yml  up -d --build && curl http://localhost:8500/05/health   # .NET
 ```
 
 **Modo aislado (recomendado para este caso — medir memoria sin contaminación):**

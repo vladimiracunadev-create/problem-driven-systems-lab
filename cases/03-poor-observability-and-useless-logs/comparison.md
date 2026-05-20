@@ -1,4 +1,4 @@
-# Caso 03 — Comparativa multi-stack: Observabilidad deficiente y logs inútiles (PHP · Python · Node.js · Java)
+# Caso 03 — Comparativa multi-stack: Observabilidad deficiente y logs inútiles (PHP · Python · Node.js · Java · .NET)
 
 ## El problema que ambos resuelven
 
@@ -221,6 +221,41 @@ try {
 `structuredLog()` lee `ThreadLocal<RequestContext>` y agrega `correlation_id` y `route` al JSON. `CTX.remove()` en `finally` es la disciplina necesaria — sin esto el thread retiene contexto del request anterior y los logs proximos quedan mal taggeados.
 
 **ScopedValue (JDK 21):** la API moderna para esto es `ScopedValue.where(CTX, value).run(handler)`. Aqui usamos `ThreadLocal` porque requiere menos flags de compilacion. La migracion es ~10 lineas. `ScopedValue` es especialmente util con virtual threads (Loom): millones de virtual threads × `ThreadLocal` consume mucha memoria, `ScopedValue` no.
+
+---
+
+## .NET 8: AsyncLocal<T> que fluye por await, System.Text.Json para logs estructurados
+
+**Runtime:** .NET 8 sobre `HttpListener`. El CLR ejecuta handlers async sobre el `ThreadPool`. Un `await` puede retomar en otro thread — un `ThreadLocal<T>` no sobreviviria.
+
+**El fallo legacy en C#:**
+```csharp
+Console.WriteLine("[INFO] processing checkout");
+if (total > 500) {
+    Console.WriteLine("[ERROR] checkout failed");   // sin id, sin total
+}
+```
+Tras tres `await` el thread fisico puede haber cambiado dos veces. Cualquier intento de `ThreadLocal<RequestContext>` aqui pierde el contexto silenciosamente.
+
+**La correccion en C#:**
+```csharp
+private static readonly AsyncLocal<RequestContext?> CTX = new();
+
+CTX.Value = new RequestContext(corrId, "checkout-observable", DateTime.UtcNow.ToString("o"));
+StructuredLog("error", "checkout_failed", new Dictionary<string,string> {
+    ["total"]  = total.ToString(),
+    ["reason"] = "exceeds_limit",
+    ["limit"]  = "500"
+});
+// → {"ts":"...","correlation_id":"<guid>","route":"checkout-observable", ...}
+```
+`AsyncLocal<T>` esta amarrado al `ExecutionContext`, que el CLR captura y restaura en cada `await`. El correlation_id sobrevive thread hops sin disciplina manual.
+
+**Notas idiomaticas vs los otros stacks:**
+- `AsyncLocal<T>` es el equivalente exacto del `ScopedValue` Java (JDK 21) y de `contextvars` Python. Resuelve el mismo problema que `ThreadLocal` no resuelve en codigo async.
+- `Guid.NewGuid()` reemplaza `crypto.randomBytes` Node, `secrets.token_hex` Python o `random_bytes` PHP.
+- `System.Text.Json.JsonSerializer.Serialize(dict)` reemplaza `JSON.stringify` Node o `json_encode` PHP, sin librerias externas.
+- C# tiene un sistema de excepciones tipadas tan rico como Java; `class WorkflowFailure : Exception` es 1:1 con el equivalente Java.
 
 ---
 

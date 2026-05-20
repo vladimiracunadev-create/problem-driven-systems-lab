@@ -1,4 +1,4 @@
-# Caso 06 — Comparativa multi-stack: Pipeline roto y entrega frágil (PHP · Python · Node.js · Java)
+# Caso 06 — Comparativa multi-stack: Pipeline roto y entrega frágil (PHP · Python · Node.js · Java · .NET)
 
 ## El problema que ambos resuelven
 
@@ -194,6 +194,44 @@ environments.put(env, new EnvState(env, version, "healthy"));   // promote solo 
 Tres ramas explicitas: preflight bloquea (sin tocar estado), smoke falla (rollback al `before.version`), todo OK (promote). El historial registra las 3 con `Deployment` records — auditable.
 
 **Por que `record` aqui:** `EnvState` y `Deployment` son value objects. `equals/hashCode/toString` auto-generados. Serializan directo a JSON sin mappers. Y siendo inmutables, el snapshot que captura `before` en preflight se mantiene aunque otro thread haga `environments.put()` paralelo.
+
+---
+
+## .NET 8: record types + ConcurrentDictionary + rollback automatico
+
+**Runtime:** .NET 8 sobre `HttpListener`. `ThreadPool` despachando handlers concurrentes. Estado por ambiente compartido entre threads → `ConcurrentDictionary` evita lock global.
+
+**El fallo legacy en C#:**
+```csharp
+if (IsBadScenario(scenario)) {
+    environments[env] = new EnvState(env, version, "degraded");
+    Interlocked.Increment(ref legacyBroken);
+    return /* "deployed_but_broken" */;
+}
+```
+Empuja `version` y marca degraded — pero el ambiente quedo apuntando al binario nuevo. Si el cliente reintenta sin reset, sigue roto.
+
+**La correccion en C#:**
+```csharp
+var before = environments.GetValueOrDefault(env, new EnvState(env, "v1.0.0", "healthy"));
+if (scenario is "missing_artifact" or "secret_drift_detected") {
+    Interlocked.Increment(ref controlledBlocked);
+    return /* blocked_in_preflight */;   // no toca environments
+}
+if (IsBadScenario(scenario)) {
+    Interlocked.Increment(ref controlledRollbacks);
+    return /* rolled_back_to_<before.Version> */;   // environments[env] queda en before
+}
+environments[env] = before with { Version = version, Health = "healthy" };   // promote solo si smoke OK
+```
+Tres ramas explicitas — mismo patron que Java. `with`-expression sobre `record EnvState` es C# moderno (9+) para "clonar con cambios" sin mutar el original.
+
+**Notas idiomaticas vs los otros stacks:**
+- `record EnvState(string Name, string Version, string Health)` es 1:1 con el `record` Java.
+- `is "missing_artifact" or "secret_drift_detected"` (C# 9 pattern matching) reemplaza `scenario.equals(...) || ...` Java o `if scenario in {...}` Python.
+- `Interlocked.Increment(ref counter)` es el equivalente directo del `LongAdder` Java.
+- `ConcurrentDictionary<string, EnvState>` reemplaza el `ConcurrentHashMap<String, EnvState>` Java.
+- A diferencia de Node, .NET no tiene `AbortController` built-in con propagacion automatica desde HTTP, pero `CancellationToken` cumple el mismo rol cuando se pasa explicito desde el handler.
 
 ---
 

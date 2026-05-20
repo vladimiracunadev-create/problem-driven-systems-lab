@@ -1,34 +1,64 @@
-# Integración externa inestable — .NET 8
+# Caso 09 — .NET 8
 
-## Objetivo de esta variante
-Representar este caso desde el stack **.NET 8**, manteniendo foco en el problema y no solo en la sintaxis.
+Stack .NET operativo del caso 09. Adapter endurecido con budget de cuota + snapshot cache + breaker.
 
-## Qué debería mostrar esta carpeta
-- una base dockerizada,
-- un punto de entrada mínimo,
-- espacio para instrumentación, pruebas o scripts,
-- notas de diseño específicas del stack.
+## Primitivas .NET nativas
 
-## Qué NO debería hacer
-- mezclar dependencias de otros stacks,
-- levantar todo el laboratorio,
-- esconder decisiones importantes fuera del repositorio.
+| Primitiva | Rol |
+|---|---|
+| `SemaphoreSlim` | Budget de cuota: `Wait(0)` no bloquea — si no hay permits, sirve snapshot. Permits explicitos = cuota explicita. |
+| `MemoryCache` (Microsoft.Extensions.Caching.Memory) o `ConcurrentDictionary<string,string>` | Snapshot cache thread-safe leida cuando el provider falla o esta agotado. |
+| `Interlocked.CompareExchange` | Estado del breaker (`closed`/`open`/`half_open`) con CAS explicito. |
+| `Interlocked.Increment` | Contadores: calls, served_from_cache, budget_denied. |
 
-## Puertos de referencia
-- Puerto local sugerido: `859`
+## Contraste
 
-## Comando esperado
-```bash
-docker compose -f compose.yml up -d --build
+**Legacy** — cada request golpea al provider sin proteccion:
+```csharp
+if (drift) {
+    Interlocked.Increment(ref legacyFailures);
+    return "{\"status\":\"failed\"}";   // sin fallback
+}
 ```
 
-## Notas del stack
-En .NET 8 conviene estudiar este caso considerando:
-- ergonomía del runtime,
-- patrones habituales del ecosistema,
-- observabilidad disponible,
-- costos de complejidad,
-- límites y trade-offs específicos.
+**Hardened** — budget + cache + breaker:
+```csharp
+if (!providerBudget.Wait(0)) return FromSnapshot(sku);    // budget agotado
+if (drift) { TripBreaker("open"); return FromSnapshot(sku); }  // provider failing
+string fresh = CallProvider(sku);                          // success path
+snapshotCache[sku] = fresh;                                 // refresca cache
+TripBreaker("closed");
+```
 
-## Estado inicial
-Esta carpeta deja una base mínima documentada y ampliable para que el caso evolucione hacia un escenario más realista.
+## Rutas
+
+| Ruta | Que muestra |
+|---|---|
+| `/health` | liveness |
+| `/catalog-legacy?sku=widget-A&scenario=drift` | status=failed sin cache |
+| `/catalog-hardened?sku=widget-A&scenario=drift` | served_from=snapshot_cache + breaker:open |
+| `/catalog-hardened?sku=widget-A&scenario=ok` | served_from=provider + refresca cache |
+| `/sync-events` | breaker state + budget_remaining + cache_size |
+| `/diagnostics/summary` | contadores por variante |
+| `/reset-lab` | restaura budget + cierra breaker |
+
+## Hub
+
+```
+docker compose -f compose.dotnet.yml up -d --build
+# agotar budget (5 calls)
+for i in 1 2 3 4 5 6 7; do curl -s "http://127.0.0.1:8500/09/catalog-hardened?sku=widget-A" | head -c 100; echo; done
+# proximo call será served_from=snapshot_cache budget_exhausted
+curl http://127.0.0.1:8500/09/sync-events
+```
+
+## Modo aislado
+
+```
+docker compose -f cases/09-unstable-external-integration/dotnet/compose.yml up -d --build
+curl http://127.0.0.1:859/health
+```
+
+## Por que `SemaphoreSlim.Wait(0)` y no contador manual
+
+Un contador `int` con `Interlocked.CompareExchange` funciona pero hay que escribir el loop CAS a mano. `SemaphoreSlim.Wait(0)` es la API que ya implementa "intenta tomar un permit, si no hay, devuelve `false` sin bloquear". Mas legible, menos bug-prone, y se mapea directo al concepto de cuota. Es exactamente el equivalente del `Semaphore.tryAcquire()` de Java.

@@ -1,7 +1,7 @@
 # 🧩 Caso 08 — Extracción de módulo crítico sin romper operación
 
 [![Estado](https://img.shields.io/badge/Estado-Multi--stack%20operativo-success)](php/README.md)
-[![Stacks](https://img.shields.io/badge/Stacks-PHP%20%C2%B7%20Python%20%C2%B7%20Node%20%C2%B7%20Java-blue)](#-stacks-disponibles)
+[![Stacks](https://img.shields.io/badge/Stacks-PHP%20%C2%B7%20Python%20%C2%B7%20Node%20%C2%B7%20Java%20%C2%B7%20.NET-blue)](#-stacks-disponibles)
 [![Categoría](https://img.shields.io/badge/Categoría-Arquitectura-violet)](../../README.md)
 
 > [!IMPORTANT]
@@ -108,9 +108,9 @@ Función de adaptación + lista de listeners para eventos. Sin frameworks extern
 
 `Function<PriceRequestOld, PriceRequestNew>` como proxy compat (tipado, sin reflection). `CopyOnWriteArrayList<Consumer<String>>` como event bus thread-safe: reads paralelos sin lock, writes raros copian el array — exactamente el patrón "muchos suscriptores, raras altas/bajas". Ver [`java/README.md`](java/README.md). Modo aislado: puerto `848`. Hub: `http://localhost:8400/08/`.
 
-### .NET (espacio de crecimiento)
+### .NET 8
 
-Estructura dockerizada lista; sin paridad funcional todavía.
+`Func<PriceRequestOld, PriceRequestNew>` como proxy compat (tipado, sin reflection). `ImmutableList<Action<string>>` + `ImmutableInterlocked.Update` como event bus thread-safe: reads paralelos sin lock, writes raros generan nueva lista persistente — patron equivalente al `CopyOnWriteArrayList` Java. `record PriceRequestOld/New` inmutables. Ver [`dotnet/README.md`](dotnet/README.md). Modo aislado: puerto `858`. Hub: `http://localhost:8500/08/`.
 
 ---
 
@@ -136,7 +136,7 @@ Reduce **riesgo operacional** y habilita **evolución controlada** de piezas cr�
 | 🐍 Python 3.12 | `OPERATIVO` (función adapter + lista de listeners) |
 | 🟢 Node.js 20 | `OPERATIVO` (`Proxy` nativo + `EventEmitter` para eventos) |
 | ☕ Java 21 | `OPERATIVO` (`Function` proxy + `CopyOnWriteArrayList<Consumer>` event bus) |
-| 🔵 .NET 8 | 🔧 Estructura lista |
+| 🔵 .NET 8 | `OPERATIVO` (`Func<Old,New>` proxy + `ImmutableList<Action<string>>` event bus) |
 
 ---
 

@@ -92,9 +92,9 @@ Ver [`node/README.md`](node/README.md). Puerto local: `822`.
 
 Stack Java operativo con `HashMap<Integer, List<Item>>` precomputado actuando como tabla relacional indexada, batch `IN(...)` simulado en memoria como espejo de `PreparedStatement.executeQuery(...)` JDBC, `record` types inmutables (`Order`, `Item`), y `LongAdder` para contadores p95/p99 lock-free. Mismas rutas de contraste (`/orders-legacy`, `/orders-optimized`, `/diagnostics/summary`). Sin Maven, single-file. Ver [`java/README.md`](java/README.md). Hub: `http://localhost:8400/02/`. Aislado: puerto `842`.
 
-### .NET (espacio de crecimiento)
+### .NET 8 (implementacion operativa)
 
-Se mantienen como base de crecimiento para llevar el caso a paridad multi-stack en una fase posterior.
+Stack .NET operativo con `Dictionary<int, List<Item>>` indexado actuando como tabla relacional, ensamblado batch en memoria como espejo del `IN(...)` SQL, `record` types inmutables (`Order`, `Item`), y `Interlocked.Increment` para contadores. Mismas rutas de contraste (`/orders-legacy`, `/orders-optimized`, `/diagnostics/summary`). Ver [`dotnet/README.md`](dotnet/README.md). Hub: `http://localhost:8500/02/`. Aislado: puerto `852`.
 
 ---
 
@@ -123,7 +123,7 @@ Se mantienen como base de crecimiento para llevar el caso a paridad multi-stack 
 | 🟢 Node.js | ✅ Implementado (Docker + datos en memoria + event_loop_lag) |
 | 🐍 Python | ✅ Implementado (Docker + SQLite local + metricas) |
 | ☕ Java 21 | `OPERATIVO` (`HashMap` indexado + batch `IN(...)` simulado, ver `java/README.md`) |
-| 🔵 .NET 8 | 🔧 Estructura lista |
+| 🔵 .NET 8 | `OPERATIVO` (`Dictionary` indexado + ensamblado batch en memoria + `record` types) |
 
 ---
 
