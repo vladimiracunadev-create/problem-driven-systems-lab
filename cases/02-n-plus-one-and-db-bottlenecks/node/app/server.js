@@ -1,29 +1,69 @@
 'use strict';
 
+// Caso 02 — N+1 queries y cuellos de botella en base de datos (stack Node.js).
+//
+// Substrato real: SQLite embebido vía `node:sqlite` (built-in en Node 22.x con
+// flag --experimental-sqlite). Sin contenedor extra, sin puerto extra: el
+// motor corre en proceso. Esto cierra la asimetría con PHP/Python (que ya
+// usaban DB real) — antes este caso simulaba N+1 con `Map`/`Dictionary` en
+// memoria, lo que pierde el sentido pedagógico: N+1 *es* un problema de
+// round-trips contra una base relacional.
+//
+// Schema (unificado entre Node/Java/.NET para que las comparaciones sean justas):
+//   categories(id, name)                              24 filas
+//   customers(id, name, region, category_id)          900 filas
+//   orders(id, customer_id, total, created_at)        1500 filas
+//   order_items(id, order_id, sku, qty, price)        ~5000 filas
+
 const http = require('http');
 const { URL } = require('url');
 const { performance } = require('perf_hooks');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
+const { DatabaseSync } = require('node:sqlite');
 
-const APP_STACK = 'Node.js 20';
+const APP_STACK = 'Node.js 22';
 const CASE_NAME = '02 - N+1 queries y cuellos de botella en base de datos';
 const STORAGE_DIR = path.join(os.tmpdir(), 'pdsl-case02-node');
 const METRICS_PATH = path.join(STORAGE_DIR, 'metrics.json');
 
-const ROUNDTRIP_LEGACY_MS = 0.8;
-const ROUNDTRIP_BATCH_MS = 0.5;
-
 const ensureStorageDir = () => fs.mkdirSync(STORAGE_DIR, { recursive: true });
-const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
-const customers = new Map();
-const categories = new Map();
-const products = new Map();
-const orders = [];
-const orderItems = new Map();
-const ordersIndexById = new Map();
+// SQLite en memoria, por proceso. No persiste — el seed es determinista.
+const db = new DatabaseSync(':memory:');
+
+const initSchema = () => {
+  db.exec(`
+    CREATE TABLE categories (
+      id   INTEGER PRIMARY KEY,
+      name TEXT NOT NULL
+    );
+    CREATE TABLE customers (
+      id          INTEGER PRIMARY KEY,
+      name        TEXT NOT NULL,
+      region      TEXT NOT NULL,
+      category_id INTEGER NOT NULL
+    );
+    CREATE TABLE orders (
+      id          INTEGER PRIMARY KEY,
+      customer_id INTEGER NOT NULL,
+      total       REAL NOT NULL,
+      created_at  INTEGER NOT NULL
+    );
+    CREATE TABLE order_items (
+      id       INTEGER PRIMARY KEY,
+      order_id INTEGER NOT NULL,
+      sku      TEXT NOT NULL,
+      qty      INTEGER NOT NULL,
+      price    REAL NOT NULL
+    );
+    CREATE INDEX idx_orders_created  ON orders (created_at DESC);
+    CREATE INDEX idx_items_order_id  ON order_items (order_id);
+  `);
+};
+
+const REGIONS = ['LATAM', 'NA', 'EMEA', 'APAC'];
 
 const seedData = () => {
   let seed = 20260427;
@@ -33,54 +73,61 @@ const seedData = () => {
   };
   const now = Math.floor(Date.now() / 1000);
 
-  for (let i = 1; i <= 24; i += 1) {
-    categories.set(i, { id: i, name: `Category ${i}` });
-  }
+  db.exec('BEGIN');
+
+  const insCat  = db.prepare('INSERT INTO categories VALUES (?, ?)');
+  const insCust = db.prepare('INSERT INTO customers VALUES (?, ?, ?, ?)');
+  const insOrd  = db.prepare('INSERT INTO orders VALUES (?, ?, ?, ?)');
+  const insItem = db.prepare('INSERT INTO order_items VALUES (?, ?, ?, ?, ?)');
+
+  for (let i = 1; i <= 24; i += 1) insCat.run(i, `Category ${i}`);
   for (let i = 1; i <= 900; i += 1) {
-    customers.set(i, {
-      id: i,
-      name: `Customer ${i}`,
-      email: `customer${i}@lab.local`,
-      segment: i % 12 === 0 ? 'enterprise' : i % 4 === 0 ? 'mid-market' : 'smb',
-    });
+    const region = REGIONS[Math.floor(rng() * REGIONS.length)];
+    insCust.run(i, `Customer ${i}`, region, 1 + ((i - 1) % 24));
   }
-  for (let i = 1; i <= 360; i += 1) {
-    products.set(i, {
-      id: i,
-      sku: `SKU-${String(i).padStart(4, '0')}`,
-      name: `Product ${i}`,
-      category_id: 1 + ((i - 1) % 24),
-      list_price: Number((15 + rng() * 250).toFixed(2)),
-    });
-  }
+
   let itemId = 1;
-  for (let orderId = 1; orderId <= 2600; orderId += 1) {
-    const created_at = now - Math.floor(rng() * 120 * 86400);
-    const status = rng() < 0.55 ? 'paid' : rng() < 0.85 ? 'shipped' : 'pending';
+  for (let orderId = 1; orderId <= 1500; orderId += 1) {
+    const created_at  = now - Math.floor(rng() * 120 * 86400);
     const customer_id = 1 + Math.floor(rng() * 900);
-    const items = [];
+    const itemCount   = 2 + Math.floor(rng() * 4); // 2..5 → promedio 3.5 → ~5250 items
     let total = 0;
-    const itemCount = 2 + Math.floor(rng() * 5);
+    const items = [];
     for (let k = 0; k < itemCount; k += 1) {
-      const product_id = 1 + Math.floor(rng() * 360);
-      const quantity = 1 + Math.floor(rng() * 3);
-      const unit_price = Number((10 + rng() * 220).toFixed(2));
-      total += quantity * unit_price;
-      items.push({ id: itemId, order_id: orderId, product_id, quantity, unit_price });
+      const sku   = `SKU-${String(1000 + Math.floor(rng() * 9000)).padStart(4, '0')}`;
+      const qty   = 1 + Math.floor(rng() * 3);
+      const price = Number((10 + rng() * 220).toFixed(2));
+      total += qty * price;
+      items.push([itemId, orderId, sku, qty, price]);
       itemId += 1;
     }
-    const order = {
-      id: orderId,
-      customer_id,
-      status,
-      total_amount: Number(total.toFixed(2)),
-      created_at,
-    };
-    orders.push(order);
-    ordersIndexById.set(orderId, order);
-    orderItems.set(orderId, items);
+    insOrd.run(orderId, customer_id, Number(total.toFixed(2)), created_at);
+    for (const it of items) insItem.run(...it);
   }
+
+  db.exec('COMMIT');
 };
+
+// Bootstrap del schema + seed determinista ANTES de preparar statements —
+// si no, los `db.prepare(...)` top-level fallarian con "no such table".
+initSchema();
+seedData();
+
+// Statements preparados — reutilizados para que el coste medido sea el del
+// round-trip a SQLite (parse+plan+execute), no del parse.
+const stmtOrdersLimit  = db.prepare(
+  'SELECT id, customer_id, total, created_at FROM orders ORDER BY id ASC LIMIT ?'
+);
+const stmtItemsByOrder = db.prepare(
+  'SELECT id, order_id, sku, qty, price FROM order_items WHERE order_id = ? ORDER BY id ASC'
+);
+const stmtCounts = db.prepare(`
+  SELECT
+    (SELECT COUNT(*) FROM customers)   AS customers,
+    (SELECT COUNT(*) FROM categories)  AS categories,
+    (SELECT COUNT(*) FROM orders)      AS orders,
+    (SELECT COUNT(*) FROM order_items) AS order_items
+`);
 
 const initialMetrics = () => ({
   requests: 0,
@@ -229,111 +276,50 @@ const measureEventLoopLag = () =>
     setImmediate(() => resolve(performance.now() - start));
   });
 
-const timedQuery = async (work, stats, roundtripMs = ROUNDTRIP_LEGACY_MS) => {
+// Cada `runQuery` representa un round-trip real al motor SQLite. Antes el
+// contador era ficticio (Map.get); ahora cuenta invocaciones a stmt.all/get,
+// que parsea/planifica/ejecuta — exactamente lo que paga un cliente JDBC,
+// libpq o cualquier driver real.
+const runQuery = (work, stats) => {
   const started = performance.now();
-  await sleep(roundtripMs);
   const result = work();
   stats.db_time_ms += performance.now() - started;
   stats.db_queries += 1;
   return result;
 };
 
-const recentOrdersLegacy = async (days, limit, stats) => {
-  const since = Math.floor(Date.now() / 1000) - days * 86400;
-  const baseOrders = await timedQuery(
-    () =>
-      orders
-        .filter((o) => o.created_at >= since && (o.status === 'paid' || o.status === 'shipped'))
-        .sort((a, b) => b.created_at - a.created_at)
-        .slice(0, limit)
-        .map((o) => ({ ...o })),
-    stats,
-    ROUNDTRIP_LEGACY_MS
-  );
-
+const recentOrdersLegacy = (limit, stats) => {
+  // 1: SELECT orders LIMIT N
+  const baseOrders = runQuery(() => stmtOrdersLimit.all(limit), stats);
+  // N: por cada order, un SELECT items individual — el anti-patrón clásico.
   for (const order of baseOrders) {
-    order.customer = await timedQuery(() => customers.get(order.customer_id) || null, stats);
-    const items = await timedQuery(
-      () => (orderItems.get(order.id) || []).map((it) => ({ ...it })),
-      stats
-    );
-    for (const item of items) {
-      const product = await timedQuery(() => products.get(item.product_id) || null, stats);
-      const category = product
-        ? await timedQuery(() => categories.get(product.category_id) || null, stats)
-        : null;
-      item.product = product;
-      item.category = category;
-    }
-    order.items = items;
+    order.items = runQuery(() => stmtItemsByOrder.all(order.id), stats);
   }
   return baseOrders;
 };
 
-const recentOrdersOptimized = async (days, limit, stats) => {
-  const since = Math.floor(Date.now() / 1000) - days * 86400;
-  const baseOrders = await timedQuery(
-    () =>
-      orders
-        .filter((o) => o.created_at >= since && (o.status === 'paid' || o.status === 'shipped'))
-        .sort((a, b) => b.created_at - a.created_at)
-        .slice(0, limit)
-        .map((o) => {
-          const customer = customers.get(o.customer_id);
-          return {
-            id: o.id,
-            customer_id: o.customer_id,
-            status: o.status,
-            total_amount: o.total_amount,
-            created_at: o.created_at,
-            customer: customer
-              ? {
-                  id: customer.id,
-                  name: customer.name,
-                  email: customer.email,
-                  segment: customer.segment,
-                }
-              : null,
-          };
-        }),
-    stats,
-    ROUNDTRIP_BATCH_MS
-  );
-
+const recentOrdersOptimized = (limit, stats) => {
+  // 1: SELECT orders LIMIT N
+  const baseOrders = runQuery(() => stmtOrdersLimit.all(limit), stats);
   if (!baseOrders.length) return [];
 
-  const ids = new Set(baseOrders.map((o) => o.id));
-  const itemsByOrder = await timedQuery(
-    () => {
-      const grouped = new Map();
-      for (const orderId of ids) {
-        const itemsForOrder = orderItems.get(orderId) || [];
-        const enriched = itemsForOrder.map((it) => {
-          const product = products.get(it.product_id) || null;
-          const category = product ? categories.get(product.category_id) : null;
-          return {
-            id: it.id,
-            quantity: it.quantity,
-            unit_price: it.unit_price,
-            product: product
-              ? {
-                  id: product.id,
-                  sku: product.sku,
-                  name: product.name,
-                  list_price: product.list_price,
-                }
-              : null,
-            category: category ? { id: category.id, name: category.name } : null,
-          };
-        });
-        grouped.set(orderId, enriched);
-      }
-      return grouped;
-    },
-    stats,
-    ROUNDTRIP_BATCH_MS
-  );
+  // 2: SELECT items WHERE order_id IN (?, ?, ...) — un solo batch.
+  // Placeholders dinámicos: SQLite los reusa con plan estable; cada request
+  // con el mismo N reaprovecha el cache de query plans.
+  const ids = baseOrders.map((o) => o.id);
+  const placeholders = ids.map(() => '?').join(',');
+  const itemRows = runQuery(() => {
+    const stmt = db.prepare(
+      `SELECT id, order_id, sku, qty, price FROM order_items WHERE order_id IN (${placeholders}) ORDER BY id ASC`
+    );
+    return stmt.all(...ids);
+  }, stats);
 
+  const itemsByOrder = new Map();
+  for (const row of itemRows) {
+    if (!itemsByOrder.has(row.order_id)) itemsByOrder.set(row.order_id, []);
+    itemsByOrder.get(row.order_id).push(row);
+  }
   for (const order of baseOrders) {
     order.items = itemsByOrder.get(order.id) || [];
   }
@@ -341,21 +327,23 @@ const recentOrdersOptimized = async (days, limit, stats) => {
 };
 
 const databaseDiagnostics = () => {
-  const itemsCount = [...orderItems.values()].reduce((acc, list) => acc + list.length, 0);
-  const counts = [...orderItems.values()].map((list) => list.length);
-  const avgItems = counts.length
-    ? Number((counts.reduce((a, b) => a + b, 0) / counts.length).toFixed(2))
-    : 0;
-  const maxItems = counts.length ? Math.max(...counts) : 0;
+  const counts = stmtCounts.get();
+  const agg = db
+    .prepare(
+      'SELECT AVG(c) AS avg_items, MAX(c) AS max_items FROM (SELECT COUNT(*) AS c FROM order_items GROUP BY order_id)'
+    )
+    .get();
   return {
     row_counts: {
-      customers: customers.size,
-      categories: categories.size,
-      products: products.size,
-      orders: orders.length,
-      order_items: itemsCount,
+      customers:   counts.customers,
+      categories:  counts.categories,
+      orders:      counts.orders,
+      order_items: counts.order_items,
     },
-    relationships: { avg_items_per_order: avgItems, max_items_per_order: maxItems },
+    relationships: {
+      avg_items_per_order: Number((agg.avg_items || 0).toFixed(2)),
+      max_items_per_order: agg.max_items || 0,
+    },
   };
 };
 
@@ -375,14 +363,14 @@ const diagnosticsSummary = () => {
     event_loop: {
       avg_lag_ms: summary.avg_event_loop_lag_ms,
       p95_lag_ms: summary.p95_event_loop_lag_ms,
-      note: 'En Node, el N+1 anidado (await dentro de un for-of dentro de otro for-of) penaliza throughput global, no solo la propia request.',
+      note: 'En Node, el N+1 sobre SQLite síncrono bloquea el event loop por la duración del bucle entero.',
     },
     database: databaseDiagnostics(),
     interpretation: {
       legacy_should_issue_many_queries:
-        'La ruta legacy consulta cliente, items, producto y categoria dentro de bucles anidados con await secuencial.',
+        'La ruta legacy ejecuta 1 SELECT orders + N SELECT items (uno por order). db_hits = 1 + N.',
       optimized_should_be_stable:
-        'La ruta optimized hace una lectura base con join en memoria + un solo batch para los detalles agrupados.',
+        'La ruta optimized ejecuta 1 SELECT orders + 1 SELECT items con IN(...) batch. db_hits = 2 sin importar N.',
     },
   };
 };
@@ -442,48 +430,46 @@ const handler = async (req, res) => {
         lab: 'Problem-Driven Systems Lab',
         case: CASE_NAME,
         stack: APP_STACK,
-        goal: 'Comparar N+1 contra lecturas consolidadas usando el mismo dataset local.',
+        goal: 'Comparar N+1 contra lecturas consolidadas sobre SQLite embebido.',
         routes: {
           '/health': 'Estado basico del servicio.',
-          '/orders-legacy?days=30&limit=20':
-            'Version con N+1 anidado sobre pedidos, cliente, items, producto y categoria.',
-          '/orders-optimized?days=30&limit=20':
-            'Version consolidada con join en memoria + batch de detalles.',
+          '/orders-legacy?limit=20':
+            'Version con N+1: 1 SELECT orders + N SELECT items.',
+          '/orders-optimized?limit=20':
+            'Version consolidada: 1 SELECT orders + 1 SELECT items con IN(...) batch.',
           '/diagnostics/summary': 'Resumen entre metricas, densidad relacional y lag del event loop.',
           '/metrics': 'Metricas JSON.',
           '/metrics-prometheus': 'Metricas formato Prometheus.',
           '/reset-metrics': 'Reinicia metricas locales.',
         },
         node_specific:
-          'En Node, N+1 anidado se traduce en doble bucle de awaits secuenciales: 1 + N + sum(items_por_order * 2). El optimized colapsa todo a 2 lecturas sin yield al loop entre items.',
+          'En Node, N+1 contra SQLite síncrono bloquea el event loop por la duración del bucle. El optimized colapsa todo a 2 queries.',
       };
     } else if (uri === '/health') {
       payload = { status: 'ok', stack: APP_STACK };
     } else if (uri === '/orders-legacy') {
-      const days = clampInt(url.searchParams.get('days') || '30', 1, 180);
-      const limit = clampInt(url.searchParams.get('limit') || '20', 1, 60);
-      const data = await recentOrdersLegacy(days, limit, stats);
+      const limit = clampInt(url.searchParams.get('limit') || '20', 1, 200);
+      const data = recentOrdersLegacy(limit, stats);
       payload = {
         mode: 'legacy',
-        problem: 'N+1 sobre multiples relaciones con round-trips por pedido e item.',
-        days,
+        problem: '1 SELECT orders + N SELECT items (uno por order).',
         limit,
         result_count: data.length,
-        db_queries_in_request: stats.db_queries,
+        db_hits: stats.db_queries,
+        db_queries_in_request: stats.db_queries, // alias retrocompatible
         db_time_ms_in_request: Number(stats.db_time_ms.toFixed(2)),
         data,
       };
     } else if (uri === '/orders-optimized') {
-      const days = clampInt(url.searchParams.get('days') || '30', 1, 180);
-      const limit = clampInt(url.searchParams.get('limit') || '20', 1, 60);
-      const data = await recentOrdersOptimized(days, limit, stats);
+      const limit = clampInt(url.searchParams.get('limit') || '20', 1, 200);
+      const data = recentOrdersOptimized(limit, stats);
       payload = {
         mode: 'optimized',
-        solution: 'Carga consolidada de pedidos + un solo batch de detalles para evitar round-trips.',
-        days,
+        solution: '1 SELECT orders + 1 SELECT items con IN(...) batch.',
         limit,
         result_count: data.length,
-        db_queries_in_request: stats.db_queries,
+        db_hits: stats.db_queries,
+        db_queries_in_request: stats.db_queries, // alias retrocompatible
         db_time_ms_in_request: Number(stats.db_time_ms.toFixed(2)),
         data,
       };
@@ -496,7 +482,7 @@ const handler = async (req, res) => {
       res.writeHead(200, { 'Content-Type': 'text/plain; version=0.0.4; charset=utf-8' });
       res.end(renderPrometheusMetrics());
       return;
-    } else if (uri === '/reset-metrics') {
+    } else if (uri === '/reset-metrics' || uri === '/reset-lab') {
       writeMetrics(initialMetrics());
       payload = { status: 'reset', message: 'Metricas locales reiniciadas.' };
     } else {
@@ -510,7 +496,7 @@ const handler = async (req, res) => {
 
   const elapsedMs = performance.now() - started;
   const lagMs = await measureEventLoopLag();
-  if (!skipStoreMetrics && uri !== '/metrics' && uri !== '/reset-metrics') {
+  if (!skipStoreMetrics && uri !== '/metrics' && uri !== '/reset-metrics' && uri !== '/reset-lab') {
     storeRequestMetrics(uri, status, elapsedMs, stats.db_time_ms, stats.db_queries, lagMs);
   }
   payload.elapsed_ms = Number(elapsedMs.toFixed(2));
@@ -520,7 +506,6 @@ const handler = async (req, res) => {
   sendJson(res, status, payload);
 };
 
-seedData();
 const PORT = Number.parseInt(process.env.PORT || '8080', 10);
 http.createServer(handler).listen(PORT, '0.0.0.0', () => {
   console.log(`Servidor Node escuchando en ${PORT}`);

@@ -7,27 +7,36 @@ import java.net.InetSocketAddress;
 import java.net.URI;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.LongAdder;
 
 /**
  * Caso 02 — N+1 queries y cuellos de botella DB (stack Java).
  *
- * Misma logica que PHP/Python/Node: orders + items relacionados, legacy carga
- * dentro de un bucle, optimized usa batch con Map para acceso O(1).
+ * Substrato real: SQLite embebido vía sqlite-jdbc 3.46.1.3 (driver xerial).
+ * Conexión JDBC en memoria — sin contenedor extra, sin puerto extra.
  *
- * Primitiva Java distintiva:
- *   - HashMap<Integer, List<Item>> precomputado como "IN-batch" sin DB real
- *     (espejo de IN(...) en JDBC con PreparedStatement).
- *   - LongAdder para contadores lock-free.
+ * Antes este caso simulaba N+1 con un HashMap, lo que es deshonesto: N+1
+ * *es* un problema de round-trips contra una base relacional. Ahora cada
+ * `db_hits` cuenta una llamada real a executeQuery() — el mismo coste que
+ * pagaría una app real contra PostgreSQL/MySQL.
  *
- * Datos en memoria — no requiere PostgreSQL.
+ * Schema (unificado con Node/.NET para que las comparaciones sean justas):
+ *   categories(id, name)                              24 filas
+ *   customers(id, name, region, category_id)          900 filas
+ *   orders(id, customer_id, total, created_at)        1500 filas
+ *   order_items(id, order_id, sku, qty, price)        ~5000 filas
  */
 public class Main {
 
@@ -36,21 +45,100 @@ public class Main {
     private static final int PORT = Integer.parseInt(System.getenv().getOrDefault("PORT", "8080"));
     private static final int MAX_SAMPLES = 3000;
 
-    private static final List<Order> orders = new ArrayList<>();
-    private static final Map<Integer, List<Item>> itemsByOrderId = new HashMap<>();
-    private static final List<Item> allItems = new ArrayList<>();
+    /** Una sola conexión global a `:memory:` — si se cierra, la DB se pierde. */
+    private static Connection db;
 
     private static final Metrics legacyMetrics = new Metrics();
     private static final Metrics optimizedMetrics = new Metrics();
 
     public static void main(String[] args) throws Exception {
+        Class.forName("org.sqlite.JDBC");
+        db = DriverManager.getConnection("jdbc:sqlite::memory:");
+        initSchema();
         seedData();
+
         HttpServer server = HttpServer.create(new InetSocketAddress(PORT), 0);
         server.createContext("/", Main::route);
         server.setExecutor(Executors.newCachedThreadPool());
         server.start();
         System.out.println("[case02-java] listening on " + PORT);
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> server.stop(0)));
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            server.stop(0);
+            try { if (db != null) db.close(); } catch (SQLException ignored) {}
+        }));
+    }
+
+    private static void initSchema() throws SQLException {
+        try (Statement st = db.createStatement()) {
+            st.executeUpdate("CREATE TABLE categories (id INTEGER PRIMARY KEY, name TEXT NOT NULL)");
+            st.executeUpdate("CREATE TABLE customers (id INTEGER PRIMARY KEY, name TEXT NOT NULL, region TEXT NOT NULL, category_id INTEGER NOT NULL)");
+            st.executeUpdate("CREATE TABLE orders (id INTEGER PRIMARY KEY, customer_id INTEGER NOT NULL, total REAL NOT NULL, created_at INTEGER NOT NULL)");
+            st.executeUpdate("CREATE TABLE order_items (id INTEGER PRIMARY KEY, order_id INTEGER NOT NULL, sku TEXT NOT NULL, qty INTEGER NOT NULL, price REAL NOT NULL)");
+            st.executeUpdate("CREATE INDEX idx_items_order_id ON order_items (order_id)");
+        }
+    }
+
+    private static void seedData() throws SQLException {
+        long seed = 270718L;
+        String[] regions = {"LATAM", "NA", "EMEA", "APAC"};
+        long now = System.currentTimeMillis() / 1000L;
+
+        db.setAutoCommit(false);
+        try (PreparedStatement insCat = db.prepareStatement("INSERT INTO categories VALUES (?, ?)");
+             PreparedStatement insCust = db.prepareStatement("INSERT INTO customers VALUES (?, ?, ?, ?)");
+             PreparedStatement insOrd = db.prepareStatement("INSERT INTO orders VALUES (?, ?, ?, ?)");
+             PreparedStatement insItem = db.prepareStatement("INSERT INTO order_items VALUES (?, ?, ?, ?, ?)")) {
+
+            for (int i = 1; i <= 24; i++) {
+                insCat.setInt(1, i);
+                insCat.setString(2, "Category " + i);
+                insCat.executeUpdate();
+            }
+            for (int i = 1; i <= 900; i++) {
+                seed = (seed * 9301 + 49297) % 233280;
+                insCust.setInt(1, i);
+                insCust.setString(2, "Customer " + i);
+                insCust.setString(3, regions[(int) (seed % regions.length)]);
+                insCust.setInt(4, 1 + ((i - 1) % 24));
+                insCust.executeUpdate();
+            }
+
+            int itemId = 1;
+            for (int orderId = 1; orderId <= 1500; orderId++) {
+                seed = (seed * 9301 + 49297) % 233280;
+                int cid = 1 + (int) (seed % 900);
+                seed = (seed * 9301 + 49297) % 233280;
+                long createdAt = now - (seed % (120L * 86400L));
+                int itemsPerOrder = 2 + (int) (seed % 4); // 2..5
+                double total = 0.0;
+                List<Object[]> items = new ArrayList<>(itemsPerOrder);
+                for (int k = 0; k < itemsPerOrder; k++) {
+                    seed = (seed * 9301 + 49297) % 233280;
+                    String sku = "SKU-" + (1000 + (int) (seed % 9000));
+                    int qty = 1 + (int) (seed % 8);
+                    seed = (seed * 9301 + 49297) % 233280;
+                    double price = Math.round((10.0 + (seed % 233280) / 233280.0 * 220.0) * 100.0) / 100.0;
+                    total += qty * price;
+                    items.add(new Object[]{itemId++, orderId, sku, qty, price});
+                }
+                insOrd.setInt(1, orderId);
+                insOrd.setInt(2, cid);
+                insOrd.setDouble(3, Math.round(total * 100.0) / 100.0);
+                insOrd.setLong(4, createdAt);
+                insOrd.executeUpdate();
+                for (Object[] it : items) {
+                    insItem.setInt(1, (int) it[0]);
+                    insItem.setInt(2, (int) it[1]);
+                    insItem.setString(3, (String) it[2]);
+                    insItem.setInt(4, (int) it[3]);
+                    insItem.setDouble(5, (double) it[4]);
+                    insItem.executeUpdate();
+                }
+            }
+            db.commit();
+        } finally {
+            db.setAutoCommit(true);
+        }
     }
 
     private static void route(HttpExchange ex) throws IOException {
@@ -81,12 +169,7 @@ public class Main {
                     tracked = optimizedMetrics;
                     break;
                 case "/diagnostics/summary":
-                    body = "{\"stack\":\"" + STACK + "\",\"case\":\"" + CASE_NAME +
-                            "\",\"orders_total\":" + orders.size() +
-                            ",\"items_total\":" + allItems.size() +
-                            ",\"avg_items_per_order\":" + round2(allItems.size() / (double) orders.size()) +
-                            ",\"legacy\":" + legacyMetrics.toJson("legacy") +
-                            ",\"optimized\":" + optimizedMetrics.toJson("optimized") + "}";
+                    body = diagnosticsSummary();
                     break;
                 case "/metrics":
                     body = "{\"legacy\":" + legacyMetrics.toJson("legacy") +
@@ -115,101 +198,137 @@ public class Main {
         try (OutputStream os = ex.getResponseBody()) { os.write(out); }
     }
 
-    /** Legacy: 1 query orders + N queries items (uno por order). */
-    private static String ordersLegacy(int limit) {
+    /** Legacy: 1 SELECT orders + N PreparedStatement.executeQuery() items (uno por order). */
+    private static String ordersLegacy(int limit) throws SQLException {
         long t0 = System.nanoTime();
-        long dbHits = 1; // orders query
-        int take = Math.min(limit, orders.size());
+        long dbHits = 0;
+        List<int[]> orders = new ArrayList<>(); // {id, customer_id}
+        // 1: SELECT orders
+        try (PreparedStatement ps = db.prepareStatement(
+                "SELECT id, customer_id FROM orders ORDER BY id ASC LIMIT ?")) {
+            ps.setInt(1, limit);
+            try (ResultSet rs = ps.executeQuery()) {
+                dbHits++;
+                while (rs.next()) {
+                    orders.add(new int[]{rs.getInt(1), rs.getInt(2)});
+                }
+            }
+        }
+
         StringBuilder sb = new StringBuilder(8192);
         sb.append("{\"variant\":\"legacy\",\"rows\":[");
-        for (int i = 0; i < take; i++) {
-            Order o = orders.get(i);
-            List<Item> items = lookupItemsOneByOne(o.id); // N+1
-            dbHits++;
-            sleepMicros(900); // costo de roundtrip
-            if (i > 0) sb.append(',');
-            sb.append("{\"order_id\":").append(o.id)
-              .append(",\"customer_id\":").append(o.customerId)
-              .append(",\"item_count\":").append(items.size())
-              .append(",\"items\":[");
-            for (int j = 0; j < items.size(); j++) {
-                if (j > 0) sb.append(',');
-                Item it = items.get(j);
-                sb.append("{\"sku\":\"").append(it.sku).append("\",\"qty\":").append(it.qty).append('}');
+        // N: por cada order, un SELECT items separado — el anti-patrón clásico
+        // que un ORM genera al iterar sin `JOIN FETCH` o batch hint.
+        try (PreparedStatement psItems = db.prepareStatement(
+                "SELECT sku, qty FROM order_items WHERE order_id = ? ORDER BY id ASC")) {
+            for (int i = 0; i < orders.size(); i++) {
+                int[] o = orders.get(i);
+                psItems.setInt(1, o[0]);
+                List<Object[]> items = new ArrayList<>();
+                try (ResultSet rs = psItems.executeQuery()) {
+                    dbHits++;
+                    while (rs.next()) {
+                        items.add(new Object[]{rs.getString(1), rs.getInt(2)});
+                    }
+                }
+                if (i > 0) sb.append(',');
+                sb.append("{\"order_id\":").append(o[0])
+                  .append(",\"customer_id\":").append(o[1])
+                  .append(",\"item_count\":").append(items.size())
+                  .append(",\"items\":[");
+                for (int j = 0; j < items.size(); j++) {
+                    if (j > 0) sb.append(',');
+                    Object[] it = items.get(j);
+                    sb.append("{\"sku\":\"").append(escape((String) it[0])).append("\",\"qty\":").append(it[1]).append('}');
+                }
+                sb.append("]}");
             }
-            sb.append("]}");
         }
         double elapsedMs = round2((System.nanoTime() - t0) / 1_000_000.0);
         sb.append("],\"db_hits\":").append(dbHits)
           .append(",\"elapsed_ms\":").append(elapsedMs)
-          .append(",\"note\":\"1 query orders + N queries items dentro de bucle.\"}");
+          .append(",\"note\":\"1 SELECT orders + N SELECT items (uno por order).\"}");
         return sb.toString();
     }
 
-    /** Optimized: 1 query orders + 1 IN-batch items, ensamblado en Java con Map O(1). */
-    private static String ordersOptimized(int limit) {
+    /** Optimized: 1 SELECT orders + 1 SELECT items WHERE order_id IN (?, ?, ...) batch. */
+    private static String ordersOptimized(int limit) throws SQLException {
         long t0 = System.nanoTime();
-        long dbHits = 1; // orders
-        int take = Math.min(limit, orders.size());
+        long dbHits = 0;
+        List<int[]> orders = new ArrayList<>(); // {id, customer_id}
+        try (PreparedStatement ps = db.prepareStatement(
+                "SELECT id, customer_id FROM orders ORDER BY id ASC LIMIT ?")) {
+            ps.setInt(1, limit);
+            try (ResultSet rs = ps.executeQuery()) {
+                dbHits++;
+                while (rs.next()) {
+                    orders.add(new int[]{rs.getInt(1), rs.getInt(2)});
+                }
+            }
+        }
 
-        // batch IN(...) simulado: 1 lookup que devuelve todos los items
-        List<Integer> ids = new ArrayList<>();
-        for (int i = 0; i < take; i++) ids.add(orders.get(i).id);
-        Map<Integer, List<Item>> batch = new HashMap<>();
-        for (Integer id : ids) batch.put(id, itemsByOrderId.getOrDefault(id, Collections.emptyList()));
-        dbHits++;
-        sleepMicros(700); // un solo roundtrip
+        // batch IN(?, ?, ...) — un solo round-trip para todos los items.
+        Map<Integer, List<Object[]>> itemsByOrder = new HashMap<>();
+        if (!orders.isEmpty()) {
+            StringBuilder ph = new StringBuilder(orders.size() * 2);
+            for (int i = 0; i < orders.size(); i++) ph.append(i == 0 ? "?" : ",?");
+            String sql = "SELECT order_id, sku, qty FROM order_items WHERE order_id IN (" + ph + ") ORDER BY id ASC";
+            try (PreparedStatement ps = db.prepareStatement(sql)) {
+                for (int i = 0; i < orders.size(); i++) ps.setInt(i + 1, orders.get(i)[0]);
+                try (ResultSet rs = ps.executeQuery()) {
+                    dbHits++;
+                    while (rs.next()) {
+                        int oid = rs.getInt(1);
+                        itemsByOrder.computeIfAbsent(oid, k -> new ArrayList<>())
+                                .add(new Object[]{rs.getString(2), rs.getInt(3)});
+                    }
+                }
+            }
+        }
 
         StringBuilder sb = new StringBuilder(8192);
         sb.append("{\"variant\":\"optimized\",\"rows\":[");
-        for (int i = 0; i < take; i++) {
-            Order o = orders.get(i);
-            List<Item> items = batch.get(o.id);
+        for (int i = 0; i < orders.size(); i++) {
+            int[] o = orders.get(i);
+            List<Object[]> items = itemsByOrder.getOrDefault(o[0], Collections.emptyList());
             if (i > 0) sb.append(',');
-            sb.append("{\"order_id\":").append(o.id)
-              .append(",\"customer_id\":").append(o.customerId)
+            sb.append("{\"order_id\":").append(o[0])
+              .append(",\"customer_id\":").append(o[1])
               .append(",\"item_count\":").append(items.size())
               .append(",\"items\":[");
             for (int j = 0; j < items.size(); j++) {
                 if (j > 0) sb.append(',');
-                Item it = items.get(j);
-                sb.append("{\"sku\":\"").append(it.sku).append("\",\"qty\":").append(it.qty).append('}');
+                Object[] it = items.get(j);
+                sb.append("{\"sku\":\"").append(escape((String) it[0])).append("\",\"qty\":").append(it[1]).append('}');
             }
             sb.append("]}");
         }
         double elapsedMs = round2((System.nanoTime() - t0) / 1_000_000.0);
         sb.append("],\"db_hits\":").append(dbHits)
           .append(",\"elapsed_ms\":").append(elapsedMs)
-          .append(",\"note\":\"1 query orders + 1 batch items (IN-style) + ensamblado en memoria.\"}");
+          .append(",\"note\":\"1 SELECT orders + 1 SELECT items con IN(...) batch.\"}");
         return sb.toString();
     }
 
-    private static void seedData() {
-        long seed = 270718L;
-        for (int i = 1; i <= 600; i++) {
-            seed = (seed * 9301 + 49297) % 233280;
-            int cid = 1 + (int) (seed % 500);
-            orders.add(new Order(i, cid));
-            int itemsPerOrder = 2 + (int) (seed % 5);
-            List<Item> list = new ArrayList<>();
-            for (int j = 1; j <= itemsPerOrder; j++) {
-                seed = (seed * 9301 + 49297) % 233280;
-                Item it = new Item("SKU-" + (1000 + (int) (seed % 9000)), 1 + (int) (seed % 8));
-                list.add(it);
-                allItems.add(it);
-            }
-            itemsByOrderId.put(i, list);
+    private static String diagnosticsSummary() throws SQLException {
+        int customers = scalarInt("SELECT COUNT(*) FROM customers");
+        int categories = scalarInt("SELECT COUNT(*) FROM categories");
+        int ordersCount = scalarInt("SELECT COUNT(*) FROM orders");
+        int itemsCount = scalarInt("SELECT COUNT(*) FROM order_items");
+        double avg = ordersCount == 0 ? 0.0 : round2(itemsCount / (double) ordersCount);
+        return "{\"stack\":\"" + STACK + "\",\"case\":\"" + CASE_NAME + "\"," +
+                "\"customers_total\":" + customers + ",\"categories_total\":" + categories +
+                ",\"orders_total\":" + ordersCount + ",\"items_total\":" + itemsCount +
+                ",\"avg_items_per_order\":" + avg +
+                ",\"legacy\":" + legacyMetrics.toJson("legacy") +
+                ",\"optimized\":" + optimizedMetrics.toJson("optimized") + "}";
+    }
+
+    private static int scalarInt(String sql) throws SQLException {
+        try (Statement st = db.createStatement(); ResultSet rs = st.executeQuery(sql)) {
+            return rs.next() ? rs.getInt(1) : 0;
         }
     }
-
-    private static List<Item> lookupItemsOneByOne(int orderId) {
-        // simula busqueda lineal sobre allItems (peor caso del N+1)
-        // en la practica seria un SELECT * FROM items WHERE order_id=?
-        return itemsByOrderId.getOrDefault(orderId, Collections.emptyList());
-    }
-
-    private record Order(int id, int customerId) {}
-    private record Item(String sku, int qty) {}
 
     private static final class Metrics {
         private final LongAdder requests = new LongAdder();
@@ -260,11 +379,6 @@ public class Main {
             int n = Integer.parseInt(raw);
             return Math.max(min, Math.min(n, max));
         } catch (NumberFormatException e) { return min; }
-    }
-
-    private static void sleepMicros(int micros) {
-        try { TimeUnit.MICROSECONDS.sleep(micros); }
-        catch (InterruptedException ignored) { Thread.currentThread().interrupt(); }
     }
 
     private static String escape(String v) {

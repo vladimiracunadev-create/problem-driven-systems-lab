@@ -2,6 +2,13 @@ FROM eclipse-temurin:21-jdk-alpine
 
 WORKDIR /app
 
+# sqlite-jdbc para el case 02 (N+1 sobre SQLite embebido). El JAR se descarga
+# una vez y queda en /opt/; el Dispatcher añade /opt/sqlite-jdbc.jar al
+# classpath solo del case 02 — los otros 11 casos no lo cargan.
+RUN apk add --no-cache wget \
+ && wget -q -O /opt/sqlite-jdbc.jar \
+    https://repo1.maven.org/maven2/org/xerial/sqlite-jdbc/3.46.1.3/sqlite-jdbc-3.46.1.3.jar
+
 # Copiar cada Main.java de los 12 casos operativos en /cases/{id}/Main.java
 COPY cases/01-api-latency-under-load/java/app/Main.java                                  /cases/01/Main.java
 COPY cases/02-n-plus-one-and-db-bottlenecks/java/app/Main.java                           /cases/02/Main.java
@@ -24,7 +31,7 @@ COPY java-dispatcher/app/Dispatcher.java /app/Dispatcher.java
 # "duplicate class". Compilados por separado, cada Main.class queda en
 # /cases/0X/ y el Dispatcher los carga con -cp /cases/0X).
 RUN javac /cases/01/Main.java \
- && javac /cases/02/Main.java \
+ && javac -cp /opt/sqlite-jdbc.jar /cases/02/Main.java \
  && javac /cases/03/Main.java \
  && javac /cases/04/Main.java \
  && javac /cases/05/Main.java \

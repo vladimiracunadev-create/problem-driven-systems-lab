@@ -39,7 +39,7 @@ const CASES = {
 };
 
 const DISPATCH_PORT = Number.parseInt(process.env.PORT || '8300', 10);
-const APP_STACK = process.env.APP_STACK || 'Node.js 20';
+const APP_STACK = process.env.APP_STACK || 'Node.js 22';
 
 // ---------------------------------------------------------------------------
 // Startup: spawn each case as an internal subprocess
@@ -50,7 +50,9 @@ const spawnedProcs = [];
 const startCaseServers = () => {
   for (const [caseId, info] of Object.entries(CASES)) {
     const env = { ...process.env, PORT: String(info.port), APP_STACK };
-    const proc = spawn(process.execPath, [info.server], {
+    // `--experimental-sqlite` habilita el built-in `node:sqlite` (caso 02).
+    // Para los otros 11 casos es un no-op inofensivo en Node 22.x.
+    const proc = spawn(process.execPath, ['--experimental-sqlite', info.server], {
       env,
       stdio: ['ignore', 'ignore', 'ignore'],
     });

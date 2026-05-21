@@ -1,4 +1,6 @@
-FROM node:20-alpine
+FROM node:22-alpine
+# Node 22 habilita el built-in `node:sqlite` (case 02) via flag
+# --experimental-sqlite. Es un no-op para los otros 11 casos.
 
 WORKDIR /app
 

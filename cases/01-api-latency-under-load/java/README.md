@@ -66,3 +66,7 @@ curl http://127.0.0.1:841/health
 - **vs PHP-FPM**: PHP crea proceso por request, no comparte estado en memoria. La cache de summary en Java vive en el heap del proceso unico — accesible por todos los handlers sin reconexion.
 - **vs Python**: Python tiene GIL que serializa bytecode. JVM ejecuta handlers en paralelo real (limite por nucleos, no por GIL).
 - **vs Node event loop**: Node es single-thread cooperativo. Java usa thread-per-request; `summaryCache` se lee concurrentemente sin yield y sin lock — eso es lo que `ConcurrentHashMap` garantiza.
+
+## Fidelidad
+
+Este stack simula la contencion con `sleepMicros()`. El **patron** (worker `ScheduledExecutorService` refrescando `ConcurrentHashMap`, handlers leyendo sin lock, batch loading vs N+1) es real y aprovecha primitivas JDK genuinas; el **substrato del fallo** no — los datos viven en memoria, no hay JDBC ni motor relacional atras. Para ver contencion real de DB en este mismo caso, ver el stack PHP (`../php/README.md`) que corre contra PostgreSQL 16. El compromiso de mover Java a SQLite via `sqlite-jdbc` (siguiendo el patron de caso 02) esta en el [ROADMAP](../../../ROADMAP.md#fidelidad-universal-de-caso-01).

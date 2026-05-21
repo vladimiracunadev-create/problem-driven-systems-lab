@@ -6,6 +6,32 @@ Una API de reportes que carga datos de clientes con sus pedidos recientes. La va
 
 ---
 
+## Fidelidad del substrato — asimetria honesta entre stacks
+
+A diferencia del caso 02 (donde los 5 stacks ejecutan SQL real sobre SQLite/PostgreSQL), **caso 01 tiene fidelidad asimetrica**. Esta seccion lo deja explicito antes de que el lector lo descubra leyendo codigo.
+
+| Stack | Contencion real | Substrato del fallo |
+|---|---|---|
+| PHP | **Si** | PostgreSQL 16 externo. Pool FPM bloqueado en I/O de red real. `pg_stat_activity` observable. |
+| Python | **Si** | SQLite stdlib con file I/O real + `threading.Thread` worker concurrente compitiendo por `DB_LOCK`. |
+| Node.js | No (substrato simulado) | Datos en memoria + `setTimeout(roundtrip_ms)` simulando el costo de I/O. Worker `setInterval` real. |
+| Java 21 | No (substrato simulado) | Datos en memoria + `sleepMicros()` simulando el costo de I/O. Worker `ScheduledExecutorService` real. |
+| .NET 8 | No (substrato simulado) | Datos en memoria + `Thread.SpinWait` / `Task.Delay` simulando el costo. Worker `Task.Delay` + `CancellationToken` real. |
+
+**Lo que SI es real en los 5 stacks:**
+- El **patron de la solucion**: worker concurrente refrescando una cache, readers no bloqueados accediendo a la cache, batch loading vs N+1.
+- Las primitivas idiomaticas de concurrencia: `ConcurrentHashMap`/`ConcurrentDictionary` para reads sin lock, `LongAdder`/`Interlocked.Increment` para contadores, `AsyncLocal`/`ThreadLocal` para contexto por request.
+- La metrica `event_loop_lag_ms` en Node bajo carga concurrente (real, medida con `setImmediate` callback).
+
+**Lo que NO es real en Node/Java/.NET:**
+- La contencion del recurso compartido. En PHP, la N+1 satura un pool FPM finito hablando con un PostgreSQL finito — el cuello duele en el motor. En Node/Java/.NET, el cuello se aproxima con un sleep que paga el thread/loop, pero no hay contencion sobre un recurso externo.
+
+**Por que se acepta hoy:** la decision es **enseñar la forma idiomatica del patron** en cada lenguaje sin obligar a cada stack a montar PostgreSQL. El lector que quiera ver contencion real va al stack PHP de este mismo caso. Es una eleccion explicita, no un descuido.
+
+**Compromiso futuro:** la fidelidad universal en caso 01 (mover Node/Java/.NET a SQLite real, siguiendo el patron ya aplicado a caso 02) esta en el [ROADMAP — "Fidelidad universal de caso 01"](../../ROADMAP.md#fidelidad-universal-de-caso-01).
+
+---
+
 ## PHP: proceso por request, PostgreSQL, worker en contenedor separado
 
 **Runtime:** PHP-FPM crea un proceso nuevo por cada request HTTP. Ese proceso vive, ejecuta, y muere. No hay estado compartido entre requests salvo la base de datos.

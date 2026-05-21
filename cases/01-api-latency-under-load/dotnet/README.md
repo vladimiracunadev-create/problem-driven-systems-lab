@@ -68,3 +68,7 @@ curl http://127.0.0.1:851/health
 - **vs Python**: Python tiene GIL que serializa bytecode. El CLR ejecuta handlers en paralelo real sobre el `ThreadPool` (limite por nucleos, no por GIL).
 - **vs Node event loop**: Node es single-thread cooperativo. .NET usa `ThreadPool` con worker threads; `summaryCache` se lee concurrentemente sin yield y sin lock — eso es lo que `ConcurrentDictionary` garantiza.
 - **vs Java**: paridad funcional 1:1; `ConcurrentDictionary` cumple el rol de `ConcurrentHashMap`, `Interlocked` el de `LongAdder`, `Task.Delay`+`CancellationToken` el de `ScheduledExecutorService`.
+
+## Fidelidad
+
+Este stack simula la contencion con `Thread.SpinWait` / `Task.Delay`. El **patron** (worker `Task.Delay` + `CancellationToken` refrescando `ConcurrentDictionary`, handlers leyendo sin lock, batch loading vs N+1) es real y aprovecha primitivas BCL genuinas; el **substrato del fallo** no — los datos viven en memoria, no hay `Microsoft.Data.Sqlite` ni motor relacional atras. Para ver contencion real de DB en este mismo caso, ver el stack PHP (`../php/README.md`) que corre contra PostgreSQL 16. El compromiso de mover .NET a SQLite via `Microsoft.Data.Sqlite` (siguiendo el patron de caso 02) esta en el [ROADMAP](../../../ROADMAP.md#fidelidad-universal-de-caso-01).

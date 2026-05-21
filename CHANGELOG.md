@@ -2,6 +2,60 @@
 
 Todos los cambios notables de este laboratorio se registran aqui con foco en madurez tecnica y documental.
 
+## 2026-05-20 - Fidelidad de caso 02 restaurada en los 5 stacks + asimetria de caso 01 documentada + ROADMAP nuevo
+
+Cierra una asimetria de fidelidad que el lab tenia oculta: caso 02 (N+1) **simulaba el N+1 en memoria** con `Map`/`HashMap`/`Dictionary` en 3 de los 5 stacks, mientras vendia el caso como "los 5 stacks ejecutan el mismo problema". Esta entrega lleva los 5 stacks a SQL real, deja explicita la asimetria que queda en caso 01, y publica el roadmap de los proximos casos.
+
+### El problema descubierto
+
+Caso 02 estudia N+1 — un patron que **es DB-shape por definicion**. Modelarlo con `Map<id, item>` en memoria es didacticamente debil: el lector senior detecta que no hay `prepare()` ni `executeQuery()` ni round-trip, y el contraste pierde peso. La narrativa del caso ("N+1 sobre el mismo problema en 5 lenguajes") no se sostenia.
+
+### La solucion aplicada (cambios de codigo — los hace otro agente)
+
+- Caso 02 Node: `node:sqlite` (modulo built-in desde Node 22.5, sin `npm install`, sin bindings nativos).
+- Caso 02 Java: `sqlite-jdbc` (single jar agregado al classpath en build-time, sin Maven).
+- Caso 02 .NET: `Microsoft.Data.Sqlite` (paquete oficial Microsoft, ADO.NET-style).
+- DB embebida en `:memory:` por instancia o `/tmp/case02.db`. Sin contenedor extra, sin servicio externo. Single-binary se preserva.
+- `db_hits` pasa de ser una metrica derivada a un contador real de ejecuciones contra el motor. El contrato JSON externo no cambia.
+
+### La asimetria aceptada y documentada (caso 01)
+
+Caso 01 (latencia bajo carga) se **mantiene como esta** — PHP con PostgreSQL real, Python con SQLite stdlib, Node/Java/.NET con substrato simulado (`setTimeout`/`sleepMicros`/`Task.Delay`). La diferencia con caso 02 es que en caso 01 el **patron de solucion** (worker concurrente refrescando cache + readers no bloqueados) es lo enseñable, y ese patron es real en los 5 stacks gracias a `ConcurrentHashMap`/`ConcurrentDictionary`/`Map` con primitivas concurrentes reales. Lo que es simulado es el substrato del fallo, no la solucion.
+
+Esta asimetria ahora esta documentada explicitamente:
+- Seccion "Fidelidad del substrato" agregada al inicio de `cases/01-api-latency-under-load/comparison.md` con tabla `real vs simulado` por stack.
+- Seccion `## Fidelidad` agregada al final de los 3 README de stack (node, java, dotnet) de caso 01, con link al ROADMAP.
+- Tabla "Honestidad de fidelidad" agregada al `README.md` raiz contrastando caso 01 vs caso 02.
+
+### Added
+
+- `ROADMAP.md` reescrito completo con tres ejes:
+  - **Eje 1 — 8 casos nuevos de la vida real (13-20):** cache stampede, connection pool exhaustion, message queue backpressure, idempotencia y efectos duplicados, migracion de esquema sin downtime, cold start y autoscale lag, search index drift, dead letter queue olvidada.
+  - **Eje 2 — Mejoras de plataforma:** fidelidad universal de caso 01 (mover Node/Java/.NET a SQLite siguiendo el patron de caso 02), observabilidad Prometheus en los 5 stacks, suite de tests cross-stack, CI completa con loadtest, proof cards live en el portal.
+  - **Eje 3 — Honestidad tecnica:** seccion "Fidelidad" obligatoria en cada `comparison.md` con substrato no uniforme, tabla maestra "real vs simulado" en el `README.md` raiz, postmortems del propio lab en `docs/lab-postmortems.md`.
+
+### Changed (docs)
+
+- `cases/02-n-plus-one-and-db-bottlenecks/comparison.md`: rewrite completo. El header narrativo deja de ser "PHP+Python tienen DB, los demas simulan" y pasa a "los 5 stacks ejecutan N+1 real sobre SQL, primitivas idiomaticas distintas". Tabla de fidelidad del substrato. Secciones por stack reescritas con la primitiva real (`node:sqlite`/`db.prepare()`, `sqlite-jdbc`/`PreparedStatement`, `Microsoft.Data.Sqlite`/`SqliteCommand`). Tabla final "Diferencias de decision" actualizada con columnas `Motor DB` (cinco motores reales) y `Primitiva de query` (cinco APIs idiomaticas).
+- `cases/02-n-plus-one-and-db-bottlenecks/{node,java,dotnet}/README.md`: reescritos. Las menciones a `Map`/`HashMap`/`Dictionary` se reemplazan por la primitiva real (`Database` de `node:sqlite`, `PreparedStatement` JDBC, `SqliteConnection`/`SqliteCommand`). Tabla de primitivas actualizada. Sin claim de "datos en memoria".
+- `cases/02-n-plus-one-and-db-bottlenecks/README.md`: tabla de stacks actualizada — todos los stacks dicen "SQLite real" o "PostgreSQL real" (no "datos en memoria"). Subsecciones Node/Java/.NET reescritas para mencionar la primitiva y el batch real.
+- `cases/01-api-latency-under-load/comparison.md`: nueva seccion "Fidelidad del substrato" al inicio (despues del intro). Tabla `real vs simulado` por stack. Explicacion de por que se acepta la asimetria hoy (enseñar la forma idiomatica del patron sin obligar a cada stack a montar PostgreSQL) y link al ROADMAP como compromiso futuro.
+- `cases/01-api-latency-under-load/{node,java,dotnet}/README.md`: seccion `## Fidelidad` agregada al final. 3-5 lineas reconociendo que el substrato es simulado mientras el patron es real, con link al stack PHP para ver contencion real y al ROADMAP para el compromiso de mover a SQLite.
+- `README.md` raiz: bullets `OPERATIVO en Node.js/Java 21/.NET 8` mencionan SQLite real en caso 02 con la primitiva especifica. Nueva seccion "🎯 Honestidad de fidelidad" con tabla contrastando caso 01 vs caso 02 por stack.
+- `ARCHITECTURE.md`: fila de caso 02 en la tabla "Casos operativos actuales" actualizada — "PostgreSQL (PHP) + SQLite real en los otros 4" en lugar de solo "PostgreSQL".
+- `shared/catalog/cases.json`: `level_detail` de caso 02 reescrito ("Los 5 stacks ejecutan N+1 real sobre SQL embebido...").
+
+### Out of scope (mantenidos sin cambios)
+
+- Codigo en `cases/02/{node,java,dotnet}/app/` — lo reescribe otro agente con la migracion real a `node:sqlite` / `sqlite-jdbc` / `Microsoft.Data.Sqlite`.
+- Dispatchers (`node-dispatcher/`, `java-dispatcher/`, `dotnet-dispatcher/`) — sin cambios.
+- Casos 03-12 — sin cambios en ningun sentido.
+- PHP y Python caso 02 — ya correctos.
+
+### Why
+
+La narrativa del lab es **honestidad tecnica**. Vender que los 5 stacks ejecutan N+1 sobre SQL real cuando 3 simulan en memoria erosiona ese principio. Esta entrega cierra esa brecha en caso 02 y formaliza la deuda restante (caso 01) con plazo y compromiso explicito en el ROADMAP. El lab gana credibilidad senior — pierde una afirmacion debil, gana una afirmacion verificable.
+
 ## 2026-05-20 - .NET 8 cierra paridad multi-stack: los 12 casos operativos en los 5 stacks
 
 .NET 8 pasa de cubrir los primeros 6 casos a cubrir los 12. **Paridad multi-stack completa** entre PHP, Python, Node.js, Java 21 y .NET 8 — los 60 endpoints (12 casos × 5 stacks) operativos detras de 5 hubs simetricos.

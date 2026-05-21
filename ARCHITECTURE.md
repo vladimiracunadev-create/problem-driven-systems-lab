@@ -91,7 +91,7 @@ El laboratorio ha evolucionado de simulaciones matemáticas a **escenarios de fa
 | Caso | PHP | Python | Node.js | Java | .NET | Implementacion PHP (referencia) |
 | --- | --- | --- | --- | --- | --- | --- |
 | `01` | ✅ | ✅ | ✅ | ✅ | ✅ | PostgreSQL + worker + Prometheus + Grafana |
-| `02` | ✅ | ✅ | ✅ | ✅ | ✅ | PostgreSQL |
+| `02` | ✅ | ✅ | ✅ | ✅ | ✅ | PostgreSQL (PHP) + SQLite real en los otros 4 (`sqlite3` stdlib Python, `node:sqlite` built-in Node, `sqlite-jdbc` Java, `Microsoft.Data.Sqlite` .NET) |
 | `03` | ✅ | ✅ | ✅ | ✅ | ✅ | telemetria, trazabilidad y logs estructurados |
 | `04` | ✅ | ✅ | ✅ | ✅ | ✅ | timeout corto, retry storm, circuit breaker y fallback |
 | `05` | ✅ | ✅ | ✅ | ✅ | ✅ | presion progresiva de memoria, comparacion legacy vs optimized |

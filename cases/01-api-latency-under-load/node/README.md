@@ -69,3 +69,7 @@ curl http://localhost:8300/01/reset-metrics
 ## ⚖️ Nota de honestidad
 
 Los datos viven en memoria con I/O simulado por `setTimeout` para mantener foco en el patron de acceso (no en el motor de DB). El lab no benchmarkea Node contra otros runtimes; demuestra diagnostico y remediacion del patron N+1 con evidencia observable, agregando la metrica de event loop lag que es propia del runtime.
+
+## Fidelidad
+
+Este stack simula la contencion con `setTimeout(roundtrip_ms)`. El **patron** (worker `setInterval` refrescando cache, readers no bloqueados sobre el `Map`, batch loading vs N+1) es real; el **substrato del fallo** no — no hay PostgreSQL ni SQLite atras. Para ver contencion real de DB en este mismo caso, ver el stack PHP (`../php/README.md`) que corre contra PostgreSQL 16. El compromiso de mover Node a SQLite real esta en el [ROADMAP](../../../ROADMAP.md#fidelidad-universal-de-caso-01).

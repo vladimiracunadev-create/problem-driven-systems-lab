@@ -29,21 +29,26 @@ import java.util.concurrent.Executors;
  */
 public class Dispatcher {
 
-    private record CaseInfo(String id, int port, String name, String dir) {}
+    private record CaseInfo(String id, int port, String name, String dir, String extraCp) {}
+
+    // El caso 02 necesita sqlite-jdbc en classpath para usar JDBC sobre SQLite
+    // embebido. El JAR vive en /opt/ y se concatena al classpath del caso.
+    // Los otros 11 casos no necesitan dependencias externas.
+    private static final String SQLITE_JDBC_JAR = "/opt/sqlite-jdbc.jar";
 
     private static final List<CaseInfo> CASES = List.of(
-        new CaseInfo("01", 9401, "API lenta bajo carga",               "/cases/01"),
-        new CaseInfo("02", 9402, "N+1 y cuellos de botella DB",        "/cases/02"),
-        new CaseInfo("03", 9403, "Observabilidad deficiente",          "/cases/03"),
-        new CaseInfo("04", 9404, "Timeout chain y retry storms",       "/cases/04"),
-        new CaseInfo("05", 9405, "Presion de memoria y fugas",         "/cases/05"),
-        new CaseInfo("06", 9406, "Pipeline roto y delivery fragil",    "/cases/06"),
-        new CaseInfo("07", 9407, "Modernizacion incremental monolito", "/cases/07"),
-        new CaseInfo("08", 9408, "Extraccion critica de modulo",       "/cases/08"),
-        new CaseInfo("09", 9409, "Integracion externa inestable",      "/cases/09"),
-        new CaseInfo("10", 9410, "Arquitectura cara para algo simple", "/cases/10"),
-        new CaseInfo("11", 9411, "Reportes que bloquean operacion",    "/cases/11"),
-        new CaseInfo("12", 9412, "Punto unico de conocimiento",        "/cases/12")
+        new CaseInfo("01", 9401, "API lenta bajo carga",               "/cases/01", null),
+        new CaseInfo("02", 9402, "N+1 y cuellos de botella DB",        "/cases/02", SQLITE_JDBC_JAR),
+        new CaseInfo("03", 9403, "Observabilidad deficiente",          "/cases/03", null),
+        new CaseInfo("04", 9404, "Timeout chain y retry storms",       "/cases/04", null),
+        new CaseInfo("05", 9405, "Presion de memoria y fugas",         "/cases/05", null),
+        new CaseInfo("06", 9406, "Pipeline roto y delivery fragil",    "/cases/06", null),
+        new CaseInfo("07", 9407, "Modernizacion incremental monolito", "/cases/07", null),
+        new CaseInfo("08", 9408, "Extraccion critica de modulo",       "/cases/08", null),
+        new CaseInfo("09", 9409, "Integracion externa inestable",      "/cases/09", null),
+        new CaseInfo("10", 9410, "Arquitectura cara para algo simple", "/cases/10", null),
+        new CaseInfo("11", 9411, "Reportes que bloquean operacion",    "/cases/11", null),
+        new CaseInfo("12", 9412, "Punto unico de conocimiento",        "/cases/12", null)
     );
 
     private static final int DISPATCH_PORT = Integer.parseInt(System.getenv().getOrDefault("PORT", "8400"));
@@ -70,7 +75,8 @@ public class Dispatcher {
     }
 
     private static void spawnCase(CaseInfo c) throws IOException {
-        ProcessBuilder pb = new ProcessBuilder("java", "-cp", c.dir, "Main");
+        String cp = c.extraCp == null ? c.dir : c.dir + java.io.File.pathSeparator + c.extraCp;
+        ProcessBuilder pb = new ProcessBuilder("java", "-cp", cp, "Main");
         Map<String, String> env = pb.environment();
         env.put("PORT", String.valueOf(c.port));
         env.put("APP_STACK", APP_STACK);

@@ -80,21 +80,21 @@ El stack Python ahora implementa el caso con dataset local en SQLite y rutas equ
 
 ### Node.js 20 (implementacion operativa)
 
-El stack Node.js resuelve el N+1 anidado con primitivas naturales:
+El stack Node.js resuelve el N+1 anidado contra SQLite real via `node:sqlite` (built-in en Node 22.5+):
 
-- `orders-legacy` ejecuta bucles `await` anidados (orders → customer → items → product → category) generando ~1+N+sum(items*2) round-trips.
-- `orders-optimized` colapsa todo en 2 lecturas con join en memoria via `Map.get()` O(1) y agrupacion en una pasada.
-- Expone `event_loop_lag_ms` para mostrar como N+1 con await secuencial degrada throughput global del proceso.
+- `orders-legacy` ejecuta bucles con `prepare().get()` anidados (orders → customer → items → product → category) generando ~1+N+sum(items*2) `executeQuery()` reales contra SQLite.
+- `orders-optimized` colapsa todo en 2 `prepare().all()` con `IN(?, ?, ?, ...)` + agrupacion O(N) con `Map`.
+- Expone `event_loop_lag_ms` para mostrar como SQLite sincronico bajo N+1 bloquea el loop entero.
 
 Ver [`node/README.md`](node/README.md). Puerto local: `822`.
 
 ### Java 21 (implementacion operativa)
 
-Stack Java operativo con `HashMap<Integer, List<Item>>` precomputado actuando como tabla relacional indexada, batch `IN(...)` simulado en memoria como espejo de `PreparedStatement.executeQuery(...)` JDBC, `record` types inmutables (`Order`, `Item`), y `LongAdder` para contadores p95/p99 lock-free. Mismas rutas de contraste (`/orders-legacy`, `/orders-optimized`, `/diagnostics/summary`). Sin Maven, single-file. Ver [`java/README.md`](java/README.md). Hub: `http://localhost:8400/02/`. Aislado: puerto `842`.
+Stack Java operativo con SQLite real via `sqlite-jdbc` (single jar, sin Maven). `Connection` + `PreparedStatement` con `?` posicional, batch `IN(?, ?, ?, ...)` consolidado en una `executeQuery()`, `try-with-resources` para cleanup garantizado, `record` types inmutables (`Order`, `Item`), y `LongAdder` para contadores p95/p99 lock-free. Mismas rutas de contraste (`/orders-legacy`, `/orders-optimized`, `/diagnostics/summary`). Ver [`java/README.md`](java/README.md). Hub: `http://localhost:8400/02/`. Aislado: puerto `842`.
 
 ### .NET 8 (implementacion operativa)
 
-Stack .NET operativo con `Dictionary<int, List<Item>>` indexado actuando como tabla relacional, ensamblado batch en memoria como espejo del `IN(...)` SQL, `record` types inmutables (`Order`, `Item`), y `Interlocked.Increment` para contadores. Mismas rutas de contraste (`/orders-legacy`, `/orders-optimized`, `/diagnostics/summary`). Ver [`dotnet/README.md`](dotnet/README.md). Hub: `http://localhost:8500/02/`. Aislado: puerto `852`.
+Stack .NET operativo con SQLite real via `Microsoft.Data.Sqlite` (paquete oficial Microsoft, API ADO.NET). `SqliteConnection` + `SqliteCommand` con bindings `@named`, batch `IN(@id0, @id1, ...)` consolidado en un `ExecuteReader()`, `using` para cleanup de `IDisposable`, `record` types inmutables (`Order`, `Item`), y `Interlocked.Increment` para contadores. Mismas rutas de contraste (`/orders-legacy`, `/orders-optimized`, `/diagnostics/summary`). Ver [`dotnet/README.md`](dotnet/README.md). Hub: `http://localhost:8500/02/`. Aislado: puerto `852`.
 
 ---
 
@@ -119,11 +119,11 @@ Stack .NET operativo con `Dictionary<int, List<Item>>` indexado actuando como ta
 
 | Stack | Estado |
 |-------|--------|
-| 🐘 PHP 8 | ✅ Implementado (Docker + PostgreSQL) |
-| 🟢 Node.js | ✅ Implementado (Docker + datos en memoria + event_loop_lag) |
-| 🐍 Python | ✅ Implementado (Docker + SQLite local + metricas) |
-| ☕ Java 21 | `OPERATIVO` (`HashMap` indexado + batch `IN(...)` simulado, ver `java/README.md`) |
-| 🔵 .NET 8 | `OPERATIVO` (`Dictionary` indexado + ensamblado batch en memoria + `record` types) |
+| 🐘 PHP 8 | ✅ Implementado (Docker + PostgreSQL real + PDO) |
+| 🐍 Python | ✅ Implementado (Docker + SQLite stdlib `sqlite3` + cursor compartido) |
+| 🟢 Node.js | ✅ Implementado (Docker + SQLite real via `node:sqlite` + `event_loop_lag_ms`) |
+| ☕ Java 21 | `OPERATIVO` (SQLite real via `sqlite-jdbc` + `PreparedStatement` + batch `IN(?, ...)`) |
+| 🔵 .NET 8 | `OPERATIVO` (SQLite real via `Microsoft.Data.Sqlite` + `SqliteCommand` + batch `IN(@id, ...)`) |
 
 ---
 

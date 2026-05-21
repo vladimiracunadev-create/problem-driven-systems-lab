@@ -214,7 +214,7 @@
       "title": "N+1 queries y cuellos de botella en base de datos",
       "category": "Rendimiento",
       "status": "OPERATIVO",
-      "level_detail": "PHP + PostgreSQL; Python con SQLite local y metricas de queries; Node.js 20 con datos en memoria, batch en Map y metrica de event loop lag; Java 21 con HashMap indexado y batch IN(...); .NET 8 con Dictionary indexado y ensamblado batch en memoria",
+      "level_detail": "Los 5 stacks ejecutan N+1 real sobre SQL embebido. PHP + PostgreSQL via PDO; Python con SQLite stdlib (sqlite3) y cursor compartido; Node.js 22 con SQLite via node:sqlite built-in + prepared statements + event_loop_lag_ms; Java 21 con SQLite via sqlite-jdbc + PreparedStatement + batch IN(?, ...); .NET 8 con SQLite via Microsoft.Data.Sqlite + SqliteCommand + batch IN(@id0, ...)",
       "summary": "La aplicacion ejecuta demasiadas consultas por solicitud o usa el acceso a datos de forma ineficiente, generando saturacion de base de datos.",
       "case_readme_path": "cases/02-n-plus-one-and-db-bottlenecks/README.md",
       "business_outcome": "Reduce round-trips, costo por request y desgaste innecesario sobre la base de datos.",
