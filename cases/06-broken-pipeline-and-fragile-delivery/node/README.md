@@ -1,6 +1,6 @@
 # Pipeline roto y entrega fragil — Node.js
 
-> Implementacion operativa del caso 06 con paridad funcional al stack PHP, usando primitivas nativas de Node 20: `AbortController` + `AbortSignal` para cancelacion cooperativa del pipeline.
+> Implementacion operativa del caso 06 con paridad funcional al stack PHP, usando primitivas nativas de Node 22: `AbortController` + `AbortSignal` para cancelacion cooperativa del pipeline.
 
 ## Que resuelve
 
@@ -17,7 +17,7 @@ Cada paso del pipeline corre dentro de un `AbortController`. El handler engancha
 
 ## Servicio
 
-`app` — API Node.js 20 con dos rutas de deploy, telemetria persistida en `tmp/`, metricas Prometheus.
+`app` — API Node.js 22 con dos rutas de deploy, telemetria persistida en `tmp/`, metricas Prometheus.
 
 ## Arranque
 

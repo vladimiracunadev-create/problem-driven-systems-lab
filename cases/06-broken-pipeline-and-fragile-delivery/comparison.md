@@ -112,7 +112,7 @@ def run_controlled_deployment(env: dict, release: str, scenario: str) -> dict:
 
 ## Node.js: AbortController + AbortSignal cooperativo, cancelacion nativa
 
-**Runtime:** Node.js 20 single-thread con event loop. El servidor http vive como un proceso largo, exactamente como Python. Cada request engancha un `AbortController` cuyo `signal` se propaga por todos los pasos asincronicos del pipeline.
+**Runtime:** Node.js 22 single-thread con event loop. El servidor http vive como un proceso largo, exactamente como Python. Cada request engancha un `AbortController` cuyo `signal` se propaga por todos los pasos asincronicos del pipeline.
 
 **El AbortSignal por paso:**
 ```javascript

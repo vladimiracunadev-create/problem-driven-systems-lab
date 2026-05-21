@@ -1,4 +1,4 @@
-# 🔁 Caso 04 — Node.js 20 con AbortController y circuit breaker
+# 🔁 Caso 04 — Node.js 22 con AbortController y circuit breaker
 
 > Implementacion operativa del caso 04 para estudiar cadenas de timeouts y tormentas de reintentos con evidencia observable, manteniendo paridad funcional con la version Python y aprovechando primitivas nativas del runtime: `AbortController`, `AbortSignal` y `setTimeout` cooperativo.
 
@@ -27,7 +27,7 @@ Un proveedor lento + politica de reintentos sin freno es la receta clasica del r
 
 ## 🧱 Servicio
 
-- `app` → API Node.js 20 con politicas legacy/resilient, breaker en JSON local y telemetria por modo.
+- `app` → API Node.js 22 con politicas legacy/resilient, breaker en JSON local y telemetria por modo.
 
 ## 🚀 Arranque
 

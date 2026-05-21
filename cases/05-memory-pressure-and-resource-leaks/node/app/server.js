@@ -8,7 +8,7 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 
-const APP_STACK = 'Node.js 20';
+const APP_STACK = 'Node.js 22';
 const CASE_NAME = '05 - Presion de memoria y fugas de recursos';
 const STORAGE_DIR = path.join(os.tmpdir(), 'pdsl-case05-node');
 const STATE_PATH = path.join(STORAGE_DIR, 'state.json');

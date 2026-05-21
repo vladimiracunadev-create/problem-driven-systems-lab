@@ -70,7 +70,7 @@ Misma fórmula de backoff que PHP. La diferencia está en la comparación del ci
 
 ## Node.js: `AbortController` como timeout primitivo cooperativo
 
-**Runtime:** Node.js 20 con event loop. La diferencia mas importante con PHP y Python: el timeout no se implementa como "wall clock que pasa y abandono el resultado", sino como **cancelacion cooperativa de la operacion en curso**.
+**Runtime:** Node.js 22 con event loop. La diferencia mas importante con PHP y Python: el timeout no se implementa como "wall clock que pasa y abandono el resultado", sino como **cancelacion cooperativa de la operacion en curso**.
 
 **El timeout como primitiva nativa:**
 ```javascript

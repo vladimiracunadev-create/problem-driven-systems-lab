@@ -8,7 +8,7 @@ const path = require('path');
 const { URL } = require('url');
 const { performance, monitorEventLoopDelay } = require('perf_hooks');
 
-const APP_STACK = 'Node.js 20';
+const APP_STACK = 'Node.js 22';
 const CASE_NAME = '11 - Reportes pesados que bloquean la operacion';
 const STORAGE_DIR = path.join(os.tmpdir(), 'pdsl-case11-node');
 const STATE_PATH = path.join(STORAGE_DIR, 'reporting-state.json');

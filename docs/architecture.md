@@ -30,6 +30,24 @@ problem-driven-systems-lab/
    `- generate_case_catalog.php
 ```
 
+### Vista de capas (Mermaid)
+
+```mermaid
+flowchart TB
+    editorial["1. Capa editorial<br/>README · ARCHITECTURE · RUNBOOK · ROADMAP"]
+    catalog["2. Capa de metadatos<br/>shared/catalog/cases.json"]
+    portal_layer["3a. Portal :8080<br/>index.html · catalog.php · probe.php"]
+    hubs["3b. Hubs raiz<br/>PHP :8100 · Python :8200 · Node :8300 · Java :8400 · .NET :8500"]
+    cases_layer["4. Capa de casos<br/>cases/01..12/"]
+    stacks_layer["5. Capa de stacks<br/>cada caso × {php, python, node, java, dotnet}"]
+
+    editorial --> catalog
+    catalog --> portal_layer
+    catalog --> hubs
+    hubs --> cases_layer
+    cases_layer --> stacks_layer
+```
+
 ## 🧱 Capas principales
 
 ### 1. Capa editorial y operativa
@@ -50,7 +68,7 @@ Cada lenguaje operativo tiene su propio compose en la raíz — un comando levan
 
 - `compose.root.yml` — PHP: portal (`8080`) + dispatcher PHP `php-lab` (`8100`, 12 casos internos en `:9001-:9012`) + PostgreSQL (casos 01–02) + worker case01 + Prometheus (`9091`) + Grafana (`3001`)
 - `compose.python.yml` — Python: dispatcher único con 12 casos internos (`8200`), stdlib pura, sin dependencias externas
-- `compose.nodejs.yml` — Node.js 20: dispatcher único con 12 casos internos (`8300`), stdlib pura, sin dependencias externas
+- `compose.nodejs.yml` — Node.js 22: dispatcher único con 12 casos internos (`8300`), stdlib pura (incluye `node:sqlite` built-in usado en caso 02), sin dependencias externas
 - `compose.java.yml` — Java 21: dispatcher único con 12 casos internos (`8400`), JDK built-in (`HttpServer`, `HttpClient`), sin Maven
 - `compose.dotnet.yml` — .NET 8: dispatcher único con 12 casos internos (`8500`), BCL built-in (`HttpListener`, `System.Text.Json`), sin paquetes externos
 - `compose.portal.yml` — portal liviano solamente (`8080`)
@@ -117,8 +135,7 @@ La familia PHP reutiliza un runtime comun en `docker/php/Dockerfile`. La familia
 | `11` | ✅ OPERATIVO | ✅ OPERATIVO | ✅ OPERATIVO | ✅ OPERATIVO | ✅ OPERATIVO |
 | `12` | ✅ OPERATIVO | ✅ OPERATIVO | ✅ OPERATIVO | ✅ OPERATIVO | ✅ OPERATIVO |
 
-**OPERATIVO** = lógica real, Docker funcional, evidencia observable.
-**scaffold** = estructura y documentación lista, sin implementación funcional todavía.
+**OPERATIVO** = lógica real, Docker funcional, evidencia observable. Los 12 casos × 5 stacks (PHP / Python / Node.js 22 / Java 21 / .NET 8) son todos `OPERATIVO` — paridad funcional completa con primitivas idiomáticas distintas por runtime.
 
 ## 🧭 Regla principal
 

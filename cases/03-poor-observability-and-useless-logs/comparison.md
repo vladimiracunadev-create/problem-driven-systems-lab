@@ -139,7 +139,7 @@ Misma filosofía que PHP: la excepción lleva el contexto completo del fallo. La
 
 ## Node.js: `WorkflowFailure` extends Error, JSON sin libreria, append por linea
 
-**Runtime:** Node.js 20 single-thread. Cada request es una funcion `async (req, res) => {...}` que comparte el mismo proceso con todos los handlers. El logger es ad-hoc — `fs.appendFileSync()` con `JSON.stringify()` — porque agregar una dependencia (winston, pino) ocultaria la decision detras de una libreria.
+**Runtime:** Node.js 22 single-thread. Cada request es una funcion `async (req, res) => {...}` que comparte el mismo proceso con todos los handlers. El logger es ad-hoc — `fs.appendFileSync()` con `JSON.stringify()` — porque agregar una dependencia (winston, pino) ocultaria la decision detras de una libreria.
 
 **El fallo legacy en Node.js:**
 ```javascript

@@ -114,7 +114,7 @@ Una API, servicio o proveedor externo introduce **latencia, errores intermitente
 
 Misma lógica con stdlib + `dict` como cache + `threading.Lock` para budget. Ver [`python/README.md`](python/README.md). Modo aislado: puerto `839`. Hub: `http://localhost:8200/09/`.
 
-### Node.js 20
+### Node.js 22
 
 `AbortSignal.timeout(ms)` (Node 18+) marca deadline del llamado externo + circuit breaker en memoria con tres estados (`closed`/`open`/`half_open`) y reapertura automática tras cooldown. Ver [`node/README.md`](node/README.md). Modo aislado: puerto `829`. Hub: `http://localhost:8300/09/`.
 
@@ -148,7 +148,7 @@ Misma lógica con stdlib + `dict` como cache + `threading.Lock` para budget. Ver
 | --- | --- |
 | 🐘 PHP 8 | `OPERATIVO` (adapter + cache + breaker persistente) |
 | 🐍 Python 3.12 | `OPERATIVO` (stdlib + threading.Lock + dict cache) |
-| 🟢 Node.js 20 | `OPERATIVO` (`AbortSignal.timeout` + CB en memoria) |
+| 🟢 Node.js 22 | `OPERATIVO` (`AbortSignal.timeout` + CB en memoria) |
 | ☕ Java 21 | `OPERATIVO` (`Semaphore` budget + snapshot cache + `AtomicReference` breaker) |
 | 🔵 .NET 8 | `OPERATIVO` (`SemaphoreSlim` budget + `ConcurrentDictionary` cache + `Interlocked.CompareExchange` breaker) |
 
@@ -198,12 +198,12 @@ curl http://localhost:8400/09/sync-events
 09-unstable-external-integration/
 ├── README.md                    ← este archivo
 ├── comparison.md                ← comparativa multi-stack
-├── compose.compare.yml          ← los 4 stacks juntos
+├── compose.compare.yml          ← los 5 stacks juntos
 ├── docs/                        ← análisis + postmortem
 ├── shared/                      ← assets compartidos
 ├── 🐘 php/                      ← `OPERATIVO` — adapter + breaker persistente
 ├── 🐍 python/                   ← `OPERATIVO` — stdlib + Lock + dict cache
 ├── 🟢 node/                     ← `OPERATIVO` — AbortSignal.timeout + CB
 ├── ☕ java/                     ← `OPERATIVO` — Semaphore + cache + AtomicReference
-└── 🔵 dotnet/                   ← 🔧 estructura lista
+└── 🔵 dotnet/                   ← `OPERATIVO` — SemaphoreSlim + ConcurrentDictionary cache + Interlocked CAS breaker
 ```

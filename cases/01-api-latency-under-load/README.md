@@ -64,7 +64,7 @@ El stack Python ahora resuelve el caso con libreria estandar y SQLite local:
 
 PHP sigue siendo la version mas profunda con PostgreSQL, exporter, Prometheus y Grafana. Python queda operativo para comparar el criterio de solucion sin romper el stack principal.
 
-### Node.js 20 (implementacion operativa)
+### Node.js 22 (implementacion operativa)
 
 El stack Node.js resuelve el mismo problema con primitivas naturales del runtime:
 
@@ -190,8 +190,8 @@ Este caso deja estructura para medir y comparar:
 │   └── README.md
 ├── 🟢 node/                        ← Implementacion operativa (event loop lag, worker setInterval)
 ├── 🐍 python/                      ← Implementacion operativa portable
-├── ☕ java/                         ← Base de crecimiento
-└── 🔵 dotnet/                      ← Base de crecimiento
+├── ☕ java/                         ← `OPERATIVO` — ConcurrentHashMap summary cache + ScheduledExecutorService worker
+└── 🔵 dotnet/                      ← `OPERATIVO` — ConcurrentDictionary summary cache + Task.Delay worker
 ```
 
 ---

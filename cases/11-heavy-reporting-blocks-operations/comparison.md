@@ -107,7 +107,7 @@ Los dos locks son objetos distintos en memoria. Son completamente independientes
 
 ## Node.js: monitorEventLoopDelay() + setImmediate — el lock es el event loop
 
-**Runtime:** Node.js 20 single-thread. **No hay locks** porque no hay concurrencia paralela en el codigo JS — todo corre en un solo thread del event loop. La "contencion" es de otro tipo: una operacion sincronica costosa **bloquea el loop entero** y todas las requests concurrentes lo pagan.
+**Runtime:** Node.js 22 single-thread. **No hay locks** porque no hay concurrencia paralela en el codigo JS — todo corre en un solo thread del event loop. La "contencion" es de otro tipo: una operacion sincronica costosa **bloquea el loop entero** y todas las requests concurrentes lo pagan.
 
 **El fallo legacy en Node — bloqueo sincronico del event loop:**
 ```javascript

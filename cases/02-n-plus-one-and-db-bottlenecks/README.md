@@ -78,7 +78,7 @@ El stack Python ahora implementa el caso con dataset local en SQLite y rutas equ
 - `orders-optimized` -> consolida pedidos y detalles con lecturas agrupadas.
 - `/metrics`, `/metrics-prometheus` y `/diagnostics/summary` -> dejan evidencia medible de queries y latencia.
 
-### Node.js 20 (implementacion operativa)
+### Node.js 22 (implementacion operativa)
 
 El stack Node.js resuelve el N+1 anidado contra SQLite real via `node:sqlite` (built-in en Node 22.5+):
 

@@ -8,7 +8,7 @@ const path = require('path');
 const { URL } = require('url');
 const { performance } = require('perf_hooks');
 
-const APP_STACK = 'Node.js 20';
+const APP_STACK = 'Node.js 22';
 const CASE_NAME = '06 - Pipeline roto y entrega fragil';
 const STORAGE_DIR = path.join(os.tmpdir(), 'pdsl-case06-node');
 const STATE_PATH = path.join(STORAGE_DIR, 'delivery-state.json');

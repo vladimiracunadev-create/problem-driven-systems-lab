@@ -13,9 +13,27 @@
 | Python — dispatcher unificado | `docker compose -f compose.python.yml up -d --build` | `8200` hub |
 | Node.js — dispatcher unificado | `docker compose -f compose.nodejs.yml up -d --build` | `8300` hub |
 | Java 21 — dispatcher unificado | `docker compose -f compose.java.yml up -d --build` | `8400` hub |
+| .NET 8 — dispatcher unificado | `docker compose -f compose.dotnet.yml up -d --build` | `8500` hub |
 | Portal liviano | `docker compose -f compose.portal.yml up -d --build` | `8080` |
 
-Los cuatro stacks pueden correr en paralelo sin colisión de puertos. **PHP/Python/Node/Java sirven 12 casos cada uno desde `:8100`/`:8200`/`:8300`/`:8400`. 48 endpoints operativos detras de 4 hubs.**
+Los cinco stacks pueden correr en paralelo sin colisión de puertos. **PHP/Python/Node/Java/.NET sirven 12 casos cada uno desde `:8100`/`:8200`/`:8300`/`:8400`/`:8500`. 60 endpoints operativos detras de 5 hubs.**
+
+### Flujo de una request (de curl al caso)
+
+```mermaid
+flowchart LR
+    curl["curl<br/>GET :8X00/0N/...health"]
+    hub["Hub del stack<br/>(dispatcher)"]
+    sub["Subproceso del caso 0N<br/>:9N0X interno"]
+    app["app/ del caso<br/>logica legacy / optimized"]
+
+    curl --> hub
+    hub -->|routing por path /0N/| sub
+    sub --> app
+    app -->|JSON| sub
+    sub --> hub
+    hub --> curl
+```
 
 ### Casos aislados (modo estudio individual)
 
@@ -53,6 +71,18 @@ Cada caso conserva su propio `compose.yml` para reproducir UN problema en aislam
 | Caso 10 Java 21 | `docker compose -f cases/10-expensive-architecture-for-simple-needs/java/compose.yml up -d --build` |
 | Caso 11 Java 21 | `docker compose -f cases/11-heavy-reporting-blocks-operations/java/compose.yml up -d --build` |
 | Caso 12 Java 21 | `docker compose -f cases/12-single-point-of-knowledge-and-operational-risk/java/compose.yml up -d --build` |
+| Caso 01 .NET 8 | `docker compose -f cases/01-api-latency-under-load/dotnet/compose.yml up -d --build` |
+| Caso 02 .NET 8 | `docker compose -f cases/02-n-plus-one-and-db-bottlenecks/dotnet/compose.yml up -d --build` |
+| Caso 03 .NET 8 | `docker compose -f cases/03-poor-observability-and-useless-logs/dotnet/compose.yml up -d --build` |
+| Caso 04 .NET 8 | `docker compose -f cases/04-timeout-chain-and-retry-storms/dotnet/compose.yml up -d --build` |
+| Caso 05 .NET 8 | `docker compose -f cases/05-memory-pressure-and-resource-leaks/dotnet/compose.yml up -d --build` |
+| Caso 06 .NET 8 | `docker compose -f cases/06-broken-pipeline-and-fragile-delivery/dotnet/compose.yml up -d --build` |
+| Caso 07 .NET 8 | `docker compose -f cases/07-incremental-monolith-modernization/dotnet/compose.yml up -d --build` |
+| Caso 08 .NET 8 | `docker compose -f cases/08-critical-module-extraction-without-breaking-operations/dotnet/compose.yml up -d --build` |
+| Caso 09 .NET 8 | `docker compose -f cases/09-unstable-external-integration/dotnet/compose.yml up -d --build` |
+| Caso 10 .NET 8 | `docker compose -f cases/10-expensive-architecture-for-simple-needs/dotnet/compose.yml up -d --build` |
+| Caso 11 .NET 8 | `docker compose -f cases/11-heavy-reporting-blocks-operations/dotnet/compose.yml up -d --build` |
+| Caso 12 .NET 8 | `docker compose -f cases/12-single-point-of-knowledge-and-operational-risk/dotnet/compose.yml up -d --build` |
 
 ## ▶️ Arranque recomendado
 
@@ -102,6 +132,15 @@ Cada caso conserva su propio `compose.yml` para reproducir UN problema en aislam
 | Caso 02 Java | `http://localhost:8400/02/health` | Respuesta saludable |
 | Casos 03–12 Java | `http://localhost:8400/03/health` … `http://localhost:8400/12/health` | Respuesta saludable |
 
+### .NET 8 (compose.dotnet.yml)
+
+| Componente | URL | Senal esperada |
+| --- | --- | --- |
+| .NET hub — índice | `http://localhost:8500/` | Lista de los 12 casos JSON |
+| Caso 01 .NET | `http://localhost:8500/01/health` | Respuesta saludable |
+| Caso 02 .NET | `http://localhost:8500/02/health` | Respuesta saludable |
+| Casos 03–12 .NET | `http://localhost:8500/03/health` … `http://localhost:8500/12/health` | Respuesta saludable |
+
 ### Casos aislados (modo estudio — solo cuando el aislamiento aporta)
 
 | Componente | URL | Cuando usarlo |
@@ -109,7 +148,9 @@ Cada caso conserva su propio `compose.yml` para reproducir UN problema en aislam
 | Caso 05 Node.js aislado | `http://localhost:825/health` | Medir `process.memoryUsage()` heap V8 sin contaminacion de otros workloads |
 | Caso 11 Node.js aislado | `http://localhost:8211/health` | Medir `event_loop_lag_ms` sin requests concurrentes diluyendo la senal |
 | Caso 05 Java aislado | `http://localhost:845/health` | Medir `Runtime.totalMemory()` y eviccion del `LinkedHashMap` LRU sin contaminacion |
-| Otros casos aislados | `http://localhost:821-829`, `8210-8212` (Node) · `841-849`, `8410-8412` (Java) | Disponibles, pero los hubs (`8100`/`8200`/`8300`/`8400`) ya los aislan por path |
+| Caso 05 .NET aislado | `http://localhost:855/health` | Medir `Process.WorkingSet64` y eviccion del LRU `Dictionary+LinkedList` sin contaminacion |
+| Caso 11 .NET aislado | `http://localhost:8511/health` | Medir `ThreadPool.GetAvailableWorkerThreads` sin requests concurrentes diluyendo la senal |
+| Otros casos aislados | `http://localhost:821-829`, `8210-8212` (Node) · `841-849`, `8410-8412` (Java) · `851-859`, `8510-8512` (.NET) | Disponibles, pero los hubs (`8100`/`8200`/`8300`/`8400`/`8500`) ya los aislan por path |
 
 ## 🧰 Comandos utiles de operacion
 
@@ -132,6 +173,10 @@ docker compose -f compose.nodejs.yml logs --tail=100
 # Ver estado del stack Java
 docker compose -f compose.java.yml ps
 docker compose -f compose.java.yml logs --tail=100
+
+# Ver estado del stack .NET
+docker compose -f compose.dotnet.yml ps
+docker compose -f compose.dotnet.yml logs --tail=100
 
 # Portal
 docker compose -f compose.portal.yml ps
@@ -169,6 +214,9 @@ docker compose -f compose.nodejs.yml down
 
 # Bajar stack completo Java
 docker compose -f compose.java.yml down
+
+# Bajar stack completo .NET
+docker compose -f compose.dotnet.yml down
 
 # Bajar portal
 docker compose -f compose.portal.yml down

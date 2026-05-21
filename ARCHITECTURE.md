@@ -1,38 +1,66 @@
 # 🏗️ ARCHITECTURE
 
-> Arquitectura actual del sistema y del repositorio, con foco en la version que hoy vive en `main`.
+> Arquitectura actual del sistema y del repositorio, con foco en la versión que hoy vive en `main`.
 
 ## 🎯 Resumen ejecutivo
 
 El laboratorio se organiza hoy como un sistema de cuatro capas:
 
-1. una capa editorial y operativa en la raiz;
-2. un portal local ligero para evaluacion guiada, mas entradas completas por lenguaje (PHP, Python, Node.js, Java 21 y .NET 8 operativos, cada uno con su propio compose raiz);
-3. un catalogo maestro en metadatos compartidos;
+1. una capa editorial y operativa en la raíz;
+2. un portal local ligero para evaluación guiada, más entradas completas por lenguaje (PHP, Python, Node.js, Java 21 y .NET 8 operativos, cada uno con su propio compose raíz);
+3. un catálogo maestro en metadatos compartidos;
 4. casos problem-driven con stacks aislados por Docker.
 
-La fuente de verdad ya no esta repartida entre varios archivos manuales: [`shared/catalog/cases.json`](shared/catalog/cases.json) concentra narrativa de producto, documentos, audiencias, stacks y casos operativos.
+La fuente de verdad ya no está repartida entre varios archivos manuales: [`shared/catalog/cases.json`](shared/catalog/cases.json) concentra narrativa de producto, documentos, audiencias, stacks y casos operativos.
 
-## 🧭 Topologia actual
+**Estado a la fecha:** 5 stacks operativos × 12 casos = **60 endpoints** detrás de 5 hubs simétricos.
 
+---
+
+## 🗺️ Topología del lab (vista global)
+
+```mermaid
+graph TB
+    subgraph HOST[Host puertos expuestos]
+        P8080[":8080 portal"]
+        P8100[":8100 PHP hub"]
+        P8200[":8200 Python hub"]
+        P8300[":8300 Node hub"]
+        P8400[":8400 Java hub"]
+        P8500[":8500 .NET hub"]
+        P9091[":9091 Prometheus"]
+        P3001[":3001 Grafana"]
+    end
+
+    P8080 --> PORTAL[portal-php8 Apache]
+    P8100 --> PHP[pdsl-php-lab dispatcher]
+    P8200 --> PY[pdsl-python-lab dispatcher]
+    P8300 --> NODE[pdsl-node-lab dispatcher]
+    P8400 --> JAVA[pdsl-java-lab dispatcher]
+    P8500 --> NET[pdsl-dotnet-lab dispatcher]
+
+    PHP --> PG1[(case01-db PostgreSQL)]
+    PHP --> PG2[(case02-db PostgreSQL)]
+    PHP --> WORKER[case01-worker]
+    PHP --> EXPORTER[postgres-exporter]
+
+    P9091 --> PROM[Prometheus TSDB]
+    PROM -.scrape.-> EXPORTER
+    PROM -.scrape.-> PHP
+    P3001 --> GRAF[Grafana 11]
+    GRAF --> PROM
+
+    PORTAL -.catalog.-> CATALOG[shared/catalog/cases.json]
+    PORTAL -.probe.-> PHP
+    PORTAL -.probe.-> PY
+    PORTAL -.probe.-> NODE
+    PORTAL -.probe.-> JAVA
+    PORTAL -.probe.-> NET
 ```
-shared/catalog/cases.json ──────────────────────────────────────────────────┐
-  │                                                                          │
-  ├──▶ portal/app/catalog.php  ──▶ portal/app/index.html (UI)               │
-  │       └──▶ portal/app/probe.php (health checks en vivo)                 │
-  │                                                                          │
-  └──▶ scripts/generate_case_catalog.php ──▶ docs/case-catalog.md           │
-                                                                             │
-README.md + docs raiz                                                        │
-  ├──▶ Portal local (index.html + catalog.php + probe.php)  ◀───────────────┘
-  └──▶ cases/01 … cases/12
-         ├──▶ <stack>/compose.yml     (stack aislado)
-         └──▶ compose.compare.yml     (comparacion entre stacks)
 
-scripts/validate-structure.sh ──▶ .github/workflows/ci.yml
-  ▲                                        ▲
-  └── compose config checks ───────────────┘
-```
+**Lectura clave:** 8 puertos cubren todo el laboratorio. 5 son hubs de lenguaje (uno por stack), 1 es el portal, 2 son observabilidad PHP-only. Los servicios reales del caso 01 PHP (PostgreSQL × 2, worker, exporter, Prometheus, Grafana) son contenedores aparte porque **no son procesos del lenguaje** — son los servicios que el caso estudia.
+
+---
 
 ## 🧱 Capas del sistema
 
@@ -40,9 +68,12 @@ scripts/validate-structure.sh ──▶ .github/workflows/ci.yml
 
 - `README.md`, `RECRUITER.md`, `INSTALL.md`, `RUNBOOK.md`, `SECURITY.md`, `SUPPORT.md`, `CONTRIBUTING.md`, `CHANGELOG.md`
 - `ARCHITECTURE.md` como vista ejecutiva del sistema actual
+- `AWS_MIGRATION.md` como plan de despliegue cloud
 - `ROADMAP.md` y `docs/` como mapa de crecimiento y detalle
 
-### 2. Catalogo maestro
+**Por qué importa:** la documentación no es decorativa — separa rutas por audiencia (recruiter, CTO, developer, security) para que cada lector pueda evaluar el repo en <10 minutos sin tener que leerlo todo.
+
+### 2. Catálogo maestro
 
 `shared/catalog/cases.json` ya concentra:
 
@@ -50,239 +81,346 @@ scripts/validate-structure.sh ──▶ .github/workflows/ci.yml
 - `About` y `Topics` recomendados para GitHub;
 - documentos y rutas por audiencia;
 - metadatos de lenguaje;
-- catalogo de casos, impacto de negocio y evidencia esperada;
+- catálogo de casos, impacto de negocio y evidencia esperada;
 - runtime entries para los stacks operativos.
 
-Esto elimina la duplicacion manual que antes existia entre el portal, la documentacion y los links operativos.
+**Por qué importa:** elimina la duplicación manual que antes existía entre el portal, la documentación generada y los links operativos. El portal renderiza desde acá; `scripts/generate_case_catalog.php` genera `docs/case-catalog.md` desde acá; la CI valida que estén sincronizados.
 
 ### 3. Portal local y stacks por lenguaje
 
-Cada lenguaje operativo tiene su compose raiz — un comando levanta los 12 casos de ese lenguaje:
+Cada lenguaje operativo tiene su compose raíz — un comando levanta los 12 casos de ese lenguaje:
 
-- `compose.root.yml` — PHP: portal (`8080`) + hub nginx (`8100`) + PostgreSQL (01–02) + Prometheus (`9091`) + Grafana (`3001`)
-- `compose.python.yml` — Python: 12 casos en un solo contenedor dispatcher (`8200`), stdlib pura, sin dependencias externas
-- `compose.nodejs.yml` — Node.js 20: 12 casos en un solo contenedor dispatcher (`8300`), stdlib pura, sin dependencias externas
-- `compose.java.yml` — Java 21: 12 casos en un solo contenedor dispatcher (`8400`), JDK built-in (`HttpServer`, `HttpClient`), sin Maven
-- `compose.dotnet.yml` — .NET 8: 12 casos en un solo contenedor dispatcher (`8500`), BCL built-in (`HttpListener`, `System.Text.Json`), sin paquetes externos
-- `compose.portal.yml` — portal liviano solamente (`8080`)
+| Archivo | Lenguaje | Puerto hub | Observaciones |
+|---|---|---|---|
+| `compose.root.yml` | PHP 8.3 | `:8100` | + portal `:8080`, Prometheus `:9091`, Grafana `:3001`, RDS × 2 internos |
+| `compose.python.yml` | Python 3.12 | `:8200` | 12 casos en un solo contenedor dispatcher, stdlib pura |
+| `compose.nodejs.yml` | Node.js 20 | `:8300` | 12 casos en un solo contenedor, stdlib pura |
+| `compose.java.yml` | Java 21 | `:8400` | 12 casos en un solo contenedor, JDK built-in (`HttpServer`, `HttpClient`) |
+| `compose.dotnet.yml` | .NET 8 | `:8500` | 12 casos en un solo contenedor, BCL built-in (`HttpListener`, `System.Text.Json`) |
+| `compose.portal.yml` | — | `:8080` | portal liviano solamente |
 
 Los cinco stacks pueden correr en paralelo sin colisión de puertos — comparten el mismo patrón hub.
 
-El portal:
-- `portal/app/index.html` presenta la interfaz principal
-- `portal/app/catalog.php` transforma el catalogo compartido en payload para la UI
-- `portal/app/probe.php` verifica health checks reales y devuelve status code, latencia y timestamp
-- `portal/app/index.php` mantiene compatibilidad por redireccion
+**Por qué importa:** un solo `docker compose up` por stack es la promesa de reproducibilidad. Cualquier evaluador puede levantar uno o los cinco en simultáneo en su laptop.
 
-### 4. Casos, Stacks e Interfaces de Usuario
+### 4. Casos, stacks e interfaces de usuario
 
-Cada carpeta en `cases/` representa un problema real. La unidad principal del repositorio no es el lenguaje, sino el problema.
+Cada carpeta en `cases/` representa un problema real. **La unidad principal del repositorio no es el lenguaje, sino el problema.**
 
-Cada caso contiene carpetas `php`, `node`, `python`, `java` y `dotnet`, con Docker aislado. La paridad funcional depende del estado real del caso.
+Cada caso contiene subcarpetas `php`, `python`, `node`, `java`, `dotnet` con Docker aislado y `comparison.md` explicando cómo cada stack resuelve el mismo problema con primitivas idiomáticas distintas.
 
 **Interfaz Visual Inyectada (Native UI):**
-Los 12 casos operativos en PHP poseen un mecanismo de detección de clientes (`Accept: text/html`). Si el endpoint se accede desde un navegador, **se inyecta una UI nativa construida en Vanilla JS/CSS (`ui.php`)** que actúa de dashboard visual, sin requerir pesados frameworks de Node.js o infraestructura extra.
+Los 12 casos operativos en PHP detectan `Accept: text/html` y devuelven un **dashboard nativo construido en Vanilla JS/CSS** (`ui.php`), sin frameworks. Esto permite que recruiters y líderes *vean* el problema sin tener que hacer `curl`.
 
-**Alta Fidelidad Técnica (Fail-by-Design):**
-El laboratorio ha evolucionado de simulaciones matemáticas a **escenarios de fallo operativo reales**. El motor PHP ahora implementa bloqueos físicos de disco (`flock`), saturación de CPU por serialización recursiva, desbordamiento de buffers de memoria y jerarquías de excepciones nativas (`Throwable`). Esto permite que el repositorio no solo cuente una historia, sino que actúe como una prueba de estrés real sobre el runtime corporativo de PHP.
+**Alta fidelidad técnica (Fail-by-Design):**
+El laboratorio implementa fallos reales — bloqueos de disco con `flock`, saturación de CPU por serialización recursiva, presión real de memoria con LRU/`Process.WorkingSet64`, jerarquías de excepciones nativas — no simulaciones matemáticas.
 
-## 📦 Casos operativos actuales
+---
 
-| Caso | PHP | Python | Node.js | Java | .NET | Implementacion PHP (referencia) |
-| --- | --- | --- | --- | --- | --- | --- |
-| `01` | ✅ | ✅ | ✅ | ✅ | ✅ | PostgreSQL + worker + Prometheus + Grafana |
-| `02` | ✅ | ✅ | ✅ | ✅ | ✅ | PostgreSQL (PHP) + SQLite real en los otros 4 (`sqlite3` stdlib Python, `node:sqlite` built-in Node, `sqlite-jdbc` Java, `Microsoft.Data.Sqlite` .NET) |
-| `03` | ✅ | ✅ | ✅ | ✅ | ✅ | telemetria, trazabilidad y logs estructurados |
-| `04` | ✅ | ✅ | ✅ | ✅ | ✅ | timeout corto, retry storm, circuit breaker y fallback |
-| `05` | ✅ | ✅ | ✅ | ✅ | ✅ | presion progresiva de memoria, comparacion legacy vs optimized |
-| `06` | ✅ | ✅ | ✅ | ✅ | ✅ | pipeline legacy vs controlled, preflight y rollback |
-| `07` | ✅ | ✅ | ✅ | ✅ | ✅ | modernizacion incremental, strangler, progreso por consumidor |
-| `08` | ✅ | ✅ | ✅ | ✅ | ✅ | extraccion big bang vs compatible, proxy y cutover gradual |
-| `09` | ✅ | ✅ | ✅ | ✅ | ✅ | integracion externa con adapter, idempotencia y validacion de contrato |
-| `10` | ✅ | ✅ | ✅ | ✅ | ✅ | comparacion complex vs right-sized, costo y lead time visibles |
-| `11` | ✅ | ✅ | ✅ | ✅ | ✅ | reporting legacy vs aislado, presion observable sobre la operacion |
-| `12` | ✅ | ✅ | ✅ | ✅ | ✅ | runbooks, bus factor y continuidad operacional observable |
+## 🐳 Modelo de containerización (simétrico para los 5 stacks)
 
-**✅ OPERATIVO** = logica real, Docker funcional, evidencia observable.
-**scaffold** = estructura y documentacion lista, sin implementacion funcional todavia.
+Los cinco hubs siguen el **mismo patrón**: un contenedor por lenguaje ejecuta sus 12 casos como subprocesos internos en puertos no expuestos.
 
-Cada caso incluye ademas un `comparison.md` que explica en profundidad como PHP, Python, Node.js, Java y .NET abordan el mismo problema de forma distinta a nivel de lenguaje.
+```mermaid
+graph TB
+    subgraph PHP_HUB[pdsl-php-lab puerto 8100 expuesto]
+        DPHP[dispatcher PHP]
+        DPHP --> SP1["php -S :9001 case01"]
+        DPHP --> SP2["php -S :9002 case02"]
+        DPHP --> SPDOTS["..."]
+        DPHP --> SP12["php -S :9012 case12"]
+    end
 
-### 🧱 Modelo de containerizacion (simetrico para los 5 stacks operativos)
+    subgraph PY_HUB[pdsl-python-lab puerto 8200 expuesto]
+        DPY[dispatcher Python]
+        DPY --> PYS1["subprocess :9001 case01"]
+        DPY --> PYS2["subprocess :9002 case02"]
+        DPY --> PYSDOTS["..."]
+        DPY --> PYS12["subprocess :9012 case12"]
+    end
 
-Los cinco hubs (`compose.root.yml` PHP, `compose.python.yml` Python, `compose.nodejs.yml` Node.js, `compose.java.yml` Java, `compose.dotnet.yml` .NET) siguen el **mismo patrón**: un contenedor por lenguaje ejecuta sus 12 casos como subprocesos internos.
+    subgraph NODE_HUB[pdsl-node-lab puerto 8300 expuesto]
+        DNODE[dispatcher Node]
+        DNODE --> NS1["spawn :9101 case01 quirk Windows"]
+        DNODE --> NS2["spawn :9002 case02"]
+        DNODE --> NSDOTS["..."]
+        DNODE --> NS12["spawn :9012 case12"]
+    end
 
-- **PHP** → `pdsl-php-lab` con dispatcher en `:8100` y 12 procesos `php -S` en `:9001-:9012` internos. Suma ~6 contenedores extras (PostgreSQL × 2, worker, Prometheus, Grafana, exporter) **porque son servicios reales que el caso 01 estudia**, no procesos PHP. Total ~7 contenedores.
-- **Python** → `pdsl-python-lab` con dispatcher en `:8200` y 12 subprocesos `subprocess.Popen` internos. 1 contenedor.
-- **Node.js** → `pdsl-node-lab` con dispatcher en `:8300` y 12 subprocesos `child_process.spawn` internos. 1 contenedor.
-- **Java** → `pdsl-java-lab` con dispatcher en `:8400` y 12 subprocesos `ProcessBuilder` (`java Main`) internos en `:9401-:9412`. Compilacion `javac` en build-time. 1 contenedor.
-- **.NET** → `pdsl-dotnet-lab` con dispatcher en `:8500` y 12 subprocesos `dotnet` internos en `:9501-:9512`. Compilacion `dotnet build` en build-time. 1 contenedor.
+    subgraph JAVA_HUB[pdsl-java-lab puerto 8400 expuesto]
+        DJAVA[dispatcher Java]
+        DJAVA --> JS1["ProcessBuilder :9401 case01"]
+        DJAVA --> JSDOTS["..."]
+        DJAVA --> JS12["ProcessBuilder :9412 case12"]
+    end
 
-#### 🗺️ Diagrama A — Los 4 hubs y sus subprocesos internos
-
-```text
-                       ┌───────────────── host (puertos expuestos) ─────────────────┐
-                       │                                                            │
-                       │   :8080      :8100      :8200      :8300      :8400        │
-                       │   portal     PHP hub    Py hub     Node hub   Java hub     │
-                       │     │          │          │          │          │          │
-                       └─────┼──────────┼──────────┼──────────┼──────────┼──────────┘
-                             │          │          │          │          │
-                  ┌──────────┴──────┐   │          │          │          │
-                  ▼                 │   ▼          ▼          ▼          ▼
-            ┌──────────────┐        │ ┌──────────────────────────────────────┐
-            │  portal-php8 │        │ │ pdsl-php-lab (php-dispatcher)        │
-            │  (Apache)    │        │ │  ├─ php -S :9001  case 01 worker     │
-            └──────────────┘        │ │  ├─ php -S :9002  case 02            │
-                                    │ │  ├─ ...                              │
-                                    │ │  └─ php -S :9012  case 12            │
-                                    │ └──────────────────────────────────────┘
-                                    │
-                                    │  servicios reales del caso 01 (no PHP):
-                                    └─▶ case01-db (PostgreSQL)  case01-worker
-                                        case02-db (PostgreSQL)  prometheus
-                                        postgres-exporter       grafana
-
-                                      ┌──────────────────────────────────────┐
-                                      │ pdsl-python-lab (python-dispatcher)  │
-                                      │  ├─ subprocess.Popen :9001  case 01  │
-                                      │  ├─ ...                              │
-                                      │  └─ subprocess.Popen :9012  case 12  │
-                                      └──────────────────────────────────────┘
-                                      ┌──────────────────────────────────────┐
-                                      │ pdsl-node-lab (node-dispatcher)      │
-                                      │  ├─ child_process.spawn :9101 case01 │
-                                      │  ├─ ... :9002-:9012                  │
-                                      │  └─ caso 01 en :9101 (Windows quirk) │
-                                      └──────────────────────────────────────┘
-                                      ┌──────────────────────────────────────┐
-                                      │ pdsl-java-lab (java-dispatcher)      │
-                                      │  ├─ ProcessBuilder :9401  case 01    │
-                                      │  ├─ ...                              │
-                                      │  └─ ProcessBuilder :9412  case 12    │
-                                      └──────────────────────────────────────┘
-
-  Patron simetrico: 1 contenedor por lenguaje × 12 subprocesos internos en
-  puertos NO expuestos. Solo los 5 puertos del top quedan visibles al host.
+    subgraph NET_HUB[pdsl-dotnet-lab puerto 8500 expuesto]
+        DNET[dispatcher .NET]
+        DNET --> NTS1["dotnet :9501 case01"]
+        DNET --> NTSDOTS["..."]
+        DNET --> NTS12["dotnet :9512 case12"]
+    end
 ```
 
-#### 🗺️ Diagrama B — Request lifecycle: cliente → hub → caso
+### Conteo de contenedores por stack
 
-```text
-   cliente (curl / browser)
-        │
-        │  GET http://localhost:8400/04/quote-resilient?fail=on
-        ▼
-   :8400 (puerto host)
-        │  Docker port mapping → contenedor pdsl-java-lab
-        ▼
-   ┌─────────────────────────────────────┐
-   │  java-dispatcher (Dispatcher.java)   │
-   │                                      │
-   │  1. parse path: /04/quote-resilient  │
-   │  2. extract caseId = "04"            │
-   │  3. lookup CASES.get("04")           │
-   │     → CaseInfo(port=9404, ...)       │
-   │  4. forward via HttpClient a         │
-   │     http://127.0.0.1:9404/quote-…    │
-   └─────────────┬───────────────────────┘
-                 │  loopback interno (no expuesto al host)
-                 ▼
-   ┌─────────────────────────────────────┐
-   │  case04 server (java Main)           │
-   │  HttpServer JDK escuchando :9404     │
-   │                                      │
-   │  handler: /quote-resilient           │
-   │  ├─ chequea breaker (AtomicRef)      │
-   │  ├─ CompletableFuture.orTimeout      │
-   │  └─ devuelve JSON                    │
-   └─────────────┬───────────────────────┘
-                 │
-                 ▼
-   dispatcher copia headers + body de respuesta
-        │
-        ▼
-   cliente recibe response
+| Stack | Contenedores | Detalle |
+|---|---|---|
+| PHP | **~7** | 1 dispatcher con 12 subprocesos + 2 PostgreSQL + worker + exporter + Prometheus + Grafana. Los 6 extras son **servicios reales del caso 01**, no procesos PHP. |
+| Python | **1** | dispatcher con 12 subprocesos `subprocess.Popen` internos |
+| Node | **1** | dispatcher con 12 subprocesos `child_process.spawn` internos |
+| Java | **1** | dispatcher con 12 `ProcessBuilder` (`java Main`) internos |
+| .NET | **1** | dispatcher con 12 subprocesos `dotnet` internos |
 
-  Mismo patron en los 4 hubs. Los subprocesos de caso son aislados:
-  un memory leak en case05 NO afecta a case04, pero comparten el contenedor
-  del lenguaje (failure domain por hub, no por caso).
-```
-
-#### 🗺️ Diagrama C — Validation pipeline: cases.json → CI
-
-```text
-       shared/catalog/cases.json  (fuente de verdad)
-                │
-                ├─────────────────────────────────────────────────────────┐
-                ▼                                                          │
-   ┌──────────────────────────┐         ┌──────────────────────────────┐  │
-   │ portal/app/catalog.php   │         │ scripts/                     │  │
-   │  → JSON al index.html    │         │ generate_case_catalog.php    │  │
-   │ portal/app/probe.php     │         │  → docs/case-catalog.md      │  │
-   │  → health en vivo        │         └──────────────────────────────┘  │
-   └──────────────────────────┘                                            │
-                                                                           │
-                              scripts/validate-structure.sh                │
-                                            │                              │
-                                            ├──── chequea estructura ──────┘
-                                            │     (carpetas, archivos
-                                            │      requeridos, etc.)
-                                            │
-                                            └──── chequea catalogo sync
-                                                  (--check flag)
-                                            ▲
-                                            │
-                          .github/workflows/ci.yml
-                            ├── structure       (validate-structure)
-                            ├── compose-config  (40+ archivos)
-                            ├── compose-smoke   (PHP per-case)
-                            ├── portal-probe    (PHP hub via /01/health)
-                            └── hub-probe       (Python/Node/Java hubs)
-
-  Drift entre lo que dice el repo, lo que muestra el portal y lo que se
-  ejecuta queda bloqueado: CI no merge si cualquiera de los 3 se sale.
-```
+**Por qué la asimetría existe y por qué es honesta:** el caso 01 PHP estudia contención real de DB. Eso requiere una PostgreSQL real, un worker real que actualice cache en background, y observabilidad real (Prometheus + Grafana) para que el visitante pueda *ver* la contención disolviéndose. Los otros stacks tienen los mismos patrones de solución (worker + cache + readers no bloqueados) pero contra substrato simulado para caso 01 — esa asimetría está documentada explícitamente en cada `comparison.md` y en el [ROADMAP Eje 2](ROADMAP.md#fidelidad-universal-de-caso-01) como deuda.
 
 Refactor reciente: PHP pasó de ~20 contenedores (12 apps + nginx hub) a ~7 contenedores (1 dispatcher + servicios reales). RAM cae de ~2.5 GB a ~1 GB. **Trade-offs y rationale en [`docs/docker-strategy.md`](docs/docker-strategy.md#-modelo-de-containerización-simétrico-para-los-stacks-operativos).**
 
-## 🔁 Flujo de datos y sincronizacion
+---
 
-La sincronizacion actual se sostiene asi:
+## 🔁 Flujo de request: cliente → hub → caso
 
-1. Se edita [`shared/catalog/cases.json`](shared/catalog/cases.json).
-2. El portal consume esos metadatos para renderizar audiencias, documentos, lenguajes y casos operativos.
-3. [`scripts/generate_case_catalog.php`](scripts/generate_case_catalog.php) genera [`docs/case-catalog.md`](docs/case-catalog.md).
-4. [`scripts/validate-structure.sh`](scripts/validate-structure.sh) y la CI validan que el catalogo siga alineado.
+```mermaid
+sequenceDiagram
+    participant C as Cliente curl/browser
+    participant D as Docker port mapping
+    participant H as Dispatcher hub
+    participant S as Subprocess case 0X
+    participant DB as DB / state
 
-Con esto se reduce mucho el riesgo de drift entre lo que el repo dice, lo que muestra el portal y lo que realmente se puede ejecutar.
+    C->>D: GET http://localhost:8400/04/quote-resilient?fail=on
+    D->>H: forward a contenedor pdsl-java-lab :8400
+    H->>H: parse path → caseId=04
+    H->>H: lookup CASES.get("04") → port=9404
+    H->>S: HttpClient.send a 127.0.0.1:9404/quote-resilient
+    S->>S: chequea breaker (AtomicReference CAS)
+    S->>S: CompletableFuture.orTimeout(800ms)
+    alt OK
+        S->>DB: query / state read
+        DB-->>S: data
+        S-->>H: JSON response + métricas
+    else timeout
+        S-->>H: fallback response + breaker open
+    end
+    H-->>D: copy headers + body
+    D-->>C: response
+```
 
-## 🐳 Modelo Docker
+**Lectura clave:** los subprocesos de caso son aislados (un memory leak en `case05` no afecta a `case04`), pero **comparten el contenedor del lenguaje** — el failure domain es por hub, no por caso. Esto es trade-off consciente: optimiza RAM (1 GB vs 2.5 GB) a costa de aislamiento estricto. Si un caso necesita aislamiento extremo (caso 11 para medir event_loop_lag sin ruido), existe `cases/11/<stack>/compose.yml` per-case.
+
+---
+
+## 📦 Casos operativos actuales
+
+```mermaid
+graph LR
+    subgraph C01[01 API latency]
+        C01_PHP[PHP DB real]
+        C01_PY[Python SQLite stdlib]
+        C01_NODE[Node setTimeout sim]
+        C01_JAVA[Java sleepMicros sim]
+        C01_NET[.NET Task.Delay sim]
+    end
+
+    subgraph C02[02 N+1]
+        C02_PHP[PHP PostgreSQL]
+        C02_PY[Python SQLite stdlib]
+        C02_NODE[Node node:sqlite REAL]
+        C02_JAVA[Java sqlite-jdbc REAL]
+        C02_NET[.NET Microsoft.Data.Sqlite REAL]
+    end
+
+    subgraph C03_12[03-12 patrones idiomáticos]
+        OTHER[12 casos x 5 stacks operativos]
+    end
+```
+
+### Mapa de fidelidad por caso
+
+| Caso | PHP | Python | Node.js | Java | .NET | Estado |
+|---|---|---|---|---|---|---|
+| `01` API latency | DB real (PostgreSQL + worker) | DB real (SQLite stdlib + thread worker) | Simulado (`setTimeout`) | Simulado (`sleepMicros`) | Simulado (`Task.Delay`) | OPERATIVO con asimetría documentada |
+| `02` N+1 | DB real (PostgreSQL) | DB real (SQLite stdlib) | **DB real (`node:sqlite`)** | **DB real (`sqlite-jdbc`)** | **DB real (`Microsoft.Data.Sqlite`)** | OPERATIVO con fidelidad universal |
+| `03` Observabilidad | ✅ correlation_id PHP | ✅ Python | ✅ Node | ✅ `ThreadLocal<RequestContext>` | ✅ `AsyncLocal<RequestContext>` | OPERATIVO |
+| `04` Timeout chain | ✅ flock + breaker | ✅ asyncio | ✅ `AbortController` | ✅ `CompletableFuture.orTimeout` + `AtomicRef` CAS | ✅ `CancellationTokenSource` + `Interlocked.CompareExchange` | OPERATIVO |
+| `05` Memory pressure | ✅ flock retention | ✅ tracemalloc | ✅ heap V8 + RSS | ✅ `LinkedHashMap` LRU + Runtime metrics | ✅ LRU manual + `Process.WorkingSet64` | OPERATIVO |
+| `06` Pipeline roto | ✅ preflight + rollback | ✅ | ✅ | ✅ `record` types + state machine | ✅ `with`-expressions rollback | OPERATIVO |
+| `07` Strangler | ✅ | ✅ | ✅ `Map<consumer,handler>` | ✅ `ConcurrentHashMap` | ✅ `ConcurrentDictionary<string,Func>` | OPERATIVO |
+| `08` Extract & proxy | ✅ | ✅ | ✅ `Proxy` + `EventEmitter` | ✅ `Function` proxy + `CopyOnWriteArrayList` | ✅ `Func<Old,New>` + `ImmutableList<Action>` | OPERATIVO |
+| `09` Adapter + breaker | ✅ | ✅ | ✅ `AbortSignal.timeout` | ✅ `Semaphore` budget + breaker | ✅ `SemaphoreSlim` + `Interlocked` breaker | OPERATIVO |
+| `10` Right-sized | ✅ | ✅ | ✅ hops JSON | ✅ N hops `StringBuilder` vs `HashMap` | ✅ N hops `JsonSerializer` LOH vs `Dictionary` | OPERATIVO |
+| `11` Heavy reporting | ✅ | ✅ | ✅ `monitorEventLoopDelay` | ✅ `ThreadPoolExecutor.getActiveCount()` | ✅ `ConcurrentExclusiveSchedulerPair` | OPERATIVO |
+| `12` Bus factor | ✅ runbooks | ✅ | ✅ optional chaining `?.` | ✅ `Optional<T>` | ✅ `?.` + `??` con NRT | OPERATIVO |
+
+**Lectura clave:** el único caso con asimetría real entre los 5 stacks es el `01`. El caso `02` cerró ese gap recientemente con SQLite embebido. Del `03` al `12` son patrones puros — no requieren substrato externo, solo primitivas idiomáticas del lenguaje.
+
+**✅ OPERATIVO** = lógica real, Docker funcional, evidencia observable. Ver `comparison.md` por caso para profundidad.
+
+---
+
+## 🔁 Flujo de datos y sincronización del catálogo
+
+```mermaid
+graph TB
+    JSON[shared/catalog/cases.json fuente de verdad]
+    JSON --> CATALOG_PHP[portal/app/catalog.php]
+    JSON --> GEN[scripts/generate_case_catalog.php]
+
+    CATALOG_PHP --> INDEX[portal/app/index.html UI]
+    INDEX --> PROBE[portal/app/probe.php health en vivo]
+    PROBE -.HTTP.-> PHP_HUB[PHP hub :8100]
+    PROBE -.HTTP.-> PY_HUB[Python hub :8200]
+    PROBE -.HTTP.-> NODE_HUB[Node hub :8300]
+    PROBE -.HTTP.-> JAVA_HUB[Java hub :8400]
+    PROBE -.HTTP.-> NET_HUB[.NET hub :8500]
+
+    GEN --> CATMD[docs/case-catalog.md]
+
+    VAL[scripts/validate-structure.sh]
+    VAL --> JSON
+    VAL --> CATMD
+
+    CI[.github/workflows/ci.yml]
+    CI --> VAL
+    CI --> CONFIG[compose-config 40+ archivos]
+    CI --> SMOKE[compose-smoke per-case PHP]
+    CI --> HPROBE[hub-probe los 5 hubs en CI]
+```
+
+**Lectura clave:** drift entre lo que dice el repo, lo que muestra el portal y lo que se ejecuta queda bloqueado por CI. Si cualquiera de los tres se sale, no merge.
+
+---
+
+## 🎨 Decisiones de diseño (con su porqué)
+
+### 1. Problema-driven, no tecnología-driven
+
+**Decisión:** la unidad atómica del repo es el problema (`cases/01-api-latency-under-load/`), no el lenguaje.
+
+**Por qué:** los portfolios típicos organizan por "soy X developer". Este se organiza por "qué problemas sé diagnosticar y resolver". Demostrar que `ConcurrentHashMap` (Java), `ConcurrentDictionary` (.NET), `Map` (JS) y `dict` (Python) resuelven el mismo problema con primitivas distintas es más valioso que cualquier sintaxis pulida en un solo stack.
+
+### 2. Hubs simétricos por lenguaje
+
+**Decisión:** un compose raíz por lenguaje (`compose.<lang>.yml`) que levanta los 12 casos de ese lenguaje en un solo contenedor con subprocesos internos.
+
+**Por qué:** un solo comando = una sola superficie evaluable. Los 5 stacks pueden correr en paralelo sin colisión de puertos. Si querés evaluar solo Python, no levantes los otros 4. Trade-off consciente: failure domain por hub, no por caso — para casos que necesitan aislamiento estricto existe `cases/0X/<stack>/compose.yml`.
+
+### 3. Stdlib y BCL, no frameworks
+
+**Decisión:** los stacks no-PHP usan exclusivamente librería estándar — `HttpServer` JDK en Java, `HttpListener` BCL en .NET, `http.server` en Python, `node:http` en Node.
+
+**Por qué:** demuestra criterio sobre frameworks. La gracia del lab es que el lector senior **vea** la primitiva idiomática del runtime, no el azúcar sintáctico de un framework de moda. Además simplifica el Dockerfile a un orden de magnitud.
+
+### 4. Honestidad de fidelidad explícita
+
+**Decisión:** cada `comparison.md` con substrato no uniforme entre stacks tiene una sección "Fidelidad del substrato" al inicio. El `README.md` tiene una sección "Honestidad de fidelidad". El [ROADMAP](ROADMAP.md) tiene "Fidelidad universal de caso 01" como deuda explícita.
+
+**Por qué:** la industria entera de portfolios esconde lo incompleto. Este repo prefiere admitirlo. Un senior reviewer detecta los gaps en 30 segundos — vale más declararlos primero que ser pillado.
+
+### 5. Docker es la vía oficial
+
+**Decisión:** `docker compose up` es el método soportado. `make` existe como atajo pero no es la ruta primaria. No hay instrucciones de "instalar PHP 8.3 + Composer + ...".
+
+**Por qué:** reproducibilidad. Cualquier evaluador con Docker Desktop puede levantar el lab en <5 minutos sin tocar su sistema base. Los Dockerfiles son legibles y minimales.
+
+### 6. Portal con probes server-side
+
+**Decisión:** `portal/app/probe.php` ejecuta health checks server-side y devuelve `status code`, `latency_ms`, `last_checked` al cliente.
+
+**Por qué:** el portal no es un índice de docs muerto — es una **demo verificable en vivo**. Un recruiter abre `localhost:8080`, ve verde en los 12 casos del stack que eligió, y sabe que **el repo está vivo en este momento**.
+
+### 7. Catálogo único como fuente de verdad
+
+**Decisión:** `shared/catalog/cases.json` alimenta portal, docs generadas y validación. Editar la lista de casos en cualquier otro lado es un anti-pattern bloqueado por CI.
+
+**Por qué:** previene drift. Cuando agregás un caso, lo agregás en un solo lugar.
+
+---
+
+## 🧪 Trade-offs explícitos de la arquitectura
+
+Cada decisión arquitectónica tiene un costo. Estos son los trade-offs que el lab asume conscientemente:
+
+### Trade-off 1 — Failure domain por hub vs por caso
+
+**Decisión:** los 12 casos de un stack viven en el mismo contenedor (subprocesos del dispatcher).
+
+**Beneficio:** RAM cae de ~2.5 GB a ~1 GB; arranque del stack en <30s; un solo `docker compose up` por stack.
+
+**Costo:** un OOM en `case05` podría afectar a los otros 11 del mismo hub. **Mitigación:** los subprocesos tienen sus propios límites lógicos en el dispatcher; para casos que necesitan aislamiento estricto (caso 11 midiendo `event_loop_lag` sin ruido) existe `cases/11/<stack>/compose.yml` per-case.
+
+### Trade-off 2 — Stdlib pura vs frameworks
+
+**Decisión:** los 4 stacks no-PHP usan `HttpServer` JDK / `HttpListener` BCL / `node:http` / `http.server` — sin frameworks.
+
+**Beneficio:** Dockerfiles minimales, sin lock files, sin árbol de dependencias transitivas. El lector senior ve la primitiva del runtime directamente.
+
+**Costo:** las rutas no son tan ergonómicas como con Express/Spring/ASP.NET. No hay middleware chain automático, no hay validación declarativa, no hay JSON binding. **Justificación:** la gracia del lab es demostrar criterio sobre primitivas, no productividad framework-driven.
+
+### Trade-off 3 — PostgreSQL real solo en PHP para caso 01
+
+**Decisión:** PHP corre contra PostgreSQL en contenedor separado con worker dedicado. Python corre contra SQLite stdlib en thread. Node/Java/.NET simulan el substrato con `setTimeout`/`sleepMicros`/`Task.Delay`.
+
+**Beneficio:** PHP entrega evidencia visual completa (Prometheus + Grafana muestran la contención disolviéndose). Los otros 4 stacks aplican el mismo patrón de solución (worker + cache + readers no bloqueados) sin la complejidad de orquestar 5 DBs.
+
+**Costo:** asimetría de fidelidad. **Mitigación:** declarada en `comparison.md` de cada caso, en README raíz "Honestidad de fidelidad" y en [ROADMAP Eje 2](ROADMAP.md#fidelidad-universal-de-caso-01) como deuda con plan concreto.
+
+### Trade-off 4 — Catálogo único en JSON vs DSL propio
+
+**Decisión:** `shared/catalog/cases.json` es la fuente de verdad. Plain JSON, sin schema validator dedicado.
+
+**Beneficio:** edición humana directa, diff legible en git, parseable por cualquier lenguaje.
+
+**Costo:** errores tipográficos no son atrapados hasta CI. **Mitigación:** `scripts/validate-structure.sh` + `--check` del generador.
+
+### Trade-off 5 — Portal en PHP+Apache, no en SPA
+
+**Decisión:** portal renderizado server-side con PHP, sin React/Vue/Svelte.
+
+**Beneficio:** SEO trivial, sin build step, sin tooling JS adicional, mismo runtime que el stack PHP del lab.
+
+**Costo:** interactividad limitada a lo que vanilla JS puede hacer sin frameworks. **Justificación:** el portal no es una app, es un índice navegable con probes server-side.
+
+---
+
+## ✅ Validación y delivery
+
+La arquitectura actual queda sostenida por cinco mecanismos:
+
+| Mecanismo | Qué chequea |
+|---|---|
+| `scripts/validate-structure.sh` | Estructura del árbol, archivos requeridos, ausencia de artefactos |
+| `scripts/generate_case_catalog.php --check` | Catálogo sincronizado con `cases.json` |
+| CI `compose-config` | 40+ archivos `compose.yml` parsean sin errores |
+| CI `compose-smoke` (PHP per-case) | Cada caso PHP arranca y responde `/health` en aislamiento |
+| CI `hub-probe` (Python/Node/Java/.NET) | Cada hub arranca y responde `/01/health`…`/12/health` |
+
+---
+
+## 🐳 Modelo Docker (referencia rápida)
 
 | Pieza | Rol |
-| --- | --- |
-| `compose.root.yml` | PHP: portal (`8080`) + hub nginx (`8100`) + DB + Prometheus (`9091`) + Grafana (`3001`) |
-| `compose.python.yml` | Python: dispatcher único con 12 casos internos (`8200`), stdlib pura, sin dependencias externas |
-| `compose.portal.yml` | portal liviano solamente |
-| `cases/<caso>/<stack>/compose.yml` | escenario concreto y aislado (desarrollo o revision individual) |
-| `cases/<caso>/compose.compare.yml` | comparacion entre stacks del mismo caso |
+|---|---|
+| `compose.root.yml` | PHP: portal (`:8080`) + hub (`:8100`) + DB × 2 + worker + Prometheus (`:9091`) + Grafana (`:3001`) |
+| `compose.python.yml` | Python: dispatcher único con 12 casos internos (`:8200`) |
+| `compose.nodejs.yml` | Node: dispatcher único con 12 casos internos (`:8300`) |
+| `compose.java.yml` | Java 21: dispatcher único con 12 casos internos (`:8400`) |
+| `compose.dotnet.yml` | .NET 8: dispatcher único con 12 casos internos (`:8500`) |
+| `compose.portal.yml` | Portal liviano solamente (`:8080`) |
+| `cases/<caso>/<stack>/compose.yml` | Escenario concreto y aislado (estudio individual) |
+| `cases/<caso>/compose.compare.yml` | Comparación entre stacks del mismo caso |
 
-La familia PHP comparte un runtime comun en `docker/php/Dockerfile`. La familia Python usa `python:3.12-alpine` directamente. Cada lenguaje nuevo seguira el patron `compose.{lang}.yml` con su bloque de puertos propio en la raiz.
+**Regla de oro:** Docker aquí sirve para reproducibilidad y comparación, no para inflar complejidad.
 
-Regla de oro: Docker aqui sirve para reproducibilidad y comparacion, no para inflar complejidad.
-
-## ✅ Validacion y delivery
-
-La arquitectura actual queda sostenida por cuatro mecanismos:
-
-- validacion estructural del arbol y ausencia de artefactos versionados;
-- chequeo del catalogo generado desde metadatos;
-- validacion de `docker compose config` para portal y stacks operativos;
-- smoke boots y prueba del `probe.php` del portal en CI.
+---
 
 ## 📚 Documentos relacionados
 
 - [README.md](README.md)
+- [AWS_MIGRATION.md](AWS_MIGRATION.md)
+- [ROADMAP.md](ROADMAP.md)
+- [SECURITY.md](SECURITY.md)
 - [docs/architecture.md](docs/architecture.md)
 - [docs/docker-strategy.md](docs/docker-strategy.md)
 - [docs/case-catalog.md](docs/case-catalog.md)
+- [docs/executive-summary.md](docs/executive-summary.md)

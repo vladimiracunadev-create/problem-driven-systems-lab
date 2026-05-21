@@ -1,4 +1,4 @@
-# 🔁 Caso 02 — Node.js 20 + SQLite embebido (`node:sqlite`)
+# 🔁 Caso 02 — Node.js 22 + SQLite embebido (`node:sqlite`)
 
 > Implementacion operativa del caso 02 para estudiar N+1 y cuellos de botella relacionales con evidencia observable, manteniendo paridad funcional con la version PHP+Postgres y Python+SQLite — y ahora con **SQL real bajo el contraste** en Node tambien.
 
@@ -35,7 +35,7 @@ Este caso muestra el caso clasico donde el costo escala con `1 + N + sum(items_p
 
 ## 🧱 Servicio
 
-- `app` → API Node.js 20 con rutas legacy y optimized. SQLite embebido inicializado al startup con el dataset semilla.
+- `app` → API Node.js 22 con rutas legacy y optimized. SQLite embebido inicializado al startup con el dataset semilla.
 
 ## 🚀 Arranque
 

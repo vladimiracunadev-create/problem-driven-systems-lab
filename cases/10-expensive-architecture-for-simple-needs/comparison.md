@@ -91,7 +91,7 @@ Dos `.get()` anidados. Los `dict` de Python son hash tables — acceso O(1) gara
 
 ## Node.js: JSON.stringify/parse en bucle vs acceso O(1) directo
 
-**Runtime:** Node.js 20 single-thread. El overhead de la sobrearquitectura se materializa como CPU real sobre el event loop — y esa medicion es lo que hace al caso accionable en Node.
+**Runtime:** Node.js 22 single-thread. El overhead de la sobrearquitectura se materializa como CPU real sobre el event loop — y esa medicion es lo que hace al caso accionable en Node.
 
 **El fallo complex en Node:**
 ```javascript

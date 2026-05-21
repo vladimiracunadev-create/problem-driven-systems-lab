@@ -105,7 +105,7 @@ Una persona, módulo o procedimiento concentra tanto conocimiento que el sistema
 
 Misma lógica con `Optional`-like via try/except + diccionario de owners. Ver [`python/README.md`](python/README.md). Modo aislado: puerto `8312`. Hub: `http://localhost:8200/12/`.
 
-### Node.js 20
+### Node.js 22
 
 Optional chaining (`a?.b?.c ?? default`) como **runbook codificado en el lenguaje** — `distributed` evita el crash que sufre legacy con acceso ciego a estructuras anidadas. `share-knowledge` sube `coverage` y baja `mttr_min` de forma medible. Ver [`node/README.md`](node/README.md). Modo aislado: puerto `8212`. Hub: `http://localhost:8300/12/`.
 
@@ -139,7 +139,7 @@ Reduce **riesgo organizacional**, mejora continuidad y hace al producto más sos
 | --- | --- |
 | 🐘 PHP 8 | `OPERATIVO` (runbook checks + share-knowledge) |
 | 🐍 Python 3.12 | `OPERATIVO` (try/except + dict owners) |
-| 🟢 Node.js 20 | `OPERATIVO` (optional chaining `?.` como runbook codificado) |
+| 🟢 Node.js 22 | `OPERATIVO` (optional chaining `?.` como runbook codificado) |
 | ☕ Java 21 | `OPERATIVO` (`Optional<T>` + `map/flatMap/orElse` + `record` types) |
 | 🔵 .NET 8 | `OPERATIVO` (`?.` + `??` con Nullable Reference Types + `record` types) |
 
@@ -194,12 +194,12 @@ curl "http://localhost:8400/12/incident-distributed?scenario=owner_absent&runboo
 12-single-point-of-knowledge-and-operational-risk/
 ├── README.md                    ← este archivo
 ├── comparison.md                ← comparativa multi-stack
-├── compose.compare.yml          ← los 4 stacks juntos
+├── compose.compare.yml          ← los 5 stacks juntos
 ├── docs/                        ← análisis + postmortem
 ├── shared/                      ← assets compartidos
 ├── 🐘 php/                      ← `OPERATIVO` — runbook checks + share-knowledge
 ├── 🐍 python/                   ← `OPERATIVO` — try/except + dict owners
 ├── 🟢 node/                     ← `OPERATIVO` — optional chaining como runbook
 ├── ☕ java/                     ← `OPERATIVO` — Optional<T> + record types
-└── 🔵 dotnet/                   ← 🔧 estructura lista
+└── 🔵 dotnet/                   ← `OPERATIVO` — ?. + ?? con Nullable Reference Types + record types
 ```

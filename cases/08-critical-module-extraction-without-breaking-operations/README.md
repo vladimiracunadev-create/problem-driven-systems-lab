@@ -100,7 +100,7 @@ Se necesita **desacoplar una parte clave** del sistema, pero esa parte participa
 
 Función de adaptación + lista de listeners para eventos. Sin frameworks externos. Ver [`python/README.md`](python/README.md). Modo aislado: puerto `838`. Hub: `http://localhost:8200/08/`.
 
-### Node.js 20
+### Node.js 22
 
 `Proxy` nativo intercepta `computeFinalPrice` y traduce `cost_usd` → `price` en vuelo. `EventEmitter` (`cutoverBus`) publica cada avance del cutover a N subscribers. Ver [`node/README.md`](node/README.md). Modo aislado: puerto `828`. Hub: `http://localhost:8300/08/`.
 
@@ -134,7 +134,7 @@ Reduce **riesgo operacional** y habilita **evolución controlada** de piezas cr�
 | --- | --- |
 | 🐘 PHP 8 | `OPERATIVO` (proxy de traducción + registro de cutover) |
 | 🐍 Python 3.12 | `OPERATIVO` (función adapter + lista de listeners) |
-| 🟢 Node.js 20 | `OPERATIVO` (`Proxy` nativo + `EventEmitter` para eventos) |
+| 🟢 Node.js 22 | `OPERATIVO` (`Proxy` nativo + `EventEmitter` para eventos) |
 | ☕ Java 21 | `OPERATIVO` (`Function` proxy + `CopyOnWriteArrayList<Consumer>` event bus) |
 | 🔵 .NET 8 | `OPERATIVO` (`Func<Old,New>` proxy + `ImmutableList<Action<string>>` event bus) |
 
@@ -185,12 +185,12 @@ curl http://localhost:8400/08/flows
 08-critical-module-extraction-without-breaking-operations/
 ├── README.md                    ← este archivo
 ├── comparison.md                ← comparativa multi-stack
-├── compose.compare.yml          ← los 4 stacks juntos
+├── compose.compare.yml          ← los 5 stacks juntos
 ├── docs/                        ← análisis + postmortem
 ├── shared/                      ← assets compartidos
 ├── 🐘 php/                      ← `OPERATIVO` — proxy de traducción
 ├── 🐍 python/                   ← `OPERATIVO` — adapter + listeners
 ├── 🟢 node/                     ← `OPERATIVO` — Proxy nativo + EventEmitter
 ├── ☕ java/                     ← `OPERATIVO` — Function proxy + CopyOnWriteArrayList
-└── 🔵 dotnet/                   ← 🔧 estructura lista
+└── 🔵 dotnet/                   ← `OPERATIVO` — Func<Old,New> proxy + ImmutableList event bus
 ```

@@ -33,9 +33,51 @@ Cada lenguaje tiene su propio archivo compose en la raíz. Un solo comando levan
 | --- | --- | --- | --- |
 | [`compose.root.yml`](compose.root.yml) | PHP 8.3 | `8080` portal · `8100` PHP hub · `9091` Prometheus · `3001` Grafana | `OPERATIVO` |
 | [`compose.python.yml`](compose.python.yml) | Python 3.12 | `8200` Python hub | `OPERATIVO` |
-| [`compose.nodejs.yml`](compose.nodejs.yml) | Node.js 20 | `8300` Node hub | `OPERATIVO` |
+| [`compose.nodejs.yml`](compose.nodejs.yml) | Node.js 22 | `8300` Node hub | `OPERATIVO` |
 | [`compose.java.yml`](compose.java.yml) | Java 21 | `8400` Java hub | `OPERATIVO` |
 | [`compose.dotnet.yml`](compose.dotnet.yml) | .NET 8 | `8500` .NET hub | `OPERATIVO` |
+
+### Topologia de puertos (que levanta cada compose)
+
+```mermaid
+flowchart LR
+    portal["Portal :8080"]
+    php["PHP hub :8100"]
+    py["Python hub :8200"]
+    node["Node hub :8300"]
+    java["Java hub :8400"]
+    net[".NET hub :8500"]
+    prom["Prometheus :9091"]
+    graf["Grafana :3001"]
+
+    subgraph root["compose.root.yml"]
+        portal
+        php
+        prom
+        graf
+    end
+
+    subgraph py_compose["compose.python.yml"]
+        py
+    end
+
+    subgraph node_compose["compose.nodejs.yml"]
+        node
+    end
+
+    subgraph java_compose["compose.java.yml"]
+        java
+    end
+
+    subgraph net_compose["compose.dotnet.yml"]
+        net
+    end
+
+    php -.->|scrape| prom
+    prom --> graf
+```
+
+8 puertos cubren el lab entero: 5 hubs + portal + Prometheus + Grafana.
 
 ## 🐘 Laboratorio PHP completo
 

@@ -1,4 +1,4 @@
-# 🧠 Caso 05 — Node.js 20 + V8 heap medido
+# 🧠 Caso 05 — Node.js 22 + V8 heap medido
 
 > Implementacion operativa del caso 05 para estudiar presion de memoria y fugas de recursos con evidencia observable, manteniendo paridad funcional con la version Python y aprovechando la primitiva propia del runtime: `process.memoryUsage()` para heap V8 + RSS reales.
 
@@ -27,7 +27,7 @@ El sintoma clasico: el servicio funciona bien al deploy, degrada gradualmente, y
 
 ## 🧱 Servicio
 
-- `app` → API Node.js 20 con politicas legacy/optimized, batch real con `crypto.randomBytes`, telemetria persistida en `tmp/`.
+- `app` → API Node.js 22 con politicas legacy/optimized, batch real con `crypto.randomBytes`, telemetria persistida en `tmp/`.
 
 ## 🚀 Arranque
 

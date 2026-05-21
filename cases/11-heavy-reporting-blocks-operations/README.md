@@ -99,7 +99,7 @@ Consultas y procesos de **reporting compiten con la operación transaccional** y
 
 Mismo contraste con threading. Ver [`python/README.md`](python/README.md). Modo aislado: puerto `8311`. Hub: `http://localhost:8200/11/`.
 
-### Node.js 20
+### Node.js 22
 
 `monitorEventLoopDelay()` (perf_hooks) mide lag real del event loop. `report-legacy` ejecuta CPU sincrónico que castiga el loop entero (visible en `event_loop_lag_ms_p99`); `report-isolated` cede control con `setImmediate` para que el loop respire. Ver [`node/README.md`](node/README.md). Modo aislado: puerto `8211`. Hub: `http://localhost:8300/11/`.
 
@@ -133,7 +133,7 @@ Mismo contraste con threading. Ver [`python/README.md`](python/README.md). Modo 
 | --- | --- |
 | 🐘 PHP 8 | `OPERATIVO` (locks vs cola/replica) |
 | 🐍 Python 3.12 | `OPERATIVO` (threading + métricas locales) |
-| 🟢 Node.js 20 | `OPERATIVO` (`monitorEventLoopDelay()` + `setImmediate` para ceder) |
+| 🟢 Node.js 22 | `OPERATIVO` (`monitorEventLoopDelay()` + `setImmediate` para ceder) |
 | ☕ Java 21 | `OPERATIVO` (`ThreadPoolExecutor` saturation observable + `ExecutorService` dedicado) |
 | 🔵 .NET 8 | `OPERATIVO` (`ConcurrentExclusiveSchedulerPair` + `ThreadPool.GetAvailableWorkerThreads`) |
 
@@ -193,12 +193,12 @@ curl http://localhost:8400/11/activity       # main_pool_active bajo
 11-heavy-reporting-blocks-operations/
 ├── README.md                    ← este archivo
 ├── comparison.md                ← comparativa multi-stack
-├── compose.compare.yml          ← los 4 stacks juntos
+├── compose.compare.yml          ← los 5 stacks juntos
 ├── docs/                        ← análisis + postmortem
 ├── shared/                      ← assets compartidos
 ├── 🐘 php/                      ← `OPERATIVO` — locks vs cola/replica
 ├── 🐍 python/                   ← `OPERATIVO` — threading + métricas
 ├── 🟢 node/                     ← `OPERATIVO` — monitorEventLoopDelay + setImmediate
 ├── ☕ java/                     ← `OPERATIVO` — ThreadPoolExecutor + reportingPool
-└── 🔵 dotnet/                   ← 🔧 estructura lista
+└── 🔵 dotnet/                   ← `OPERATIVO` — ConcurrentExclusiveSchedulerPair + ThreadPool.GetAvailableWorkerThreads
 ```

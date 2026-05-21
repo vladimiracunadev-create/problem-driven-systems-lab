@@ -66,7 +66,7 @@ El sistema consume memoria, descriptores o conexiones de forma **progresiva** ha
 
 Usa `tracemalloc.start()` para diff snapshots, `sys.getsizeof()` para medir objetos individuales, `gc.collect()` para liberar ciclos. Cache acotada con `collections.OrderedDict` + `popitem(last=False)` como LRU. Ver [`python/README.md`](python/README.md). Modo aislado: puerto `835`. Hub: `http://localhost:8200/05/`.
 
-### Node.js 20 (heap V8 + RSS + external)
+### Node.js 22 (heap V8 + RSS + external)
 
 `process.memoryUsage()` expone los 4 números clave: `heapUsed`, `heapTotal`, `rss`, `external`. La fuga real es un array de módulo que retiene buffers cross-request. La versión optimizada usa un `Map` acotado con eviction explícita. Ver [`node/README.md`](node/README.md). Modo aislado: puerto `825`. Hub: `http://localhost:8300/05/`.
 
@@ -101,7 +101,7 @@ Disminuye **incidentes silenciosos**, reinicios inesperados y consumo innecesari
 | --- | --- |
 | 🐘 PHP 8 | `OPERATIVO` (`memory_get_usage` + retención explícita en módulo) |
 | 🐍 Python 3.12 | `OPERATIVO` (`tracemalloc` + `gc.collect()` + cache acotado) |
-| 🟢 Node.js 20 | `OPERATIVO` (`process.memoryUsage()` con heap V8 + RSS + external) |
+| 🟢 Node.js 22 | `OPERATIVO` (`process.memoryUsage()` con heap V8 + RSS + external) |
 | ☕ Java 21 | `OPERATIVO` (`LinkedHashMap.removeEldestEntry` LRU built-in + `Runtime` metrics) |
 | 🔵 .NET 8 | `OPERATIVO` (LRU manual `Dictionary`+`LinkedList` + `Process.WorkingSet64` + `GC.GetTotalMemory`) |
 
@@ -160,12 +160,12 @@ curl http://localhost:8400/05/state   # heap estable, evictions_total > 4000
 05-memory-pressure-and-resource-leaks/
 ├── README.md                    ← este archivo
 ├── comparison.md                ← comparativa multi-stack PHP · Python · Node · Java
-├── compose.compare.yml          ← levanta los 4 stacks juntos
+├── compose.compare.yml          ← levanta los 5 stacks juntos
 ├── docs/                        ← análisis problem-driven (8 documentos)
 ├── shared/                      ← assets compartidos
 ├── 🐘 php/                      ← `OPERATIVO` — memory_get_usage + retención
 ├── 🐍 python/                   ← `OPERATIVO` — tracemalloc + cache acotada
 ├── 🟢 node/                     ← `OPERATIVO` — process.memoryUsage heap V8
 ├── ☕ java/                     ← `OPERATIVO` — LinkedHashMap LRU + Runtime
-└── 🔵 dotnet/                   ← 🔧 estructura lista
+└── 🔵 dotnet/                   ← `OPERATIVO` — LRU manual Dictionary+LinkedList + Process.WorkingSet64
 ```

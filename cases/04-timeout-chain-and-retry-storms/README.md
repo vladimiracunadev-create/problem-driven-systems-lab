@@ -65,7 +65,7 @@ Una integración lenta o inestable dispara **reintentos sin control**, satura th
 
 Misma lógica que PHP con `stdlib`: `time.sleep` para latencias, `threading.Lock` para el breaker, `time.time` para cooldown. Sin requirements externos. Ver [`python/README.md`](python/README.md). Modo aislado: puerto `834`. Hub Python: `http://localhost:8200/04/`.
 
-### Node.js 20
+### Node.js 22
 
 `AbortController` y `AbortSignal` como timeout **cooperativo**: el handler decide si abortar al recibir la señal. Circuit breaker en memoria con tres estados (`closed`/`open`/`half_open`) y reapertura automática tras cooldown. Ver [`node/README.md`](node/README.md). Modo aislado: puerto `824`. Hub Node: `http://localhost:8300/04/`.
 
@@ -131,7 +131,7 @@ Evita caídas en cascada y mejora resiliencia frente a terceros o componentes in
 | --- | --- |
 | 🐘 PHP 8 | `OPERATIVO` (timeout corto + backoff + circuit breaker + fallback) |
 | 🐍 Python 3.12 | `OPERATIVO` (`threading.Lock`, `time.time()` cooldown, stdlib pura) |
-| 🟢 Node.js 20 | `OPERATIVO` (`AbortController`/`AbortSignal` cooperativo + CB en memoria) |
+| 🟢 Node.js 22 | `OPERATIVO` (`AbortController`/`AbortSignal` cooperativo + CB en memoria) |
 | ☕ Java 21 | `OPERATIVO` (`CompletableFuture.orTimeout` + `AtomicReference<BreakerState>` CAS) |
 | 🔵 .NET 8 | `OPERATIVO` (`CancellationTokenSource` + `Interlocked.CompareExchange` sobre `record BreakerState`) |
 
@@ -202,12 +202,12 @@ curl "http://localhost:8400/04/quote-resilient?fail=on"
 04-timeout-chain-and-retry-storms/
 ├── README.md                    ← este archivo
 ├── comparison.md                ← comparativa multi-stack PHP · Python · Node · Java
-├── compose.compare.yml          ← levanta los 4 stacks juntos para comparar
+├── compose.compare.yml          ← levanta los 5 stacks juntos para comparar
 ├── docs/                        ← análisis problem-driven (8 documentos)
 ├── shared/                      ← assets compartidos del caso
 ├── 🐘 php/                      ← `OPERATIVO` — circuit breaker persistente
 ├── 🐍 python/                   ← `OPERATIVO` — stdlib + threading.Lock
 ├── 🟢 node/                     ← `OPERATIVO` — AbortController + CB en memoria
 ├── ☕ java/                     ← `OPERATIVO` — CompletableFuture.orTimeout + CAS
-└── 🔵 dotnet/                   ← 🔧 estructura lista
+└── 🔵 dotnet/                   ← `OPERATIVO` — CancellationTokenSource + Interlocked CAS
 ```

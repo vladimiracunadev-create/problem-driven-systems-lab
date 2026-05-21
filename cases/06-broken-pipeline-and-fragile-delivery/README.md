@@ -66,7 +66,7 @@ El software **funciona en desarrollo**, pero falla al desplegar, promover cambio
 
 Misma lógica con stdlib. `dict` por ambiente, lista de deployments para historial. Sin frameworks externos. Ver [`python/README.md`](python/README.md). Modo aislado: puerto `836`. Hub: `http://localhost:8200/06/`.
 
-### Node.js 20
+### Node.js 22
 
 `AbortController` para cancelación cooperativa entre pasos del pipeline — si el cliente desconecta o el deadline se vence, los pasos en curso reciben la señal y limpian limpio. Ver [`node/README.md`](node/README.md). Modo aislado: puerto `826`. Hub: `http://localhost:8300/06/`.
 
@@ -100,7 +100,7 @@ Permite **publicar con menos riesgo**, reducir incidentes operativos y mejorar l
 | --- | --- |
 | 🐘 PHP 8 | `OPERATIVO` (preflight + smoke + rollback automático) |
 | 🐍 Python 3.12 | `OPERATIVO` (misma lógica con stdlib, dict por ambiente) |
-| 🟢 Node.js 20 | `OPERATIVO` (`AbortController` para cancelación cooperativa entre pasos) |
+| 🟢 Node.js 22 | `OPERATIVO` (`AbortController` para cancelación cooperativa entre pasos) |
 | ☕ Java 21 | `OPERATIVO` (`record` types inmutables + state machine + `ConcurrentHashMap`) |
 | 🔵 .NET 8 | `OPERATIVO` (`record EnvState` + `ConcurrentDictionary` + `with`-expressions para rollback) |
 
@@ -162,12 +162,12 @@ curl http://localhost:8400/06/environments
 06-broken-pipeline-and-fragile-delivery/
 ├── README.md                    ← este archivo
 ├── comparison.md                ← comparativa multi-stack PHP · Python · Node · Java
-├── compose.compare.yml          ← levanta los 4 stacks juntos
+├── compose.compare.yml          ← levanta los 5 stacks juntos
 ├── docs/                        ← análisis problem-driven (8 documentos)
 ├── shared/                      ← assets compartidos
 ├── 🐘 php/                      ← `OPERATIVO` — preflight + smoke + rollback
 ├── 🐍 python/                   ← `OPERATIVO` — stdlib + dict por ambiente
 ├── 🟢 node/                     ← `OPERATIVO` — AbortController cooperativo
 ├── ☕ java/                     ← `OPERATIVO` — record + state machine
-└── 🔵 dotnet/                   ← 🔧 estructura lista
+└── 🔵 dotnet/                   ← `OPERATIVO` — record EnvState + ConcurrentDictionary + with-expressions rollback
 ```

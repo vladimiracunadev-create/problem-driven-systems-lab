@@ -8,7 +8,7 @@ const path = require('path');
 const { URL } = require('url');
 const { performance } = require('perf_hooks');
 
-const APP_STACK = 'Node.js 20';
+const APP_STACK = 'Node.js 22';
 const CASE_NAME = '10 - Arquitectura cara para un problema simple';
 const STORAGE_DIR = path.join(os.tmpdir(), 'pdsl-case10-node');
 const STATE_PATH = path.join(STORAGE_DIR, 'architecture-state.json');

@@ -7,7 +7,7 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 
-const APP_STACK = 'Node.js 20';
+const APP_STACK = 'Node.js 22';
 const CASE_NAME = '01 - API lenta bajo carga por cuellos de botella reales';
 const WORKER_NAME = 'report-refresh-node';
 const STORAGE_DIR = path.join(os.tmpdir(), 'pdsl-case01-node');

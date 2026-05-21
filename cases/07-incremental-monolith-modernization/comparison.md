@@ -115,7 +115,7 @@ El ACL en Python es un dict de funciones (`translate`, `route`). Esto es más fu
 
 ## Node.js: Map<consumer, handler> mutable como tabla de routing strangler
 
-**Runtime:** Node.js 20. El monolito legacy se modela como un objeto plano con propiedades cuyo `delete` produce el equivalente al `unset` de PHP. La novedad Node es la **tabla de routing del strangler como `Map` mutable en runtime**.
+**Runtime:** Node.js 22. El monolito legacy se modela como un objeto plano con propiedades cuyo `delete` produce el equivalente al `unset` de PHP. La novedad Node es la **tabla de routing del strangler como `Map` mutable en runtime**.
 
 **El fallo legacy en Node:**
 ```javascript

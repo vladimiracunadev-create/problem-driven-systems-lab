@@ -122,7 +122,7 @@ Mismo criterio que PHP: `/share-knowledge` no contamina los percentiles de laten
 
 ## Node.js: optional chaining `?.` como runbook codificado
 
-**Runtime:** Node.js 20. La gracia del caso en Node es que el lenguaje tiene un operador (**optional chaining**, ECMAScript 2020) que codifica el runbook directamente — la diferencia entre legacy y distributed se reduce a tres caracteres.
+**Runtime:** Node.js 22. La gracia del caso en Node es que el lenguaje tiene un operador (**optional chaining**, ECMAScript 2020) que codifica el runbook directamente — la diferencia entre legacy y distributed se reduce a tres caracteres.
 
 **El fallo legacy en Node:**
 ```javascript

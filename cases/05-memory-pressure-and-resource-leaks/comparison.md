@@ -111,7 +111,7 @@ delta_kb = sum(s.size_diff for s in stats) / 1024
 
 ## Node.js: V8 heap medido con `process.memoryUsage()`, fuga en array de modulo
 
-**Runtime:** Node.js 20 single-thread con event loop. El proceso vive indefinidamente, igual que Python — y como Python, las referencias a nivel de modulo persisten entre requests. Esa es la fuga "autentica" del laboratorio.
+**Runtime:** Node.js 22 single-thread con event loop. El proceso vive indefinidamente, igual que Python — y como Python, las referencias a nivel de modulo persisten entre requests. Esa es la fuga "autentica" del laboratorio.
 
 **Medicion del heap V8:**
 ```javascript

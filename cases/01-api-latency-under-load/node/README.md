@@ -1,4 +1,4 @@
-# ⚡ Caso 01 — Node.js 20 + datos en memoria + worker embebido
+# ⚡ Caso 01 — Node.js 22 + datos en memoria + worker embebido
 
 > Implementacion operativa del caso 01 para estudiar latencia bajo carga con evidencia observable, manteniendo paridad funcional con la version PHP+Postgres y Python+SQLite, pero apoyada en las primitivas naturales de Node: event loop, async/await y `Promise.all`.
 
@@ -27,7 +27,7 @@ El cuello de botella clasico de N+1 en Node se ve agravado por la naturaleza sin
 
 ## 🧱 Servicio
 
-- `app` → API Node.js 20 con rutas legacy y optimized, worker embebido (`setInterval`) y datos en memoria autocontenidos.
+- `app` → API Node.js 22 con rutas legacy y optimized, worker embebido (`setInterval`) y datos en memoria autocontenidos.
 
 ## 🚀 Arranque
 

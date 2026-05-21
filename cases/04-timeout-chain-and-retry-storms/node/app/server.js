@@ -8,7 +8,7 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 
-const APP_STACK = 'Node.js 20';
+const APP_STACK = 'Node.js 22';
 const CASE_NAME = '04 - Cadena de timeouts y tormentas de reintentos';
 const STORAGE_DIR = path.join(os.tmpdir(), 'pdsl-case04-node');
 const TELEMETRY_PATH = path.join(STORAGE_DIR, 'telemetry.json');

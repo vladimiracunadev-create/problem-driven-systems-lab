@@ -99,7 +99,7 @@ El sistema legacy sigue siendo **crítico**, pero su evolución se vuelve lenta,
 
 Misma lógica con `dict[str, Callable]` como routing table. Ver [`python/README.md`](python/README.md). Modo aislado: puerto `837`. Hub: `http://localhost:8200/07/`.
 
-### Node.js 20
+### Node.js 22
 
 `Map<string, handler>` **mutable en runtime** — agregar un consumer migrado es `routingTable.set(...)` sin reload del proceso. ACL como closure que filtra contrato. Ver [`node/README.md`](node/README.md). Modo aislado: puerto `827`. Hub: `http://localhost:8300/07/`.
 
@@ -133,7 +133,7 @@ Permite **renovar plataformas reales sin detener operación** ni asumir una rees
 | --- | --- |
 | 🐘 PHP 8 | `OPERATIVO` (tabla de routing persistente + migration/state) |
 | 🐍 Python 3.12 | `OPERATIVO` (`dict[str, Callable]` routing + stdlib pura) |
-| 🟢 Node.js 20 | `OPERATIVO` (`Map<consumer, handler>` mutable en runtime + ACL como closure) |
+| 🟢 Node.js 22 | `OPERATIVO` (`Map<consumer, handler>` mutable en runtime + ACL como closure) |
 | ☕ Java 21 | `OPERATIVO` (`ConcurrentHashMap<String, Function>` routing + `Function` ACL) |
 | 🔵 .NET 8 | `OPERATIVO` (`ConcurrentDictionary<string, Func<Request,Response>>` routing + `record` types) |
 
@@ -187,12 +187,12 @@ curl http://localhost:8400/07/flows
 07-incremental-monolith-modernization/
 ├── README.md                    ← este archivo
 ├── comparison.md                ← comparativa multi-stack PHP · Python · Node · Java
-├── compose.compare.yml          ← levanta los 4 stacks juntos
+├── compose.compare.yml          ← levanta los 5 stacks juntos
 ├── docs/                        ← análisis problem-driven + postmortem
 ├── shared/                      ← assets compartidos
 ├── 🐘 php/                      ← `OPERATIVO` — routing persistente + ACL
 ├── 🐍 python/                   ← `OPERATIVO` — dict[str, Callable] + stdlib
 ├── 🟢 node/                     ← `OPERATIVO` — Map mutable + ACL closure
 ├── ☕ java/                     ← `OPERATIVO` — ConcurrentHashMap<String, Function>
-└── 🔵 dotnet/                   ← 🔧 estructura lista
+└── 🔵 dotnet/                   ← `OPERATIVO` — ConcurrentDictionary<string, Func<Request,Response>> routing + record types
 ```

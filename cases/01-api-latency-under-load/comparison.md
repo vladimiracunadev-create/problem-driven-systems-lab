@@ -103,7 +103,7 @@ Python construye el `dict` de clientes con una dict comprehension. El acceso por
 
 ## Node.js: single-thread event loop, datos en memoria, worker `setInterval`
 
-**Runtime:** Node.js 20 single-thread con event loop libuv. Cada request es una funcion async que comparte el mismo proceso. Un `await` cede al loop pero no libera ningun thread — el costo agregado de awaits secuenciales degrada throughput global del proceso, no solo de la propia request.
+**Runtime:** Node.js 22 single-thread con event loop libuv. Cada request es una funcion async que comparte el mismo proceso. Un `await` cede al loop pero no libera ningun thread — el costo agregado de awaits secuenciales degrada throughput global del proceso, no solo de la propia request.
 
 **Motor de datos:** estructuras en memoria (`Map<id, customer>`, array de `orders`) con I/O simulado por `setTimeout(roundtrip_ms)`. La eleccion explicita evita compilar bindings nativos (`better-sqlite3`) y mantiene el foco en el patron de acceso, no en el motor.
 

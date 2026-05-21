@@ -122,7 +122,7 @@ def sync_catalog_hardened(items: list) -> dict:
 
 ## Node.js: AbortSignal.timeout + circuit breaker en memoria
 
-**Runtime:** Node.js 20. El proveedor externo se consume como Promise. La novedad Node es **`AbortSignal.timeout(ms)`**, primitiva ECMAScript estandarizada (Node 18+) que marca el deadline del llamado sin atornillar `setTimeout` manualmente.
+**Runtime:** Node.js 22. El proveedor externo se consume como Promise. La novedad Node es **`AbortSignal.timeout(ms)`**, primitiva ECMAScript estandarizada (Node 18+) que marca el deadline del llamado sin atornillar `setTimeout` manualmente.
 
 **El llamado al proveedor con deadline nativo:**
 ```javascript

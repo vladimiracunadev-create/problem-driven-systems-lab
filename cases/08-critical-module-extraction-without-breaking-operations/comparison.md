@@ -89,7 +89,7 @@ Idéntica lógica. Python usa `list.index()` donde PHP usa `array_search()`.
 
 ## Node.js: Proxy nativo + EventEmitter para cutover
 
-**Runtime:** Node.js 20. La compatibilidad de contrato vive en un objeto `Proxy` que intercepta el llamado al modulo nuevo y traduce el shape antes de delegar. El cutover por consumer se publica en un `EventEmitter`.
+**Runtime:** Node.js 22. La compatibilidad de contrato vive en un objeto `Proxy` que intercepta el llamado al modulo nuevo y traduce el shape antes de delegar. El cutover por consumer se publica en un `EventEmitter`.
 
 **El fallo big bang en Node:**
 ```javascript
