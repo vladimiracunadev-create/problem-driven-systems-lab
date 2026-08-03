@@ -211,7 +211,7 @@ jobs:
       - name: Probe ${{ matrix.name }}
         shell: bash
         run: |
-          for attempt in {1..40}; do
+          for _ in {1..40}; do
             if curl -fsS "${{ matrix.probe_url }}" > /dev/null; then
               exit 0
             fi
@@ -241,7 +241,7 @@ jobs:
       - name: Wait for case01 health via hub
         shell: bash
         run: |
-          for attempt in {1..50}; do
+          for _ in {1..50}; do
             if curl -fsS "http://127.0.0.1:8100/01/health" > /dev/null; then
               exit 0
             fi
