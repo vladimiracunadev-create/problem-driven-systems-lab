@@ -286,7 +286,9 @@ En expresividad, Go gana. Pero el guard libera al salir de scope **en todos los 
 
 **Verificado en ambos:** `budget_remaining` baja 4→3→2→1→0 y la sexta llamada devuelve `served_from_cache`.
 
-## Diferencias de decisión, no de corrección
+## Diferencias de decisión, no de corrección — PHP · Python · Node
+
+> Esta tabla contrasta en detalle los tres runtimes interpretados. El contraste de los **siete** stacks esta en la tabla "Primitiva central por stack" al final del documento.
 
 | Aspecto | PHP | Python | Node.js | Razon |
 |---|---|---|---|---|

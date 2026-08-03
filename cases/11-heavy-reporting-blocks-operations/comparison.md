@@ -241,7 +241,9 @@ Traducir literalmente el pool habria producido codigo que compila y no enseña n
 
 El sintoma final es el mismo en los siete stacks —la operacion se degrada— pero la causa raiz y el instrumento cambian. Ese es el punto del caso.
 
-## Diferencias de decisión, no de corrección
+## Diferencias de decisión, no de corrección — PHP · Python · Node
+
+> Esta tabla contrasta en detalle los tres runtimes interpretados. El contraste de los **siete** stacks esta en la tabla "Primitiva central por stack" al final del documento.
 
 | Aspecto | PHP | Python | Node.js | Razon |
 |---|---|---|---|---|

@@ -236,7 +236,9 @@ El compilador los **verifica al registrar**. Si alguien intenta registrar un clo
 
 En Java, un `Function<Request,Response>` guardado en un `ConcurrentHashMap` puede capturar estado mutable no sincronizado sin que nadie avise: el mapa es concurrente, el closure no. En un strangler eso importa mas que en otros contextos, porque los handlers nuevos se registran **mientras hay trafico** y son justo el codigo menos probado del sistema.
 
-## Diferencias de decisión, no de corrección
+## Diferencias de decisión, no de corrección — PHP · Python · Node
+
+> Esta tabla contrasta en detalle los tres runtimes interpretados. El contraste de los **siete** stacks esta en la tabla "Primitiva central por stack" al final del documento.
 
 | Aspecto | PHP | Python | Node.js | Razon |
 |---|---|---|---|---|

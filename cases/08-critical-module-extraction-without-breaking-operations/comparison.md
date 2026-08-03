@@ -236,7 +236,9 @@ En Go, dos goroutines leyendo el mismo canal se reparten los mensajes en silenci
 
 **Diferencia honesta entre ambos:** el canal de `std` en Rust **no es acotado**, asi que `send` no bloquea ni descarta — la cola crece. Es una eleccion distinta a la de Go, con un riesgo distinto (memoria en vez de latencia). El caso 15 del roadmap es el que estudia esa decision a fondo.
 
-## Diferencias de decisión, no de corrección
+## Diferencias de decisión, no de corrección — PHP · Python · Node
+
+> Esta tabla contrasta en detalle los tres runtimes interpretados. El contraste de los **siete** stacks esta en la tabla "Primitiva central por stack" al final del documento.
 
 | Aspecto | PHP | Python | Node.js | Razon |
 |---|---|---|---|---|

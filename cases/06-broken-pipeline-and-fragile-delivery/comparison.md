@@ -273,7 +273,9 @@ El `match` que construye la respuesta es exhaustivo. Si mañana alguien agrega `
 
 Para una maquina de estados de deploy esa diferencia no es estetica: el estado no contemplado es precisamente el que deja produccion a medio camino.
 
-## Diferencias de decisión, no de corrección
+## Diferencias de decisión, no de corrección — PHP · Python · Node
+
+> Esta tabla contrasta en detalle los tres runtimes interpretados. El contraste de los **siete** stacks esta en la tabla "Primitiva central por stack" al final del documento.
 
 | Aspecto | PHP | Python | Node.js | Razon |
 |---|---|---|---|---|
@@ -282,7 +284,7 @@ Para una maquina de estados de deploy esa diferencia no es estetica: el estado n
 | Jerarquía de excepciones | `extends RuntimeException` con `readonly` | `class DeploymentBlocked(Exception)` | `class DeploymentBlocked extends Error` | Tres formas, mismo objetivo. Node hereda de `Error` global. |
 | Rollback | `$env = $previous` (por referencia) | `env["current_release"] = previous` | `env.current_release = previousRelease` | Mismo efecto en los tres. |
 
-**El patron que los tres demuestran es idéntico:** validar antes de mutar, rollback si el post-switch falla. Lo distintivo de Node: el `AbortSignal` propagado convierte la cancelacion del cliente en cancelacion del pipeline sin codigo de glue — la primitiva ya existe en el lenguaje.
+**El patron que los siete stacks demuestran es idéntico** (y estos tres, en detalle): validar antes de mutar, rollback si el post-switch falla. Lo distintivo de Node: el `AbortSignal` propagado convierte la cancelacion del cliente en cancelacion del pipeline sin codigo de glue — la primitiva ya existe en el lenguaje.
 
 ---
 

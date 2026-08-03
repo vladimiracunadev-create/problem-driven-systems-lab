@@ -291,7 +291,9 @@ fn structured_log(ctx: &RequestCtx, level: &str, event: &str, fields: &[(&str, &
 
 **Contrapartida honesta:** `std` no trae logger estructurado. Go tiene `log/slog` desde 1.21; en Rust el ecosistema usa `tracing` o `log`, y para mantener el caso sin dependencias el JSON se arma con `format!` a mano. Es menos ergonomico.
 
-## Diferencias de decisión, no de corrección
+## Diferencias de decisión, no de corrección — PHP · Python · Node
+
+> Esta tabla contrasta en detalle los tres runtimes interpretados. El contraste de los **siete** stacks esta en la tabla "Primitiva central por stack" al final del documento.
 
 | Aspecto | PHP | Python | Node.js | Razon |
 |---|---|---|---|---|
@@ -301,7 +303,7 @@ fn structured_log(ctx: &RequestCtx, level: &str, event: &str, fields: &[(&str, &
 | Propagación de contexto | Manual en cada llamada | Automática via `LoggerAdapter.extra` | Manual (sin equivalente built-in) | Solo Python lo hace por diseño; PHP y Node dependen de disciplina o libreria. |
 | Excepcion con contexto | `class WorkflowFailure { ... }` | `class WorkflowFailure(Exception): ...` | `class WorkflowFailure extends Error { ... }` | ES6 classes en Node alinean con PHP/Python sin sintaxis especial. |
 
-**El concepto que los tres demuestran es idéntico:** logs sin estructura y sin correlación hacen el diagnóstico imposible. La diferencia practica es que Python tiene la API mas dificil de violar accidentalmente; PHP y Node confian en disciplina del developer (o de una libreria como winston/pino para Node, monolog para PHP).
+**El concepto que los siete stacks demuestran es idéntico** (y estos tres, en detalle): logs sin estructura y sin correlación hacen el diagnóstico imposible. La diferencia practica es que Python tiene la API mas dificil de violar accidentalmente; PHP y Node confian en disciplina del developer (o de una libreria como winston/pino para Node, monolog para PHP).
 
 ---
 

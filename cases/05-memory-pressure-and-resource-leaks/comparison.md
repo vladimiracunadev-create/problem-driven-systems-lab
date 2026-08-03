@@ -289,7 +289,9 @@ impl Drop for Tracked {
 
 **La leccion cruzada:** en PHP, Python, Node, Java, .NET y Go la fuga es memoria *referenciada* de mas que el GC no puede tocar. En Rust es memoria *retenida* de mas que el programador nunca solto. Distinto mecanismo, identico bug de diseño, identico grafico de heap subiendo hasta el OOM. Quien crea que elegir Rust lo protege de este caso, no leyo el caso.
 
-## Diferencias de decisión, no de corrección
+## Diferencias de decisión, no de corrección — PHP · Python · Node
+
+> Esta tabla contrasta en detalle los tres runtimes interpretados. El contraste de los **siete** stacks esta en la tabla "Primitiva central por stack" al final del documento.
 
 | Aspecto | PHP | Python | Node.js | Razon |
 |---|---|---|---|---|
