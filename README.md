@@ -183,7 +183,7 @@ Tambien existen atajos con `make`, pero la ruta soportada y mas portable sigue s
 | --- | --- |
 | [RECRUITER.md](RECRUITER.md) | Ruta ejecutiva para evaluacion rapida |
 | [ARCHITECTURE.md](ARCHITECTURE.md) | Vista ejecutiva de la arquitectura actual |
-| [AWS_MIGRATION.md](AWS_MIGRATION.md) | ☁️ Plan de migracion a AWS (ECS Fargate · Lambda · EKS) con los hubs PHP/Python/Node/Java, costos reales, paso a paso y mapping de hallazgos `SECURITY.md` → mitigaciones AWS |
+| [AWS_MIGRATION.md](AWS_MIGRATION.md) | ☁️ Plan de migracion a AWS (ECS Fargate · Lambda · EKS) con los hubs PHP/Python/Node/Java/.NET, costos reales, paso a paso y mapping de hallazgos `SECURITY.md` → mitigaciones AWS |
 | [INSTALL.md](INSTALL.md) | Instalacion y puesta en marcha recomendada |
 | [RUNBOOK.md](RUNBOOK.md) | Operacion diaria y chequeos iniciales |
 | [SECURITY.md](SECURITY.md) | Politica de seguridad y reporte responsable |

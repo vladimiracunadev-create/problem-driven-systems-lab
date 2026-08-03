@@ -282,9 +282,10 @@ graph TB
 
     CI[.github/workflows/ci.yml]
     CI --> VAL
-    CI --> CONFIG[compose-config 40+ archivos]
+    CI --> CONFIG[compose-config 66 archivos]
     CI --> SMOKE[compose-smoke per-case PHP]
-    CI --> HPROBE[hub-probe los 5 hubs en CI]
+    CI --> PPROBE[portal-probe hub PHP]
+    CI --> HPROBE[hub-probe Python/Node/Java/.NET]
 ```
 
 **Lectura clave:** drift entre lo que dice el repo, lo que muestra el portal y lo que se ejecuta queda bloqueado por CI. Si cualquiera de los tres se sale, no merge.
@@ -385,14 +386,15 @@ Cada decisión arquitectónica tiene un costo. Estos son los trade-offs que el l
 
 ## ✅ Validación y delivery
 
-La arquitectura actual queda sostenida por cinco mecanismos:
+La arquitectura actual queda sostenida por seis mecanismos:
 
 | Mecanismo | Qué chequea |
 |---|---|
 | `scripts/validate-structure.sh` | Estructura del árbol, archivos requeridos, ausencia de artefactos |
 | `scripts/generate_case_catalog.php --check` | Catálogo sincronizado con `cases.json` |
-| CI `compose-config` | 40+ archivos `compose.yml` parsean sin errores |
+| CI `compose-config` | 66 archivos `compose.yml` parsean sin errores (5 hubs + 60 per-case + portal) |
 | CI `compose-smoke` (PHP per-case) | Cada caso PHP arranca y responde `/health` en aislamiento |
+| CI `portal-probe` (hub PHP) | El hub PHP `:8100` arranca y el portal resuelve `probe.php` |
 | CI `hub-probe` (Python/Node/Java/.NET) | Cada hub arranca y responde `/01/health`…`/12/health` |
 
 ---

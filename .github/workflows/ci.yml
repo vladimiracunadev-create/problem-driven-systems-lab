@@ -34,6 +34,7 @@ jobs:
           - compose.python.yml
           - compose.nodejs.yml
           - compose.java.yml
+          - compose.dotnet.yml
           - cases/01-api-latency-under-load/php/compose.yml
           - cases/02-n-plus-one-and-db-bottlenecks/php/compose.yml
           - cases/03-poor-observability-and-useless-logs/php/compose.yml
@@ -82,6 +83,18 @@ jobs:
           - cases/10-expensive-architecture-for-simple-needs/java/compose.yml
           - cases/11-heavy-reporting-blocks-operations/java/compose.yml
           - cases/12-single-point-of-knowledge-and-operational-risk/java/compose.yml
+          - cases/01-api-latency-under-load/dotnet/compose.yml
+          - cases/02-n-plus-one-and-db-bottlenecks/dotnet/compose.yml
+          - cases/03-poor-observability-and-useless-logs/dotnet/compose.yml
+          - cases/04-timeout-chain-and-retry-storms/dotnet/compose.yml
+          - cases/05-memory-pressure-and-resource-leaks/dotnet/compose.yml
+          - cases/06-broken-pipeline-and-fragile-delivery/dotnet/compose.yml
+          - cases/07-incremental-monolith-modernization/dotnet/compose.yml
+          - cases/08-critical-module-extraction-without-breaking-operations/dotnet/compose.yml
+          - cases/09-unstable-external-integration/dotnet/compose.yml
+          - cases/10-expensive-architecture-for-simple-needs/dotnet/compose.yml
+          - cases/11-heavy-reporting-blocks-operations/dotnet/compose.yml
+          - cases/12-single-point-of-knowledge-and-operational-risk/dotnet/compose.yml
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -209,6 +222,10 @@ jobs:
             compose_file: compose.java.yml
             hub_port: 8400
             cases: "01 02 03 04 05 06 07 08 09 10 11 12"
+          - name: dotnet-hub
+            compose_file: compose.dotnet.yml
+            hub_port: 8500
+            cases: "01 02 03 04 05 06 07 08 09 10 11 12"
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -219,12 +236,12 @@ jobs:
       - name: Probe cases via ${{ matrix.name }}
         shell: bash
         run: |
-          for attempt in {1..50}; do
+          for attempt in {1..120}; do
             if curl -fsS "http://127.0.0.1:${{ matrix.hub_port }}/01/health" > /dev/null; then
               break
             fi
             sleep 2
-            if [ "$attempt" = "50" ]; then
+            if [ "$attempt" = "120" ]; then
               docker compose -f "${{ matrix.compose_file }}" logs
               exit 1
             fi

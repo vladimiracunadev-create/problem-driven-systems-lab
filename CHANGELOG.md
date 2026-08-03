@@ -2,6 +2,33 @@
 
 Todos los cambios notables de este laboratorio se registran aqui con foco en madurez tecnica y documental.
 
+## 2026-08-03 - .NET entra a CI + drift de docs corregido + `--check` del catalogo portable
+
+Cierra una brecha que quedo abierta al agregar el quinto stack: **.NET tenia paridad de codigo pero cero cobertura en CI**. Los 12 casos .NET y el hub `:8500` podian romperse sin que ningun workflow se enterara, mientras `ARCHITECTURE.md` ya afirmaba que CI los validaba.
+
+### El problema descubierto
+
+`fae2296` llevo .NET a los 12 casos, pero `.github/workflows/ci.yml` no mencionaba `dotnet` ni una sola vez. De los 78 compose versionados, la matriz `compose-config` validaba 53 — los 13 archivos .NET (`compose.dotnet.yml` + los 12 per-case) nunca se parseaban, y `hub-probe` solo levantaba Python/Node/Java.
+
+Peor: la documentacion afirmaba lo contrario. `ARCHITECTURE.md` decia `hub-probe los 5 hubs en CI` y `hub-probe (Python/Node/Java/.NET)`; `ROADMAP.md` se contradecia a si mismo entre la linea 13 (`Python/Node/Java`) y la 177 (`Python/Node/Java/.NET`). El repo declara que CI bloquea el drift entre lo que dice y lo que ejecuta — pero nada validaba esas frases.
+
+### Changed (CI)
+
+- `compose-config`: matriz de 53 → **66 archivos**. Se agregan `compose.dotnet.yml` y los 12 `cases/*/dotnet/compose.yml`. Cobertura completa de los 5 hubs + portal + los 60 compose per-case.
+- `hub-probe`: nueva entrada `dotnet-hub` (`compose.dotnet.yml`, puerto `8500`) que valida los 12 casos .NET en un solo boot, igual que Python/Node/Java.
+- `hub-probe`: la espera inicial del hub pasa de 50 a 120 intentos (100s → 240s). El dispatcher .NET spawnea 12 subprocesos y espera health secuencialmente antes de escuchar; en un runner de 2 vCPU el margen anterior quedaba justo. Es una cota superior — en el camino feliz sale al primer intento.
+
+### Fixed
+
+- `scripts/generate_case_catalog.php`: `--check` daba un falso negativo permanente en Windows. Escribia con `PHP_EOL` (`\r\n` en Windows) y comparaba byte a byte contra un archivo que, con `core.autocrlf=true`, esta en CRLF en la copia de trabajo y en LF en el blob versionado. Ahora escribe LF explicito y compara normalizando fines de linea. `make catalog-check` y `validate-structure.sh` pasan en Windows, Linux y macOS por igual.
+- `.gitignore`: se ignora `.claude/worktrees/`. Los worktrees de agentes dejan copias completas del repo dentro del arbol (3.3 MB en el caso detectado) que un `git add .` distraido habria versionado.
+
+### Changed (docs)
+
+- `ARCHITECTURE.md`: diagrama de CI corregido — `compose-config 66 archivos`, `portal-probe hub PHP` como nodo propio y `hub-probe Python/Node/Java/.NET` en lugar de `los 5 hubs`. El hub PHP se valida por `portal-probe`, no por `hub-probe`; la tabla de mecanismos pasa de cinco a seis filas con esa distincion explicita.
+- `ROADMAP.md`: se elimina la contradiccion interna sobre la cobertura de `hub-probe`; `40+ archivos` pasa a `66 archivos` en ambas menciones. Fase 3 se marca completada — los 12 `docs/postmortem.md` existen desde `1102a5a`, el ROADMAP todavia los daba por pendientes.
+- `README.md`: la descripcion de `AWS_MIGRATION.md` mencionaba los hubs `PHP/Python/Node/Java` — se agrega .NET, que el propio documento ya cubre.
+
 ## 2026-05-20 - Fidelidad de caso 02 restaurada en los 5 stacks + asimetria de caso 01 documentada + ROADMAP nuevo
 
 Cierra una asimetria de fidelidad que el lab tenia oculta: caso 02 (N+1) **simulaba el N+1 en memoria** con `Map`/`HashMap`/`Dictionary` en 3 de los 5 stacks, mientras vendia el caso como "los 5 stacks ejecutan el mismo problema". Esta entrega lleva los 5 stacks a SQL real, deja explicita la asimetria que queda en caso 01, y publica el roadmap de los proximos casos.
