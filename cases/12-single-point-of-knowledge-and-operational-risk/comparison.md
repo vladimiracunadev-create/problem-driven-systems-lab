@@ -1,12 +1,21 @@
 # Caso 12 — Comparativa multi-stack: Punto único de conocimiento y riesgo operacional (PHP · Python · Node.js · Java · .NET · Go · Rust)
 
-## El problema que ambos resuelven
+> **TL;DR** — legacy revienta con owner ausente (`mttr 120`); distributed degrada al runbook del equipo (`mttr ~44`) y `/share-knowledge` sube el bus factor. Siete formas de preguntar "¿y si no hay nadie?", y solo una donde el compilador exige la respuesta.
+
+<!-- nav -->
+`🐘 PHP` · `🐍 Python` · `🟢 Node.js` · `☕ Java 21` · `🔵 .NET 8` · `🐹 Go 1.23` · `🦀 Rust 1.83`
+
+**Estructura:** 🎯 el problema → una seccion por stack → ⚖️ tabla de decision → 📊 primitiva por stack → 🏁 veredicto y ranking
+<!-- /nav -->
+
+
+## 🎯 El problema que ambos resuelven
 
 Un sistema de respuesta a incidentes donde el conocimiento crítico está concentrado en una sola persona (héroe). La variante legacy depende de que esa persona esté disponible. La variante distributed combina runbooks documentados, personas de backup y simulacros de incidentes para resolver sin el héroe.
 
 ---
 
-## PHP: declare(strict_types), ErrorException, Null Coalescing, tipado defensivo
+## 🐘 PHP: declare(strict_types), ErrorException, Null Coalescing, tipado defensivo
 
 **Runtime:** PHP-FPM. El conocimiento tribal en PHP se modela como accesos a estructuras de datos implícitas sin validación. El tipado estricto de PHP 8 hace los errores más visibles y los contratos más explícitos.
 
@@ -62,7 +71,7 @@ function calculateReadinessScore(array $knowledge): float {
 
 ---
 
-## Python: acceso con .get(), operador or, score como función pura
+## 🐍 Python: acceso con .get(), operador or, score como función pura
 
 **Runtime:** `ThreadingHTTPServer`. El estado de conocimiento vive en un dict de módulo compartido entre hilos. `threading.Lock` protege las escrituras concurrentes.
 
@@ -120,7 +129,7 @@ Mismo criterio que PHP: `/share-knowledge` no contamina los percentiles de laten
 
 ---
 
-## Node.js: optional chaining `?.` como runbook codificado
+## 🟢 Node.js: optional chaining `?.` como runbook codificado
 
 **Runtime:** Node.js 22. La gracia del caso en Node es que el lenguaje tiene un operador (**optional chaining**, ECMAScript 2020) que codifica el runbook directamente — la diferencia entre legacy y distributed se reduce a tres caracteres.
 
@@ -160,7 +169,7 @@ Misma formula que PHP/Python. La diferencia esta en como Node maneja el "si no e
 
 ---
 
-## Java 21: `Optional<T>` + `map`/`flatMap`/`orElse` como runbook codificado
+## ☕ Java 21: `Optional<T>` + `map`/`flatMap`/`orElse` como runbook codificado
 
 **Runtime:** El sistema de tipos obliga a tomar postura ante "owner ausente" cuando devolves `Optional<Owner>` en lugar de `Owner` (que puede ser null). El crash legacy no es falla de Java — es falla de no usar las herramientas que Java ya ofrece.
 
@@ -184,7 +193,7 @@ String script = scriptOpt.orElse(null);
 
 ---
 
-## .NET 8: ?. (null-conditional) + ?? (null-coalescing) + Nullable Reference Types
+## 🔵 .NET 8: ?. (null-conditional) + ?? (null-coalescing) + Nullable Reference Types
 
 **Runtime:** .NET 8 sobre `HttpListener`. CLR `ThreadPool`. Registry de owners thread-safe + runbooks compartidos como fallback.
 
@@ -218,7 +227,7 @@ string fallback = script ?? teamRunbooks[runbookKey];              // degrada al
 
 ---
 
-## Go 1.23: comma-ok, y el panic que igual hay que contener
+## 🐹 Go 1.23: comma-ok, y el panic que igual hay que contener
 
 ```go
 o := pickOwnerLegacy(scenario)   // *owner, puede ser nil
@@ -237,7 +246,7 @@ El llamador no puede usar el valor sin recibir tambien el booleano. Pero `v, _ :
 
 ---
 
-## Rust 1.83: `Option<T>` + `?`, el unico donde el compilador exige el chequeo
+## 🦀 Rust 1.83: `Option<T>` + `?`, el unico donde el compilador exige el chequeo
 
 Los siete lenguajes resuelven la misma pregunta —"¿y si no hay owner?"— con herramientas distintas:
 
@@ -259,23 +268,23 @@ let script = owner.runbook.get(runbook_key)?;
 
 **Lo que Rust NO hace: impedir el atajo.** `.unwrap()` existe, es una palabra, y convierte cualquier ausencia en un panic. Este caso lo usa a proposito en la variante legacy para demostrarlo. Un `.unwrap()` en produccion es exactamente el mismo olor que un `Optional.get()` sin `isPresent()` — la diferencia es que se puede grepear en una sola pasada.
 
-## Diferencias de decisión, no de corrección — PHP · Python · Node
+## ⚖️ Diferencias de decision, no de correccion
 
-> Esta tabla contrasta en detalle los tres runtimes interpretados. El contraste de los **siete** stacks esta en la tabla "Primitiva central por stack" al final del documento.
+> Los siete stacks implementan el **mismo algoritmo**. Esta tabla contrasta como lo expresa cada uno.
 
-| Aspecto | PHP | Python | Node.js | Razon |
-|---|---|---|---|---|
-| Acceso defensivo | `$data['key'] ?? $default` | `data.get("key", default)` | `data?.key ?? default` | Tres formas, mismo efecto. JS combina chaining con coalescing. |
-| Acceso anidado profundo | `$d['a']['b']['c'] ?? null` (todavia rompe en niveles intermedios undefined sin isset) | `d.get("a", {}).get("b", {}).get("c")` | `d?.a?.b?.c ?? null` (operador en cada nivel) | Solo Node tiene chaining nativo en cada nivel sin gimnasia. |
-| Tipado estricto | `declare(strict_types=1)` | type hints + mypy externo | TypeScript opcional fuera del runtime | Tres aproximaciones. JS puro confia en el chaining defensivo. |
-| Funcion pura de score | Funcion PHP con `array` | Funcion Python con `dict` | Arrow function con `||` | Tres formas, misma matematica. |
-| Estado compartido | Disco (JSON) | Disco (JSON) + variable de modulo | Disco (JSON) | Persistencia cross-restart en los tres. |
+| Aspecto | PHP | Python | Node.js | Java | .NET | Go | Rust | Razon |
+|---|---|---|---|---|---|---|---|---|
+| Expresion de la ausencia | `isset()` | `is None` | `?.` | `Optional<T>` | nullable ref types | comma-ok `v, ok` | **`Option<T>`** | Siete formas de decir "puede no haber". |
+| ¿Se puede ignorar el chequeo? | si | si | si — se propaga `undefined` | si — `.get()` compila | si — es solo un warning | si — `v, _ := m[k]` | **no — omitir `None` no compila** | Unica fila que importa de verdad en este caso. |
+| Propagacion sin `if` | no | no | `?.` encadenado | `map`/`flatMap` | `?.` | no | **operador `?`** | En Rust el camino correcto es tambien el mas corto de escribir. |
+| Atajo peligroso disponible | si | si | si | `Optional.get()` | `!` null-forgiving | descartar `ok` | **`.unwrap()`** | Rust no impide el atajo; lo concentra en una palabra grepeable. |
+| Contencion del fallo | try/catch | try/except | try/catch | try/catch | try/catch | `recover()` en `defer` | `panic::catch_unwind` | Todos evitan que un incidente tumbe el proceso. |
 
 **Lo distintivo de Node:** optional chaining (`?.`) hace el contraste legacy/distributed casi tipografico — la "ausencia de runbook" es visible en el codigo como ausencia del operador. PHP y Python lo aproximan con `??` y `.get()` pero con menos elegancia en estructuras anidadas profundas. La leccion operativa es la misma: **el conocimiento implicito siempre se cobra; el conocimiento codificado en defaults seguros sobrevive a la rotacion**.
 
 ---
 
-## Primitiva central por stack
+## 📊 Primitiva central por stack
 
 > Los siete stacks resuelven el mismo problema. Lo que cambia es la primitiva y donde duele.
 
@@ -289,3 +298,19 @@ let script = owner.runbook.get(runbook_key)?;
 | Go 1.23 | comma-ok `v, ok := m[k]` — `v, _ :=` sigue siendo legal; `recover()` |
 | Rust 1.83 | **`Option<T>` + `match` exhaustivo: omitir `None` no compila**; `?` propaga |
 
+---
+
+## 🏁 Veredicto: que stack resuelve mejor **este** problema
+
+> ⚠️ **Ranking de fit, no de calidad de lenguaje.** Mide que tan directamente las primitivas nativas del runtime expresan la solucion de *este* caso concreto. El orden cambia — a veces se invierte — de un caso a otro.
+
+| | Stack | Por que |
+|---|---|---|
+| 🥇 | **Rust 1.83** | `Option<T>` con `match` exhaustivo: **omitir el brazo `None` no compila**. Y el operador `?` hace que el camino correcto sea el mas corto de escribir, que es la unica forma de que una convencion sobreviva a un equipo real. |
+| 🥈 | **Go 1.23** | comma-ok pone la ausencia en la firma; el llamador recibe el booleano aunque pueda descartarlo con `_`. |
+| 🥉 | **Java 21** | `Optional<T>` con `map`/`orElse` es expresivo, pero `.get()` sin `isPresent()` compila igual. |
+| 4º | **.NET 8** | Nullable reference types avisan, pero el aviso es un warning y el operador `!` lo silencia. |
+| 5º | **Node.js 22** | `?.` es comodo y propaga `undefined` en silencio hasta que explota tres capas mas arriba. |
+| 6º | **Python 3.12 / PHP 8.3** | `is None` e `isset()`: disciplina pura, cero respaldo del lenguaje. |
+
+**Lectura honesta:** El caso trata de que el conocimiento no viva en una sola persona. La metafora tecnica es exacta: el valor que no esta y nadie comprobo. Rust es el unico donde el compilador hace de segundo owner.

@@ -1,12 +1,21 @@
 # Caso 11 — Comparativa multi-stack: Reportes pesados que bloquean la operación (PHP · Python · Node.js · Java · .NET · Go · Rust)
 
-## El problema que ambos resuelven
+> **TL;DR** — el reporte sin acotar le come CPU a `/order-write`; con limitador, la operacion conserva su latencia. Es el caso que **no se traduce literal**: Go y Rust no tienen pool de threads que agotar.
+
+<!-- nav -->
+`🐘 PHP` · `🐍 Python` · `🟢 Node.js` · `☕ Java 21` · `🔵 .NET 8` · `🐹 Go 1.23` · `🦀 Rust 1.83`
+
+**Estructura:** 🎯 el problema → una seccion por stack → ⚖️ tabla de decision → 📊 primitiva por stack → 🏁 veredicto y ranking
+<!-- /nav -->
+
+
+## 🎯 El problema que ambos resuelven
 
 Un proceso de reporting analítico que compite con escrituras operacionales por el mismo recurso de bloqueo. La variante legacy comparte el lock entre reporting y escrituras, causando contention. La variante isolated usa locks separados por dominio, protegiendo las escrituras del impacto analítico.
 
 ---
 
-## PHP: flock() — bloqueo a nivel de sistema operativo
+## 🐘 PHP: flock() — bloqueo a nivel de sistema operativo
 
 **Runtime:** PHP-FPM. Cada request es un proceso separado. No hay estado compartido en memoria entre procesos. El único mecanismo de sincronización cross-process es el sistema de archivos — por eso PHP usa `flock()`.
 
@@ -53,7 +62,7 @@ Dos archivos de lock distintos. Los dominios son físicamente separados a nivel 
 
 ---
 
-## Python: threading.Lock — bloqueo en proceso
+## 🐍 Python: threading.Lock — bloqueo en proceso
 
 **Runtime:** `ThreadingHTTPServer`. Todos los handlers de request corren como hilos del mismo proceso Python. `threading.Lock` es la primitiva de sincronización correcta para hilos en el mismo proceso.
 
@@ -105,7 +114,7 @@ Los dos locks son objetos distintos en memoria. Son completamente independientes
 
 ---
 
-## Node.js: monitorEventLoopDelay() + setImmediate — el lock es el event loop
+## 🟢 Node.js: monitorEventLoopDelay() + setImmediate — el lock es el event loop
 
 **Runtime:** Node.js 22 single-thread. **No hay locks** porque no hay concurrencia paralela en el codigo JS — todo corre en un solo thread del event loop. La "contencion" es de otro tipo: una operacion sincronica costosa **bloquea el loop entero** y todas las requests concurrentes lo pagan.
 
@@ -151,7 +160,7 @@ if (mode === 'isolated') {
 
 ---
 
-## Java 21: `ThreadPoolExecutor` saturation observable + `ExecutorService` dedicado para reporting
+## ☕ Java 21: `ThreadPoolExecutor` saturation observable + `ExecutorService` dedicado para reporting
 
 **Runtime:** El `HttpServer` JDK usa un `Executor` que entregamos — un `ThreadPoolExecutor` acotado (4 threads) hace que la saturacion sea **realista y observable**. Java no tiene event loop; el equivalente es saturacion del pool.
 
@@ -176,7 +185,7 @@ CompletableFuture<Long> fut = CompletableFuture.supplyAsync(() -> {
 
 ---
 
-## .NET 8: ConcurrentExclusiveSchedulerPair + ThreadPool.GetAvailableWorkerThreads
+## 🔵 .NET 8: ConcurrentExclusiveSchedulerPair + ThreadPool.GetAvailableWorkerThreads
 
 **Runtime:** .NET 8 sobre `HttpListener`. CLR `ThreadPool` global compartido por todos los handlers. Reporting CPU-bound sin aislamiento → satura el pool → `/order-write` espera.
 
@@ -220,7 +229,7 @@ Se exponen en `/activity`. Es el equivalente .NET de `monitorEventLoopDelay()` N
 
 ---
 
-## Go 1.23 y Rust 1.83: el caso que NO se traduce literal
+## 🐹 Go 1.23 y Rust 1.83: el caso que NO se traduce literal
 
 Java y .NET aislan con **pools de threads separados**: un `ThreadPoolExecutor` de 4 para trafico y otro de 2 para reporting. Ese modelo no existe en Go ni en Rust — ninguno tiene un `ExecutorService` en su biblioteca estandar que copiar.
 
@@ -241,23 +250,23 @@ Traducir literalmente el pool habria producido codigo que compila y no enseña n
 
 El sintoma final es el mismo en los siete stacks —la operacion se degrada— pero la causa raiz y el instrumento cambian. Ese es el punto del caso.
 
-## Diferencias de decisión, no de corrección — PHP · Python · Node
+## ⚖️ Diferencias de decision, no de correccion
 
-> Esta tabla contrasta en detalle los tres runtimes interpretados. El contraste de los **siete** stacks esta en la tabla "Primitiva central por stack" al final del documento.
+> Los siete stacks implementan el **mismo algoritmo**. Esta tabla contrasta como lo expresa cada uno.
 
-| Aspecto | PHP | Python | Node.js | Razon |
-|---|---|---|---|---|
-| Mecanismo de "lock" | `flock()` — kernel SO | `threading.Lock()` — futex | Bloqueo sincronico del event loop | Node no tiene locks porque no tiene concurrencia paralela en JS. |
-| Non-blocking | `LOCK_NB` flag | `acquire(blocking=False)` | El loop nunca bloquea por design — bloquea por accion | Solo Node lo hace por error de codigo, no por construccion. |
-| Granularidad | Archivo por dominio | Objeto por dominio | `setImmediate` o `worker_threads` para offload | En Node, "isolation" es offload del loop principal. |
-| Medicion del impacto | Tiempo de espera en lock | Tiempo de espera en lock | `monitorEventLoopDelay()` — lag p50/p99/max nativo | Solo Node tiene la primitiva nativa para medir el efecto. |
-| Modelo de concurrencia | Multi-proceso | Multi-thread con GIL | Single-thread + event loop | Tres modelos distintos para el mismo problema. |
+| Aspecto | PHP | Python | Node.js | Java | .NET | Go | Rust | Razon |
+|---|---|---|---|---|---|---|---|---|
+| Modelo de aislamiento | procesos FPM | `ThreadPoolExecutor` aparte | `worker_threads` | **pool de threads dedicado** | **scheduler dedicado** | semaforo de concurrencia | `Mutex` + `Condvar` | Java y .NET son el modelo *canonico* del problema; Go y Rust no tienen pool que separar. |
+| Modo de falla real | pool FPM agotado | GIL + pool | event loop bloqueado | **pool agotado** | **pool agotado** | **scheduler saturado** | **threads del SO agotados** | El sintoma es el mismo; la causa raiz y el instrumento cambian. |
+| Coste por unidad de concurrencia | proceso (~MB) | thread del SO | thread del SO | thread del SO | thread del SO | **goroutine ~2 KB** | thread del SO (~8 MB virtual) | Go escala a cientos de miles; Rust con `std`, a miles. |
+| Ceder CPU | n/a | `time.sleep(0)` | `setImmediate` | `Thread.yield()` | `Thread.Yield()` | `runtime.Gosched()` | `thread::yield_now()` | Todos tienen la primitiva; el trabajo pesado la usa periodicamente. |
+| ¿Espera activa o pasiva? | n/a | pasiva | n/a | pasiva | pasiva | pasiva (canal) | **pasiva (`Condvar`)** | Ninguno quema CPU esperando turno, que es justo lo que el caso mide. |
 
 **Lo distintivo de Node:** el problema **no es concurrencia paralela** — es que un trabajo CPU-bound bloquea el loop entero y degrada todo el servicio. La medicion via `monitorEventLoopDelay()` es la primitiva exacta que detecta el bloqueo, sin instrumentacion adicional.
 
 ---
 
-## Primitiva central por stack
+## 📊 Primitiva central por stack
 
 > Los siete stacks resuelven el mismo problema. Lo que cambia es la primitiva y donde duele.
 
@@ -271,3 +280,19 @@ El sintoma final es el mismo en los siete stacks —la operacion se degrada— p
 | Go 1.23 | **semaforo de concurrencia — no hay pool que agotar**; `runtime.Gosched()` |
 | Rust 1.83 | **`Mutex`+`Condvar` — duerme al thread, sin busy-wait**; thread del SO 1:1 |
 
+---
+
+## 🏁 Veredicto: que stack resuelve mejor **este** problema
+
+> ⚠️ **Ranking de fit, no de calidad de lenguaje.** Mide que tan directamente las primitivas nativas del runtime expresan la solucion de *este* caso concreto. El orden cambia — a veces se invierte — de un caso a otro.
+
+| | Stack | Por que |
+|---|---|---|
+| 🥇 | **Java 21 / .NET 8** | Son el **modelo canonico** del problema: pools separados, y `getActiveCount()` / `GetAvailableWorkerThreads` exponen la saturacion sin agente externo. El caso nacio pensando en este modelo. |
+| 🥈 | **Go 1.23** | No tiene pool que agotar, asi que resuelve con semaforo de concurrencia. La goroutine de ~2 KB le da un techo de escala que ningun otro stack alcanza. |
+| 🥉 | **Rust 1.83** | `Mutex` + `Condvar` con espera pasiva es correcto y explicito, pero `std::thread` es 1:1 con el SO: el techo esta miles de veces mas abajo que en Go. |
+| 4º | **Node.js 22** | `worker_threads` saca el CPU del loop; es la unica forma de no bloquear el proceso entero. |
+| 5º | **Python 3.12** | `ThreadPoolExecutor` separado, con el GIL limitando el paralelismo real del trabajo CPU. |
+| 6º | **PHP 8.3** | Procesos FPM aislados: no hay nada que aislar, y tampoco nada que observar desde dentro. |
+
+**Lectura honesta:** **Es el unico caso donde Java y .NET ganan**, y por una buena razon: el problema esta enunciado en su vocabulario. Traducir literalmente su `ExecutorService` a Go o Rust habria producido codigo que compila y no enseña nada.

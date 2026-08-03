@@ -1,12 +1,21 @@
 # Caso 05 — Comparativa multi-stack: Presión de memoria y fugas de recursos (PHP · Python · Node.js · Java · .NET · Go · Rust)
 
-## El problema que ambos resuelven
+> **TL;DR** — legacy retiene sin limite; optimized se estabiliza en `cap=1000`. Seis stacks tienen GC y la fuga es *memoria referenciada de mas*; Rust no tiene GC y la fuga es *memoria retenida de mas*. Mismo grafico de heap, distinto mecanismo.
+
+<!-- nav -->
+`🐘 PHP` · `🐍 Python` · `🟢 Node.js` · `☕ Java 21` · `🔵 .NET 8` · `🐹 Go 1.23` · `🦀 Rust 1.83`
+
+**Estructura:** 🎯 el problema → una seccion por stack → ⚖️ tabla de decision → 📊 primitiva por stack → 🏁 veredicto y ranking
+<!-- /nav -->
+
+
+## 🎯 El problema que ambos resuelven
 
 Un proceso de lotes que recibe documentos con payloads variables. La variante legacy acumula buffers sin limpiar, haciendo crecer la presión hasta degradar el servicio. La variante optimizada libera recursos tras cada item, manteniendo un footprint constante.
 
 ---
 
-## PHP: memory_limit, str_repeat, unset, gc_collect_cycles
+## 🐘 PHP: memory_limit, str_repeat, unset, gc_collect_cycles
 
 **Runtime:** PHP-FPM en su modelo clásico "nace para morir" — el proceso muere al final de cada request y la memoria se libera automáticamente. El problema aparece en **workers de larga vida** o en requests con payloads muy grandes que exceden `memory_limit`.
 
@@ -41,7 +50,7 @@ gc_collect_cycles();                      // Ciclo GC forzado para referencias c
 
 ---
 
-## Python: tracemalloc, sys.getsizeof, gc.collect, referencias reales
+## 🐍 Python: tracemalloc, sys.getsizeof, gc.collect, referencias reales
 
 **Runtime:** `ThreadingHTTPServer`. El proceso vive indefinidamente. A diferencia de PHP-FPM, **una referencia activa en un módulo persiste entre requests**. Esto hace posible simular fugas reales, no solo dentro de una request.
 
@@ -109,7 +118,7 @@ delta_kb = sum(s.size_diff for s in stats) / 1024
 
 ---
 
-## Node.js: V8 heap medido con `process.memoryUsage()`, fuga en array de modulo
+## 🟢 Node.js: V8 heap medido con `process.memoryUsage()`, fuga en array de modulo
 
 **Runtime:** Node.js 22 single-thread con event loop. El proceso vive indefinidamente, igual que Python — y como Python, las referencias a nivel de modulo persisten entre requests. Esa es la fuga "autentica" del laboratorio.
 
@@ -175,7 +184,7 @@ if (mode === 'optimized') {
 
 ---
 
-## Java 21: heap del JVM + `LinkedHashMap` LRU built-in + `Runtime` metrics
+## ☕ Java 21: heap del JVM + `LinkedHashMap` LRU built-in + `Runtime` metrics
 
 **Runtime:** JVM con GC generacional (G1 por defecto en JDK 21). El "leak" en Java NO es que el SO pierda memoria — es que el GC no puede recolectar porque las referencias siguen alcanzables desde una raiz (`static field`). El heap puede crecer hasta `-Xmx` y a partir de ahi `OutOfMemoryError`.
 
@@ -206,7 +215,7 @@ private static final Map<Integer, byte[]> optimizedCache =
 
 ---
 
-## .NET 8: LRU manual con Dictionary + LinkedList, Process.WorkingSet64 como senal
+## 🔵 .NET 8: LRU manual con Dictionary + LinkedList, Process.WorkingSet64 como senal
 
 **Runtime:** .NET 8 sobre `HttpListener`. CLR con GC generacional (Gen0/Gen1/Gen2 + LOH). Una fuga es referencia alcanzable desde una raiz `static` — el GC no la puede recolectar.
 
@@ -256,7 +265,7 @@ lock (sync) {
 
 ---
 
-## Go 1.23: GC igual que Java, pero con `runtime.ReadMemStats` sin agente
+## 🐹 Go 1.23: GC igual que Java, pero con `runtime.ReadMemStats` sin agente
 
 **La fuga:** un `[]byte` global que crece por request. Igual que en Java, .NET, Node y Python, **no es memoria sin liberar** — es memoria *referenciada* de mas, que el GC no puede tocar porque el slice sigue apuntando a ella.
 
@@ -268,7 +277,7 @@ lock (sync) {
 
 ---
 
-## Rust 1.83: sin GC, liberacion deterministica **y contada**
+## 🦀 Rust 1.83: sin GC, liberacion deterministica **y contada**
 
 Este es el caso donde Rust dice algo que ningun otro stack del lab puede decir, y tambien donde mas facil seria contar una mentira comoda. Las dos cosas, explicitas:
 
@@ -289,23 +298,23 @@ impl Drop for Tracked {
 
 **La leccion cruzada:** en PHP, Python, Node, Java, .NET y Go la fuga es memoria *referenciada* de mas que el GC no puede tocar. En Rust es memoria *retenida* de mas que el programador nunca solto. Distinto mecanismo, identico bug de diseño, identico grafico de heap subiendo hasta el OOM. Quien crea que elegir Rust lo protege de este caso, no leyo el caso.
 
-## Diferencias de decisión, no de corrección — PHP · Python · Node
+## ⚖️ Diferencias de decision, no de correccion
 
-> Esta tabla contrasta en detalle los tres runtimes interpretados. El contraste de los **siete** stacks esta en la tabla "Primitiva central por stack" al final del documento.
+> Los siete stacks implementan el **mismo algoritmo**. Esta tabla contrasta como lo expresa cada uno.
 
-| Aspecto | PHP | Python | Node.js | Razon |
-|---|---|---|---|---|
-| Modelo de vida del proceso | Muere por request (FPM) | Vive indefinidamente | Vive indefinidamente | PHP libera al morir. Python y Node necesitan gestion explicita. |
-| Fuga real | Dentro de la request (heap crece) | En estado de modulo (persiste) | En array de modulo (persiste) | Solo Python y Node simulan fuga long-running real. |
-| Medicion de memoria | `memory_get_usage()` (heap PHP) | `sys.getsizeof()` + `tracemalloc` | `process.memoryUsage()` con 4 metricas | Solo Node separa heap V8 de RSS y de Buffers externos. |
-| Liberacion explicita | `unset($var)` | `del var` + `gc.collect()` | scope local + opcional `globalThis.gc()` | Tres APIs, mismo efecto. |
-| Evicción FIFO | `array_shift()` | `del dict[oldest_key]` | `Map.delete([...keys].slice(0, ...))` | Tres idiomas, misma estructura ordenada. Solo Node usa `Map` formal en lugar de `array`/`dict` polimorfico. |
+| Aspecto | PHP | Python | Node.js | Java | .NET | Go | Rust | Razon |
+|---|---|---|---|---|---|---|---|---|
+| ¿Hay GC? | si | si | si | si | si | si | **no** | Rust es el unico con liberacion deterministica. |
+| Naturaleza de la fuga | referencia retenida | referencia retenida | referencia retenida | referencia retenida | referencia retenida | referencia retenida | **valor nunca soltado** | Distinto mecanismo, identico bug de diseño. |
+| ¿El compilador la impide? | no | no | no | no | no | no | **tampoco** — es codigo seguro y legal | El borrow checker previene use-after-free, no previene guardar de mas. |
+| Instrumento | `memory_get_usage` | `tracemalloc` | `process.memoryUsage()` | `Runtime` + JMX | `Process.WorkingSet64` | `runtime.ReadMemStats` sin agente | **`Drop` que cuenta liberaciones** | Solo Rust puede reportar `dropped_total`: contabilidad del destructor. |
+| LRU | manual | `OrderedDict` | `Map` + shift | **`LinkedHashMap` built-in** | `Dictionary`+`LinkedList` | `container/list` + map | `VecDeque` + `HashMap` | Solo Java la trae lista; el resto se construye. |
 
 **La diferencia mas importante:** en PHP la fuga "se limpia" al morir el proceso. En Python y Node la fuga persiste en el modulo — comportamiento autentico de servicios long-running reales (workers, daemons, servidores web). Lo distintivo de Node: `process.memoryUsage().external` permite detectar fugas de Buffers/I/O nativa que `tracemalloc` no ve, y `process.memoryUsage().rss` mide el costo total para el OS independiente del runtime.
 
 ---
 
-## Primitiva central por stack
+## 📊 Primitiva central por stack
 
 > Los siete stacks resuelven el mismo problema. Lo que cambia es la primitiva y donde duele.
 
@@ -319,3 +328,19 @@ impl Drop for Tracked {
 | Go 1.23 | `container/list` LRU + `runtime.ReadMemStats` + `NumGoroutine()` |
 | Rust 1.83 | **sin GC: `impl Drop` que cuenta sus liberaciones (`dropped_total` observable)** |
 
+---
+
+## 🏁 Veredicto: que stack resuelve mejor **este** problema
+
+> ⚠️ **Ranking de fit, no de calidad de lenguaje.** Mide que tan directamente las primitivas nativas del runtime expresan la solucion de *este* caso concreto. El orden cambia — a veces se invierte — de un caso a otro: leer varios rankings juntos dice mas que cualquiera por separado.
+
+| | Stack | Por que |
+|---|---|---|
+| 🥇 | **Rust 1.83** | Liberacion deterministica **y observable**: `dropped_total` es contabilidad real del destructor. Ningun otro stack puede mostrar esa cifra. |
+| 🥈 | **Go 1.23** | `runtime.ReadMemStats` sin agente externo, y `NumGoroutine()` cubre ademas la fuga de concurrencia tipica del runtime. |
+| 🥉 | **Java 21** | `LinkedHashMap.removeEldestEntry` es la unica LRU built-in del set; el resto se construye a mano. |
+| 4º | **.NET 8** | `Process.WorkingSet64` + LRU manual con `Dictionary`+`LinkedList`. |
+| 5º | **Node.js 22** | `process.memoryUsage()` distingue heap V8 de RSS, que es mas de lo que ofrecen los dos ultimos. |
+| 6º | **Python 3.12 / PHP 8.3** | `tracemalloc` sirve; en PHP el proceso muere y se lleva la fuga puesta, lo que **oculta** el problema en vez de resolverlo. |
+
+**Lectura honesta:** Ojo con la lectura facil: Rust gana en *instrumentacion*, no en *inmunidad*. El borrow checker no impide esta fuga — meter cosas en un `Vec` global compila sin un warning.

@@ -1,12 +1,21 @@
 # Caso 09 — Comparativa multi-stack: Integración externa inestable (PHP · Python · Node.js · Java · .NET · Go · Rust)
 
-## El problema que ambos resuelven
+> **TL;DR** — el budget baja `5→4→3→2→1→0` y la sexta llamada degrada a snapshot en vez de fallar. Siete formas de escribir un semaforo, y una de ellas no necesita que exista la palabra semaforo.
+
+<!-- nav -->
+`🐘 PHP` · `🐍 Python` · `🟢 Node.js` · `☕ Java 21` · `🔵 .NET 8` · `🐹 Go 1.23` · `🦀 Rust 1.83`
+
+**Estructura:** 🎯 el problema → una seccion por stack → ⚖️ tabla de decision → 📊 primitiva por stack → 🏁 veredicto y ranking
+<!-- /nav -->
+
+
+## 🎯 El problema que ambos resuelven
 
 Un consumo de catálogo externo donde el proveedor puede cambiar su esquema, limitar cuota, o enviar datos malformados. La variante legacy acepta todo sin validar. La variante hardened sanitiza SKUs, valida el esquema, garantiza idempotencia y procesa parcialmente los batches con items inválidos.
 
 ---
 
-## PHP: try/catch Throwable, operador ??, CURLOPT_TIMEOUT, adapter de contrato
+## 🐘 PHP: try/catch Throwable, operador ??, CURLOPT_TIMEOUT, adapter de contrato
 
 **Runtime:** PHP-FPM. Cada request ejecuta la integración completa. No hay estado compartido de idempotencia entre requests — se persiste en disco.
 
@@ -61,7 +70,7 @@ function syncCatalogHardened(array $items): array {
 
 ---
 
-## Python: re.match, dict.get, set para idempotencia, procesamiento parcial
+## 🐍 Python: re.match, dict.get, set para idempotencia, procesamiento parcial
 
 **Runtime:** `ThreadingHTTPServer`. El estado de idempotencia vive en un `set` de módulo protegido por `threading.Lock`. Persiste entre requests del mismo proceso.
 
@@ -120,7 +129,7 @@ def sync_catalog_hardened(items: list) -> dict:
 
 ---
 
-## Node.js: AbortSignal.timeout + circuit breaker en memoria
+## 🟢 Node.js: AbortSignal.timeout + circuit breaker en memoria
 
 **Runtime:** Node.js 22. El proveedor externo se consume como Promise. La novedad Node es **`AbortSignal.timeout(ms)`**, primitiva ECMAScript estandarizada (Node 18+) que marca el deadline del llamado sin atornillar `setTimeout` manualmente.
 
@@ -181,7 +190,7 @@ if (normalized.price_usd === undefined) {
 
 ---
 
-## Java 21: `Semaphore` budget + `ConcurrentHashMap` snapshot cache + `AtomicReference` breaker
+## ☕ Java 21: `Semaphore` budget + `ConcurrentHashMap` snapshot cache + `AtomicReference` breaker
 
 **Runtime:** JVM con thread pool. Cada request compite por permits del budget; lecturas del cache son lock-free; el breaker se transiciona con CAS.
 
@@ -206,7 +215,7 @@ snapshotCache.put(sku, fresh);
 
 ---
 
-## .NET 8: SemaphoreSlim como budget + Interlocked.CompareExchange sobre el breaker
+## 🔵 .NET 8: SemaphoreSlim como budget + Interlocked.CompareExchange sobre el breaker
 
 **Runtime:** .NET 8 sobre `HttpListener`. CLR `ThreadPool` despachando handlers async. Budget de cuota, cache snapshot y breaker, todos en memoria del proceso.
 
@@ -247,7 +256,7 @@ Interlocked.Exchange(ref breakerState, "closed");
 
 ---
 
-## Go 1.23: un canal bufferizado **es** el semaforo
+## 🐹 Go 1.23: un canal bufferizado **es** el semaforo
 
 Java usa `Semaphore(5)`, una clase de `java.util.concurrent`. Go no tiene semaforo en la stdlib y no le hace falta:
 
@@ -269,7 +278,7 @@ Ese es el argumento de fondo de la concurrencia en Go: canal + `select` cubren s
 
 ---
 
-## Rust 1.83: menos expresivo, pero sin unlock que olvidar
+## 🦀 Rust 1.83: menos expresivo, pero sin unlock que olvidar
 
 `std` de Rust tampoco tiene semaforo. Aca el budget es mas prosaico: un `Mutex<i64>` que se decrementa si hay permisos.
 
@@ -286,24 +295,22 @@ En expresividad, Go gana. Pero el guard libera al salir de scope **en todos los 
 
 **Verificado en ambos:** `budget_remaining` baja 4→3→2→1→0 y la sexta llamada devuelve `served_from_cache`.
 
-## Diferencias de decisión, no de corrección — PHP · Python · Node
+## ⚖️ Diferencias de decision, no de correccion
 
-> Esta tabla contrasta en detalle los tres runtimes interpretados. El contraste de los **siete** stacks esta en la tabla "Primitiva central por stack" al final del documento.
+> Los siete stacks implementan el **mismo algoritmo**. Esta tabla contrasta como lo expresa cada uno.
 
-| Aspecto | PHP | Python | Node.js | Razon |
-|---|---|---|---|---|
-| Timeout del llamado externo | `CURLOPT_TIMEOUT` | `requests.get(timeout=...)` | `AbortSignal.timeout(ms)` (estandar) | Solo Node usa una primitiva del lenguaje, no de la libreria HTTP. |
-| Validación de SKU | `preg_match('/^[A-Z0-9-]{4,20}$/', $sku)` | `re.compile(...)` | `/^[A-Z0-9-]{4,20}$/.test(sku)` | RegExp como literal del lenguaje en JS. |
-| Fusión de contrato | `??` (solo null) | `.get() or` (todo falsy) | `??` (null/undefined) | Node y PHP comparten semantica estricta. |
-| Idempotencia | Array PHP en disco | `set` de modulo en memoria | `Map` o `Set` de modulo en memoria | Node y Python son single-process long-running. |
-| Circuit breaker | Estado en disco (JSON) | Estado en memoria | Estado en memoria + `setTimeout` virtual | Node maneja el reapertura via comparacion de timestamp, sin timer real. |
-| Cleanup en cancelacion | `curl_close()` manual | Context manager | `AbortSignal` propaga al runtime | Solo Node tiene cleanup automatico via signal. |
+| Aspecto | PHP | Python | Node.js | Java | .NET | Go | Rust | Razon |
+|---|---|---|---|---|---|---|---|---|
+| Semaforo de cuota | contador en disco | `threading.Semaphore` | contador en memoria | `Semaphore` | `SemaphoreSlim` | **`chan struct{}` bufferizado** | `Mutex<i64>` | Go no necesita que exista el tipo: un canal *es* el semaforo, con `struct{}` de tamaño cero. |
+| `tryAcquire` no bloqueante | `if` | `acquire(blocking=False)` | `if` | `tryAcquire()` | `Wait(0)` | **`select` + `default`** | `if *permits <= 0` | En Go es la misma primitiva del timeout del caso 04 y del bus del 08. |
+| ¿Se puede olvidar el release? | si | si | n/a | si | si | **si — `defer` olvidado = deadlock que compila** | **no — el guard libera al salir de scope** | Unica categoria de bug que Rust elimina y Go no. |
+| Breaker | archivo de estado | variable + lock | variable | `AtomicReference` | `Interlocked.CompareExchange` | `atomic.Value` | `Mutex<&str>` | Todos correctos; cambia la ceremonia. |
 
 **Lo distintivo de Node:** `AbortSignal.timeout` desacopla el deadline de la libreria HTTP. El mismo signal se puede pasar a `fetch`, a una promesa custom, o a un `EventTarget` — la cancelacion se propaga al runtime sin que el codigo tenga que limpiar timers manualmente. PHP y Python lo hacen via parametros de `cURL`/`requests`, atando deadline a la libreria.
 
 ---
 
-## Primitiva central por stack
+## 📊 Primitiva central por stack
 
 > Los siete stacks resuelven el mismo problema. Lo que cambia es la primitiva y donde duele.
 
@@ -317,3 +324,18 @@ En expresividad, Go gana. Pero el guard libera al salir de scope **en todos los 
 | Go 1.23 | **`chan struct{}` bufferizado ES el semaforo** (`struct{}` = tamaño cero) |
 | Rust 1.83 | `Mutex<i64>`; menos expresivo, pero **el guard libera en todos los caminos** |
 
+---
+
+## 🏁 Veredicto: que stack resuelve mejor **este** problema
+
+> ⚠️ **Ranking de fit, no de calidad de lenguaje.** Mide que tan directamente las primitivas nativas del runtime expresan la solucion de *este* caso concreto. El orden cambia — a veces se invierte — de un caso a otro.
+
+| | Stack | Por que |
+|---|---|---|
+| 🥇 | **Go 1.23** | `chan struct{}` bufferizado **es** el semaforo, con `struct{}` de tamaño cero. Una primitiva —canal + `select`— cubre semaforo, timeout, cola y cancelacion en todo el lab. |
+| 🥈 | **Rust 1.83** | Menos expresivo (`Mutex<i64>` con decremento condicional), pero el guard libera en **todos** los caminos: no hay unlock que olvidar. |
+| 🥉 | **Java 21 / .NET 8** | `Semaphore` / `SemaphoreSlim` son claros y directos; cada primitiva de concurrencia es una clase distinta que hay que conocer. |
+| 4º | **Python 3.12** | `threading.Semaphore` de stdlib, correcto. |
+| 6º | **Node.js 22 / PHP 8.3** | Contador en memoria o en disco. Funciona en su modelo de concurrencia; no hay primitiva que lo respalde. |
+
+**Lectura honesta:** Go gana por economia conceptual y Rust por seguridad. Si tuvieras que elegir uno para un equipo grande, el argumento de Rust —el deadlock por `defer` olvidado no existe— pesa mas de lo que sugiere el segundo puesto.

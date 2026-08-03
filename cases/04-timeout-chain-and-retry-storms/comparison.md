@@ -1,12 +1,21 @@
 # Caso 04 — Comparativa multi-stack: Timeout chain y retry storms (PHP · Python · Node.js · Java · .NET · Go · Rust)
 
-## El problema que ambos resuelven
+> **TL;DR** — legacy tarda ~4 s y falla; resilient corta a 300 ms y, con el breaker abierto, a ~0 ms. La diferencia real entre stacks no es el reloj: es **si el trabajo remoto se abandona o sigue ocupando el recurso**.
+
+<!-- nav -->
+`🐘 PHP` · `🐍 Python` · `🟢 Node.js` · `☕ Java 21` · `🔵 .NET 8` · `🐹 Go 1.23` · `🦀 Rust 1.83`
+
+**Estructura:** 🎯 el problema → una seccion por stack → ⚖️ tabla de decision → 📊 primitiva por stack → 🏁 veredicto y ranking
+<!-- /nav -->
+
+
+## 🎯 El problema que ambos resuelven
 
 Una API de cotización que depende de un proveedor externo inestable. La variante legacy reintenta agresivamente sin límites, amplificando la carga. La variante resilient usa timeout corto, backoff exponencial con jitter, circuit breaker y fallback cacheado.
 
 ---
 
-## PHP: socket bloqueante, usleep, circuit breaker con strtotime
+## 🐘 PHP: socket bloqueante, usleep, circuit breaker con strtotime
 
 **Runtime:** PHP-FPM. Cada worker tiene su propio proceso. Un timeout que bloquea un proceso FPM lo deja inaccesible para otras requests durante toda la espera.
 
@@ -39,7 +48,7 @@ if (isset($provider['opened_until']) &&
 
 ---
 
-## Python: time.sleep, random.randint, threading.Lock, circuit breaker con time.time
+## 🐍 Python: time.sleep, random.randint, threading.Lock, circuit breaker con time.time
 
 **Runtime:** `ThreadingHTTPServer`. Los hilos comparten estado en memoria. `time.sleep()` libera el GIL, permitiendo que otros hilos progresen durante la espera.
 
@@ -68,7 +77,7 @@ Misma fórmula de backoff que PHP. La diferencia está en la comparación del ci
 
 ---
 
-## Node.js: `AbortController` como timeout primitivo cooperativo
+## 🟢 Node.js: `AbortController` como timeout primitivo cooperativo
 
 **Runtime:** Node.js 22 con event loop. La diferencia mas importante con PHP y Python: el timeout no se implementa como "wall clock que pasa y abandono el resultado", sino como **cancelacion cooperativa de la operacion en curso**.
 
@@ -103,7 +112,7 @@ Misma formula que PHP/Python. La diferencia: `await sleep(wait)` cede al loop pe
 
 ---
 
-## Java 21: `CompletableFuture.orTimeout()` + `AtomicReference<BreakerState>` con CAS
+## ☕ Java 21: `CompletableFuture.orTimeout()` + `AtomicReference<BreakerState>` con CAS
 
 **Runtime:** JVM con thread pool. `CompletableFuture` ejecuta el call al provider en otro thread y puede completarse exceptionally por timeout sin requerir cooperacion del callee (a diferencia de `AbortSignal` Node que necesita que el handler chequee la senal).
 
@@ -135,7 +144,7 @@ Tras 3 fallos consecutivos `breaker.set(new BreakerState("open", fails, now()))`
 
 ---
 
-## .NET 8: CancellationToken cooperativo + Interlocked CAS sobre el breaker
+## 🔵 .NET 8: CancellationToken cooperativo + Interlocked CAS sobre el breaker
 
 **Runtime:** .NET 8 sobre `HttpListener`. CLR `ThreadPool` despachando handlers async. Las primitivas idiomaticas son `Task` + `CancellationToken` para deadlines y `Interlocked.CompareExchange` para transiciones de estado sin lock.
 
@@ -180,7 +189,7 @@ try {
 
 ---
 
-## Go 1.23: `context.WithTimeout` — el unico stack donde el deadline cancela de verdad
+## 🐹 Go 1.23: `context.WithTimeout` — el unico stack donde el deadline cancela de verdad
 
 **La primitiva:** el deadline no es un reloj para el llamador, es una señal que **viaja hacia abajo**. El proveedor la observa:
 
@@ -203,7 +212,7 @@ En Go el trabajo se abandona de verdad y la goroutine se libera. No es azucar si
 
 ---
 
-## Rust 1.83: `mpsc::recv_timeout` — y la limitacion que este stack no puede ocultar
+## 🦀 Rust 1.83: `mpsc::recv_timeout` — y la limitacion que este stack no puede ocultar
 
 **La primitiva:** se lanza el trabajo en un thread y el llamador espera con limite.
 
@@ -221,23 +230,22 @@ La razon es estructural: `std` de Rust no tiene runtime asincronico ni cancelaci
 
 **El ranking honesto de este caso:** Go > Rust(`std`) ≈ Java > el resto. Es el unico caso del lab donde Rust queda por detras de Go en la primitiva central, y esta escrito asi a proposito.
 
-## Diferencias de decisión, no de corrección — PHP · Python · Node
+## ⚖️ Diferencias de decision, no de correccion
 
-> Esta tabla contrasta en detalle los tres runtimes interpretados. El contraste de los **siete** stacks esta en la tabla "Primitiva central por stack" al final del documento.
+> Los siete stacks implementan el **mismo algoritmo**. Esta tabla contrasta como lo expresa cada uno.
 
-| Aspecto | PHP | Python | Node.js | Razon |
-|---|---|---|---|---|
-| Espera (sleep) | `usleep($us)` bloquea el proceso | `time.sleep(s)` bloquea el thread | `await sleep(ms)` cede al loop | Solo Node permite atender otras requests durante el backoff. |
-| Timeout | Wall-clock que abandona el resultado | Wall-clock que abandona el resultado | `AbortController` cancela cooperativamente | Solo Node libera realmente el recurso subyacente. |
-| Jitter | `random_int(15, 45)` | `random.randint(15, 45)` | `15 + Math.random() * 30` | Misma distribucion uniforme. |
-| Estado compartido | Disco (procesos FPM aislados) | Disco + opcionalmente en memoria | Disco (sin lock por single-thread) | Cada runtime resuelve segun su modelo de concurrencia. |
-| Fallback quote | JSON en disco | JSON en disco | JSON en disco | Identico — el fallback sobrevive reinicios. |
+| Aspecto | PHP | Python | Node.js | Java | .NET | Go | Rust | Razon |
+|---|---|---|---|---|---|---|---|---|
+| Espera / backoff | `usleep` bloquea el proceso | `time.sleep` bloquea el thread | `await sleep` cede el loop | `Thread.sleep` | `await Task.Delay` | `time.After` en `select` | `thread::sleep` | Solo Node, .NET y Go liberan capacidad durante la espera. |
+| ¿El deadline cancela el trabajo? | no | no | **si — `AbortController`** | no — `orTimeout` deja el thread dormido | **si — `CancellationToken` cooperativo** | **si — `ctx.Done()` observado por el callee** | **no** — `recv_timeout` corta la espera, el thread sigue | Esta fila es el caso entero: creer que cortaste y seguir ocupando el recurso. |
+| Estado del breaker | disco (procesos aislados) | disco / memoria | memoria (single-thread) | `AtomicReference` + CAS | `Interlocked.CompareExchange` | `sync.Mutex` | `Mutex` con guard automatico | En Rust no hay unlock que olvidar en la rama de error. |
+| Coste de un retry storm | satura el pool FPM | satura threads | degrada el loop entero | satura el pool | satura el pool | satura el scheduler | satura threads del SO | Todos degradan; cambia el recurso que se agota primero. |
 
 **El algoritmo que los siete stacks implementan es idéntico** (y estos tres, en detalle): exponential backoff con jitter, circuit breaker con ventana fija, fallback al ultimo valor conocido. La diferencia practica entre Node y los otros dos es la primitiva de timeout: `AbortController` es la misma que se usa con `fetch` en codigo de produccion, asi que el laboratorio no introduce un patron sintetico — usa el mismo que veria un developer en su trabajo diario.
 
 ---
 
-## Primitiva central por stack
+## 📊 Primitiva central por stack
 
 > Los siete stacks resuelven el mismo problema. Lo que cambia es la primitiva y donde duele.
 
@@ -251,3 +259,19 @@ La razon es estructural: `std` de Rust no tiene runtime asincronico ni cancelaci
 | Go 1.23 | **`context.WithTimeout` — el callee observa `ctx.Done()` y abandona de verdad** |
 | Rust 1.83 | `mpsc::recv_timeout` — corta la espera, no el trabajo (como Java; `tokio` lo resolveria) |
 
+---
+
+## 🏁 Veredicto: que stack resuelve mejor **este** problema
+
+> ⚠️ **Ranking de fit, no de calidad de lenguaje.** Mide que tan directamente las primitivas nativas del runtime expresan la solucion de *este* caso concreto. El orden cambia — a veces se invierte — de un caso a otro: leer varios rankings juntos dice mas que cualquiera por separado.
+
+| | Stack | Por que |
+|---|---|---|
+| 🥇 | **Go 1.23** | `context.WithTimeout` propaga la cancelacion y el callee la observa con `select`. **El unico stack donde el trabajo remoto se abandona de verdad.** |
+| 🥈 | **Node.js 22** | `AbortController` cancela cooperativamente y es la misma primitiva que se usa con `fetch` en produccion. |
+| 🥉 | **.NET 8** | `CancellationToken` es cooperativo y esta en toda la BCL; requiere que el callee lo respete. |
+| 4º | **Java 21** | `orTimeout` completa el future a tiempo, **pero el thread sigue dormido**. Cree que corto; el recurso sigue tomado. |
+| 5º | **Rust 1.83** | `mpsc::recv_timeout` tiene exactamente la misma limitacion que Java. `tokio` lo resuelve; `std` no. |
+| 6º | **Python 3.12 / PHP 8.3** | Wall-clock que abandona el resultado sin liberar nada. |
+
+**Lectura honesta:** **Es el unico caso del lab donde Rust queda por detras de Go**, y esta escrito asi a proposito: `std` no tiene runtime asincronico. Un ranking que pusiera a Rust primero por reputacion seria una mentira comoda.

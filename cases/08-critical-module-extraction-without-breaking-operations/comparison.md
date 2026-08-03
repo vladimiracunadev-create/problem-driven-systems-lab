@@ -1,12 +1,21 @@
 # Caso 08 — Comparativa multi-stack: Extracción de módulo crítico sin romper la operación (PHP · Python · Node.js · Java · .NET · Go · Rust)
 
-## El problema que ambos resuelven
+> **TL;DR** — big-bang devuelve `contract_violation`; el proxy traduce `{cost_usd}` a `{price, currency}` y el consumer no se entera. Lo que separa a los stacks es **si el bus de eventos corre en el thread del request o desacoplado**.
+
+<!-- nav -->
+`🐘 PHP` · `🐍 Python` · `🟢 Node.js` · `☕ Java 21` · `🔵 .NET 8` · `🐹 Go 1.23` · `🦀 Rust 1.83`
+
+**Estructura:** 🎯 el problema → una seccion por stack → ⚖️ tabla de decision → 📊 primitiva por stack → 🏁 veredicto y ranking
+<!-- /nav -->
+
+
+## 🎯 El problema que ambos resuelven
 
 La extracción del módulo de pricing de un monolito hacia un servicio independiente. La variante big bang cambia el contrato de una vez y rompe a todos los consumidores que usan el esquema anterior. La variante compatible mantiene un proxy adaptador que normaliza el contrato durante la transición gradual.
 
 ---
 
-## PHP: Undefined Array Key, operador ??, cutover por fase
+## 🐘 PHP: Undefined Array Key, operador ??, cutover por fase
 
 **Runtime:** PHP-FPM. Los contratos entre módulos se expresan como arrays PHP. Un campo ausente en un array produce un Warning (PHP 8: TypeError si se usa typed), y el acceso directo `$data['field']` lanza una excepción de tipo `ValueError` o `InvalidArgumentException` si el código lo valida.
 
@@ -48,7 +57,7 @@ $state['phase'] = $phases[min($currentIndex + 1, count($phases) - 1)];
 
 ---
 
-## Python: KeyError nativo, operador `or`, cadena de .get()
+## 🐍 Python: KeyError nativo, operador `or`, cadena de .get()
 
 **Runtime:** `ThreadingHTTPServer`. Los contratos se expresan como dicts Python. El acceso directo `data["field"]` lanza `KeyError` si la clave no existe. `data.get("field")` retorna `None` sin excepción.
 
@@ -87,7 +96,7 @@ Idéntica lógica. Python usa `list.index()` donde PHP usa `array_search()`.
 
 ---
 
-## Node.js: Proxy nativo + EventEmitter para cutover
+## 🟢 Node.js: Proxy nativo + EventEmitter para cutover
 
 **Runtime:** Node.js 22. La compatibilidad de contrato vive en un objeto `Proxy` que intercepta el llamado al modulo nuevo y traduce el shape antes de delegar. El cutover por consumer se publica en un `EventEmitter`.
 
@@ -136,7 +145,7 @@ Otros listeners (alerting, audit log, slack notifier) pueden engancharse al `cut
 
 ---
 
-## Java 21: `Function` proxy de compatibilidad + `CopyOnWriteArrayList<Consumer>` event bus
+## ☕ Java 21: `Function` proxy de compatibilidad + `CopyOnWriteArrayList<Consumer>` event bus
 
 **Runtime:** JVM con thread pool. El event bus tiene lectores frecuentes (cada emit recorre suscriptores) y escritores raros (add/remove subscriber) — `CopyOnWriteArrayList` es exactamente este trade-off.
 
@@ -160,7 +169,7 @@ emit("cutover_done:" + consumer);                       // CopyOnWriteArrayList<
 
 ---
 
-## .NET 8: Func<Old,New> como proxy + ImmutableList<Action<string>> como event bus
+## 🔵 .NET 8: Func<Old,New> como proxy + ImmutableList<Action<string>> como event bus
 
 **Runtime:** .NET 8 sobre `HttpListener`. CLR `ThreadPool` con state compartido. Cutover gradual con proxy de traduccion + bus de eventos thread-safe.
 
@@ -204,7 +213,7 @@ public static void Emit(string evt) {
 
 ---
 
-## Go 1.23: bus por canal, con la politica de descarte explicita
+## 🐹 Go 1.23: bus por canal, con la politica de descarte explicita
 
 Java modela el bus con `CopyOnWriteArrayList<Consumer<Event>>`, .NET con un `event` del CLR, Node con `EventEmitter`. Los tres comparten una propiedad que rara vez se nota hasta que duele: **el `emit()` corre los subscribers en el thread del request**. Un subscriber lento penaliza al consumer que disparo el evento.
 
@@ -221,7 +230,7 @@ func emit(name string) {
 
 ---
 
-## Rust 1.83: `mpsc` — el tipo dice cuantos consumidores hay
+## 🦀 Rust 1.83: `mpsc` — el tipo dice cuantos consumidores hay
 
 ```go
 ch := make(chan busEvent, 256)   // Go: cualquiera puede enviar Y recibir
@@ -236,23 +245,23 @@ En Go, dos goroutines leyendo el mismo canal se reparten los mensajes en silenci
 
 **Diferencia honesta entre ambos:** el canal de `std` en Rust **no es acotado**, asi que `send` no bloquea ni descarta — la cola crece. Es una eleccion distinta a la de Go, con un riesgo distinto (memoria en vez de latencia). El caso 15 del roadmap es el que estudia esa decision a fondo.
 
-## Diferencias de decisión, no de corrección — PHP · Python · Node
+## ⚖️ Diferencias de decision, no de correccion
 
-> Esta tabla contrasta en detalle los tres runtimes interpretados. El contraste de los **siete** stacks esta en la tabla "Primitiva central por stack" al final del documento.
+> Los siete stacks implementan el **mismo algoritmo**. Esta tabla contrasta como lo expresa cada uno.
 
-| Aspecto | PHP | Python | Node.js | Razon |
-|---|---|---|---|---|
-| Acceso a clave ausente | Warning + null (PHP 8) | KeyError (excepción inmediata) | TypeError al acceder propiedad de undefined | Tres comportamientos, similar visibilidad en tests. |
-| Fusión / traduccion de contratos | Operador `??` | `.get()` + `or` | `Proxy` con `Reflect.get` + asignacion | PHP/Python fusionan claves en el callsite. Node usa metaprogramacion nativa: el Proxy es el adapter. |
-| Trampa de operadores | `??` ignora solo `null` | `or` ignora todo falsy | `??` (ECMAScript) ignora solo `null`/`undefined` | Node y PHP comparten semantica de fusion estricta; Python es mas amplio. |
-| Cutover events | Estado en JSON | Estado en JSON | `EventEmitter` + estado en JSON | Solo Node tiene pub/sub nativo en stdlib (`events` modulo). |
-| Estado del proxy | JSON en disco | JSON en disco | JSON en disco | Idéntico. El estado de cutover debe sobrevivir reinicios. |
+| Aspecto | PHP | Python | Node.js | Java | .NET | Go | Rust | Razon |
+|---|---|---|---|---|---|---|---|---|
+| Bus de eventos | hooks sincronos | lista de callbacks | `EventEmitter` | `CopyOnWriteArrayList<Consumer>` | `event` del CLR | **canal bufferizado** | **`mpsc`** | Los cinco primeros corren los subscribers en el thread del request. |
+| ¿Publicar bloquea al consumer? | si | si | si | si | si | **no** | **no** | Un subscriber lento penaliza a quien disparo el evento en cinco de siete stacks. |
+| Politica si el buffer se llena | n/a | n/a | n/a | n/a | n/a | **descarta (`select`+`default`), explicito** | cola sin limite: crece | Go elige perder telemetria antes que frenar trafico; Rust elige memoria. Ambas son decisiones, no descuidos. |
+| ¿Cuantos consumidores permite el tipo? | n/a | n/a | varios | varios | varios | varios (dos goroutines se reparten mensajes en silencio) | **uno — `Receiver` no es `Clone`** | En Go, dos lectores del mismo canal se reparten los eventos y nadie avisa. |
+| ACL de contrato | funcion | funcion | `Proxy` | `Function<Old,New>` | `Func<Old,New>` | funcion | **structs distintos + funcion** | En Rust los dos contratos son tipos separados, no un mapa con claves opcionales. |
 
 **Lo distintivo de Node:** `Proxy` permite que el adapter sea **transparente al codigo de negocio**. El consumidor sigue llamando `pricing.computeFinalPrice(payload)`, sin if/else de versiones — la traduccion vive en una sola capa. Cuando el cutover termina, eliminar el Proxy es una sola linea. PHP y Python necesitan el if/else explicito en el consumidor.
 
 ---
 
-## Primitiva central por stack
+## 📊 Primitiva central por stack
 
 > Los siete stacks resuelven el mismo problema. Lo que cambia es la primitiva y donde duele.
 
@@ -266,3 +275,18 @@ En Go, dos goroutines leyendo el mismo canal se reparten los mensajes en silenci
 | Go 1.23 | **canal + `select` con `default`: descarta antes que frenar trafico** |
 | Rust 1.83 | **`mpsc`: single-consumer impuesto por el tipo** (canal no acotado — la cola crece) |
 
+---
+
+## 🏁 Veredicto: que stack resuelve mejor **este** problema
+
+> ⚠️ **Ranking de fit, no de calidad de lenguaje.** Mide que tan directamente las primitivas nativas del runtime expresan la solucion de *este* caso concreto. El orden cambia — a veces se invierte — de un caso a otro.
+
+| | Stack | Por que |
+|---|---|---|
+| 🥇 | **Go 1.23** | El canal desacopla publicacion de consumo **y** el `select` con `default` deja escrita la politica de backpressure en dos lineas auditables. |
+| 🥈 | **Rust 1.83** | `mpsc` desacopla igual y ademas impone single-consumer por tipo. Pierde el primer puesto porque el canal de `std` no es acotado: la cola crece sin politica. |
+| 🥉 | **Node.js 22** | `EventEmitter` + `Proxy` para el ACL es lo mas idiomatico del set, aunque los subscribers corren en el thread del request. |
+| 4º | **Java 21 / .NET 8** | `CopyOnWriteArrayList` y `event` del CLR son thread-safe y sincronos: un subscriber lento penaliza al consumer. |
+| 6º | **Python 3.12 / PHP 8.3** | Listas de callbacks y hooks sincronos. Simples y sin desacople. |
+
+**Lectura honesta:** La pregunta del caso no es "¿puedo publicar eventos?" sino "¿que pasa cuando el consumidor no da abasto?". Solo Go la responde de forma explicita en el codigo.

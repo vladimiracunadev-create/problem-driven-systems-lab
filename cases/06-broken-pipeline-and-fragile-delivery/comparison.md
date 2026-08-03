@@ -1,12 +1,21 @@
 # Caso 06 — Comparativa multi-stack: Pipeline roto y entrega frágil (PHP · Python · Node.js · Java · .NET · Go · Rust)
 
-## El problema que ambos resuelven
+> **TL;DR** — legacy deja el ambiente `degraded`; controlled bloquea en preflight o revierte a la version previa. Lo que separa a los stacks es **si el estado no contemplado es un `else` silencioso o un error de compilacion**.
+
+<!-- nav -->
+`🐘 PHP` · `🐍 Python` · `🟢 Node.js` · `☕ Java 21` · `🔵 .NET 8` · `🐹 Go 1.23` · `🦀 Rust 1.83`
+
+**Estructura:** 🎯 el problema → una seccion por stack → ⚖️ tabla de decision → 📊 primitiva por stack → 🏁 veredicto y ranking
+<!-- /nav -->
+
+
+## 🎯 El problema que ambos resuelven
 
 Un pipeline de despliegue hacia dev/staging/prod. La variante legacy detecta los problemas tarde, después de haber mutado el ambiente. La variante controlled valida antes de tocar el ambiente y hace rollback automático si algo falla post-switch.
 
 ---
 
-## PHP: RuntimeException, class_exists, jerarquía de excepciones nativa
+## 🐘 PHP: RuntimeException, class_exists, jerarquía de excepciones nativa
 
 **Runtime:** PHP-FPM. Cada request ejecuta el pipeline completo en un solo proceso. Las excepciones de PHP son objetos con `getMessage()`, `getCode()`, `getTraceAsString()` — herramienta estándar para control de flujo con contexto.
 
@@ -65,7 +74,7 @@ class DeploymentBlockedError extends RuntimeException {
 
 ---
 
-## Python: KeyError nativo, excepciones estructuradas, contextlib
+## 🐍 Python: KeyError nativo, excepciones estructuradas, contextlib
 
 **Runtime:** `ThreadingHTTPServer`. El estado de los ambientes vive en un dict compartido protegido por `threading.Lock`. Las excepciones Python son objetos con atributos libremente definibles.
 
@@ -110,7 +119,7 @@ def run_controlled_deployment(env: dict, release: str, scenario: str) -> dict:
 
 ---
 
-## Node.js: AbortController + AbortSignal cooperativo, cancelacion nativa
+## 🟢 Node.js: AbortController + AbortSignal cooperativo, cancelacion nativa
 
 **Runtime:** Node.js 22 single-thread con event loop. El servidor http vive como un proceso largo, exactamente como Python. Cada request engancha un `AbortController` cuyo `signal` se propaga por todos los pasos asincronicos del pipeline.
 
@@ -163,7 +172,7 @@ if (scenario === 'failing_smoke') {
 
 ---
 
-## Java 21: `record` types inmutables + `ConcurrentHashMap` por ambiente + state machine como guards
+## ☕ Java 21: `record` types inmutables + `ConcurrentHashMap` por ambiente + state machine como guards
 
 **Runtime:** JVM con thread pool. Los `record` types (`EnvState`, `Deployment`) son inmutables — cada deploy crea una nueva instancia, no muta la anterior. Esto descarta una clase entera de bugs de concurrencia.
 
@@ -197,7 +206,7 @@ Tres ramas explicitas: preflight bloquea (sin tocar estado), smoke falla (rollba
 
 ---
 
-## .NET 8: record types + ConcurrentDictionary + rollback automatico
+## 🔵 .NET 8: record types + ConcurrentDictionary + rollback automatico
 
 **Runtime:** .NET 8 sobre `HttpListener`. `ThreadPool` despachando handlers concurrentes. Estado por ambiente compartido entre threads → `ConcurrentDictionary` evita lock global.
 
@@ -237,7 +246,7 @@ Tres ramas explicitas — mismo patron que Java. `with`-expression sobre `record
 
 ---
 
-## Go 1.23: mutex sobre estructura explicita, no `sync.Map`
+## 🐹 Go 1.23: mutex sobre estructura explicita, no `sync.Map`
 
 Go tiene `sync.Map`, el analogo directo del `ConcurrentHashMap` que usa Java aca. **No se usa, a proposito.**
 
@@ -255,7 +264,7 @@ El mutex hace visible que el invariante es la secuencia completa. Es el mismo ra
 
 ---
 
-## Rust 1.83: los estados del pipeline son un `enum`, y el `match` es exhaustivo
+## 🦀 Rust 1.83: los estados del pipeline son un `enum`, y el `match` es exhaustivo
 
 En Java, .NET, Go y Node el resultado de este pipeline es un **string** (`"rolled_back"`, `"promoted"`). Agregar un estado nuevo —digamos `canary`— no rompe nada: cae al `else` de algun `if` y se comporta como si fuera otra cosa.
 
@@ -273,22 +282,22 @@ El `match` que construye la respuesta es exhaustivo. Si mañana alguien agrega `
 
 Para una maquina de estados de deploy esa diferencia no es estetica: el estado no contemplado es precisamente el que deja produccion a medio camino.
 
-## Diferencias de decisión, no de corrección — PHP · Python · Node
+## ⚖️ Diferencias de decision, no de correccion
 
-> Esta tabla contrasta en detalle los tres runtimes interpretados. El contraste de los **siete** stacks esta en la tabla "Primitiva central por stack" al final del documento.
+> Los siete stacks implementan el **mismo algoritmo**. Esta tabla contrasta como lo expresa cada uno.
 
-| Aspecto | PHP | Python | Node.js | Razon |
-|---|---|---|---|---|
-| Cancelacion del pipeline | Implicita: el proceso muere por request en FPM | `threading.Event` o flag manual | `AbortController` + `AbortSignal` propagado | Solo Node tiene una primitiva estandar de cancelacion en stdlib. |
-| Detección de clave ausente | `class_exists()` + `isset()` | `dict.get()` con default | `Object.prototype.hasOwnProperty.call(o, k)` | PHP/Node validan explicitamente; Python evita el lanzamiento con `.get()`. |
-| Jerarquía de excepciones | `extends RuntimeException` con `readonly` | `class DeploymentBlocked(Exception)` | `class DeploymentBlocked extends Error` | Tres formas, mismo objetivo. Node hereda de `Error` global. |
-| Rollback | `$env = $previous` (por referencia) | `env["current_release"] = previous` | `env.current_release = previousRelease` | Mismo efecto en los tres. |
+| Aspecto | PHP | Python | Node.js | Java | .NET | Go | Rust | Razon |
+|---|---|---|---|---|---|---|---|---|
+| Tipo del resultado | string | string | string | string (con `record` para el estado) | string | string | **`enum` con datos asociados** | Solo Rust convierte el resultado en un tipo cerrado. |
+| Estado nuevo no contemplado | cae al `else` | cae al `else` | cae al `else` | cae al `else` | cae al `else` | cae al `else` | **no compila** | El estado olvidado es el que deja produccion a medio camino. |
+| Seccion critica | disco entre procesos | lock explicito | single-thread | `ConcurrentHashMap` | `ConcurrentDictionary` | **`sync.Mutex` sobre la transaccion completa** | `Mutex<Option<State>>` | Un mapa concurrente es seguro por operacion y aun asi incorrecto en conjunto. |
+| Rollback | releer version previa | idem | idem | `record` inmutable | `with`-expression | copia del valor previo | variante `RolledBack { to_version }` | En Rust la version a la que se revierte viaja dentro del propio resultado. |
 
 **El patron que los siete stacks demuestran es idéntico** (y estos tres, en detalle): validar antes de mutar, rollback si el post-switch falla. Lo distintivo de Node: el `AbortSignal` propagado convierte la cancelacion del cliente en cancelacion del pipeline sin codigo de glue — la primitiva ya existe en el lenguaje.
 
 ---
 
-## Primitiva central por stack
+## 📊 Primitiva central por stack
 
 > Los siete stacks resuelven el mismo problema. Lo que cambia es la primitiva y donde duele.
 
@@ -302,3 +311,18 @@ Para una maquina de estados de deploy esa diferencia no es estetica: el estado n
 | Go 1.23 | `sync.Mutex` sobre la **transaccion completa**, no `sync.Map` por operacion |
 | Rust 1.83 | **`enum` con datos asociados + `match` exhaustivo: agregar variante rompe la compilacion** |
 
+---
+
+## 🏁 Veredicto: que stack resuelve mejor **este** problema
+
+> ⚠️ **Ranking de fit, no de calidad de lenguaje.** Mide que tan directamente las primitivas nativas del runtime expresan la solucion de *este* caso concreto. El orden cambia — a veces se invierte — de un caso a otro: leer varios rankings juntos dice mas que cualquiera por separado.
+
+| | Stack | Por que |
+|---|---|---|
+| 🥇 | **Rust 1.83** | Los estados son un `enum` y el `match` es exhaustivo: agregar `Canary` mañana **rompe la compilacion** de todo sitio que no lo contemple. |
+| 🥈 | **Java 21 / .NET 8** | `record` types inmutables y `with`-expressions para el rollback. Buen modelado; el resultado sigue siendo un string. |
+| 🥉 | **Go 1.23** | `sync.Mutex` sobre la transaccion completa es la decision correcta —un mapa concurrente seria seguro por operacion e incorrecto en conjunto— pero el resultado tambien es un string. |
+| 4º | **Python 3.12 / Node.js 22** | Estado en memoria con lock o single-thread. Correcto y sin red de seguridad de tipos. |
+| 6º | **PHP 8.3** | Estado en disco entre procesos aislados: funciona, pero la transaccion logica no esta protegida por nada. |
+
+**Lectura honesta:** Un deploy es una maquina de estados. El estado que nadie contemplo es exactamente el que deja produccion a medias — y es el unico caso donde un compilador puede avisarte antes.
