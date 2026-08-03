@@ -82,4 +82,4 @@ curl http://127.0.0.1:852/health
 
 ## Diferencia con PHP/Python/Node/Java
 
-Los cinco stacks ejecutan SQL real. PHP usa PostgreSQL via PDO (cliente/servidor); Python usa `sqlite3` stdlib; Node usa `node:sqlite` built-in; Java usa `sqlite-jdbc`; .NET usa `Microsoft.Data.Sqlite`. Cinco APIs idiomaticas sobre el mismo patron `prepared statement + IN(...)`. La unica diferencia notable es que `Microsoft.Data.Sqlite` expone bindings named (`@id`) mientras los otros 4 usan posicional (`?`) — convencion historica de ADO.NET, no limitacion del motor.
+Los siete stacks ejecutan SQL real. PHP usa PostgreSQL via PDO (cliente/servidor); Python usa `sqlite3` stdlib; Node usa `node:sqlite` built-in; Java usa `sqlite-jdbc`; Go usa `modernc.org/sqlite`; Rust usa `rusqlite` bundled; .NET usa `Microsoft.Data.Sqlite`. Siete APIs idiomaticas sobre el mismo patron `prepared statement + IN(...)`. La unica diferencia notable es que `Microsoft.Data.Sqlite` expone bindings named (`@id`) mientras los otros seis usan posicional (`?`) — convencion historica de ADO.NET, no limitacion del motor.

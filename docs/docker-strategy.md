@@ -37,7 +37,7 @@ El laboratorio no se levanta como un unico sistema enorme. Se trabaja por capas:
 
 ## 🧱 Modelo de containerización (simétrico para los stacks operativos)
 
-Los cinco hubs siguen el **mismo patrón**: un contenedor por lenguaje que spawnea sus casos como subprocesos internos. Los servicios reales (DB, worker, observabilidad) viven aparte porque NO son procesos del lenguaje — son servicios independientes que el caso estudia.
+Los siete hubs siguen el **mismo patrón**: un contenedor por lenguaje que spawnea sus casos como subprocesos internos. Los servicios reales (DB, worker, observabilidad) viven aparte porque NO son procesos del lenguaje — son servicios independientes que el caso estudia.
 
 ```mermaid
 flowchart LR
@@ -47,6 +47,8 @@ flowchart LR
     client --> node_lab["pdsl-node-lab :8300"]
     client --> java_lab["pdsl-java-lab :8400"]
     client --> net_lab["pdsl-dotnet-lab :8500"]
+    client --> go_lab["pdsl-go-lab :8600"]
+    client --> rs_lab["pdsl-rust-lab :8700"]
 
     subgraph php_internal["12 subprocesos PHP :9001-9012"]
         php_lab --> p1["..."]
@@ -76,6 +78,8 @@ flowchart LR
 | **Node.js 22** | `compose.nodejs.yml` | **1 contenedor** (`pdsl-node-lab`) | `node-dispatcher` con 12 subprocesos `child_process.spawn` en `:9101 + :9002-9012` | `8300` |
 | **Java 21** | `compose.java.yml` | **1 contenedor** (`pdsl-java-lab`) | `java-dispatcher` con 12 subprocesos `ProcessBuilder` (`java Main`) en `:9401-:9412` | `8400` |
 | **.NET 8** | `compose.dotnet.yml` | **1 contenedor** (`pdsl-dotnet-lab`) | `dotnet-dispatcher` con 12 subprocesos en `:9501-:9512` | `8500` |
+| **Go 1.23** | `compose.go.yml` | **1 contenedor** (`pdsl-go-lab`) | `go-dispatcher` con 12 subprocesos en `:9601-:9612` | `8600` |
+| **Rust 1.83** | `compose.rust.yml` | **1 contenedor** (`pdsl-rust-lab`) | `rust-dispatcher` con 12 subprocesos en `:9701-:9712` | `8700` |
 
 > **Asimetria residual del PHP**: PHP levanta ~7 contenedores en lugar de 1 porque los casos `01` y `02` necesitan PostgreSQL **real** corriendo en paralelo, mas el worker de caso 01, mas Prometheus + Grafana. Eso son **servicios independientes** (no subprocesos PHP) que el caso 01 estudia. Las 12 apps PHP se colapsan en `php-lab` (1 contenedor); los servicios reales se mantienen separados porque tienen que serlo.
 
@@ -91,7 +95,7 @@ Antes (commit historico): **~20 contenedores Docker**. Despues del dispatcher PH
 | `case01-db`, `case02-db` (PostgreSQL) | sin cambio |
 | `case01-prometheus`, `case01-grafana`, `case01-postgres-exporter` | sin cambio |
 
-### Por que los 5 stacks ahora son simetricos
+### Por que los 7 stacks ahora son simetricos
 
 - **El dispatcher resuelve el problema de "muchos contenedores por lenguaje"**. Para PHP, Python, Node, Java y .NET, la unidad logica es "el lenguaje sirve N casos". Eso es 1 contenedor con N subprocesos, NO N contenedores.
 - **Los servicios reales del caso 01** (PostgreSQL, worker, observabilidad) son independientes del lenguaje. Si manana se agrega caso 01 en Python con su propio Postgres, ese Postgres seria otro contenedor — no un subproceso del Python lab.
@@ -112,7 +116,7 @@ Antes (commit historico): **~20 contenedores Docker**. Despues del dispatcher PH
 | Si tu caso tiene... | Modelo correcto |
 | --- | --- |
 | DB propia, worker dedicado, observabilidad pesada | **Servicios separados + 1 hub para los procesos del lenguaje** (modelo actual) |
-| Solo lógica de aplicación, sin estado externo | **1 contenedor con N procesos internos** (cualquiera de los 5 hubs) |
+| Solo lógica de aplicación, sin estado externo | **1 contenedor con N procesos internos** (cualquiera de los 7 hubs) |
 | Necesidad estricta de aislamiento de memoria entre casos | **Per-case compose** o N contenedores con cgroups |
 | Necesidad de minimizar RAM en idle | **1 hub con dispatcher** — un solo runtime cargado |
 | Posibilidad de leak en un caso afecte a otros | **N contenedores con `mem_limit`** — failure domain por caso |
@@ -132,11 +136,13 @@ Esta simetria se preserva al migrar a AWS — ver [`AWS_MIGRATION.md`](../AWS_MI
 - `compose.python.yml` y `compose.nodejs.yml` deben dejar visibles los 12 casos del stack respectivo desde `localhost:8200` y `localhost:8300`.
 - `compose.java.yml` debe dejar visibles los 12 casos desde `localhost:8400`.
 - `compose.dotnet.yml` debe dejar visibles los 12 casos desde `localhost:8500`.
+- `compose.go.yml` debe dejar visibles los 12 casos desde `localhost:8600`.
+- `compose.rust.yml` debe dejar visibles los 12 casos desde `localhost:8700`.
 - Los casos `01` al `12` deben poder levantarse con Docker de forma limpia tambien por separado (modo aislado).
 - Cada `compose.yml` debe incluir solo la infraestructura que el problema realmente necesita.
 - La presencia de `compose.compare.yml` no implica que todos los stacks tengan la misma profundidad funcional.
 
-Ademas, **los cinco stacks comparten un modelo simetrico** — cada lenguaje sirve sus 12 casos como subprocesos dentro de un solo contenedor (hub). PHP suma servicios extras solo porque los casos `01` y `02` estudian PostgreSQL/worker/observabilidad reales, no porque la app PHP requiera N contenedores. Ver seccion **"Modelo de containerización (simétrico para los stacks operativos)"** arriba para el porque y los trade-offs explicitos.
+Ademas, **los siete stacks comparten un modelo simetrico** — cada lenguaje sirve sus 12 casos como subprocesos dentro de un solo contenedor (hub). PHP suma servicios extras solo porque los casos `01` y `02` estudian PostgreSQL/worker/observabilidad reales, no porque la app PHP requiera N contenedores. Ver seccion **"Modelo de containerización (simétrico para los stacks operativos)"** arriba para el porque y los trade-offs explicitos.
 
 La familia PHP comparte un runtime comun en `docker/php/Dockerfile`. La familia Python usa `python:3.12-alpine` directo. La familia Node usa `node:22-alpine` directo (Node 22 habilita `node:sqlite` built-in usado en caso 02). La familia Java usa `eclipse-temurin:21`. La familia .NET usa `mcr.microsoft.com/dotnet/sdk:8.0`. Cada lenguaje futuro seguira el patron `compose.{lang}.yml` con su bloque de puertos propio en la raiz.
 

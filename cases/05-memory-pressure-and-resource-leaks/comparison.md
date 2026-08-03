@@ -1,4 +1,4 @@
-# Caso 05 — Comparativa multi-stack: Presión de memoria y fugas de recursos (PHP · Python · Node.js · Java · .NET)
+# Caso 05 — Comparativa multi-stack: Presión de memoria y fugas de recursos (PHP · Python · Node.js · Java · .NET · Go · Rust)
 
 ## El problema que ambos resuelven
 
@@ -254,6 +254,41 @@ lock (sync) {
 
 ---
 
+---
+
+## Go 1.23: GC igual que Java, pero con `runtime.ReadMemStats` sin agente
+
+**La fuga:** un `[]byte` global que crece por request. Igual que en Java, .NET, Node y Python, **no es memoria sin liberar** — es memoria *referenciada* de mas, que el GC no puede tocar porque el slice sigue apuntando a ella.
+
+**La solucion:** LRU con `container/list` + `map[int64]*list.Element`. Go no trae un `LinkedHashMap` con `removeEldestEntry` como Java: hay que construirla. Mas codigo, cero magia oculta.
+
+**El instrumento:** `runtime.ReadMemStats` da `HeapAlloc`, `HeapSys` y `NumGC` sin agente externo ni JMX, y `runtime/debug.FreeOSMemory()` es el equivalente honesto del `System.gc()` de Java.
+
+**El extra que ningun otro stack reporta:** `runtime.NumGoroutine()`. Este caso no dispara esa fuga, pero en Go la mas habitual es una goroutine bloqueada para siempre en un canal sin lector — y esa metrica es la que la delata.
+
+---
+
+## Rust 1.83: sin GC, liberacion deterministica **y contada**
+
+Este es el caso donde Rust dice algo que ningun otro stack del lab puede decir, y tambien donde mas facil seria contar una mentira comoda. Las dos cosas, explicitas:
+
+**Lo que Rust garantiza.** No hay GC. La memoria se libera cuando el valor sale de scope, via `Drop`. Y aca eso es **observable**:
+
+```rust
+impl Drop for Tracked {
+    fn drop(&mut self) {
+        LIVE_BYTES.fetch_sub(self.bytes.len() as i64, Ordering::Relaxed);
+        DROPPED_TOTAL.fetch_add(1, Ordering::Relaxed);
+    }
+}
+```
+
+`/state` expone `live_bytes` y `dropped_total`. Verificado: 5 cargas de 512 KB dan `live_mb 2, dropped_total 0`; despues del reset, `live_mb 0, dropped_total 5`. La liberacion ocurre **en el reset**, no "en algun momento". Ningun otro stack del laboratorio puede mostrar esa cifra.
+
+**Lo que Rust NO garantiza — y es el punto del caso.** El borrow checker **no impide esta fuga**. Meter cosas en un `Vec` global y no sacarlas nunca es codigo perfectamente seguro y perfectamente legal: compila sin un solo warning. Rust previene use-after-free, doble free y data races; **no previene "guardar de mas"**.
+
+**La leccion cruzada:** en PHP, Python, Node, Java, .NET y Go la fuga es memoria *referenciada* de mas que el GC no puede tocar. En Rust es memoria *retenida* de mas que el programador nunca solto. Distinto mecanismo, identico bug de diseño, identico grafico de heap subiendo hasta el OOM. Quien crea que elegir Rust lo protege de este caso, no leyo el caso.
+
 ## Diferencias de decisión, no de corrección
 
 | Aspecto | PHP | Python | Node.js | Razon |
@@ -265,3 +300,20 @@ lock (sync) {
 | Evicción FIFO | `array_shift()` | `del dict[oldest_key]` | `Map.delete([...keys].slice(0, ...))` | Tres idiomas, misma estructura ordenada. Solo Node usa `Map` formal en lugar de `array`/`dict` polimorfico. |
 
 **La diferencia mas importante:** en PHP la fuga "se limpia" al morir el proceso. En Python y Node la fuga persiste en el modulo — comportamiento autentico de servicios long-running reales (workers, daemons, servidores web). Lo distintivo de Node: `process.memoryUsage().external` permite detectar fugas de Buffers/I/O nativa que `tracemalloc` no ve, y `process.memoryUsage().rss` mide el costo total para el OS independiente del runtime.
+
+---
+
+## Primitiva central por stack
+
+> Los siete stacks resuelven el mismo problema. Lo que cambia es la primitiva y donde duele.
+
+| Stack | Primitiva central en este caso |
+|---|---|
+| PHP | proceso por request: la fuga muere con el proceso |
+| Python | `gc` + `sys.getsizeof` |
+| Node.js | `process.memoryUsage()`; heap V8 |
+| Java 21 | `LinkedHashMap.removeEldestEntry` LRU + `Runtime` metrics |
+| .NET 8 | `Dictionary`+`LinkedList` LRU + `Process.WorkingSet64` |
+| Go 1.23 | `container/list` LRU + `runtime.ReadMemStats` + `NumGoroutine()` |
+| Rust 1.83 | **sin GC: `impl Drop` que cuenta sus liberaciones (`dropped_total` observable)** |
+

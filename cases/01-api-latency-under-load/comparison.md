@@ -1,4 +1,4 @@
-# Caso 01 — Comparativa multi-stack: API lenta bajo carga (PHP · Python · Node.js · Java · .NET)
+# Caso 01 — Comparativa multi-stack: API lenta bajo carga (PHP · Python · Node.js · Java · .NET · Go · Rust)
 
 ## El problema que ambos resuelven
 
@@ -6,9 +6,9 @@ Una API de reportes que carga datos de clientes con sus pedidos recientes. La va
 
 ---
 
-## Fidelidad del substrato — los 5 stacks contra un motor real
+## Fidelidad del substrato — los 7 stacks contra un motor real
 
-**Los 5 stacks ejecutan SQL real.** No hay datos en memoria simulando ser una base, ni `sleep()` haciendo de latencia de I/O. `db_hits` / `db_queries_in_request` cuentan ejecuciones reales contra un motor en los cinco runtimes.
+**Los 7 stacks ejecutan SQL real.** No hay datos en memoria simulando ser una base, ni `sleep()` haciendo de latencia de I/O. `db_hits` / `db_queries_in_request` cuentan ejecuciones reales contra un motor en los siete runtimes.
 
 | Stack | Motor | Driver / primitiva | Concurrencia lector-escritor |
 |---|---|---|---|
@@ -267,6 +267,60 @@ $"SELECT customer_id, order_count, total_amount FROM customer_summary WHERE cust
 
 ---
 
+---
+
+## Go 1.23: `modernc.org/sqlite` en Go puro, worker con goroutine + Ticker
+
+**Runtime:** un binario estatico. `net/http` de la stdlib con una goroutine por request; el runtime las multiplexa sobre `GOMAXPROCS` hilos del SO.
+
+**Motor de datos:** SQLite embebido via `modernc.org/sqlite` — un port de SQLite a Go puro, sin cgo. Esa eleccion es la que permite `CGO_ENABLED=0` y una imagen final sin toolchain de C; `mattn/go-sqlite3` habria obligado a lo contrario.
+
+**El fallo legacy en Go:**
+```go
+rows, err := db.Query(
+    `SELECT id, customer_id, region, amount FROM orders
+     WHERE LOWER(region) LIKE 'n%' ORDER BY id LIMIT ?`, limit)   // no sargable
+...
+for _, x := range raws {                                          // N+1 real
+    db.QueryRow("SELECT name, tier FROM customers WHERE id = ?", x.customerID).Scan(&name, &tier)
+    dbHits++
+}
+```
+
+**La correccion en Go:** el mismo predicado como rango (`region >= 'n' AND region < 'o'`) mas dos batches `IN(...)`. `db_hits` pasa de `1+N` a constante.
+
+**Worker:** goroutine con `time.Ticker`. No hay pool que dimensionar ni shutdown hook que registrar — la goroutine muere con el proceso.
+
+**Gestion de recursos:** `defer rows.Close()`. Equivalente del `try-with-resources` de Java, a nivel de funcion en vez de bloque.
+
+**Lo que aporta que ningun otro stack:** `encoding/json` con struct tags. Es el unico stack del lab que serializa el contrato desde tipos en vez de concatenar strings — Java, .NET y Rust arman el JSON a mano con `StringBuilder`/`format!`.
+
+---
+
+## Rust 1.83: `rusqlite` bundled, ownership y `Drop` en lugar de cierre explicito
+
+**Runtime:** binario compilado, un thread del SO por conexion (`std::thread::spawn`). Sin runtime asincronico.
+
+**Motor de datos:** SQLite embebido via `rusqlite` con feature `bundled` — compila SQLite desde fuente **dentro del binario**, sin depender de `libsqlite3` del sistema.
+
+**El fallo legacy en Rust:**
+```rust
+let mut stmt = conn.prepare(
+    "SELECT id, customer_id, region, amount FROM orders \
+     WHERE LOWER(region) LIKE 'n%' ORDER BY id LIMIT ?1")?;      // no sargable
+...
+for (id, cid, region, amount) in rows.iter() {                    // N+1 real
+    conn.query_row("SELECT name, tier FROM customers WHERE id = ?1", params![cid], ...)
+    db_hits += 1;
+}
+```
+
+**Gestion de recursos:** aca esta la diferencia con los otros seis stacks. **No hay cierre que escribir.** Cuando la `Connection` sale de scope, su destructor corre. No hay `try-with-resources`, ni `using`, ni `defer`, ni `finally` — la liberacion es una propiedad del tipo, no una construccion que el autor deba recordar.
+
+**Lo que este stack expone y conviene no exagerar:** `std` de Rust **no trae servidor HTTP**. Java tiene `com.sun.net.httpserver`, .NET tiene `HttpListener`, Go tiene `net/http`; aca la capa se escribe sobre `TcpListener` en ~60 lineas. Es deliberado para no arrastrar ~200 crates transitivos en un caso cuyo tema es SQL. En produccion nadie hace esto: se usa `axum` sobre `tokio`.
+
+**Verificacion cruzada:** Java, .NET, Go y Rust generan el dataset con el mismo LCG. `/report-legacy?limit=5` devuelve la misma primera fila en los cuatro (`order_id 12, Customer 1315, silver, north, 934`), con `db_hits 6` y 1.531 filas en `customer_summary`.
+
 ## Diferencias de decisión, no de corrección
 
 | Aspecto | PHP | Python | Node.js | Java | .NET | Razon |
@@ -280,3 +334,20 @@ $"SELECT customer_id, order_count, total_amount FROM customer_summary WHERE cust
 | Costo de await secuencial | Bloquea el proceso FPM completo | Bloquea el thread, libera GIL en I/O | Cede al loop pero penaliza throughput global | Bloquea el thread del pool, otros siguen | Bloquea el thread del pool, otros siguen | El comportamiento bajo carga concurrente es lo que mas diferencia los runtimes. |
 
 **El patron que los cinco demuestran es identico:** N+1 vs batch loading. La diferencia observable (`db_queries`, `db_time_ms`) es la misma. Lo que cambia es **donde duele**: en PHP el pool FPM se agota; en Python el thread queda en I/O; en Node se acumula lag del event loop; en Java/.NET se saturan los worker threads del pool.
+
+---
+
+## Primitiva central por stack
+
+> Los siete stacks resuelven el mismo problema. Lo que cambia es la primitiva y donde duele.
+
+| Stack | Primitiva central en este caso |
+|---|---|
+| PHP | PostgreSQL 16 externo via `PDO`; worker en contenedor aparte |
+| Python | `sqlite3` stdlib + `threading.RLock`; worker en thread |
+| Node.js | `node:sqlite` `DatabaseSync` **sincronico**; `event_loop_lag_ms` como señal propia |
+| Java 21 | `sqlite-jdbc` + WAL; `try-with-resources`; `ScheduledExecutorService` |
+| .NET 8 | `Microsoft.Data.Sqlite` + WAL; `using`/`IDisposable`; `Task.Delay`+`CancellationToken` |
+| Go 1.23 | `modernc.org/sqlite` (Go puro, sin cgo) + WAL; `defer`; goroutine + `Ticker` |
+| Rust 1.83 | `rusqlite` bundled + WAL; **`Drop` sin cierre explicito**; `std::thread` |
+

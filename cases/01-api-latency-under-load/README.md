@@ -191,7 +191,9 @@ Este caso deja estructura para medir y comparar:
 ├── 🟢 node/                        ← `OPERATIVO` — SQLite via node:sqlite + event loop lag + worker setInterval
 ├── 🐍 python/                      ← `OPERATIVO` — SQLite stdlib + worker en thread
 ├── ☕ java/                         ← `OPERATIVO` — SQLite via sqlite-jdbc (WAL) + ScheduledExecutorService worker
-└── 🔵 dotnet/                      ← `OPERATIVO` — SQLite via Microsoft.Data.Sqlite (WAL) + Task.Delay worker
+├── 🔵 dotnet/                      ← `OPERATIVO` — SQLite via Microsoft.Data.Sqlite (WAL) + Task.Delay worker
+├── 🐹 go/                      ← `OPERATIVO` — SQLite via modernc.org/sqlite (WAL) + goroutine worker
+└── 🦀 rust/                      ← `OPERATIVO` — SQLite via rusqlite bundled (WAL) + Drop sin cierre explicito
 ```
 
 ---

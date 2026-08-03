@@ -162,12 +162,14 @@ curl http://localhost:8400/06/environments
 06-broken-pipeline-and-fragile-delivery/
 ├── README.md                    ← este archivo
 ├── comparison.md                ← comparativa multi-stack PHP · Python · Node · Java
-├── compose.compare.yml          ← levanta los 5 stacks juntos
+├── compose.compare.yml          ← levanta los 7 stacks juntos
 ├── docs/                        ← análisis problem-driven (8 documentos)
 ├── shared/                      ← assets compartidos
 ├── 🐘 php/                      ← `OPERATIVO` — preflight + smoke + rollback
 ├── 🐍 python/                   ← `OPERATIVO` — stdlib + dict por ambiente
 ├── 🟢 node/                     ← `OPERATIVO` — AbortController cooperativo
 ├── ☕ java/                     ← `OPERATIVO` — record + state machine
-└── 🔵 dotnet/                   ← `OPERATIVO` — record EnvState + ConcurrentDictionary + with-expressions rollback
+├── 🔵 dotnet/                   ← `OPERATIVO` — record EnvState + ConcurrentDictionary + with-expressions rollback
+├── 🐹 go/                   ← `OPERATIVO` — sync.Mutex sobre la transaccion completa
+└── 🦀 rust/                   ← `OPERATIVO` — enum + match exhaustivo
 ```

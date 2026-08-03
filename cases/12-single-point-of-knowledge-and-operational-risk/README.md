@@ -194,12 +194,14 @@ curl "http://localhost:8400/12/incident-distributed?scenario=owner_absent&runboo
 12-single-point-of-knowledge-and-operational-risk/
 ├── README.md                    ← este archivo
 ├── comparison.md                ← comparativa multi-stack
-├── compose.compare.yml          ← los 5 stacks juntos
+├── compose.compare.yml          ← los 7 stacks juntos
 ├── docs/                        ← análisis + postmortem
 ├── shared/                      ← assets compartidos
 ├── 🐘 php/                      ← `OPERATIVO` — runbook checks + share-knowledge
 ├── 🐍 python/                   ← `OPERATIVO` — try/except + dict owners
 ├── 🟢 node/                     ← `OPERATIVO` — optional chaining como runbook
 ├── ☕ java/                     ← `OPERATIVO` — Optional<T> + record types
-└── 🔵 dotnet/                   ← `OPERATIVO` — ?. + ?? con Nullable Reference Types + record types
+├── 🔵 dotnet/                   ← `OPERATIVO` — ?. + ?? con Nullable Reference Types + record types
+├── 🐹 go/                   ← `OPERATIVO` — comma-ok + recover()
+└── 🦀 rust/                   ← `OPERATIVO` — Option<T> + ? ; omitir None no compila
 ```

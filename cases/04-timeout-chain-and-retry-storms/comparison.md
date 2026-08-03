@@ -1,4 +1,4 @@
-# Caso 04 — Comparativa multi-stack: Timeout chain y retry storms (PHP · Python · Node.js · Java · .NET)
+# Caso 04 — Comparativa multi-stack: Timeout chain y retry storms (PHP · Python · Node.js · Java · .NET · Go · Rust)
 
 ## El problema que ambos resuelven
 
@@ -178,6 +178,49 @@ try {
 
 ---
 
+---
+
+## Go 1.23: `context.WithTimeout` — el unico stack donde el deadline cancela de verdad
+
+**La primitiva:** el deadline no es un reloj para el llamador, es una señal que **viaja hacia abajo**. El proveedor la observa:
+
+```go
+func callProvider(ctx context.Context, fail bool) (int64, error) {
+    select {
+    case <-time.After(providerLatency):   // 800 ms
+        ...
+    case <-ctx.Done():                     // vence a los 300 ms → retorna YA
+        return 0, ctx.Err()
+    }
+}
+```
+
+**Por que importa mas de lo que parece:** `CompletableFuture.orTimeout(300ms)` en Java completa el future excepcionalmente a los 300 ms, **pero el thread que hacia el `Thread.sleep(800)` sigue ahi hasta terminar**. El llamador cree que corto; el recurso sigue ocupado. Bajo retry storm, esa diferencia decide si el pool se agota o no.
+
+En Go el trabajo se abandona de verdad y la goroutine se libera. No es azucar sintactico sobre el mismo comportamiento: es cancelacion propagada por la cadena de llamadas.
+
+**El precio es disciplina:** si una funcion ignora su `ctx`, la cancelacion no ocurre. Go no la impone — la hace posible y la deja visible en la firma.
+
+---
+
+## Rust 1.83: `mpsc::recv_timeout` — y la limitacion que este stack no puede ocultar
+
+**La primitiva:** se lanza el trabajo en un thread y el llamador espera con limite.
+
+```rust
+let (tx, rx) = mpsc::channel();
+thread::spawn(move || { let _ = tx.send(call_provider_blocking(fail)); });
+match rx.recv_timeout(Duration::from_millis(deadline_ms)) { ... }
+```
+
+**Lo que hay que decir claro:** `recv_timeout` corta **la espera**, no **el trabajo**. El thread lanzado sigue durmiendo sus 800 ms hasta terminar. Es exactamente la misma limitacion de `orTimeout()` en Java — y **peor que lo que logra Go**.
+
+La razon es estructural: `std` de Rust no tiene runtime asincronico ni cancelacion cooperativa. Eso vive en `tokio`, donde `tokio::time::timeout` sobre un future si abandona el trabajo pendiente. Mantener el caso con cero dependencias tiene este costo concreto.
+
+**Lo que Rust si aporta:** el `MutexGuard` del breaker libera al salir de scope, en todos los caminos de retorno. En Go, un `mu.Lock()` cuyo `defer mu.Unlock()` falta en una rama de error es un deadlock silencioso que compila y pasa los tests. Esa categoria de bug no existe aca porque no hay unlock que escribir.
+
+**El ranking honesto de este caso:** Go > Rust(`std`) ≈ Java > el resto. Es el unico caso del lab donde Rust queda por detras de Go en la primitiva central, y esta escrito asi a proposito.
+
 ## Diferencias de decisión, no de corrección
 
 | Aspecto | PHP | Python | Node.js | Razon |
@@ -189,3 +232,20 @@ try {
 | Fallback quote | JSON en disco | JSON en disco | JSON en disco | Identico — el fallback sobrevive reinicios. |
 
 **El algoritmo que los tres implementan es idéntico:** exponential backoff con jitter, circuit breaker con ventana fija, fallback al ultimo valor conocido. La diferencia practica entre Node y los otros dos es la primitiva de timeout: `AbortController` es la misma que se usa con `fetch` en codigo de produccion, asi que el laboratorio no introduce un patron sintetico — usa el mismo que veria un developer en su trabajo diario.
+
+---
+
+## Primitiva central por stack
+
+> Los siete stacks resuelven el mismo problema. Lo que cambia es la primitiva y donde duele.
+
+| Stack | Primitiva central en este caso |
+|---|---|
+| PHP | reintentos con `sleep()`; sin cancelacion real |
+| Python | `signal`/timeouts de socket |
+| Node.js | `AbortController` + `AbortSignal.timeout` |
+| Java 21 | `CompletableFuture.orTimeout` — corta la espera, no el trabajo |
+| .NET 8 | `CancellationTokenSource` con timeout |
+| Go 1.23 | **`context.WithTimeout` — el callee observa `ctx.Done()` y abandona de verdad** |
+| Rust 1.83 | `mpsc::recv_timeout` — corta la espera, no el trabajo (como Java; `tokio` lo resolveria) |
+

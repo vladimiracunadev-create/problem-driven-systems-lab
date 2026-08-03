@@ -1,4 +1,4 @@
-# Caso 07 — Comparativa multi-stack: Modernización incremental de monolito (PHP · Python · Node.js · Java · .NET)
+# Caso 07 — Comparativa multi-stack: Modernización incremental de monolito (PHP · Python · Node.js · Java · .NET · Go · Rust)
 
 ## El problema que ambos resuelven
 
@@ -205,6 +205,37 @@ return LegacyMonolith(req);   // fallback acotado con ACL
 
 ---
 
+---
+
+## Go 1.23: la firma **es** el tipo del handler
+
+```go
+type handlerFunc func(request) response
+```
+
+Java necesita `Function<Request,Response>` y .NET `Func<Request,Response>` — tipos genericos de biblioteca envolviendo el concepto. En Go el tipo se declara con la firma.
+
+**Donde falla el error:** registrar un handler con la firma equivocada es un error de compilacion **en el punto de registro** — cuando escribis la migracion, no cuando el primer request del consumer migrado llega a produccion.
+
+**`RWMutex` y no `sync.Map`:** el patron de acceso es asimetrico. Se lee en cada request y se escribe una vez por migracion; `RWMutex` deja entrar a todos los lectores en paralelo, mientras `sync.Map` esta optimizado para el caso contrario.
+
+---
+
+## Rust 1.83: `Send + Sync` verificados en el punto de registro
+
+```rust
+type Handler = Box<dyn Fn(&Request) -> Response + Send + Sync>;
+```
+
+Los dos marcadores del final no son decoracion:
+
+- `Send` → el valor puede moverse entre threads.
+- `Sync` → puede compartirse por referencia entre threads.
+
+El compilador los **verifica al registrar**. Si alguien intenta registrar un closure que captura algo no thread-safe —un `Rc`, un `RefCell`— el codigo no compila.
+
+En Java, un `Function<Request,Response>` guardado en un `ConcurrentHashMap` puede capturar estado mutable no sincronizado sin que nadie avise: el mapa es concurrente, el closure no. En un strangler eso importa mas que en otros contextos, porque los handlers nuevos se registran **mientras hay trafico** y son justo el codigo menos probado del sistema.
+
 ## Diferencias de decisión, no de corrección
 
 | Aspecto | PHP | Python | Node.js | Razon |
@@ -216,3 +247,20 @@ return LegacyMonolith(req);   // fallback acotado con ACL
 | Seguimiento de migración | `$state['migration']['consumers'][$consumer]` | `state["migration"]["consumers"][consumer]` | `state.migration.consumers[consumer]` | Idéntica estructura. |
 
 **El patron Strangler Fig es idéntico en los tres:** un mediador intercepta el acceso al dominio, traduce entre modelos, y enruta al servicio nuevo solo para los consumidores que ya migraron. Lo distintivo de Node: la tabla de routing es el `Map` y los handlers son funciones de primera clase — el patron desaparece casi por completo, queda solo la primitiva del lenguaje.
+
+---
+
+## Primitiva central por stack
+
+> Los siete stacks resuelven el mismo problema. Lo que cambia es la primitiva y donde duele.
+
+| Stack | Primitiva central en este caso |
+|---|---|
+| PHP | routing por config |
+| Python | `dict[str, Callable]` |
+| Node.js | `Map<consumer, handler>` |
+| Java 21 | `ConcurrentHashMap<String,Function>` |
+| .NET 8 | `Func<Request,Response>` delegate |
+| Go 1.23 | `map[string]handlerFunc` — **la firma es el tipo**, sin generico envolvente |
+| Rust 1.83 | **`Box<dyn Fn(..) + Send + Sync>` — thread-safety verificada al registrar** |
+

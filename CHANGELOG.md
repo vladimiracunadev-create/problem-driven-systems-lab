@@ -2,6 +2,72 @@
 
 Todos los cambios notables de este laboratorio se registran aqui con foco en madurez tecnica y documental.
 
+## 2026-08-03 - Barrido documental: el lab pasa de 5 a 7 stacks
+
+Cierra el ciclo abierto por los dos stacks nuevos. Toda la documentacion que
+afirmaba "5 stacks / 60 endpoints / 5 hubs / 8 puertos" quedaba desalineada con
+el arbol desde el momento en que Go y Rust entraron.
+
+### Changed (conteos y afirmaciones de estado)
+
+| Afirmacion | Antes | Ahora |
+|---|---|---|
+| Stacks operativos | 5 | **7** |
+| Endpoints (12 casos × stacks) | 60 | **84** |
+| Hubs simetricos | 5 (`8100`-`8500`) | **7** (`8100`-`8700`) |
+| Puertos que cubren el lab | 8 | **10** |
+| `compose-config` en CI | 66 archivos | **92 archivos** |
+| `hub-probe` en CI | Python/Node/Java/.NET | **+ Go / Rust** |
+| Lambdas en la ruta serverless (AWS) | 60 | **84** |
+| Services en ECS Fargate | 6 | **9** |
+
+Archivos tocados: `README.md`, `ARCHITECTURE.md`, `ROADMAP.md`, `RUNBOOK.md`,
+`INSTALL.md`, `RECRUITER.md`, `AWS_MIGRATION.md`, `docs/architecture.md`,
+`docs/executive-summary.md`, `docs/usage-and-scope.md`, `docs/docker-strategy.md`,
+`docs/stack-map.md`, `docs/adr/0003-docker-per-case-per-stack.md`, los 12
+`comparison.md` y los 12 `README.md` de caso.
+
+### Added (la comparativa, que era el punto)
+
+- **Secciones Go y Rust en los 12 `comparison.md`**, con el codigo real de cada
+  stack — no una traduccion generica del texto de Java.
+- **Tabla "Primitiva central por stack" en los 12 casos**: siete filas, una por
+  lenguaje, diciendo cual es la primitiva y donde duele el problema en cada uno.
+- `docs/stack-map.md`: filas de Go y Rust con su fortaleza y su contrapartida.
+
+### Corregido: una afirmacion que se pasaba de la raya
+
+El README de Go caso 03 decia que perder la correlacion "pasa de ser un bug de
+runtime a un error de compilacion". **Es falso.** Lanzar `go func(){}()` sin
+pasar el `ctx` compila perfectamente y ese trabajo queda sin correlacionar. Go
+hace la dependencia **visible en la firma**, no obligatoria. La garantia de
+compilador para ese problema esta en Rust (`&RequestCtx` con lifetime acotado),
+no en Go. Corregido, y la distincion quedo explicita en el `comparison.md` del
+caso 03.
+
+### Lo que la documentacion ahora dice y antes no
+
+Tres limitaciones que estaban en el codigo pero no en los documentos:
+
+- **Caso 04:** Go es el unico stack donde el deadline cancela el trabajo aguas
+  abajo. Rust con `std` y Java quedan en el mismo lugar — `recv_timeout` y
+  `orTimeout()` cortan la espera, no el trabajo. Es el unico caso del lab donde
+  Rust queda por detras de Go en la primitiva central, y esta escrito asi.
+- **Caso 05:** Rust no impide la fuga. El borrow checker previene use-after-free
+  y data races; no previene "guardar de mas". Un `Vec` global que crece compila
+  sin warnings.
+- **Caso 11:** ni Go ni Rust tienen pool de threads que agotar, asi que el caso
+  **no se traduce literal** desde Java. Se modela con semaforo de concurrencia.
+
+### Changed (metadatos del repositorio)
+
+- Descripcion de GitHub: de "5 stacks" a "7 stacks", con Go y Rust listados.
+  De paso se corrigio el mojibake que arrastraba (`ingenier<?>a`).
+- Topics: se agregan `go` y `rust`.
+
+GitHub Pages queda **fuera de alcance** por decision explicita: no esta
+habilitado en el repositorio y no se habilita en esta entrega.
+
 ## 2026-08-03 - Fidelidad universal del caso 01: Node/Java/.NET pasan a SQLite real
 
 Cierra la ultima deuda de fidelidad abierta del lab. El caso 01 vendia "los 5 stacks resuelven el mismo problema" mientras **3 de los 5 simulaban el substrato del fallo** con `setTimeout` / `sleepMicros` / `Thread.SpinWait` sobre listas en memoria. Ahora los cinco ejecutan SQL real contra un motor.

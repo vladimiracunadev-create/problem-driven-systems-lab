@@ -1,12 +1,12 @@
-# Caso 02 — Comparativa multi-stack: N+1 y cuellos de botella en base de datos (PHP · Python · Node.js · Java · .NET)
+# Caso 02 — Comparativa multi-stack: N+1 y cuellos de botella en base de datos (PHP · Python · Node.js · Java · .NET · Go · Rust)
 
 ## El problema que los cinco resuelven
 
 Un feed de pedidos que necesita devolver, por cada pedido, el cliente, los items, y por cada item el producto y su categoria. La variante legacy construye ese grafo con queries anidadas dentro de bucles. La variante optimizada lo construye con joins consolidados y ensamblado en memoria.
 
-## Fidelidad del substrato — los 5 stacks corren sobre SQL real
+## Fidelidad del substrato — los 7 stacks corren sobre SQL real
 
-A diferencia del caso 01, **caso 02 ejecuta N+1 real sobre una base relacional embebida en los cinco stacks**. El contraste deja de ser "DB vs memoria" y pasa a ser **N+1 sobre el mismo problema, primitivas idiomaticas distintas por lenguaje**:
+**Caso 02 ejecuta N+1 real sobre una base relacional embebida en los siete stacks** — igual que el caso 01 desde que se cerro su deuda de fidelidad. El contraste deja de ser "DB vs memoria" y pasa a ser **N+1 sobre el mismo problema, primitivas idiomaticas distintas por lenguaje**:
 
 | Stack | Motor | Primitiva idiomatica |
 |---|---|---|
@@ -277,6 +277,42 @@ Un solo `ExecuteReader()` con `IN(@id0, @id1, ...)` parametrizado. `using` garan
 
 ---
 
+---
+
+## Go 1.23: `database/sql` + `modernc.org/sqlite`, sin ORM que culpar
+
+**Motor:** SQLite en memoria compartida (`file:case02?mode=memory&cache=shared`). Sin `cache=shared`, cada conexion del pool abriria su propia base vacia — es el detalle que hace que el caso funcione con `database/sql`.
+
+**Legacy vs optimized:**
+```go
+orders, _ := selectOrders(limit)                  // 1
+for _, o := range orders {                        // N
+    db.Query("SELECT sku, qty FROM order_items WHERE order_id = ? ORDER BY id ASC", o.id)
+}
+// vs
+placeholders := strings.TrimRight(strings.Repeat("?,", len(ids)), ",")
+db.Query(fmt.Sprintf("SELECT order_id, sku, qty FROM order_items WHERE order_id IN (%s) ORDER BY id ASC", placeholders), ids...)
+```
+
+**Lo que este stack enseña y los otros no:** Go no tiene ORM en la biblioteca estandar. En Java o .NET, el N+1 de este caso es el que **genera Hibernate o Entity Framework** al iterar una coleccion lazy sin `JOIN FETCH` ni `Include()` — aparece sin que nadie lo escriba, y por eso cuesta detectarlo. Aca hay que teclearlo. El caso lo teclea a proposito para medirlo, y el diagnostico empieza leyendo el codigo en vez del log del ORM.
+
+---
+
+## Rust 1.83: `rusqlite` bundled y el error de cursor que no se puede ignorar
+
+**Motor:** SQLite embebido via `rusqlite` feature `bundled`, archivo con `journal_mode=WAL`.
+
+**Donde Rust se separa de Go —que comparte con el la ausencia de ORM— es en el manejo del cursor:**
+```rust
+// query_map devuelve Iterator<Item = Result<T>>.
+// Este collect obliga a decidir que pasa si una fila falla a mitad del recorrido.
+mapped.collect::<rusqlite::Result<Vec<_>>>()?
+```
+
+En Go el equivalente es recorrer `rows.Next()` y **acordarse** de chequear `rows.Err()` despues del bucle. Olvidarlo compila y silencia fallos parciales del cursor: la query devuelve menos filas de las que debia y nadie se entera. En Rust ese olvido no tiene forma de expresarse, porque el `Result` esta en el tipo del iterador.
+
+**Verificacion cruzada:** Go y Rust generan el dataset con el mismo LCG. `/orders-legacy?limit=5` devuelve `order_id 1, customer_id 276` con items `SKU-2369 qty 2` y `SKU-2863 qty 8` en ambos.
+
 ## Diferencias de decision, no de correccion
 
 | Aspecto | PHP | Python | Node.js | Java | .NET | Razon |
@@ -289,3 +325,20 @@ Un solo `ExecuteReader()` con `IN(@id0, @id1, ...)` parametrizado. `using` garan
 | Costo del N+1 | Bloquea el proceso FPM completo | Bloquea el thread (GIL libre en I/O) | Bloquea el event loop (SQLite sincronico) | Bloquea el worker del pool | Bloquea el worker del pool | Cinco modelos de concurrencia, mismo patron, distinta senal bajo carga. |
 
 **El patron que los cinco demuestran es identico:** N+1 sobre SQL escala con N*M independientemente del lenguaje o motor. La correccion — batch loading con `IN(...)` + agrupacion en memoria — tambien es identica en concepto. La diferencia observable bajo carga concurrente es **donde duele** y **con que primitiva idiomatica se expresa la solucion**.
+
+---
+
+## Primitiva central por stack
+
+> Los siete stacks resuelven el mismo problema. Lo que cambia es la primitiva y donde duele.
+
+| Stack | Primitiva central en este caso |
+|---|---|
+| PHP | PostgreSQL real via `PDO` |
+| Python | `sqlite3` stdlib |
+| Node.js | `node:sqlite` `db.prepare()` |
+| Java 21 | `sqlite-jdbc` `PreparedStatement` + batch `IN(...)` |
+| .NET 8 | `Microsoft.Data.Sqlite` `SqliteCommand` + parametros |
+| Go 1.23 | `database/sql` — sin ORM que genere el N+1 por accidente |
+| Rust 1.83 | `rusqlite`; `collect::<Result<Vec<_>>>()` impide ignorar el error de cursor |
+

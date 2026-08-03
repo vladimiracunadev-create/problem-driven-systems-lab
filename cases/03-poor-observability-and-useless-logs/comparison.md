@@ -1,4 +1,4 @@
-# Caso 03 — Comparativa multi-stack: Observabilidad deficiente y logs inútiles (PHP · Python · Node.js · Java · .NET)
+# Caso 03 — Comparativa multi-stack: Observabilidad deficiente y logs inútiles (PHP · Python · Node.js · Java · .NET · Go · Rust)
 
 ## El problema que ambos resuelven
 
@@ -259,6 +259,38 @@ StructuredLog("error", "checkout_failed", new Dictionary<string,string> {
 
 ---
 
+---
+
+## Go 1.23: `context.Context` como parametro explicito + `log/slog` de la stdlib
+
+**La primitiva:** el correlation ID viaja en un `context.Context` que se pasa **como parametro**, no en almacenamiento ambiente. La clave del contexto es un tipo privado (`type ctxKey struct{}`) para que nadie de afuera pueda colisionar con ella.
+
+```go
+func structuredLog(ctx context.Context, level, event string, fields map[string]any)
+```
+
+La firma obliga a tener contexto para loguear. Y la variante legacy **no recibe `ctx`** — esa ausencia en la firma es la señal.
+
+**`log/slog`:** unico stack del lab donde el logger estructurado viene en la biblioteca estandar. Emite el mismo evento a stdout que `/logs` devuelve, sin elegir entre uno u otro.
+
+**Lo que Go NO hace, y conviene no exagerar:** el compilador **no obliga** a propagar el contexto. Lanzar `go func(){ ... }()` sin pasarle el `ctx` compila perfectamente y ese trabajo queda sin correlacionar. Go hace la dependencia **visible en la firma**, no obligatoria. Es una mejora de legibilidad y de revision de codigo frente a `ThreadLocal`/`AsyncLocal`, no una garantia del compilador.
+
+---
+
+## Rust 1.83: `&RequestCtx` prestado, con lifetime acotado al request
+
+**La primitiva:** el contexto se presta por referencia, y el borrow checker impide que esa referencia sobreviva al handler. Guardarla en una estructura de vida mas larga **no compila**.
+
+```rust
+fn structured_log(ctx: &RequestCtx, level: &str, event: &str, fields: &[(&str, &str)])
+```
+
+**La categoria de bug que esto cierra:** en los modelos ambiente (`ThreadLocal`, `AsyncLocal`, `AsyncLocalStorage`), un contexto que sobrevive a su request —porque el thread se reutiliza y nadie limpio el slot— hace que los logs del usuario siguiente lleven el `correlation_id` del anterior. Es silencioso y desagradable de auditar. Aca no se puede escribir.
+
+**Aqui esta la garantia que Go no da:** Go hace visible la dependencia; Rust la hace verificable. Es el unico de los siete stacks donde el compilador impide que el contexto se filtre fuera de su request.
+
+**Contrapartida honesta:** `std` no trae logger estructurado. Go tiene `log/slog` desde 1.21; en Rust el ecosistema usa `tracing` o `log`, y para mantener el caso sin dependencias el JSON se arma con `format!` a mano. Es menos ergonomico.
+
 ## Diferencias de decisión, no de corrección
 
 | Aspecto | PHP | Python | Node.js | Razon |
@@ -270,3 +302,20 @@ StructuredLog("error", "checkout_failed", new Dictionary<string,string> {
 | Excepcion con contexto | `class WorkflowFailure { ... }` | `class WorkflowFailure(Exception): ...` | `class WorkflowFailure extends Error { ... }` | ES6 classes en Node alinean con PHP/Python sin sintaxis especial. |
 
 **El concepto que los tres demuestran es idéntico:** logs sin estructura y sin correlación hacen el diagnóstico imposible. La diferencia practica es que Python tiene la API mas dificil de violar accidentalmente; PHP y Node confian en disciplina del developer (o de una libreria como winston/pino para Node, monolog para PHP).
+
+---
+
+## Primitiva central por stack
+
+> Los siete stacks resuelven el mismo problema. Lo que cambia es la primitiva y donde duele.
+
+| Stack | Primitiva central en este caso |
+|---|---|
+| PHP | contexto por request en el proceso FPM |
+| Python | `logging.LoggerAdapter` + `JsonFormatter` |
+| Node.js | `AsyncLocalStorage` |
+| Java 21 | `ThreadLocal<RequestContext>` |
+| .NET 8 | `AsyncLocal<T>` que fluye por `await` |
+| Go 1.23 | `context.Context` **como parametro**; `log/slog` en la stdlib |
+| Rust 1.83 | **`&RequestCtx` prestado**; el borrow checker impide que sobreviva al request |
+

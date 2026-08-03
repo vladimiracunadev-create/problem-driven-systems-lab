@@ -165,5 +165,9 @@ make compare-up CASE=02-n-plus-one-and-db-bottlenecks
 ├── 🟢 node/
 ├── 🐍 python/
 ├── ☕ java/
-└── 🔵 dotnet/
+├── 🔵 dotnet/
 ```
+├── 🐹 go/
+← `OPERATIVO` — database/sql sin ORM; batch IN(...)
+└── 🦀 rust/
+← `OPERATIVO` — rusqlite; collect::<Result<..>> impide ignorar el cursor

@@ -182,12 +182,14 @@ curl http://localhost:8400/10/decisions
 10-expensive-architecture-for-simple-needs/
 ├── README.md                    ← este archivo
 ├── comparison.md                ← comparativa multi-stack
-├── compose.compare.yml          ← los 5 stacks juntos
+├── compose.compare.yml          ← los 7 stacks juntos
 ├── docs/                        ← análisis + postmortem + ADRs
 ├── shared/                      ← assets compartidos
 ├── 🐘 php/                      ← `OPERATIVO` — simulación de hops + ADRs
 ├── 🐍 python/                   ← `OPERATIVO` — stdlib + serialization manual
 ├── 🟢 node/                     ← `OPERATIVO` — JSON.stringify/parse cycles
 ├── ☕ java/                     ← `OPERATIVO` — StringBuilder loops vs HashMap O(1)
-└── 🔵 dotnet/                   ← `OPERATIVO` — Dictionary O(1) vs N hops JsonSerializer con presion LOH
+├── 🔵 dotnet/                   ← `OPERATIVO` — Dictionary O(1) vs N hops JsonSerializer con presion LOH
+├── 🐹 go/                   ← `OPERATIVO` — strings.Builder vs map O(1)
+└── 🦀 rust/                   ← `OPERATIVO` — String::with_capacity vs HashMap O(1)
 ```

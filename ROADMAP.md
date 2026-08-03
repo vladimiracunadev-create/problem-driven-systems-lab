@@ -4,14 +4,14 @@
 
 ## Estado actual (2026-05-20)
 
-- **12 casos × 5 stacks operativos = 60 endpoints** detras de 5 hubs simetricos (`compose.root.yml` PHP `:8100`, `compose.python.yml` Python `:8200`, `compose.nodejs.yml` Node `:8300`, `compose.java.yml` Java `:8400`, `compose.dotnet.yml` .NET `:8500`).
-- **Casos 01 y 02 con fidelidad universal:** los 5 stacks ejecutan SQL real sobre un motor — PostgreSQL en PHP, SQLite stdlib en Python, `node:sqlite` built-in en Node, `sqlite-jdbc` en Java, `Microsoft.Data.Sqlite` en .NET. `db_hits` / `db_queries_in_request` cuentan ejecuciones reales contra motor en los cinco runtimes.
+- **12 casos × 7 stacks operativos = 84 endpoints** detras de 7 hubs simetricos (`compose.root.yml` PHP `:8100`, `compose.python.yml` Python `:8200`, `compose.nodejs.yml` Node `:8300`, `compose.java.yml` Java `:8400`, `compose.dotnet.yml` .NET `:8500`, `compose.go.yml` Go `:8600`, `compose.rust.yml` Rust `:8700`).
+- **Casos 01 y 02 con fidelidad universal:** los 7 stacks ejecutan SQL real sobre un motor — PostgreSQL en PHP, SQLite stdlib en Python, `node:sqlite` built-in en Node, `sqlite-jdbc` en Java, `Microsoft.Data.Sqlite` en .NET, `modernc.org/sqlite` (Go puro, sin cgo) en Go, `rusqlite` feature `bundled` en Rust. `db_hits` / `db_queries_in_request` cuentan ejecuciones reales contra motor en los siete runtimes.
 - **Caso 01 con el filtro no sargable verificado por el planner:** `EXPLAIN QUERY PLAN` devuelve `SCAN orders` para `WHERE LOWER(region) LIKE 'n%'` y `SEARCH orders USING INDEX idx_orders_region` para el mismo predicado reescrito como rango. Java y .NET usan `journal_mode=WAL` para que el worker que refresca el resumen no bloquee a los lectores — el equivalente embebido del MVCC de PostgreSQL.
-- **Asimetria que queda, por diseño:** solo PHP cruza un socket TCP contra un motor externo con pool FPM finito. Los otros cuatro embeben el motor. Node y Python conservan un round-trip artificial explicito que modela el hop de red ausente. Documentado en cada `comparison.md` y `README.md` de stack, no escondido.
+- **Asimetria que queda, por diseño:** solo PHP cruza un socket TCP contra un motor externo con pool FPM finito. Los otros seis embeben el motor. Node y Python conservan un round-trip artificial explicito que modela el hop de red ausente. Documentado en cada `comparison.md` y `README.md` de stack, no escondido.
 - Documentacion editorial completa (`README.md`, `RECRUITER.md`, `ARCHITECTURE.md`, `RUNBOOK.md`, `SECURITY.md`, `AWS_MIGRATION.md`, `CONTRIBUTING.md`, `CHANGELOG.md`).
 - Catalogo unificado en `shared/catalog/cases.json` como fuente de verdad del portal, `docs/case-catalog.md` y la narrativa operativa.
 - Portal local con `index.html` + `catalog.php` + `probe.php` server-side para health en vivo.
-- CI con validacion estructural + `compose-config` sobre 66 archivos + `portal-probe` PHP + `hub-probe` Python/Node/Java/.NET sobre los 12 casos por stack en un solo boot.
+- CI con validacion estructural + `compose-config` sobre 92 archivos + `portal-probe` PHP + `hub-probe` Python/Node/Java/.NET/Go/Rust sobre los 12 casos por stack en un solo boot.
 
 ## Eje 1 — Nuevos casos de la vida real (13-20)
 
@@ -144,7 +144,7 @@ Node/Java/.NET pasaron a SQLite real en caso 01, siguiendo el patron ya aplicado
 - Java: `sqlite-jdbc` (single jar, sin Maven), archivo con `journal_mode=WAL`.
 - .NET: `Microsoft.Data.Sqlite` (paquete oficial), archivo con `journal_mode=WAL`.
 
-El `setTimeout`/`sleepMicros`/`Task.Delay` desaparecio del substrato. `db_hits` / `db_queries_in_request` cuentan ejecuciones reales contra el motor en los 5 stacks. En Java y .NET el filtro no sargable quedo verificable con `EXPLAIN QUERY PLAN` (`SCAN orders` con `LOWER(region)` vs `SEARCH orders USING INDEX idx_orders_region` con el rango reescrito).
+El `setTimeout`/`sleepMicros`/`Task.Delay` desaparecio del substrato. `db_hits` / `db_queries_in_request` cuentan ejecuciones reales contra el motor en los 7 stacks. En Java, .NET, Go y Rust el filtro no sargable quedo verificable con `EXPLAIN QUERY PLAN` (`SCAN orders` con `LOWER(region)` vs `SEARCH orders USING INDEX idx_orders_region` con el rango reescrito).
 
 Dos decisiones que salieron del camino y vale la pena registrar:
 
@@ -155,14 +155,14 @@ Dos decisiones que salieron del camino y vale la pena registrar:
 
 ---
 
-### Observabilidad de los 5 stacks
+### Observabilidad de los 7 stacks
 
 **Estado:** parcial — hoy solo PHP exporta `/metrics-prometheus` consumido por Prometheus + Grafana.
 
 **Plan:**
 - Instrumentar Python/Node/Java/.NET con `/metrics` Prometheus-compatible (formato OpenMetrics, sin libreria pesada — texto plano via `printf` es suficiente).
 - Agregar dashboards Grafana por stack (latencia p50/p95/p99, `db_hits`, `event_loop_lag_ms` Node, `ThreadPool.GetAvailableWorkerThreads` .NET, `ThreadPoolExecutor.getActiveCount()` Java).
-- Centralizar via un solo Prometheus que scrappea los 5 hubs.
+- Centralizar via un solo Prometheus que scrappea los 7 hubs.
 
 **Estimado:** ~200 lineas por stack en el dispatcher para exponer un agregado de los 12 casos del stack. Dashboards Grafana JSON commiteados en `cases/01-api-latency-under-load/shared/observability/`.
 
@@ -172,17 +172,17 @@ Dos decisiones que salieron del camino y vale la pena registrar:
 
 **Estado:** hoy se valida por `curl` manual y por `portal-probe` / `hub-probe` en CI (smoke `/health` por caso).
 
-**Plan:** tests automaticos (`pytest` o `node:test`) que peguen al hub de cada lenguaje y validen que la **shape del JSON de `/0X/...`** coincide entre los 5 stacks. Por ejemplo, `GET /02/orders-optimized?limit=20` debe devolver el mismo set de keys top-level (`orders`, `db_hits`, `db_time_ms`, `count`) con los mismos tipos en los 5 hubs.
+**Plan:** tests automaticos (`pytest` o `node:test`) que peguen al hub de cada lenguaje y validen que la **shape del JSON de `/0X/...`** coincide entre los 7 stacks. Por ejemplo, `GET /02/orders-optimized?limit=20` debe devolver el mismo set de keys top-level (`orders`, `db_hits`, `db_time_ms`, `count`) con los mismos tipos en los 7 hubs.
 
-**Estimado:** ~400 lineas de tests + matriz CI que corre los 5 hubs en paralelo y ejecuta la suite.
+**Estimado:** ~400 lineas de tests + matriz CI que corre los 7 hubs en paralelo y ejecuta la suite.
 
 ---
 
 ### CI completa
 
-**Estado:** parcial — `compose-config` sobre 66 archivos, `portal-probe` PHP, `hub-probe` Python/Node/Java/.NET sobre `/health`. Falta validacion funcional.
+**Estado:** parcial — `compose-config` sobre 92 archivos, `portal-probe` PHP, `hub-probe` Python/Node/Java/.NET/Go/Rust sobre `/health`. Falta validacion funcional.
 
-**Plan:** workflow GitHub Actions que `docker compose up --build` los 5 stacks en paralelo, corra la suite cross-stack del punto anterior, ejecute un loadtest minimo (`hey -n 1000 -c 50`) contra `/02/orders-legacy` y `/02/orders-optimized` en los 5 hubs, y publique evidencia como artifact (latencias, `db_hits`, p95, p99).
+**Plan:** workflow GitHub Actions que `docker compose up --build` los 7 stacks en paralelo, corra la suite cross-stack del punto anterior, ejecute un loadtest minimo (`hey -n 1000 -c 50`) contra `/02/orders-legacy` y `/02/orders-optimized` en los 7 hubs, y publique evidencia como artifact (latencias, `db_hits`, p95, p99).
 
 **Estimado:** workflow YAML + script de loadtest portable + parser de output de `hey`.
 
@@ -204,7 +204,7 @@ Compromisos editoriales transversales para que el lab no venda fidelidad que no 
 
 **Estado:** aplicada en caso 01 y caso 02. Pendiente en casos 03-12.
 
-**Regla:** cualquier `comparison.md` donde el substrato no sea uniforme entre los 5 stacks debe incluir una seccion **"Fidelidad del substrato"** al inicio (despues del intro), con una tabla que distinga **qué es real / qué es simulado** por stack. El lector no debe descubrir asimetrias leyendo codigo.
+**Regla:** cualquier `comparison.md` donde el substrato no sea uniforme entre los 7 stacks debe incluir una seccion **"Fidelidad del substrato"** al inicio (despues del intro), con una tabla que distinga **qué es real / qué es simulado** por stack. El lector no debe descubrir asimetrias leyendo codigo.
 
 ---
 
@@ -230,6 +230,6 @@ Las fases anteriores quedan registradas para referencia historica:
 
 - **Fase 1 — Base estructural** (completada): nombre y posicionamiento, portal liviano, estructura problem-driven con 12 casos, documentacion base.
 - **Fase 1.5 — Profesionalizacion documental** (completada): familia documental completa en raiz, alineacion editorial con el ecosistema publico de Vladimir Acuna.
-- **Fase 2 — Profundizacion tecnica** (completada): los 12 casos × 5 stacks (PHP/Python/Node/Java/.NET) operativos con primitivas idiomaticas distintivas por caso y por lenguaje.
+- **Fase 2 — Profundizacion tecnica** (completada): los 12 casos × 7 stacks (PHP/Python/Node/Java/.NET/Go/Rust) operativos con primitivas idiomaticas distintivas por caso y por lenguaje.
 - **Fase 3 — Valor de portafolio** (completada): `docs/executive-summary.md` cubierto, diagramas en `ARCHITECTURE.md` cubierto, postmortems cubiertos (`docs/postmortem.md` en los 12 casos).
 - **Fase 4 — Laboratorio expandido** (en progreso, abierta por este ROADMAP): los 8 casos nuevos (13-20) y las mejoras de plataforma listadas arriba son la continuacion natural.

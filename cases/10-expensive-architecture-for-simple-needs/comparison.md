@@ -1,4 +1,4 @@
-# Caso 10 — Comparativa multi-stack: Arquitectura cara para un problema simple (PHP · Python · Node.js · Java · .NET)
+# Caso 10 — Comparativa multi-stack: Arquitectura cara para un problema simple (PHP · Python · Node.js · Java · .NET · Go · Rust)
 
 ## El problema que ambos resuelven
 
@@ -173,6 +173,21 @@ return /* 1 service touched, cost_usd_month=3, lead_time=1 */;
 
 ---
 
+---
+
+## Go 1.23 y Rust 1.83: los dos mas rapidos, y por que eso no importa aca
+
+El costo de este caso es CPU puro: construir y recorrer buffers.
+
+- **Go** usa `strings.Builder`, que garantiza cero copias al convertir a string (reinterpreta el buffer interno). El `toString()` de Java copia el array.
+- **Rust** usa `String::with_capacity` + `push_str`, sin asignaciones intermedias ocultas y sin GC que despues recoja la basura generada.
+
+Es previsible que los numeros absolutos de ambos salgan entre los mas bajos de los siete stacks. **Y por eso mismo vale repetir lo que el caso dice en todos los lenguajes: comparar `elapsed_ms` entre stacks aca no dice nada util.**
+
+Lo comparable es la **forma de la curva dentro de cada stack**: lineal en `hops` para la variante compleja, constante para la right-sized. Esa pendiente es identica en los siete lenguajes, porque la sobrearquitectura no es un problema de runtime sino de diseño. Un lenguaje rapido no arregla ocho saltos de red que no hacian falta — solo hace que tarden menos en no hacer falta.
+
+**Evidencia de que el trabajo nominal es el mismo:** con `hops=8`, tanto Go como Rust devuelven `payload_bytes: 1719`. Byte por byte, construyen el mismo payload. Lo unico que cambia es cuanto cuesta hacerlo.
+
 ## Diferencias de decisión, no de corrección
 
 | Aspecto | PHP | Python | Node.js | Razon |
@@ -184,3 +199,20 @@ return /* 1 service touched, cost_usd_month=3, lead_time=1 */;
 | Constante | `const FEATURE_STORE` (clase) | Modulo-level `dict` | `const STORE = ...` o `Object.freeze(...)` | Tres formas de declarar inmutable-ish. |
 
 **El principio que los tres demuestran es idéntico:** la complejidad debe ser proporcional al problema. Lo distintivo de Node: como el event loop es **un solo thread**, el costo de la sobrearquitectura se ve directamente en latencia degradada para otras peticiones concurrentes — el caso 11 lo explora en profundidad con `monitorEventLoopDelay()`.
+
+---
+
+## Primitiva central por stack
+
+> Los siete stacks resuelven el mismo problema. Lo que cambia es la primitiva y donde duele.
+
+| Stack | Primitiva central en este caso |
+|---|---|
+| PHP | `array` asociativo O(1) |
+| Python | `dict` O(1) |
+| Node.js | `Map` + `JSON.stringify` por hop |
+| Java 21 | `HashMap` vs N hops con `StringBuilder` |
+| .NET 8 | `Dictionary` vs `JsonSerializer` con presion LOH |
+| Go 1.23 | `map` vs `strings.Builder` (cero copias al convertir a string) |
+| Rust 1.83 | `HashMap` vs `String::with_capacity` (sin GC que recoja despues) |
+

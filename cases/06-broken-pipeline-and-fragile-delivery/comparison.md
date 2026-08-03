@@ -1,4 +1,4 @@
-# Caso 06 — Comparativa multi-stack: Pipeline roto y entrega frágil (PHP · Python · Node.js · Java · .NET)
+# Caso 06 — Comparativa multi-stack: Pipeline roto y entrega frágil (PHP · Python · Node.js · Java · .NET · Go · Rust)
 
 ## El problema que ambos resuelven
 
@@ -235,6 +235,44 @@ Tres ramas explicitas — mismo patron que Java. `with`-expression sobre `record
 
 ---
 
+---
+
+## Go 1.23: mutex sobre estructura explicita, no `sync.Map`
+
+Go tiene `sync.Map`, el analogo directo del `ConcurrentHashMap` que usa Java aca. **No se usa, a proposito.**
+
+La seccion critica de este caso no es "leer o escribir una clave": es **leer la version actual, decidir si promover o revertir, y escribir el resultado**. Eso es una transaccion logica. Un mapa concurrente la haria segura por operacion y aun asi incorrecta en conjunto — otro deploy puede colarse entre el read y el write, y el rollback revertiria a una version que ya no era la vigente.
+
+```go
+stateMu.Lock()
+defer stateMu.Unlock()
+before := environs[env]            // leer
+if isBadScenario(scenario) { ... } // decidir
+environs[env] = envState{...}      // escribir
+```
+
+El mutex hace visible que el invariante es la secuencia completa. Es el mismo razonamiento que hace que `ConcurrentHashMap` tampoco alcance en Java; la diferencia es que en Go la estructura no sugiere lo contrario.
+
+---
+
+## Rust 1.83: los estados del pipeline son un `enum`, y el `match` es exhaustivo
+
+En Java, .NET, Go y Node el resultado de este pipeline es un **string** (`"rolled_back"`, `"promoted"`). Agregar un estado nuevo —digamos `canary`— no rompe nada: cae al `else` de algun `if` y se comporta como si fuera otra cosa.
+
+```rust
+enum DeployOutcome {
+    Deployed,
+    DeployedButBroken,
+    BlockedInPreflight { current_version: String },
+    RolledBack { to_version: String },
+    Promoted,
+}
+```
+
+El `match` que construye la respuesta es exhaustivo. Si mañana alguien agrega `DeployOutcome::Canary`, **todos los `match` que no la contemplen dejan de compilar** — el compilador enumera los sitios a revisar.
+
+Para una maquina de estados de deploy esa diferencia no es estetica: el estado no contemplado es precisamente el que deja produccion a medio camino.
+
 ## Diferencias de decisión, no de corrección
 
 | Aspecto | PHP | Python | Node.js | Razon |
@@ -245,3 +283,20 @@ Tres ramas explicitas — mismo patron que Java. `with`-expression sobre `record
 | Rollback | `$env = $previous` (por referencia) | `env["current_release"] = previous` | `env.current_release = previousRelease` | Mismo efecto en los tres. |
 
 **El patron que los tres demuestran es idéntico:** validar antes de mutar, rollback si el post-switch falla. Lo distintivo de Node: el `AbortSignal` propagado convierte la cancelacion del cliente en cancelacion del pipeline sin codigo de glue — la primitiva ya existe en el lenguaje.
+
+---
+
+## Primitiva central por stack
+
+> Los siete stacks resuelven el mismo problema. Lo que cambia es la primitiva y donde duele.
+
+| Stack | Primitiva central en este caso |
+|---|---|
+| PHP | estado en disco/DB entre procesos |
+| Python | `dict` protegido por lock |
+| Node.js | objeto en memoria, single-thread |
+| Java 21 | `ConcurrentHashMap<String,EnvState>` + `record` |
+| .NET 8 | `ConcurrentDictionary` + maquina de estados |
+| Go 1.23 | `sync.Mutex` sobre la **transaccion completa**, no `sync.Map` por operacion |
+| Rust 1.83 | **`enum` con datos asociados + `match` exhaustivo: agregar variante rompe la compilacion** |
+

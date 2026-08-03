@@ -7,6 +7,8 @@
 [![Python](https://img.shields.io/badge/Python-3-3776AB?logo=python&logoColor=white)](cases/)
 [![Java](https://img.shields.io/badge/Java-JVM-ED8B00?logo=openjdk&logoColor=white)](cases/)
 [![.NET](https://img.shields.io/badge/.NET-8-512BD4?logo=dotnet&logoColor=white)](cases/)
+[![Go](https://img.shields.io/badge/Go-1.23-00ADD8?logo=go&logoColor=white)](cases/)
+[![Rust](https://img.shields.io/badge/Rust-1.83-000000?logo=rust&logoColor=white)](cases/)
 [![Status](https://img.shields.io/badge/Estado-Activo-blue)](ROADMAP.md)
 
 Portafolio técnico orientado a problemas reales de software: rendimiento, observabilidad, resiliencia, arquitectura y continuidad operacional. Este repositorio forma parte del ecosistema público de Vladimir Acuña y traduce esa narrativa en escenarios ejecutables, documentados y honestos sobre su madurez real.
@@ -14,7 +16,7 @@ Portafolio técnico orientado a problemas reales de software: rendimiento, obser
 ## 🎯 Executive Summary
 
 - El laboratorio modela **12 problemas reales de ingeniería**, utilizando fallos de alta fidelidad inyectados (I/O, Memoria, Excepciones) en lugar de simulaciones abstractas.
-- Los casos `01` al `12` son piezas de ingeniería operativa en **PHP, Python, Node.js, Java 21 y .NET 8** con primitivas nativas distintas por lenguaje (`ConcurrentHashMap`/`ConcurrentDictionary`, `CompletableFuture.orTimeout`/`CancellationTokenSource`, `LinkedHashMap` LRU/`Dictionary`+`LinkedList`, `record` types, `Optional<T>`/`?.`+`??`, `Semaphore`/`SemaphoreSlim`, `ThreadPoolExecutor`/`ThreadPool.GetAvailableWorkerThreads` saturation observable, etc.). El stack PHP incluye **UI nativa** para diagnósticos visuales.
+- Los casos `01` al `12` son piezas de ingeniería operativa en **PHP, Python, Node.js, Java 21, .NET 8, Go 1.23 y Rust 1.83** con primitivas nativas distintas por lenguaje (`ConcurrentHashMap`/`ConcurrentDictionary`, `context.WithTimeout`/`CompletableFuture.orTimeout`/`CancellationTokenSource`, `chan struct{}` como semáforo/`Semaphore`/`SemaphoreSlim`, `impl Drop`/`LinkedHashMap` LRU/`container/list`, `Option<T>`+`?`/`Optional<T>`/comma-ok/`?.`, `enum` exhaustivo, `runtime.ReadMemStats`, etc.). El stack PHP incluye **UI nativa** para diagnósticos visuales.
 - Implementa patrones profesionales (**Adapter, Strangler, Circuit Breaker, LRU, Cancellation**) resolviendo cuellos de botella reales en cada runtime.
 - Docker es la vía oficial de ejecución limpia y reproducible.
 - [`shared/catalog/cases.json`](shared/catalog/cases.json) es la fuente de verdad del portal, de la documentacion generada y de la narrativa operativa.
@@ -62,6 +64,8 @@ Estado actual:
 - `OPERATIVO` en Node.js: los **12 casos**, con primitivas Node-especificas distintas por caso (event loop lag, **SQLite real via `node:sqlite` built-in en caso 02**, `AbortController`, `AbortSignal.timeout`, `process.memoryUsage()`, `Map<consumer, handler>` strangler, `Proxy` de compatibilidad, `EventEmitter`, `monitorEventLoopDelay`, optional chaining como runbook codificado).
 - `OPERATIVO` en Java 21: los **12 casos**, con primitivas JDK-distintas por caso: `ConcurrentHashMap` summary cache + `ScheduledExecutorService` worker (01), **SQLite real via `sqlite-jdbc` + `PreparedStatement` + batch `IN(?, ...)` (02)**, `ThreadLocal<RequestContext>` correlation (03), `CompletableFuture.orTimeout` + `AtomicReference<BreakerState>` CAS (04), `LinkedHashMap.removeEldestEntry` LRU + `Runtime` metrics (05), `record` types + state machine (06), `ConcurrentHashMap<String,Function>` routing mutable (07), `Function` proxy + `CopyOnWriteArrayList<Consumer>` event bus (08), `Semaphore` budget + snapshot cache + `AtomicReference` breaker (09), `HashMap` O(1) vs N hops `StringBuilder` (10), `ThreadPoolExecutor.getActiveCount()` saturation observable + `ExecutorService` dedicado (11), `Optional<T>` + `map/orElse` como runbook codificado (12).
 - `OPERATIVO` en .NET 8: los **12 casos**, con primitivas BCL-distintas por caso: `ConcurrentDictionary` summary cache + `Task.Delay` worker con `CancellationToken` (01), **SQLite real via `Microsoft.Data.Sqlite` + `SqliteCommand` + batch `IN(@id0, ...)` (02)**, `AsyncLocal<RequestContext>` para correlation_id en pipeline async (03), `CancellationTokenSource` con timeout + breaker `Interlocked` CAS (04), LRU manual con `Dictionary + LinkedList` + `Process.WorkingSet64` (05), `ConcurrentDictionary<string,EnvState>` + máquina de estados con rollback automático (06), `Func<Request,Response>` delegate routing + `record` types (07), `ImmutableList<Action<string>>` + `Func<Old,New>` proxy con cutover gradual (08), `MemoryCache`/`ConcurrentDictionary` snapshot + `SemaphoreSlim` budget + `Interlocked.CompareExchange` breaker (09), lookup directo `Dictionary` vs N hops `JsonSerializer` con presión LOH (10), `ConcurrentExclusiveSchedulerPair` o `Thread` dedicado + `ThreadPool.GetAvailableWorkerThreads` (11), `?.`/`??` con Nullable Reference Types como runbook codificado en el sistema de tipos (12).
+- `OPERATIVO` en Go 1.23: los **12 casos**, con primitivas Go-distintas por caso: **SQLite real via `modernc.org/sqlite` (Go puro, sin cgo) con `journal_mode=WAL` (01 y 02)**, `context.Context` como contexto explicito + `log/slog` estructurado de la stdlib (03), **`context.WithTimeout` que cancela de verdad aguas abajo via `select` sobre `ctx.Done()` (04)**, `container/list` como LRU + `runtime.ReadMemStats` sin agente externo (05), `sync.Mutex` protegiendo la transaccion completa en vez de `sync.Map` (06), `map[string]handlerFunc` con la firma como tipo + `RWMutex` (07), **bus de eventos por canal con `select`+`default` que descarta antes que frenar trafico (08)**, **`chan struct{}` bufferizado COMO semaforo de cuota (09)**, `strings.Builder` sin copias vs map O(1) (10), **semaforo de concurrencia en vez de pool — Go no tiene pool que agotar (11)**, comma-ok + `recover()` (12).
+- `OPERATIVO` en Rust 1.83: los **12 casos**, con primitivas Rust-distintas por caso: **SQLite real via `rusqlite` feature `bundled` — compila SQLite dentro del binario (01 y 02)**, `&RequestCtx` prestado con lifetimes que impiden que sobreviva al request (03), `mpsc::recv_timeout` (04), **`impl Drop` que cuenta sus propias liberaciones — `dropped_total` observable, unico stack del lab que lo expone (05)**, **`enum` con datos asociados + `match` exhaustivo: agregar una variante rompe la compilacion (06)**, `Box<dyn Fn(..) + Send + Sync>` verificado en el punto de registro (07), `mpsc` con single-consumer impuesto por el tipo (08), `Mutex<i64>` cuyo guard libera en todos los caminos (09), `String::with_capacity` (10), `Mutex`+`Condvar` sin busy-wait (11), **`Option<T>` + operador `?` con `match` exhaustivo: omitir el brazo `None` no compila (12)**.
 
 ## 🔐 Postura de seguridad y modelo de despliegue
 
@@ -83,14 +87,16 @@ Estado actual:
 
 El lab declara explicitamente donde el substrato es real y donde no:
 
-| Caso | PHP | Python | Node.js | Java | .NET |
-|---|---|---|---|---|---|
-| **01 (latencia)** | PostgreSQL real | SQLite stdlib | SQLite `node:sqlite` | SQLite `sqlite-jdbc` (WAL) | SQLite `Microsoft.Data.Sqlite` (WAL) |
-| **02 (N+1)** | PostgreSQL real | SQLite stdlib | SQLite `node:sqlite` | SQLite `sqlite-jdbc` | SQLite `Microsoft.Data.Sqlite` |
+| Caso | PHP | Python | Node.js | Java | .NET | Go | Rust |
+|---|---|---|---|---|---|---|---|
+| **01 (latencia)** | PostgreSQL real | SQLite stdlib | SQLite `node:sqlite` | SQLite `sqlite-jdbc` (WAL) | SQLite `Microsoft.Data.Sqlite` (WAL) | SQLite `modernc.org/sqlite` (WAL) | SQLite `rusqlite` bundled (WAL) |
+| **02 (N+1)** | PostgreSQL real | SQLite stdlib | SQLite `node:sqlite` | SQLite `sqlite-jdbc` | SQLite `Microsoft.Data.Sqlite` | SQLite `modernc.org/sqlite` | SQLite `rusqlite` bundled |
 
-**Los casos 01 y 02 tienen fidelidad universal:** los 5 stacks ejecutan SQL real contra un motor, y `db_hits` / `db_queries_in_request` cuentan ejecuciones reales, no iteraciones de un bucle en memoria. En el caso 01, el filtro no sargable esta verificado con `EXPLAIN QUERY PLAN` (`SCAN orders` vs `SEARCH orders USING INDEX`), no afirmado en prosa.
+**Los casos 01 y 02 tienen fidelidad universal:** los 7 stacks ejecutan SQL real contra un motor, y `db_hits` / `db_queries_in_request` cuentan ejecuciones reales, no iteraciones de un bucle en memoria. En el caso 01, el filtro no sargable esta verificado con `EXPLAIN QUERY PLAN` (`SCAN orders` vs `SEARCH orders USING INDEX`), no afirmado en prosa.
 
-La unica asimetria que queda es de **naturaleza del motor**, y es deliberada: solo PHP cruza un socket TCP contra un PostgreSQL externo con pool FPM finito. Los otros cuatro embeben el motor — SQL real y plan de ejecucion real, sin hop de red ni pool remoto. Node y Python compensan con un round-trip artificial explicito y documentado en el codigo. Esta distincion esta detallada en cada `comparison.md`.
+La unica asimetria que queda es de **naturaleza del motor**, y es deliberada: solo PHP cruza un socket TCP contra un PostgreSQL externo con pool FPM finito. Los otros seis embeben el motor — SQL real y plan de ejecucion real, sin hop de red ni pool remoto. Node y Python compensan con un round-trip artificial explicito y documentado en el codigo. Esta distincion esta detallada en cada `comparison.md`.
+
+**La equivalencia es verificable, no declarada.** Los cuatro stacks compilados generan el dataset con el mismo LCG, asi que `GET /01/report-legacy?limit=5` devuelve la misma primera fila —`order_id 12, Customer 1315, silver, north, 934`— con `db_hits 6` y 1.531 filas en `customer_summary` en Java, .NET, Go y Rust. En el caso 02, Go y Rust coinciden hasta el SKU (`order_id 1, customer_id 276, SKU-2369 qty 2`).
 
 ## 🔎 Catálogo de Casos Resolutivos
 
@@ -135,10 +141,12 @@ Cada lenguaje tiene su propio compose en la raíz del repositorio. Un comando le
 | [`compose.nodejs.yml`](compose.nodejs.yml) | Node.js 20 | `8300` Node hub | `OPERATIVO` |
 | [`compose.java.yml`](compose.java.yml) | Java 21 | `8400` Java hub | `OPERATIVO` |
 | [`compose.dotnet.yml`](compose.dotnet.yml) | .NET 8 | `8500` .NET hub | `OPERATIVO` |
+| [`compose.go.yml`](compose.go.yml) | Go 1.23 | `8600` Go hub | `OPERATIVO` |
+| [`compose.rust.yml`](compose.rust.yml) | Rust 1.83 | `8700` Rust hub | `OPERATIVO` |
 
-**Cinco hubs operativos (uno por lenguaje):** PHP, Python, Node, Java y .NET sirven los **12 casos cada uno**. Un solo puerto por hub vía routing por path (`/01/health`...`/12/health`). Los servicios de soporte (DB, Prometheus, Grafana) tienen los suyos propios porque son servicios distintos del lenguaje.
+**Siete hubs operativos (uno por lenguaje):** PHP, Python, Node, Java, .NET, Go y Rust sirven los **12 casos cada uno**. Un solo puerto por hub vía routing por path (`/01/health`...`/12/health`). Los servicios de soporte (DB, Prometheus, Grafana) tienen los suyos propios porque son servicios distintos del lenguaje.
 
-> 🧱 **Los cinco hubs siguen el mismo patrón arquitectónico:** un contenedor por lenguaje (`pdsl-php-lab`, `pdsl-python-lab`, `pdsl-node-lab`, `pdsl-java-lab`, `pdsl-dotnet-lab`) ejecuta sus 12 casos como subprocesos internos en puertos no expuestos. PHP suma ~7 contenedores extras solo porque los **servicios reales** que el caso 01 estudia (PostgreSQL, worker, Prometheus, Grafana) son contenedores aparte por necesidad técnica — no son procesos del lenguaje. Detalles, trade-offs y comparación per-case en [`docs/docker-strategy.md`](docs/docker-strategy.md#-modelo-de-containerización-simétrico-para-los-stacks-operativos).
+> 🧱 **Los siete hubs siguen el mismo patrón arquitectónico:** un contenedor por lenguaje (`pdsl-php-lab`, `pdsl-python-lab`, `pdsl-node-lab`, `pdsl-java-lab`, `pdsl-dotnet-lab`, `pdsl-go-lab`, `pdsl-rust-lab`) ejecuta sus 12 casos como subprocesos internos en puertos no expuestos. PHP suma ~7 contenedores extras solo porque los **servicios reales** que el caso 01 estudia (PostgreSQL, worker, Prometheus, Grafana) son contenedores aparte por necesidad técnica — no son procesos del lenguaje. Detalles, trade-offs y comparación per-case en [`docs/docker-strategy.md`](docs/docker-strategy.md#-modelo-de-containerización-simétrico-para-los-stacks-operativos).
 
 ```bash
 # PHP: portal + dispatcher (12 casos internos en un contenedor) + DB + Prometheus + Grafana
@@ -156,11 +164,17 @@ docker compose -f compose.java.yml up -d --build
 # .NET 8: dispatcher (12 casos internos en un contenedor)
 docker compose -f compose.dotnet.yml up -d --build
 
+# Go 1.23: dispatcher (12 casos internos en un contenedor)
+docker compose -f compose.go.yml up -d --build
+
+# Rust 1.83: dispatcher (12 casos internos en un contenedor)
+docker compose -f compose.rust.yml up -d --build
+
 # Portal liviano solamente
 docker compose -f compose.portal.yml up -d --build
 ```
 
-Con esto, los 60 endpoints operativos (12 casos × 5 stacks) viven detras de **5 puertos**: `8100`, `8200`, `8300`, `8400`, `8500`. El portal (`8080`) y la observabilidad (`9091` Prometheus, `3001` Grafana) suman 3 mas. **8 puertos cubren el laboratorio entero.**
+Con esto, los 84 endpoints operativos (12 casos × 7 stacks) viven detras de **7 puertos**: `8100`, `8200`, `8300`, `8400`, `8500`, `8600`, `8700`. El portal (`8080`) y la observabilidad (`9091` Prometheus, `3001` Grafana) suman 3 mas. **10 puertos cubren el laboratorio entero.**
 
 ### Ejecucion aislada de un solo caso (modo estudio)
 
@@ -200,7 +214,7 @@ Tambien existen atajos con `make`, pero la ruta soportada y mas portable sigue s
 
 ## 🏗️ Arquitectura en una frase
 
-El sistema se organiza como una capa editorial en raiz, un portal de evaluacion con entrada completa PHP o modo liviano, una biblioteca de 12 casos problem-driven y **cinco stacks operativos** detras de hubs simetricos por lenguaje (PHP/Python/Node/Java/.NET los 12 casos cada uno). La arquitectura completa esta documentada en [ARCHITECTURE.md](ARCHITECTURE.md) y [docs/architecture.md](docs/architecture.md).
+El sistema se organiza como una capa editorial en raiz, un portal de evaluacion con entrada completa PHP o modo liviano, una biblioteca de 12 casos problem-driven y **siete stacks operativos** detras de hubs simetricos por lenguaje (PHP/Python/Node/Java/.NET/Go/Rust los 12 casos cada uno). La arquitectura completa esta documentada en [ARCHITECTURE.md](ARCHITECTURE.md) y [docs/architecture.md](docs/architecture.md).
 
 ## 🌐 Ecosistema relacionado
 
@@ -216,7 +230,7 @@ El sistema se organiza como una capa editorial en raiz, un portal de evaluacion 
 
 ## 🚫 Lo que este repo no vende
 
-- Paridad multi-stack universal a nivel de feature: los cinco stacks (PHP, Python, Node, Java, .NET) cubren los 12 casos cada uno con primitivas idiomáticas distintas — no es paridad sintáctica, es paridad funcional con criterio por runtime.
+- Paridad multi-stack universal a nivel de feature: los siete stacks (PHP, Python, Node, Java, .NET, Go, Rust) cubren los 12 casos cada uno con primitivas idiomáticas distintas — no es paridad sintáctica, es paridad funcional con criterio por runtime.
 - Benchmarks absolutos entre lenguajes.
 - Seniority inflada con claims sin evidencia.
 

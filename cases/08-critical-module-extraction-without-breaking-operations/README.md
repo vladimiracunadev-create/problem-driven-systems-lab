@@ -185,12 +185,14 @@ curl http://localhost:8400/08/flows
 08-critical-module-extraction-without-breaking-operations/
 ├── README.md                    ← este archivo
 ├── comparison.md                ← comparativa multi-stack
-├── compose.compare.yml          ← los 5 stacks juntos
+├── compose.compare.yml          ← los 7 stacks juntos
 ├── docs/                        ← análisis + postmortem
 ├── shared/                      ← assets compartidos
 ├── 🐘 php/                      ← `OPERATIVO` — proxy de traducción
 ├── 🐍 python/                   ← `OPERATIVO` — adapter + listeners
 ├── 🟢 node/                     ← `OPERATIVO` — Proxy nativo + EventEmitter
 ├── ☕ java/                     ← `OPERATIVO` — Function proxy + CopyOnWriteArrayList
-└── 🔵 dotnet/                   ← `OPERATIVO` — Func<Old,New> proxy + ImmutableList event bus
+├── 🔵 dotnet/                   ← `OPERATIVO` — Func<Old,New> proxy + ImmutableList event bus
+├── 🐹 go/                   ← `OPERATIVO` — bus por canal con select+default
+└── 🦀 rust/                   ← `OPERATIVO` — mpsc: single-consumer impuesto por el tipo
 ```

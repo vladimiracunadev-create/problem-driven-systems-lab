@@ -5,7 +5,7 @@
 [![Cost-aware](https://img.shields.io/badge/Cost--aware-yes-success)](#-comparación-rápida-de-rutas)
 [![Status](https://img.shields.io/badge/Estado-Plan-blue)](#)
 
-> Plan operativo y honesto para mover el laboratorio (5 stacks operativos · 12 casos cada uno · 60 endpoints) desde Docker Compose local hacia AWS. Tres rutas alternativas, costos con rango realista, diagramas navegables y un mapping explícito de **cómo AWS cierra cada hallazgo del [SECURITY.md](SECURITY.md) sin tocar código del lab**.
+> Plan operativo y honesto para mover el laboratorio (7 stacks operativos · 12 casos cada uno · 84 endpoints) desde Docker Compose local hacia AWS. Tres rutas alternativas, costos con rango realista, diagramas navegables y un mapping explícito de **cómo AWS cierra cada hallazgo del [SECURITY.md](SECURITY.md) sin tocar código del lab**.
 
 ---
 
@@ -15,7 +15,7 @@
 - **Costo mensual estimado:** USD 35 (Lambda spiky) — USD 180 (ECS prod-grade con WAF + Cognito) — USD 420 (EKS standalone con HA).
 - Cierra los 4 hallazgos abiertos del SECURITY.md con servicios managed: **auth (Cognito), rate limit (WAF), atomicidad (DynamoDB tx), TLS (ACM)**.
 - Mantiene el patrón "1 hub por lenguaje" usando ALB con path routing → un target group por stack. La asimetría documentada en el repo (PHP con DB real para casos 01-02, los demás con SQLite embebido para caso 02 y memoria/timer para caso 01) **se preserva** — no se inventa fidelidad que no existe en main.
-- Estado real del repo a la fecha de este plan: **5 stacks operativos** (PHP, Python, Node, Java, .NET), **60 endpoints** detrás de 5 hubs simétricos (`:8100`, `:8200`, `:8300`, `:8400`, `:8500`), portal en `:8080` y observabilidad PHP-only en `:9091` / `:3001`.
+- Estado real del repo a la fecha de este plan: **7 stacks operativos** (PHP, Python, Node, Java, .NET, Go, Rust), **84 endpoints** detrás de 7 hubs simétricos (`:8100`, `:8200`, `:8300`, `:8400`, `:8500`, `:8600`, `:8700`), portal en `:8080` y observabilidad PHP-only en `:9091` / `:3001`.
 
 ---
 
@@ -57,7 +57,7 @@ Mapa de lo que vive hoy en los 5 composes raíz:
 
 **Volúmenes con estado** (`pgdata_case01`, `pgdata_case02`, `prometheus_case01`, `grafana_case01`) desaparecen como volúmenes EBS/EFS y se reemplazan por managed (RDS / AMP / AMG).
 
-**Nota honesta sobre caso 02:** los stacks Python/Node/Java/.NET usan SQLite embebido **dentro del proceso** (sin RDS). Para esos 4 stacks, **no es necesario aprovisionar RDS para caso 02** — el archivo SQLite vive en el filesystem efímero de la task Fargate, lo cual es aceptable porque el lab no persiste estado del caso 02 entre boots. Solo el caso 02 PHP requiere RDS real. Esto baja el costo y simplifica la migración.
+**Nota honesta sobre casos 01 y 02:** los stacks Python/Node/Java/.NET/Go/Rust usan SQLite embebido **dentro del proceso** (sin RDS). Para esos 6 stacks, **no es necesario aprovisionar RDS para esos casos** — el archivo SQLite vive en el filesystem efímero de la task Fargate, lo cual es aceptable porque el lab no persiste estado del caso 02 entre boots. Solo el caso 02 PHP requiere RDS real. Esto baja el costo y simplifica la migración.
 
 ---
 
@@ -167,12 +167,12 @@ graph LR
 
 ### Diferencias clave vs ECS
 
-- **Cada caso 0X se vuelve una función Lambda independiente.** 60 funciones totales (12 × 5 stacks). El dispatcher desaparece — API Gateway hace el routing.
+- **Cada caso 0X se vuelve una función Lambda independiente.** 84 funciones totales (12 × 7 stacks). Go y Rust son los dos runtimes con mejor cold start del set — binarios estáticos sin JIT ni intérprete que inicializar, lo que los vuelve los candidatos naturales para esta ruta. El dispatcher desaparece — API Gateway hace el routing.
 - **Cold start es significativo para Java y .NET** (300 – 2000 ms primer hit sin SnapStart / ReadyToRun); bajo para Node, Python y PHP (50 – 800 ms).
 - **Empacado:** Node/Python/PHP (con custom runtime) usan zip; Java/.NET usan container image.
 - **Costo mínimo real:** USD 5/mes para tráfico de demo. Si nadie visita el portfolio, casi USD 0.
 - **Aurora Serverless v2** con `min_capacity=0.5` ACU reemplaza las 2 RDS del caso 01-02 PHP. Auto-pause baja a 0 ACU si no hay queries por X minutos.
-- **DynamoDB** reemplaza el state JSON en `/tmp` de Python/Node/Java/.NET para casos que mutan state — y resuelve el hallazgo M4 (atomicidad) automáticamente con `ConditionExpression`.
+- **DynamoDB** reemplaza el state JSON en `/tmp` de Python/Node/Java/.NET/Go/Rust para casos que mutan state — y resuelve el hallazgo M4 (atomicidad) automáticamente con `ConditionExpression`.
 
 ### Trade-off honesto
 
@@ -520,7 +520,7 @@ jobs:
 
 | Categoría | Servicio | Para qué se usa |
 |---|---|---|
-| Compute | ECS Fargate | Default — 6 services (5 hubs + portal + worker) |
+| Compute | ECS Fargate | Default — 9 services (7 hubs + portal + worker) |
 | Compute alt | Lambda container image | Ruta 2 serverless |
 | Compute alt | EKS | Ruta 3, K8s managed |
 | Red | VPC, subnets pub/priv, NAT GW, IGW, SG | Aislamiento, egress controlado |

@@ -1,4 +1,4 @@
-# Caso 08 — Comparativa multi-stack: Extracción de módulo crítico sin romper la operación (PHP · Python · Node.js · Java · .NET)
+# Caso 08 — Comparativa multi-stack: Extracción de módulo crítico sin romper la operación (PHP · Python · Node.js · Java · .NET · Go · Rust)
 
 ## El problema que ambos resuelven
 
@@ -202,6 +202,40 @@ public static void Emit(string evt) {
 
 ---
 
+---
+
+## Go 1.23: bus por canal, con la politica de descarte explicita
+
+Java modela el bus con `CopyOnWriteArrayList<Consumer<Event>>`, .NET con un `event` del CLR, Node con `EventEmitter`. Los tres comparten una propiedad que rara vez se nota hasta que duele: **el `emit()` corre los subscribers en el thread del request**. Un subscriber lento penaliza al consumer que disparo el evento.
+
+```go
+func emit(name string) {
+    select {
+    case cutoverBus <- busEvent{...}:
+    default:                            // buffer lleno → se descarta
+    }
+}
+```
+
+`emit()` empuja al canal y vuelve; la goroutine suscriptora consume a su ritmo. Y el `select` con `default` declara una decision que los otros stacks suelen dejar implicita: **si el buffer se llena, se pierde telemetria en vez de frenar trafico**. Estan las dos lineas y es auditable.
+
+---
+
+## Rust 1.83: `mpsc` — el tipo dice cuantos consumidores hay
+
+```go
+ch := make(chan busEvent, 256)   // Go: cualquiera puede enviar Y recibir
+```
+```rust
+let (tx, rx) = mpsc::channel();  // Rust: tx se clona, rx es UNICO
+```
+
+`mpsc` significa multi-producer, **single-consumer**, y el compilador lo impone: `Receiver` no implementa `Clone`. Si alguien intentara consumir el bus desde dos threads, no compila.
+
+En Go, dos goroutines leyendo el mismo canal se reparten los mensajes en silencio. A veces es lo que querias —un pool de workers— y a veces es la razon por la que la mitad de tus eventos de auditoria terminaron en el consumidor equivocado. El canal no distingue una intencion de la otra; el tipo de Rust si.
+
+**Diferencia honesta entre ambos:** el canal de `std` en Rust **no es acotado**, asi que `send` no bloquea ni descarta — la cola crece. Es una eleccion distinta a la de Go, con un riesgo distinto (memoria en vez de latencia). El caso 15 del roadmap es el que estudia esa decision a fondo.
+
 ## Diferencias de decisión, no de corrección
 
 | Aspecto | PHP | Python | Node.js | Razon |
@@ -213,3 +247,20 @@ public static void Emit(string evt) {
 | Estado del proxy | JSON en disco | JSON en disco | JSON en disco | Idéntico. El estado de cutover debe sobrevivir reinicios. |
 
 **Lo distintivo de Node:** `Proxy` permite que el adapter sea **transparente al codigo de negocio**. El consumidor sigue llamando `pricing.computeFinalPrice(payload)`, sin if/else de versiones — la traduccion vive en una sola capa. Cuando el cutover termina, eliminar el Proxy es una sola linea. PHP y Python necesitan el if/else explicito en el consumidor.
+
+---
+
+## Primitiva central por stack
+
+> Los siete stacks resuelven el mismo problema. Lo que cambia es la primitiva y donde duele.
+
+| Stack | Primitiva central en este caso |
+|---|---|
+| PHP | hooks sincronos |
+| Python | callbacks en lista |
+| Node.js | `EventEmitter` + `Proxy` de compatibilidad |
+| Java 21 | `CopyOnWriteArrayList<Consumer>` — corre en el thread del request |
+| .NET 8 | `ImmutableList<Action<string>>` |
+| Go 1.23 | **canal + `select` con `default`: descarta antes que frenar trafico** |
+| Rust 1.83 | **`mpsc`: single-consumer impuesto por el tipo** (canal no acotado — la cola crece) |
+

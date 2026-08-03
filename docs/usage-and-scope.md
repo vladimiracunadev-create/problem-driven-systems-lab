@@ -24,7 +24,7 @@
 | Docker por caso y por stack como ruta oficial | si |
 | Portal raiz para navegar el laboratorio | si |
 | Familia documental profesional en la raiz | si |
-| Paridad funcional completa entre todos los lenguajes | si — los 5 stacks (PHP/Python/Node/Java/.NET) cubren los 12 casos cada uno con primitivas idiomaticas distintas |
+| Paridad funcional completa entre todos los lenguajes | si — los 7 stacks (PHP/Python/Node/Java/.NET/Go/Rust) cubren los 12 casos cada uno con primitivas idiomaticas distintas |
 
 ## 🚫 Limites conscientes
 

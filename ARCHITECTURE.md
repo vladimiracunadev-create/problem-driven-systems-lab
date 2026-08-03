@@ -13,7 +13,7 @@ El laboratorio se organiza hoy como un sistema de cuatro capas:
 
 La fuente de verdad ya no está repartida entre varios archivos manuales: [`shared/catalog/cases.json`](shared/catalog/cases.json) concentra narrativa de producto, documentos, audiencias, stacks y casos operativos.
 
-**Estado a la fecha:** 5 stacks operativos × 12 casos = **60 endpoints** detrás de 5 hubs simétricos.
+**Estado a la fecha:** 7 stacks operativos × 12 casos = **84 endpoints** detrás de 7 hubs simétricos.
 
 ---
 
@@ -58,7 +58,7 @@ graph TB
     PORTAL -.probe.-> NET
 ```
 
-**Lectura clave:** 8 puertos cubren todo el laboratorio. 5 son hubs de lenguaje (uno por stack), 1 es el portal, 2 son observabilidad PHP-only. Los servicios reales del caso 01 PHP (PostgreSQL × 2, worker, exporter, Prometheus, Grafana) son contenedores aparte porque **no son procesos del lenguaje** — son los servicios que el caso estudia.
+**Lectura clave:** 10 puertos cubren todo el laboratorio. 7 son hubs de lenguaje (uno por stack), 1 es el portal, 2 son observabilidad PHP-only. Los servicios reales del caso 01 PHP (PostgreSQL × 2, worker, exporter, Prometheus, Grafana) son contenedores aparte porque **no son procesos del lenguaje** — son los servicios que el caso estudia.
 
 ---
 
@@ -97,9 +97,11 @@ Cada lenguaje operativo tiene su compose raíz — un comando levanta los 12 cas
 | `compose.nodejs.yml` | Node.js 20 | `:8300` | 12 casos en un solo contenedor, stdlib pura |
 | `compose.java.yml` | Java 21 | `:8400` | 12 casos en un solo contenedor, JDK built-in (`HttpServer`, `HttpClient`) |
 | `compose.dotnet.yml` | .NET 8 | `:8500` | 12 casos en un solo contenedor, BCL built-in (`HttpListener`, `System.Text.Json`) |
+| `compose.go.yml` | Go 1.23 | `:8600` | 12 casos en un solo contenedor, stdlib (`net/http`, `encoding/json`, `httputil.ReverseProxy`) |
+| `compose.rust.yml` | Rust 1.83 | `:8700` | 12 casos en un solo contenedor; `std` **no** trae HTTP ni JSON — capa propia sobre `TcpListener` |
 | `compose.portal.yml` | — | `:8080` | portal liviano solamente |
 
-Los cinco stacks pueden correr en paralelo sin colisión de puertos — comparten el mismo patrón hub.
+Los siete stacks pueden correr en paralelo sin colisión de puertos — comparten el mismo patrón hub.
 
 **Por qué importa:** un solo `docker compose up` por stack es la promesa de reproducibilidad. Cualquier evaluador puede levantar uno o los cinco en simultáneo en su laptop.
 
@@ -117,9 +119,9 @@ El laboratorio implementa fallos reales — bloqueos de disco con `flock`, satur
 
 ---
 
-## 🐳 Modelo de containerización (simétrico para los 5 stacks)
+## 🐳 Modelo de containerización (simétrico para los 7 stacks)
 
-Los cinco hubs siguen el **mismo patrón**: un contenedor por lenguaje ejecuta sus 12 casos como subprocesos internos en puertos no expuestos.
+Los siete hubs siguen el **mismo patrón**: un contenedor por lenguaje ejecuta sus 12 casos como subprocesos internos en puertos no expuestos.
 
 ```mermaid
 graph TB
@@ -231,7 +233,7 @@ graph LR
     end
 
     subgraph C03_12[03-12 patrones idiomáticos]
-        OTHER[12 casos x 5 stacks operativos]
+        OTHER[12 casos x 7 stacks operativos]
     end
 ```
 
@@ -252,7 +254,7 @@ graph LR
 | `11` Heavy reporting | ✅ | ✅ | ✅ `monitorEventLoopDelay` | ✅ `ThreadPoolExecutor.getActiveCount()` | ✅ `ConcurrentExclusiveSchedulerPair` | OPERATIVO |
 | `12` Bus factor | ✅ runbooks | ✅ | ✅ optional chaining `?.` | ✅ `Optional<T>` | ✅ `?.` + `??` con NRT | OPERATIVO |
 
-**Lectura clave:** el único caso con asimetría real entre los 5 stacks es el `01`. El caso `02` cerró ese gap recientemente con SQLite embebido. Del `03` al `12` son patrones puros — no requieren substrato externo, solo primitivas idiomáticas del lenguaje.
+**Lectura clave:** los casos `01` y `02` ya no tienen asimetría de fidelidad — los 7 stacks ejecutan SQL real. La única asimetría que queda es de naturaleza del motor: solo PHP cruza un socket TCP contra PostgreSQL externo; los otros seis embeben SQLite. Del `03` al `12` son patrones puros — no requieren substrato externo, solo primitivas idiomáticas del lenguaje.
 
 **✅ OPERATIVO** = lógica real, Docker funcional, evidencia observable. Ver `comparison.md` por caso para profundidad.
 
@@ -282,10 +284,10 @@ graph TB
 
     CI[.github/workflows/ci.yml]
     CI --> VAL
-    CI --> CONFIG[compose-config 66 archivos]
+    CI --> CONFIG[compose-config 92 archivos]
     CI --> SMOKE[compose-smoke per-case PHP]
     CI --> PPROBE[portal-probe hub PHP]
-    CI --> HPROBE[hub-probe Python/Node/Java/.NET]
+    CI --> HPROBE[hub-probe Python/Node/Java/.NET/Go/Rust]
 ```
 
 **Lectura clave:** drift entre lo que dice el repo, lo que muestra el portal y lo que se ejecuta queda bloqueado por CI. Si cualquiera de los tres se sale, no merge.
@@ -304,7 +306,7 @@ graph TB
 
 **Decisión:** un compose raíz por lenguaje (`compose.<lang>.yml`) que levanta los 12 casos de ese lenguaje en un solo contenedor con subprocesos internos.
 
-**Por qué:** un solo comando = una sola superficie evaluable. Los 5 stacks pueden correr en paralelo sin colisión de puertos. Si querés evaluar solo Python, no levantes los otros 4. Trade-off consciente: failure domain por hub, no por caso — para casos que necesitan aislamiento estricto existe `cases/0X/<stack>/compose.yml`.
+**Por qué:** un solo comando = una sola superficie evaluable. Los 7 stacks pueden correr en paralelo sin colisión de puertos. Si querés evaluar solo Python, no levantes los otros 6. Trade-off consciente: failure domain por hub, no por caso — para casos que necesitan aislamiento estricto existe `cases/0X/<stack>/compose.yml`.
 
 ### 3. Stdlib y BCL, no frameworks
 
@@ -392,10 +394,10 @@ La arquitectura actual queda sostenida por seis mecanismos:
 |---|---|
 | `scripts/validate-structure.sh` | Estructura del árbol, archivos requeridos, ausencia de artefactos |
 | `scripts/generate_case_catalog.php --check` | Catálogo sincronizado con `cases.json` |
-| CI `compose-config` | 66 archivos `compose.yml` parsean sin errores (5 hubs + 60 per-case + portal) |
+| CI `compose-config` | 92 archivos `compose.yml` parsean sin errores (7 hubs + 84 per-case + portal) |
 | CI `compose-smoke` (PHP per-case) | Cada caso PHP arranca y responde `/health` en aislamiento |
 | CI `portal-probe` (hub PHP) | El hub PHP `:8100` arranca y el portal resuelve `probe.php` |
-| CI `hub-probe` (Python/Node/Java/.NET) | Cada hub arranca y responde `/01/health`…`/12/health` |
+| CI `hub-probe` (Python/Node/Java/.NET/Go/Rust) | Cada hub arranca y responde `/01/health`…`/12/health` |
 
 ---
 
@@ -408,6 +410,8 @@ La arquitectura actual queda sostenida por seis mecanismos:
 | `compose.nodejs.yml` | Node: dispatcher único con 12 casos internos (`:8300`) |
 | `compose.java.yml` | Java 21: dispatcher único con 12 casos internos (`:8400`) |
 | `compose.dotnet.yml` | .NET 8: dispatcher único con 12 casos internos (`:8500`) |
+| `compose.go.yml` | Go 1.23: dispatcher único con 12 casos internos (`:8600`) |
+| `compose.rust.yml` | Rust 1.83: dispatcher único con 12 casos internos (`:8700`) |
 | `compose.portal.yml` | Portal liviano solamente (`:8080`) |
 | `cases/<caso>/<stack>/compose.yml` | Escenario concreto y aislado (estudio individual) |
 | `cases/<caso>/compose.compare.yml` | Comparación entre stacks del mismo caso |
