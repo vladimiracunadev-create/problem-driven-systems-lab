@@ -68,19 +68,19 @@ PHP sigue siendo la version mas profunda con PostgreSQL, exporter, Prometheus y 
 
 El stack Node.js resuelve el mismo problema con primitivas naturales del runtime:
 
-- `report-legacy` reproduce el `1 + N + N` con `await` secuencial dentro de un bucle, dejando explicito que cada iteracion cede al event loop pero el costo agregado es real.
-- `report-optimized` apoya la lectura sobre el resumen pre-calculado por un worker `setInterval` y agrupa los detalles con un `Map` en una sola pasada.
-- Expone `event_loop_lag_ms` como senal Node-especifica (medida con `setImmediate`), que delata el bloqueo agregado del loop bajo carga concurrente.
+- `report-legacy` reproduce el `1 + 2N` con SQL real: una agregacion con `CAST` no sargable sobre `orders` mas dos queries dependientes por fila.
+- `report-optimized` lee `customer_daily_summary` (mantenida por un worker `setInterval` con `DELETE` + `INSERT ... SELECT`) y resuelve los detalles con una sola query usando `ROW_NUMBER() OVER (PARTITION BY ...)`.
+- Expone `event_loop_lag_ms` como senal Node-especifica (medida con `setImmediate`). Es la unica metrica de este tipo en el lab, y aca es genuina: `node:sqlite` (`DatabaseSync`) es sincronico, asi que cada query del N+1 bloquea el loop del proceso entero.
 
 Ver detalles en [`node/README.md`](node/README.md). Puerto local: `821`.
 
 ### Java 21 (implementacion operativa)
 
-Stack Java operativo con `ConcurrentHashMap` como summary cache lock-free entre worker y handlers, `LongAdder` para contadores, `ScheduledExecutorService` para el worker `report-refresh-java`. Mismas rutas de contraste (`/report-legacy`, `/report-optimized`, `/batch/status`, `/job-runs`). Ver [`java/README.md`](java/README.md). Hub: `http://localhost:8400/01/`. Aislado: puerto `841`.
+Stack Java operativo con SQLite embebido via `sqlite-jdbc` (`journal_mode=WAL`, conexion por request con `try-with-resources`), `LongAdder` para contadores y `ScheduledExecutorService` para el worker `report-refresh-java`. WAL es lo que permite que el worker escriba `customer_summary` sin bloquear a los lectores — el equivalente embebido del MVCC de PostgreSQL. Mismas rutas de contraste (`/report-legacy`, `/report-optimized`, `/batch/status`, `/job-runs`). Ver [`java/README.md`](java/README.md). Hub: `http://localhost:8400/01/`. Aislado: puerto `841`.
 
 ### .NET 8 (implementacion operativa)
 
-Stack .NET operativo con `ConcurrentDictionary` como summary cache lock-free entre worker y handlers, `Interlocked.Increment` para contadores, `Task.Delay` + `CancellationToken` para el worker `report-refresh-dotnet`. Mismas rutas de contraste (`/report-legacy`, `/report-optimized`, `/batch/status`, `/job-runs`). Ver [`dotnet/README.md`](dotnet/README.md). Hub: `http://localhost:8500/01/`. Aislado: puerto `851`.
+Stack .NET operativo con SQLite embebido via `Microsoft.Data.Sqlite` (`journal_mode=WAL`, conexion por unidad de trabajo con `using`/`IDisposable`), `Interlocked.Increment` para contadores y `Task.Delay` + `CancellationToken` para el worker `report-refresh-dotnet`. Es el espejo exacto del Java: mismo esquema, mismas queries, mismos resultados fila por fila. Ver [`dotnet/README.md`](dotnet/README.md). Hub: `http://localhost:8500/01/`. Aislado: puerto `851`.
 
 ---
 
@@ -188,10 +188,10 @@ Este caso deja estructura para medir y comparar:
 │   ├── Dockerfile
 │   ├── compose.yml
 │   └── README.md
-├── 🟢 node/                        ← Implementacion operativa (event loop lag, worker setInterval)
-├── 🐍 python/                      ← Implementacion operativa portable
-├── ☕ java/                         ← `OPERATIVO` — ConcurrentHashMap summary cache + ScheduledExecutorService worker
-└── 🔵 dotnet/                      ← `OPERATIVO` — ConcurrentDictionary summary cache + Task.Delay worker
+├── 🟢 node/                        ← `OPERATIVO` — SQLite via node:sqlite + event loop lag + worker setInterval
+├── 🐍 python/                      ← `OPERATIVO` — SQLite stdlib + worker en thread
+├── ☕ java/                         ← `OPERATIVO` — SQLite via sqlite-jdbc (WAL) + ScheduledExecutorService worker
+└── 🔵 dotnet/                      ← `OPERATIVO` — SQLite via Microsoft.Data.Sqlite (WAL) + Task.Delay worker
 ```
 
 ---

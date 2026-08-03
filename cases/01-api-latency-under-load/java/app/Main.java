@@ -7,15 +7,21 @@ import java.net.InetSocketAddress;
 import java.net.URI;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.time.Instant;
-import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Deque;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -24,16 +30,25 @@ import java.util.concurrent.atomic.LongAdder;
 /**
  * Caso 01 — API lenta bajo carga (stack Java).
  *
- * Problema: N+1 + filtro no sargable bajo carga concurrente vs worker que refresca
- * un resumen. Misma logica que los stacks PHP/Python/Node, primitivas Java distintas.
+ * Problema: filtro no sargable + N+1 bajo carga concurrente, conviviendo con un
+ * worker que refresca una tabla resumen. Misma logica que PHP/Python/Node,
+ * primitivas Java distintas.
+ *
+ * Substrato real: SQLite embebido via sqlite-jdbc 3.46.1.3 (driver xerial), en
+ * archivo bajo /tmp y con journal_mode=WAL. No hay datos en memoria simulando
+ * ser una base: `db_hits` cuenta ejecuciones reales contra el motor.
+ *
+ * Por que WAL y una conexion por request: el worker escribe customer_summary
+ * mientras las rutas leen. Con WAL los lectores no se bloquean con el escritor
+ * — es el equivalente embebido del MVCC que da PostgreSQL en el stack PHP, y es
+ * exactamente la propiedad que este caso enseña.
  *
  * Primitivas Java que aporta este stack:
- *   - ConcurrentHashMap como cache de summary actualizada por el worker
- *     (lectores de /report-optimized no se bloquean con el worker).
- *   - LongAdder para contadores sin lock contention bajo carga.
+ *   - try-with-resources para Connection/PreparedStatement (cierre garantizado
+ *     incluso en el camino de excepcion — sin fugas de conexion).
+ *   - PreparedStatement con placeholders reales.
  *   - ScheduledExecutorService para el worker (shutdown limpio en SIGTERM).
- *
- * Datos en memoria — un solo `docker compose up` sin PostgreSQL externo.
+ *   - LongAdder para contadores sin lock contention bajo carga.
  */
 public class Main {
 
@@ -43,21 +58,28 @@ public class Main {
     private static final int SUMMARY_REFRESH_SECONDS = 5;
     private static final int MAX_SAMPLES = 3000;
     private static final int MAX_JOB_RUNS = 30;
+    private static final String WORKER_NAME = "report-refresh-java";
 
-    private static final List<Customer> customers = new ArrayList<>();
-    private static final List<Order> orders = new ArrayList<>();
-    /** Cache de summary leida por /report-optimized. Escrita SOLO por el worker. */
-    private static final Map<Integer, CustomerSummary> summaryCache = new ConcurrentHashMap<>();
-    private static final Map<Integer, Customer> customerById = new HashMap<>();
-    private static final Map<String, List<Order>> ordersByRegionPrefix = new HashMap<>();
+    private static final Path STORAGE_DIR = Paths.get(System.getProperty("java.io.tmpdir"), "pdsl-case01-java");
+    private static final String DB_URL = "jdbc:sqlite:" + STORAGE_DIR.resolve("case01.sqlite3");
 
     private static final Metrics legacyMetrics = new Metrics();
     private static final Metrics optimizedMetrics = new Metrics();
-    private static final WorkerState workerState = new WorkerState();
-    private static final Deque<JobRun> jobRuns = new ArrayDeque<>();
 
     public static void main(String[] args) throws Exception {
-        seedData();
+        Class.forName("org.sqlite.JDBC");
+        Files.createDirectories(STORAGE_DIR);
+        // Arranque limpio y determinista: se borra la DB y los sidecars de WAL.
+        for (String f : new String[]{"case01.sqlite3", "case01.sqlite3-wal", "case01.sqlite3-shm"}) {
+            Files.deleteIfExists(STORAGE_DIR.resolve(f));
+        }
+
+        try (Connection db = open()) {
+            initSchema(db);
+            seedData(db);
+        }
+        refreshSummary();
+
         HttpServer server = HttpServer.create(new InetSocketAddress(PORT), 0);
         server.createContext("/", Main::route);
         server.setExecutor(Executors.newCachedThreadPool());
@@ -65,16 +87,26 @@ public class Main {
         System.out.println("[case01-java] listening on " + PORT);
 
         ScheduledExecutorService worker = Executors.newSingleThreadScheduledExecutor(r -> {
-            Thread t = new Thread(r, "report-refresh-java");
+            Thread t = new Thread(r, WORKER_NAME);
             t.setDaemon(true);
             return t;
         });
-        worker.scheduleAtFixedRate(Main::refreshSummary, 1, SUMMARY_REFRESH_SECONDS, TimeUnit.SECONDS);
+        worker.scheduleAtFixedRate(Main::refreshSummary, SUMMARY_REFRESH_SECONDS, SUMMARY_REFRESH_SECONDS, TimeUnit.SECONDS);
 
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             worker.shutdownNow();
             server.stop(0);
         }));
+    }
+
+    /** Conexion nueva por unidad de trabajo. WAL permite lector+escritor en paralelo. */
+    private static Connection open() throws SQLException {
+        Connection c = DriverManager.getConnection(DB_URL);
+        try (Statement st = c.createStatement()) {
+            st.execute("PRAGMA journal_mode=WAL");
+            st.execute("PRAGMA busy_timeout=5000");
+        }
+        return c;
     }
 
     // ---------- routing ----------
@@ -106,7 +138,7 @@ public class Main {
                     tracked = optimizedMetrics;
                     break;
                 case "/batch/status":
-                    body = workerState.toJson();
+                    body = workerStateJson();
                     break;
                 case "/job-runs":
                     body = jobRunsJson();
@@ -120,7 +152,9 @@ public class Main {
                 case "/reset-lab":
                     legacyMetrics.reset();
                     optimizedMetrics.reset();
-                    synchronized (jobRuns) { jobRuns.clear(); }
+                    try (Connection db = open(); Statement st = db.createStatement()) {
+                        st.executeUpdate("DELETE FROM job_runs");
+                    }
                     body = "{\"status\":\"reset\",\"stack\":\"" + STACK + "\"}";
                     break;
                 default:
@@ -148,11 +182,12 @@ public class Main {
                 "\"lab\":\"Problem-Driven Systems Lab\"," +
                 "\"case\":\"" + CASE_NAME + "\"," +
                 "\"stack\":\"" + STACK + "\"," +
-                "\"native_primitives\":[\"ConcurrentHashMap (summary cache)\",\"LongAdder (counters)\",\"ScheduledExecutorService (worker)\"]," +
+                "\"substrate\":\"SQLite embebido via sqlite-jdbc (WAL, archivo en /tmp)\"," +
+                "\"native_primitives\":[\"try-with-resources (Connection/PreparedStatement)\",\"PreparedStatement (SQL real)\",\"LongAdder (counters)\",\"ScheduledExecutorService (worker)\"]," +
                 "\"routes\":{" +
                 "\"/health\":\"liveness check\"," +
-                "\"/report-legacy?limit=20\":\"N+1 + filtro no sargable\"," +
-                "\"/report-optimized?limit=20\":\"batch en memoria + lectura O(1) de summary cache\"," +
+                "\"/report-legacy?limit=20\":\"filtro no sargable (LOWER sobre la columna) + N+1 real\"," +
+                "\"/report-optimized?limit=20\":\"rango sargable + batch IN(...) + lectura de customer_summary\"," +
                 "\"/batch/status\":\"estado del worker\"," +
                 "\"/job-runs\":\"historial de corridas del worker\"," +
                 "\"/diagnostics/summary\":\"contraste legacy vs optimized\"," +
@@ -161,93 +196,169 @@ public class Main {
     }
 
     /**
-     * Legacy: scan lineal (filtro no sargable) + N+1 lookup contra customers.
-     * Cada hit cobra ~1.2ms (sleep) para que el costo sea medible bajo carga.
+     * Legacy: filtro no sargable — LOWER(region) sobre la columna impide usar
+     * idx_orders_region, el motor recorre la tabla entera. Despues, N+1 real:
+     * una query dependiente por cada fila devuelta.
      */
-    private static String reportLegacy(int limit) {
+    private static String reportLegacy(int limit) throws SQLException {
         long dbHits = 0;
         long ms0 = System.nanoTime();
-
-        List<Order> scanned = new ArrayList<>();
-        for (Order o : orders) {
-            if (lowerRegion(o.region).startsWith("n")) scanned.add(o);
-        }
-        dbHits++;
-
-        int take = Math.min(limit, scanned.size());
         StringBuilder sb = new StringBuilder(8192);
         sb.append("{\"variant\":\"legacy\",\"rows\":[");
-        for (int i = 0; i < take; i++) {
-            Order o = scanned.get(i);
-            Customer c = lookupCustomerOneByOne(o.customerId);
+
+        try (Connection db = open()) {
+            List<int[]> ids = new ArrayList<>();
+            List<String> regions = new ArrayList<>();
+            List<Double> amounts = new ArrayList<>();
+
+            try (PreparedStatement ps = db.prepareStatement(
+                    "SELECT id, customer_id, region, amount FROM orders " +
+                    "WHERE LOWER(region) LIKE 'n%' ORDER BY id LIMIT ?")) {
+                ps.setInt(1, limit);
+                try (ResultSet rs = ps.executeQuery()) {
+                    while (rs.next()) {
+                        ids.add(new int[]{rs.getInt("id"), rs.getInt("customer_id")});
+                        regions.add(rs.getString("region"));
+                        amounts.add(rs.getDouble("amount"));
+                    }
+                }
+            }
             dbHits++;
-            sleepMicros(1200);
-            if (i > 0) sb.append(',');
-            sb.append("{\"order_id\":").append(o.id)
-              .append(",\"customer\":\"").append(escape(c == null ? "" : c.name)).append('"')
-              .append(",\"tier\":\"").append(c == null ? "" : c.tier).append('"')
-              .append(",\"region\":\"").append(o.region).append('"')
-              .append(",\"amount\":").append(o.amount).append('}');
+
+            for (int i = 0; i < ids.size(); i++) {
+                String name = "";
+                String tier = "";
+                try (PreparedStatement ps = db.prepareStatement(
+                        "SELECT name, tier FROM customers WHERE id = ?")) {
+                    ps.setInt(1, ids.get(i)[1]);
+                    try (ResultSet rs = ps.executeQuery()) {
+                        if (rs.next()) {
+                            name = rs.getString("name");
+                            tier = rs.getString("tier");
+                        }
+                    }
+                }
+                dbHits++;
+                if (i > 0) sb.append(',');
+                sb.append("{\"order_id\":").append(ids.get(i)[0])
+                  .append(",\"customer\":\"").append(escape(name)).append('"')
+                  .append(",\"tier\":\"").append(escape(tier)).append('"')
+                  .append(",\"region\":\"").append(escape(regions.get(i))).append('"')
+                  .append(",\"amount\":").append(amounts.get(i)).append('}');
+            }
         }
+
         double elapsedMs = round2((System.nanoTime() - ms0) / 1_000_000.0);
         sb.append("],\"db_hits\":").append(dbHits)
           .append(",\"elapsed_ms\":").append(elapsedMs)
-          .append(",\"note\":\"N+1 + scan no sargable; cada hit cuesta tiempo real.\"}");
+          .append(",\"note\":\"LOWER(region) invalida el indice + N+1 real: 1 + N queries contra SQLite.\"}");
         return sb.toString();
     }
 
     /**
-     * Optimized: 1 lookup indexado + 1 batch de customers + lectura O(1) del
-     * ConcurrentHashMap que el worker actualiza periodicamente.
+     * Optimized: el mismo filtro reescrito como rango sargable (usa
+     * idx_orders_region), un solo batch IN(...) para los customers, y lectura de
+     * customer_summary que el worker mantiene. 3 queries, no 1+N.
      */
-    private static String reportOptimized(int limit) {
+    private static String reportOptimized(int limit) throws SQLException {
         long dbHits = 0;
         long ms0 = System.nanoTime();
-
-        List<Order> matched = ordersByRegionPrefix.getOrDefault("n", Collections.emptyList());
-        dbHits++;
-        int take = Math.min(limit, matched.size());
-
-        Map<Integer, Customer> batch = new HashMap<>();
-        for (int i = 0; i < take; i++) {
-            int cid = matched.get(i).customerId;
-            if (!batch.containsKey(cid)) batch.put(cid, customerById.get(cid));
-        }
-        dbHits++;
-        sleepMicros(700);
-
         StringBuilder sb = new StringBuilder(8192);
         sb.append("{\"variant\":\"optimized\",\"rows\":[");
-        for (int i = 0; i < take; i++) {
-            Order o = matched.get(i);
-            Customer c = batch.get(o.customerId);
-            CustomerSummary s = summaryCache.get(o.customerId);
-            if (i > 0) sb.append(',');
-            sb.append("{\"order_id\":").append(o.id)
-              .append(",\"customer\":\"").append(escape(c == null ? "" : c.name)).append('"')
-              .append(",\"tier\":\"").append(c == null ? "" : c.tier).append('"')
-              .append(",\"region\":\"").append(o.region).append('"')
-              .append(",\"amount\":").append(o.amount)
-              .append(",\"lifetime_orders\":").append(s == null ? 0 : s.orderCount)
-              .append(",\"lifetime_amount\":").append(s == null ? 0.0 : s.totalAmount)
-              .append('}');
+        int summarySize = 0;
+
+        try (Connection db = open()) {
+            List<int[]> ids = new ArrayList<>();
+            List<String> regions = new ArrayList<>();
+            List<Double> amounts = new ArrayList<>();
+
+            // Rango sargable: region >= 'n' AND region < 'o' usa el indice.
+            try (PreparedStatement ps = db.prepareStatement(
+                    "SELECT id, customer_id, region, amount FROM orders " +
+                    "WHERE region >= 'n' AND region < 'o' ORDER BY id LIMIT ?")) {
+                ps.setInt(1, limit);
+                try (ResultSet rs = ps.executeQuery()) {
+                    while (rs.next()) {
+                        ids.add(new int[]{rs.getInt("id"), rs.getInt("customer_id")});
+                        regions.add(rs.getString("region"));
+                        amounts.add(rs.getDouble("amount"));
+                    }
+                }
+            }
+            dbHits++;
+
+            Map<Integer, String[]> customerBatch = new HashMap<>();
+            Map<Integer, double[]> summaryBatch = new HashMap<>();
+            if (!ids.isEmpty()) {
+                StringBuilder placeholders = new StringBuilder();
+                for (int i = 0; i < ids.size(); i++) placeholders.append(i > 0 ? ",?" : "?");
+
+                try (PreparedStatement ps = db.prepareStatement(
+                        "SELECT id, name, tier FROM customers WHERE id IN (" + placeholders + ")")) {
+                    for (int i = 0; i < ids.size(); i++) ps.setInt(i + 1, ids.get(i)[1]);
+                    try (ResultSet rs = ps.executeQuery()) {
+                        while (rs.next()) {
+                            customerBatch.put(rs.getInt("id"),
+                                    new String[]{rs.getString("name"), rs.getString("tier")});
+                        }
+                    }
+                }
+                dbHits++;
+
+                try (PreparedStatement ps = db.prepareStatement(
+                        "SELECT customer_id, order_count, total_amount FROM customer_summary " +
+                        "WHERE customer_id IN (" + placeholders + ")")) {
+                    for (int i = 0; i < ids.size(); i++) ps.setInt(i + 1, ids.get(i)[1]);
+                    try (ResultSet rs = ps.executeQuery()) {
+                        while (rs.next()) {
+                            summaryBatch.put(rs.getInt("customer_id"),
+                                    new double[]{rs.getInt("order_count"), rs.getDouble("total_amount")});
+                        }
+                    }
+                }
+                dbHits++;
+            }
+
+            for (int i = 0; i < ids.size(); i++) {
+                int cid = ids.get(i)[1];
+                String[] c = customerBatch.get(cid);
+                double[] s = summaryBatch.get(cid);
+                if (i > 0) sb.append(',');
+                sb.append("{\"order_id\":").append(ids.get(i)[0])
+                  .append(",\"customer\":\"").append(escape(c == null ? "" : c[0])).append('"')
+                  .append(",\"tier\":\"").append(escape(c == null ? "" : c[1])).append('"')
+                  .append(",\"region\":\"").append(escape(regions.get(i))).append('"')
+                  .append(",\"amount\":").append(amounts.get(i))
+                  .append(",\"lifetime_orders\":").append(s == null ? 0 : (long) s[0])
+                  .append(",\"lifetime_amount\":").append(s == null ? 0.0 : s[1])
+                  .append('}');
+            }
+
+            summarySize = countRows(db, "customer_summary");
+            dbHits++;
         }
+
         double elapsedMs = round2((System.nanoTime() - ms0) / 1_000_000.0);
         sb.append("],\"db_hits\":").append(dbHits)
           .append(",\"elapsed_ms\":").append(elapsedMs)
-          .append(",\"summary_cache_size\":").append(summaryCache.size())
-          .append(",\"note\":\"1 lookup indexado + 1 batch + O(1) sobre summary cache mantenida por worker.\"}");
+          .append(",\"summary_cache_size\":").append(summarySize)
+          .append(",\"note\":\"Rango sargable + 2 batches IN(...) + customer_summary mantenida por el worker.\"}");
         return sb.toString();
     }
 
-    private static String diagnosticsJson() {
+    private static String diagnosticsJson() throws SQLException {
+        int summarySize;
+        try (Connection db = open()) {
+            summarySize = countRows(db, "customer_summary");
+        }
         return "{" +
                 "\"stack\":\"" + STACK + "\"," +
                 "\"case\":\"" + CASE_NAME + "\"," +
+                "\"substrate\":\"SQLite embebido (sqlite-jdbc, WAL)\"," +
                 "\"legacy\":" + legacyMetrics.toJson("legacy") + "," +
                 "\"optimized\":" + optimizedMetrics.toJson("optimized") + "," +
-                "\"summary_cache_size\":" + summaryCache.size() + "," +
-                "\"worker\":" + workerState.toJson() + "}";
+                "\"summary_cache_size\":" + summarySize + "," +
+                "\"worker\":" + workerStateJson() + "}";
     }
 
     private static String metricsJson() {
@@ -255,15 +366,46 @@ public class Main {
                 ",\"optimized\":" + optimizedMetrics.toJson("optimized") + "}";
     }
 
-    private static String jobRunsJson() {
+    private static String workerStateJson() throws SQLException {
+        try (Connection db = open();
+             PreparedStatement ps = db.prepareStatement(
+                     "SELECT last_status, last_duration_ms, last_message, last_heartbeat " +
+                     "FROM worker_state WHERE worker_name = ?")) {
+            ps.setString(1, WORKER_NAME);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (!rs.next()) {
+                    return "{\"worker_name\":\"" + WORKER_NAME + "\",\"last_status\":\"unknown\"," +
+                            "\"last_duration_ms\":-1,\"last_message\":\"\",\"last_heartbeat\":\"\"}";
+                }
+                return "{" +
+                        "\"worker_name\":\"" + WORKER_NAME + "\"," +
+                        "\"last_status\":\"" + escape(rs.getString("last_status")) + "\"," +
+                        "\"last_duration_ms\":" + rs.getLong("last_duration_ms") + "," +
+                        "\"last_message\":\"" + escape(rs.getString("last_message")) + "\"," +
+                        "\"last_heartbeat\":\"" + escape(rs.getString("last_heartbeat")) + "\"}";
+            }
+        }
+    }
+
+    private static String jobRunsJson() throws SQLException {
         StringBuilder sb = new StringBuilder(1024);
         sb.append("{\"runs\":[");
-        synchronized (jobRuns) {
-            boolean first = true;
-            for (JobRun r : jobRuns) {
-                if (!first) sb.append(',');
-                sb.append(r.toJson());
-                first = false;
+        try (Connection db = open();
+             PreparedStatement ps = db.prepareStatement(
+                     "SELECT at, status, duration_ms, customers_refreshed FROM job_runs " +
+                     "ORDER BY id DESC LIMIT ?")) {
+            ps.setInt(1, MAX_JOB_RUNS);
+            try (ResultSet rs = ps.executeQuery()) {
+                boolean first = true;
+                while (rs.next()) {
+                    if (!first) sb.append(',');
+                    sb.append("{\"at\":\"").append(escape(rs.getString("at")))
+                      .append("\",\"status\":\"").append(escape(rs.getString("status")))
+                      .append("\",\"duration_ms\":").append(rs.getLong("duration_ms"))
+                      .append(",\"customers_refreshed\":").append(rs.getInt("customers_refreshed"))
+                      .append('}');
+                    first = false;
+                }
             }
         }
         sb.append("],\"max_runs_kept\":").append(MAX_JOB_RUNS).append('}');
@@ -272,109 +414,116 @@ public class Main {
 
     // ---------- worker ----------
 
+    /**
+     * Refresca customer_summary con un DELETE + INSERT ... SELECT real. Corre en
+     * su propia conexion; gracias a WAL los lectores siguen respondiendo mientras
+     * esta transaccion escribe.
+     */
     private static void refreshSummary() {
         long t0 = System.nanoTime();
-        Map<Integer, CustomerSummary> next = new HashMap<>();
-        for (Order o : orders) {
-            CustomerSummary s = next.computeIfAbsent(o.customerId, id -> new CustomerSummary());
-            s.orderCount++;
-            s.totalAmount = round2(s.totalAmount + o.amount);
-        }
-        for (Map.Entry<Integer, CustomerSummary> e : next.entrySet()) {
-            summaryCache.put(e.getKey(), e.getValue());
-        }
-        long durMs = (System.nanoTime() - t0) / 1_000_000L;
-        workerState.update("ok", durMs, "refreshed " + next.size() + " customer summaries");
-        synchronized (jobRuns) {
-            jobRuns.addFirst(new JobRun(Instant.now().toString(), "ok", durMs, next.size()));
-            while (jobRuns.size() > MAX_JOB_RUNS) jobRuns.removeLast();
+        try (Connection db = open()) {
+            db.setAutoCommit(false);
+            int refreshed;
+            try (Statement st = db.createStatement()) {
+                st.executeUpdate("DELETE FROM customer_summary");
+                refreshed = st.executeUpdate(
+                        "INSERT INTO customer_summary (customer_id, order_count, total_amount, refreshed_at) " +
+                        "SELECT customer_id, COUNT(*), ROUND(SUM(amount), 2), strftime('%s','now') " +
+                        "FROM orders GROUP BY customer_id");
+            }
+            long durMs = (System.nanoTime() - t0) / 1_000_000L;
+
+            try (PreparedStatement ps = db.prepareStatement(
+                    "UPDATE worker_state SET last_status = ?, last_duration_ms = ?, " +
+                    "last_message = ?, last_heartbeat = ? WHERE worker_name = ?")) {
+                ps.setString(1, "ok");
+                ps.setLong(2, durMs);
+                ps.setString(3, "refreshed " + refreshed + " customer summaries");
+                ps.setString(4, Instant.now().toString());
+                ps.setString(5, WORKER_NAME);
+                ps.executeUpdate();
+            }
+            try (PreparedStatement ps = db.prepareStatement(
+                    "INSERT INTO job_runs (at, status, duration_ms, customers_refreshed) VALUES (?, ?, ?, ?)")) {
+                ps.setString(1, Instant.now().toString());
+                ps.setString(2, "ok");
+                ps.setLong(3, durMs);
+                ps.setInt(4, refreshed);
+                ps.executeUpdate();
+            }
+            try (Statement st = db.createStatement()) {
+                st.executeUpdate("DELETE FROM job_runs WHERE id NOT IN " +
+                        "(SELECT id FROM job_runs ORDER BY id DESC LIMIT " + MAX_JOB_RUNS + ")");
+            }
+            db.commit();
+        } catch (SQLException e) {
+            System.err.println("[case01-java] worker error: " + e.getMessage());
         }
     }
 
-    // ---------- seed ----------
+    // ---------- schema y seed ----------
 
-    private static void seedData() {
+    private static void initSchema(Connection db) throws SQLException {
+        try (Statement st = db.createStatement()) {
+            st.execute("PRAGMA journal_mode=WAL");
+            st.executeUpdate("CREATE TABLE customers (id INTEGER PRIMARY KEY, name TEXT NOT NULL, tier TEXT NOT NULL)");
+            st.executeUpdate("CREATE TABLE orders (id INTEGER PRIMARY KEY, customer_id INTEGER NOT NULL, region TEXT NOT NULL, amount REAL NOT NULL)");
+            st.executeUpdate("CREATE TABLE customer_summary (customer_id INTEGER PRIMARY KEY, order_count INTEGER NOT NULL, total_amount REAL NOT NULL, refreshed_at INTEGER NOT NULL)");
+            st.executeUpdate("CREATE TABLE worker_state (worker_name TEXT PRIMARY KEY, last_status TEXT NOT NULL, last_duration_ms INTEGER NOT NULL, last_message TEXT, last_heartbeat TEXT)");
+            st.executeUpdate("CREATE TABLE job_runs (id INTEGER PRIMARY KEY AUTOINCREMENT, at TEXT NOT NULL, status TEXT NOT NULL, duration_ms INTEGER NOT NULL, customers_refreshed INTEGER NOT NULL)");
+            // El indice que la ruta legacy desperdicia al envolver la columna en LOWER().
+            st.executeUpdate("CREATE INDEX idx_orders_region ON orders (region, id)");
+            st.executeUpdate("CREATE INDEX idx_orders_customer ON orders (customer_id)");
+        }
+    }
+
+    private static void seedData(Connection db) throws SQLException {
         long seed = 102030L;
         String[] regions = {"north", "south", "east", "west"};
         String[] tiers = {"bronze", "silver", "gold"};
 
-        for (int i = 1; i <= 1600; i++) {
-            seed = (seed * 9301 + 49297) % 233280;
-            String tier = tiers[(int) (seed % tiers.length)];
-            Customer c = new Customer(i, "Customer " + i, tier);
-            customers.add(c);
-            customerById.put(i, c);
+        db.setAutoCommit(false);
+        try (PreparedStatement ps = db.prepareStatement("INSERT INTO customers VALUES (?, ?, ?)")) {
+            for (int i = 1; i <= 1600; i++) {
+                seed = (seed * 9301 + 49297) % 233280;
+                ps.setInt(1, i);
+                ps.setString(2, "Customer " + i);
+                ps.setString(3, tiers[(int) (seed % tiers.length)]);
+                ps.addBatch();
+            }
+            ps.executeBatch();
         }
-        for (int i = 1; i <= 4800; i++) {
-            seed = (seed * 9301 + 49297) % 233280;
-            int cid = 1 + (int) (seed % customers.size());
-            String region = regions[(int) ((seed / 7) % regions.length)];
-            double amount = round2(20.0 + (seed % 1000));
-            Order o = new Order(i, cid, region, amount);
-            orders.add(o);
-            ordersByRegionPrefix.computeIfAbsent(region.substring(0, 1), k -> new ArrayList<>()).add(o);
+        try (PreparedStatement ps = db.prepareStatement("INSERT INTO orders VALUES (?, ?, ?, ?)")) {
+            for (int i = 1; i <= 4800; i++) {
+                seed = (seed * 9301 + 49297) % 233280;
+                ps.setInt(1, i);
+                ps.setInt(2, 1 + (int) (seed % 1600));
+                ps.setString(3, regions[(int) ((seed / 7) % regions.length)]);
+                ps.setDouble(4, round2(20.0 + (seed % 1000)));
+                ps.addBatch();
+            }
+            ps.executeBatch();
+        }
+        try (PreparedStatement ps = db.prepareStatement("INSERT INTO worker_state VALUES (?, ?, ?, ?, ?)")) {
+            ps.setString(1, WORKER_NAME);
+            ps.setString(2, "init");
+            ps.setLong(3, -1);
+            ps.setString(4, "worker not started yet");
+            ps.setString(5, "");
+            ps.executeUpdate();
+        }
+        db.commit();
+        db.setAutoCommit(true);
+    }
+
+    private static int countRows(Connection db, String table) throws SQLException {
+        try (Statement st = db.createStatement();
+             ResultSet rs = st.executeQuery("SELECT COUNT(*) FROM " + table)) {
+            return rs.next() ? rs.getInt(1) : 0;
         }
     }
 
-    private static Customer lookupCustomerOneByOne(int id) {
-        for (Customer c : customers) if (c.id == id) return c;
-        return null;
-    }
-
-    private static String lowerRegion(String r) { return r == null ? "" : r.toLowerCase(); }
-
-    // ---------- types ----------
-
-    private record Customer(int id, String name, String tier) {}
-    private record Order(int id, int customerId, String region, double amount) {}
-
-    private static final class CustomerSummary {
-        int orderCount;
-        double totalAmount;
-    }
-
-    private static final class WorkerState {
-        private volatile String status = "init";
-        private volatile long lastDurationMs = -1;
-        private volatile String lastMessage = "worker not started yet";
-        private volatile String lastHeartbeat = null;
-
-        void update(String s, long durMs, String msg) {
-            this.status = s;
-            this.lastDurationMs = durMs;
-            this.lastMessage = msg;
-            this.lastHeartbeat = Instant.now().toString();
-        }
-
-        String toJson() {
-            return "{" +
-                    "\"worker_name\":\"report-refresh-java\"," +
-                    "\"last_status\":\"" + escape(status) + "\"," +
-                    "\"last_duration_ms\":" + lastDurationMs + "," +
-                    "\"last_message\":\"" + escape(lastMessage) + "\"," +
-                    "\"last_heartbeat\":\"" + escape(lastHeartbeat) + "\"}";
-        }
-    }
-
-    private static final class JobRun {
-        final String at;
-        final String status;
-        final long durationMs;
-        final int customersRefreshed;
-
-        JobRun(String at, String status, long durationMs, int customersRefreshed) {
-            this.at = at;
-            this.status = status;
-            this.durationMs = durationMs;
-            this.customersRefreshed = customersRefreshed;
-        }
-
-        String toJson() {
-            return "{\"at\":\"" + escape(at) + "\",\"status\":\"" + escape(status) +
-                    "\",\"duration_ms\":" + durationMs +
-                    ",\"customers_refreshed\":" + customersRefreshed + "}";
-        }
-    }
+    // ---------- tipos ----------
 
     private static final class Metrics {
         private final LongAdder requests = new LongAdder();
@@ -430,11 +579,6 @@ public class Main {
             int n = Integer.parseInt(raw);
             return Math.max(min, Math.min(n, max));
         } catch (NumberFormatException e) { return min; }
-    }
-
-    private static void sleepMicros(int micros) {
-        try { TimeUnit.MICROSECONDS.sleep(micros); }
-        catch (InterruptedException ignored) { Thread.currentThread().interrupt(); }
     }
 
     private static String escape(String v) {

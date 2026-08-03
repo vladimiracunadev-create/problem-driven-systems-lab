@@ -2,9 +2,9 @@ FROM eclipse-temurin:21-jdk-alpine
 
 WORKDIR /app
 
-# sqlite-jdbc para el case 02 (N+1 sobre SQLite embebido). El JAR se descarga
-# una vez y queda en /opt/; el Dispatcher añade /opt/sqlite-jdbc.jar al
-# classpath solo del case 02 — los otros 11 casos no lo cargan.
+# sqlite-jdbc para los casos 01 y 02 (substrato SQLite embebido real). El JAR
+# se descarga una vez y queda en /opt/; el Dispatcher añade /opt/sqlite-jdbc.jar
+# al classpath solo de esos dos casos — los otros 10 no lo cargan.
 RUN apk add --no-cache wget \
  && wget -q -O /opt/sqlite-jdbc.jar \
     https://repo1.maven.org/maven2/org/xerial/sqlite-jdbc/3.46.1.3/sqlite-jdbc-3.46.1.3.jar
@@ -30,7 +30,7 @@ COPY java-dispatcher/app/Dispatcher.java /app/Dispatcher.java
 # la clase top-level `Main` — compilarlos juntos en un solo javac produce
 # "duplicate class". Compilados por separado, cada Main.class queda en
 # /cases/0X/ y el Dispatcher los carga con -cp /cases/0X).
-RUN javac /cases/01/Main.java \
+RUN javac -cp /opt/sqlite-jdbc.jar /cases/01/Main.java \
  && javac -cp /opt/sqlite-jdbc.jar /cases/02/Main.java \
  && javac /cases/03/Main.java \
  && javac /cases/04/Main.java \

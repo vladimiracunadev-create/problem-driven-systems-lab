@@ -5,8 +5,9 @@
 ## Estado actual (2026-05-20)
 
 - **12 casos × 5 stacks operativos = 60 endpoints** detras de 5 hubs simetricos (`compose.root.yml` PHP `:8100`, `compose.python.yml` Python `:8200`, `compose.nodejs.yml` Node `:8300`, `compose.java.yml` Java `:8400`, `compose.dotnet.yml` .NET `:8500`).
-- **Caso 02 con fidelidad universal:** los 5 stacks ejecutan N+1 real sobre SQL — PostgreSQL en PHP, SQLite stdlib en Python, `node:sqlite` built-in en Node, `sqlite-jdbc` en Java, `Microsoft.Data.Sqlite` en .NET. `db_hits` cuenta ejecuciones reales contra motor en los cinco runtimes.
-- **Caso 01 con fidelidad asimetrica documentada:** PHP corre contra PostgreSQL real con worker en contenedor separado, Python contra SQLite stdlib con worker en thread; Node/Java/.NET simulan el substrato del fallo con `setTimeout`/`sleepMicros`/`Task.Delay` mientras mantienen el **patron de solucion** (worker concurrente + cache + readers no bloqueados) real. La asimetria esta explicita en cada `comparison.md` y `README.md` de stack, no escondida.
+- **Casos 01 y 02 con fidelidad universal:** los 5 stacks ejecutan SQL real sobre un motor — PostgreSQL en PHP, SQLite stdlib en Python, `node:sqlite` built-in en Node, `sqlite-jdbc` en Java, `Microsoft.Data.Sqlite` en .NET. `db_hits` / `db_queries_in_request` cuentan ejecuciones reales contra motor en los cinco runtimes.
+- **Caso 01 con el filtro no sargable verificado por el planner:** `EXPLAIN QUERY PLAN` devuelve `SCAN orders` para `WHERE LOWER(region) LIKE 'n%'` y `SEARCH orders USING INDEX idx_orders_region` para el mismo predicado reescrito como rango. Java y .NET usan `journal_mode=WAL` para que el worker que refresca el resumen no bloquee a los lectores — el equivalente embebido del MVCC de PostgreSQL.
+- **Asimetria que queda, por diseño:** solo PHP cruza un socket TCP contra un motor externo con pool FPM finito. Los otros cuatro embeben el motor. Node y Python conservan un round-trip artificial explicito que modela el hop de red ausente. Documentado en cada `comparison.md` y `README.md` de stack, no escondido.
 - Documentacion editorial completa (`README.md`, `RECRUITER.md`, `ARCHITECTURE.md`, `RUNBOOK.md`, `SECURITY.md`, `AWS_MIGRATION.md`, `CONTRIBUTING.md`, `CHANGELOG.md`).
 - Catalogo unificado en `shared/catalog/cases.json` como fuente de verdad del portal, `docs/case-catalog.md` y la narrativa operativa.
 - Portal local con `index.html` + `catalog.php` + `probe.php` server-side para health en vivo.
@@ -136,16 +137,21 @@ Cambios transversales que aplican a todos los casos existentes o futuros.
 
 ### Fidelidad universal de caso 01
 
-**Estado:** pendiente, prioridad alta.
+**Estado:** completada (2026-08-03).
 
-Mover Node/Java/.NET a SQLite real para caso 01, siguiendo el patron ya aplicado a caso 02:
-- Node: `node:sqlite` built-in (sin npm install).
-- Java: `sqlite-jdbc` (single jar, sin Maven).
-- .NET: `Microsoft.Data.Sqlite` (paquete oficial).
+Node/Java/.NET pasaron a SQLite real en caso 01, siguiendo el patron ya aplicado a caso 02:
+- Node: `node:sqlite` built-in (`DatabaseSync`, sin npm install).
+- Java: `sqlite-jdbc` (single jar, sin Maven), archivo con `journal_mode=WAL`.
+- .NET: `Microsoft.Data.Sqlite` (paquete oficial), archivo con `journal_mode=WAL`.
 
-El `setTimeout`/`sleepMicros`/`Task.Delay` desaparece del substrato; el patron de solucion (worker + cache + readers no bloqueados) se mantiene, ahora apoyado en un motor real. La metrica `db_hits` se vuelve honesta en los 5 stacks (hoy lo es solo en PHP + Python).
+El `setTimeout`/`sleepMicros`/`Task.Delay` desaparecio del substrato. `db_hits` / `db_queries_in_request` cuentan ejecuciones reales contra el motor en los 5 stacks. En Java y .NET el filtro no sargable quedo verificable con `EXPLAIN QUERY PLAN` (`SCAN orders` con `LOWER(region)` vs `SEARCH orders USING INDEX idx_orders_region` con el rango reescrito).
 
-**Estimado:** ~600 lineas reescritas en `cases/01/{node,java,dotnet}/app/`, 3 Dockerfiles actualizados, 3 README de stack reescritos, comparison.md actualizado para eliminar la seccion "Fidelidad del substrato" (queda historica en CHANGELOG).
+Dos decisiones que salieron del camino y vale la pena registrar:
+
+- **WAL no es un detalle de implementacion, es la leccion.** El worker escribe `customer_summary` mientras los handlers leen. Sin `journal_mode=WAL` el escritor bloquea a los lectores — exactamente el fallo que el caso enseña a evitar. WAL es el equivalente embebido del MVCC que da PostgreSQL en el stack PHP.
+- **El contrato JSON no se toco.** Java y .NET conservan su shape (`variant`/`rows`/`db_hits`, `/reset-lab`), distinto del de PHP/Python/Node (`mode`/`data`/`db_queries_in_request`, `/reset-metrics`). Converger esos contratos es el item "Suite de tests cross-stack" de mas abajo, no este.
+
+**Deuda que queda:** en Node y Python persiste un round-trip artificial (`ROUNDTRIP_*_MS`, `artificial_roundtrip_ms`) que modela el hop de red que SQLite embebido no tiene. Esta documentado en el codigo y en los README de stack; no es substrato simulado, es transporte simulado.
 
 ---
 

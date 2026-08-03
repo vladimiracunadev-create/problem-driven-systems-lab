@@ -2,6 +2,63 @@
 
 Todos los cambios notables de este laboratorio se registran aqui con foco en madurez tecnica y documental.
 
+## 2026-08-03 - Fidelidad universal del caso 01: Node/Java/.NET pasan a SQLite real
+
+Cierra la ultima deuda de fidelidad abierta del lab. El caso 01 vendia "los 5 stacks resuelven el mismo problema" mientras **3 de los 5 simulaban el substrato del fallo** con `setTimeout` / `sleepMicros` / `Thread.SpinWait` sobre listas en memoria. Ahora los cinco ejecutan SQL real contra un motor.
+
+### El problema que se cierra
+
+`db_hits` era una metrica derivada en Node/Java/.NET — contaba iteraciones de un bucle, no ejecuciones contra un motor. Peor: el caso enseña **filtro no sargable**, un concepto que solo existe si hay un query planner. Sin motor, "no sargable" era una afirmacion del README que nada respaldaba.
+
+### Changed (codigo)
+
+- **Caso 01 Node:** `node:sqlite` (`DatabaseSync`, built-in desde Node 22.5, sin `npm install` ni bindings nativos). Esquema completo con `customers`, `orders`, `customer_daily_summary`, `worker_state`, `job_runs`. La ruta legacy ejecuta `1 + 2N` queries reales; la optimizada resuelve los detalles con `ROW_NUMBER() OVER (PARTITION BY customer_id ORDER BY created_at DESC)` en una sola query. Imagen base `node:20-alpine` → `node:22-alpine` con `--experimental-sqlite`.
+- **Caso 01 Java:** `sqlite-jdbc` 3.46.1.3, archivo bajo `/tmp` con `journal_mode=WAL`, conexion por request con `try-with-resources`. El worker corre con su propia conexion.
+- **Caso 01 .NET:** `Microsoft.Data.Sqlite` 8.0.10, misma estrategia de archivo + WAL, `using`/`IDisposable` para el cierre deterministico. Espejo exacto del Java: mismo esquema, mismas queries, mismos resultados fila por fila.
+- **`java-dispatcher`:** el caso 01 se compila y ejecuta con `/opt/sqlite-jdbc.jar` en classpath, igual que el caso 02. `Dispatcher.java` pasa `SQLITE_JDBC_JAR` como `extraCp` del caso 01.
+
+### Por que WAL no es un detalle de implementacion
+
+El worker refresca `customer_summary` mientras los handlers leen. Sin `journal_mode=WAL`, el `DELETE` + `INSERT ... SELECT` del worker bloquea cada lectura concurrente — que es exactamente el fallo que el caso enseña a evitar. WAL es el equivalente embebido del MVCC que da PostgreSQL en el stack PHP, y por eso Java y .NET lo activan explicitamente.
+
+### El filtro no sargable, ahora verificable
+
+En Java y .NET la ruta legacy usa `WHERE LOWER(region) LIKE 'n%'` y la optimizada el mismo predicado reescrito como rango. El planner lo confirma:
+
+```text
+… WHERE LOWER(region) LIKE 'n%'          →  SCAN orders
+… WHERE region >= 'n' AND region < 'o'   →  SEARCH orders USING INDEX idx_orders_region
+```
+
+Deja de ser una afirmacion en prosa y pasa a ser reproducible con `EXPLAIN QUERY PLAN`.
+
+### Evidencia medida (via hub, `limit=20`)
+
+| Stack | Legacy | Optimized |
+|---|---|---|
+| Node `:8300/01` | 41 queries · 66.3 ms | 2 queries · 12.8 ms |
+| Java `:8400/01` | 21 hits · 10.8 ms | 4 hits · 5.0 ms |
+| .NET `:8500/01` | 21 hits · 13.4 ms | 4 hits · 8.3 ms |
+
+Java y .NET devuelven cifras identicas y la misma primera fila (`Customer 1315`, `order_id 12`), con 1.531 filas en `customer_summary` en ambos — el determinismo cross-stack es verificable, no declarado.
+
+### Lo que NO cambio, a proposito
+
+El **contrato JSON de cada stack**. Java y .NET conservan su shape (`variant`/`rows`/`db_hits`, `/reset-lab`), distinto del de PHP/Python/Node (`mode`/`data`/`db_queries_in_request`, `/reset-metrics`). Converger esos contratos es el item "Suite de tests cross-stack" del ROADMAP, no este cambio: tocarlo aqui habria roto READMEs de los 12 casos y referencias en `AWS_MIGRATION.md` sin relacion con la fidelidad del substrato.
+
+### Deuda que queda registrada
+
+Node y Python conservan un round-trip artificial (`ROUNDTRIP_*_MS`, `artificial_roundtrip_ms`) que modela el hop de red que SQLite embebido no tiene. No es substrato simulado — es transporte simulado, y esta documentado en el codigo y en los README de stack.
+
+### Changed (docs)
+
+- `cases/01/comparison.md`: la seccion "Fidelidad del substrato — asimetria honesta" se reemplaza por "los 5 stacks contra un motor real", con tabla de motor/driver/concurrencia y el bloque `EXPLAIN QUERY PLAN`. Las tres secciones profundas (Node/Java/.NET) se reescriben con el SQL real en lugar de los snippets de `Map`/`HashMap`/`Dictionary`. La tabla final suma filas de driver y de cierre de recursos.
+- `cases/01/{node,java,dotnet}/README.md`: seccion `## Fidelidad` reescrita, bloques de contraste con SQL real, y en Node el titulo y la nota de honestidad actualizados.
+- `cases/01/README.md`: secciones por stack y arbol de directorios actualizados.
+- `README.md` raiz: la tabla "Honestidad de fidelidad" pasa a declarar fidelidad universal en casos 01 y 02; la asimetria restante se reencuadra como naturaleza del motor (solo PHP cruza un socket TCP).
+- `ROADMAP.md`: "Fidelidad universal de caso 01" marcada completada con las dos decisiones de diseño que salieron del camino; "Estado actual" actualizado.
+- `shared/catalog/cases.json`: `level_detail` del caso 01 refleja los motores reales por stack.
+
 ## 2026-08-03 - .NET entra a CI + drift de docs corregido + `--check` del catalogo portable
 
 Cierra una brecha que quedo abierta al agregar el quinto stack: **.NET tenia paridad de codigo pero cero cobertura en CI**. Los 12 casos .NET y el hub `:8500` podian romperse sin que ningun workflow se enterara, mientras `ARCHITECTURE.md` ya afirmaba que CI los validaba.
