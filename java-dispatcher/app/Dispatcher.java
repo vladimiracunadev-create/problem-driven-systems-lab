@@ -31,13 +31,13 @@ public class Dispatcher {
 
     private record CaseInfo(String id, int port, String name, String dir, String extraCp) {}
 
-    // El caso 02 necesita sqlite-jdbc en classpath para usar JDBC sobre SQLite
-    // embebido. El JAR vive en /opt/ y se concatena al classpath del caso.
-    // Los otros 11 casos no necesitan dependencias externas.
+    // Los casos 01 y 02 necesitan sqlite-jdbc en classpath para usar JDBC sobre
+    // SQLite embebido. El JAR vive en /opt/ y se concatena al classpath del caso.
+    // Los otros 10 casos no necesitan dependencias externas.
     private static final String SQLITE_JDBC_JAR = "/opt/sqlite-jdbc.jar";
 
     private static final List<CaseInfo> CASES = List.of(
-        new CaseInfo("01", 9401, "API lenta bajo carga",               "/cases/01", null),
+        new CaseInfo("01", 9401, "API lenta bajo carga",               "/cases/01", SQLITE_JDBC_JAR),
         new CaseInfo("02", 9402, "N+1 y cuellos de botella DB",        "/cases/02", SQLITE_JDBC_JAR),
         new CaseInfo("03", 9403, "Observabilidad deficiente",          "/cases/03", null),
         new CaseInfo("04", 9404, "Timeout chain y retry storms",       "/cases/04", null),

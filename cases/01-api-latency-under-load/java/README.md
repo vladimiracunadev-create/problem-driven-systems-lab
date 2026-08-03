@@ -14,23 +14,36 @@ Stack Java operativo del caso 01. Mismo problema que PHP/Python/Node: N+1 + filt
 
 ## El contraste que esta linea de codigo expone
 
-**Legacy** — scan lineal (no sargable) + N+1 contra customers:
+**Legacy** — filtro no sargable + N+1 real contra el motor:
 ```java
-for (Order o : orders) if (lowerRegion(o.region).startsWith("n")) scanned.add(o);
-for (int i = 0; i < take; i++) {
-    Customer c = lookupCustomerOneByOne(o.customerId);  // busqueda lineal
-    sleepMicros(1200);                                   // costo de roundtrip
+// LOWER(region) envuelve la columna → idx_orders_region queda inutilizable.
+"SELECT id, customer_id, region, amount FROM orders " +
+"WHERE LOWER(region) LIKE 'n%' ORDER BY id LIMIT ?"
+
+// ...y una query dependiente por cada fila devuelta.
+for (int i = 0; i < ids.size(); i++) {
+    try (PreparedStatement ps = db.prepareStatement(
+            "SELECT name, tier FROM customers WHERE id = ?")) { ... }
+    dbHits++;                                   // db_hits = 1 + N
 }
 ```
 
-**Optimized** — lookup indexado + batch + cache del worker:
+**Optimized** — rango sargable + batches `IN(...)` + tabla resumen del worker:
 ```java
-List<Order> matched = ordersByRegionPrefix.getOrDefault("n", List.of());   // O(1)
-for (int i = 0; i < take; i++) {
-    if (!batch.containsKey(cid)) batch.put(cid, customerById.get(cid));    // O(1)
-}
-sleepMicros(700);                                                           // 1 roundtrip
-CustomerSummary s = summaryCache.get(o.customerId);                         // ConcurrentHashMap
+// Mismo predicado, reescrito como rango → recupera el indice.
+"SELECT id, customer_id, region, amount FROM orders " +
+"WHERE region >= 'n' AND region < 'o' ORDER BY id LIMIT ?"
+
+// Un batch para customers y otro para el resumen. db_hits constante.
+"SELECT id, name, tier FROM customers WHERE id IN (?,?,?,…)"
+"SELECT customer_id, order_count, total_amount FROM customer_summary WHERE customer_id IN (…)"
+```
+
+Que el primero no use el indice y el segundo si no es una afirmacion del README — lo dice el planner:
+
+```text
+EXPLAIN QUERY PLAN … WHERE LOWER(region) LIKE 'n%'   →  SCAN orders
+EXPLAIN QUERY PLAN … WHERE region >= 'n' AND < 'o'   →  SEARCH orders USING INDEX idx_orders_region
 ```
 
 ## Rutas
@@ -69,4 +82,17 @@ curl http://127.0.0.1:841/health
 
 ## Fidelidad
 
-Este stack simula la contencion con `sleepMicros()`. El **patron** (worker `ScheduledExecutorService` refrescando `ConcurrentHashMap`, handlers leyendo sin lock, batch loading vs N+1) es real y aprovecha primitivas JDK genuinas; el **substrato del fallo** no — los datos viven en memoria, no hay JDBC ni motor relacional atras. Para ver contencion real de DB en este mismo caso, ver el stack PHP (`../php/README.md`) que corre contra PostgreSQL 16. El compromiso de mover Java a SQLite via `sqlite-jdbc` (siguiendo el patron de caso 02) esta en el [ROADMAP](../../../ROADMAP.md#fidelidad-universal-de-caso-01).
+**Substrato real.** Este stack corre SQL contra SQLite embebido via `sqlite-jdbc` 3.46.1.3 (driver xerial), en archivo bajo `/tmp` y con `journal_mode=WAL`. No hay listas en memoria simulando ser una base: `db_hits` cuenta ejecuciones reales — `1 + N` en la ruta legacy, constante en la optimizada.
+
+**El filtro no sargable lo confirma el planner, no el README:**
+
+```text
+LEGACY     WHERE LOWER(region) LIKE 'n%'          →  SCAN orders
+OPTIMIZED  WHERE region >= 'n' AND region < 'o'   →  SEARCH orders USING INDEX idx_orders_region
+```
+
+Envolver la columna en `LOWER()` invalida `idx_orders_region`. El mismo predicado reescrito como rango lo recupera.
+
+**Por que WAL y una conexion por request:** el worker escribe `customer_summary` mientras las rutas leen. Con WAL los lectores no se bloquean con el escritor — es el equivalente embebido del MVCC que da PostgreSQL en el stack PHP, y es exactamente la propiedad que este caso enseña. `try-with-resources` garantiza el cierre de `Connection` y `PreparedStatement` incluso en el camino de excepcion, sin fugas de conexion.
+
+Para ver contencion sobre un recurso externo compartido (pool FPM contra PostgreSQL via socket TCP), ver el stack PHP (`../php/README.md`).

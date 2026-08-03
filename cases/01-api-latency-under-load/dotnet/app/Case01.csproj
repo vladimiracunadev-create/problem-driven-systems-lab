@@ -7,4 +7,9 @@
     <RootNamespace>PdslCase01</RootNamespace>
     <AssemblyName>Case01</AssemblyName>
   </PropertyGroup>
+  <ItemGroup>
+    <!-- SQLite embebido como substrato real del caso — sin contenedor extra.
+         La versión 8.0.10 alinea con TargetFramework net8.0. -->
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="8.0.10" />
+  </ItemGroup>
 </Project>

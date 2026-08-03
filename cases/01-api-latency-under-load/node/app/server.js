@@ -1,11 +1,26 @@
 'use strict';
 
+// Caso 01 — API lenta bajo carga (stack Node.js 22).
+//
+// Substrato real: SQLite embebido vía `node:sqlite` (built-in desde Node 22.5,
+// sin `npm install` y sin bindings nativos). Las dos rutas ejecutan SQL real
+// contra el motor — `db_queries_in_request` cuenta ejecuciones reales, no
+// iteraciones de un bucle en memoria.
+//
+// Particularidad Node que este caso enseña: `DatabaseSync` es **sincrónico**.
+// Cada query del N+1 bloquea el event loop mientras corre. Por eso
+// `event_loop_lag_ms` deja de ser decorativo y pasa a ser la señal que delata
+// el problema: la ruta legacy no solo es lenta para quien la pide, degrada el
+// throughput de todo el proceso. La espera de red se modela aparte (`sleep`
+// async) porque en un driver cliente-servidor real esa parte sí cede el loop.
+
 const http = require('http');
 const { URL } = require('url');
 const { performance } = require('perf_hooks');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
+const { DatabaseSync } = require('node:sqlite');
 
 const APP_STACK = 'Node.js 22';
 const CASE_NAME = '01 - API lenta bajo carga por cuellos de botella reales';
@@ -13,8 +28,11 @@ const WORKER_NAME = 'report-refresh-node';
 const STORAGE_DIR = path.join(os.tmpdir(), 'pdsl-case01-node');
 const METRICS_PATH = path.join(STORAGE_DIR, 'metrics.json');
 
+// Round-trip artificial. SQLite es embebido: no hay hop de red. Estos ms
+// modelan el viaje cliente-servidor de un motor real para que el costo de N+1
+// sea visible. El trabajo SQL de abajo es real; esto es solo el transporte.
 const ROUNDTRIP_LEGACY_MS = 1.2;
-const ROUNDTRIP_BATCH_MS = 0.7;
+const ROUNDTRIP_DEFAULT_MS = 0.7;
 
 const ensureStorageDir = () => {
   fs.mkdirSync(STORAGE_DIR, { recursive: true });
@@ -22,17 +40,58 @@ const ensureStorageDir = () => {
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
-const customers = new Map();
-const orders = [];
-const summaryByCustomer = new Map();
-const jobRuns = [];
-const workerState = {
-  worker_name: WORKER_NAME,
-  last_heartbeat: null,
-  last_status: 'init',
-  last_duration_ms: null,
-  last_message: 'worker not started yet',
+// SQLite en memoria, por proceso. No persiste — el seed es determinista.
+const db = new DatabaseSync(':memory:');
+
+const initSchema = () => {
+  db.exec(`
+    CREATE TABLE customers (
+      id         INTEGER PRIMARY KEY,
+      name       TEXT NOT NULL,
+      tier       TEXT NOT NULL,
+      region     TEXT NOT NULL,
+      created_at INTEGER NOT NULL
+    );
+    CREATE TABLE orders (
+      id           INTEGER PRIMARY KEY,
+      customer_id  INTEGER NOT NULL,
+      status       TEXT NOT NULL,
+      total_amount REAL NOT NULL,
+      created_at   INTEGER NOT NULL
+    );
+    CREATE TABLE customer_daily_summary (
+      customer_id  INTEGER NOT NULL,
+      order_date   INTEGER NOT NULL,
+      total_amount REAL NOT NULL,
+      order_count  INTEGER NOT NULL,
+      refreshed_at INTEGER NOT NULL,
+      PRIMARY KEY (customer_id, order_date)
+    );
+    CREATE TABLE worker_state (
+      worker_name      TEXT PRIMARY KEY,
+      last_heartbeat   INTEGER,
+      last_status      TEXT NOT NULL,
+      last_duration_ms REAL,
+      last_message     TEXT
+    );
+    CREATE TABLE job_runs (
+      id           INTEGER PRIMARY KEY AUTOINCREMENT,
+      worker_name  TEXT NOT NULL,
+      status       TEXT NOT NULL,
+      started_at   INTEGER NOT NULL,
+      finished_at  INTEGER,
+      duration_ms  REAL,
+      rows_written INTEGER,
+      note         TEXT
+    );
+    CREATE INDEX idx_orders_created_customer      ON orders (created_at, customer_id);
+    CREATE INDEX idx_orders_customer_created      ON orders (customer_id, created_at DESC);
+    CREATE INDEX idx_orders_status_created        ON orders (status, created_at);
+    CREATE INDEX idx_summary_order_date_customer  ON customer_daily_summary (order_date, customer_id);
+  `);
 };
+
+const REGIONS = ['north', 'south', 'east', 'west'];
 
 const seedData = () => {
   let seed = 102030;
@@ -40,81 +99,95 @@ const seedData = () => {
     seed = (seed * 9301 + 49297) % 233280;
     return seed / 233280;
   };
-  const regions = ['north', 'south', 'east', 'west'];
   const now = Math.floor(Date.now() / 1000);
 
+  db.exec('BEGIN');
+
+  const insCustomer = db.prepare('INSERT INTO customers VALUES (?, ?, ?, ?, ?)');
+  const insOrder = db.prepare('INSERT INTO orders VALUES (?, ?, ?, ?, ?)');
+
   for (let i = 1; i <= 1600; i += 1) {
-    customers.set(i, {
-      id: i,
-      name: `Customer ${i}`,
-      tier: i % 10 === 0 ? 'gold' : i % 3 === 0 ? 'silver' : 'bronze',
-      region: regions[i % 4],
-      created_at: now - Math.floor(rng() * 365 * 86400),
-    });
+    const tier = i % 10 === 0 ? 'gold' : i % 3 === 0 ? 'silver' : 'bronze';
+    insCustomer.run(i, `Customer ${i}`, tier, REGIONS[i % 4], now - Math.floor(rng() * 365 * 86400));
   }
 
   for (let i = 1; i <= 36000; i += 1) {
-    orders.push({
-      id: i,
-      customer_id: 1 + Math.floor(rng() * 1600),
-      status: rng() < 0.88 ? 'paid' : 'pending',
-      total_amount: Number((15 + rng() * 1500).toFixed(2)),
-      created_at: now - Math.floor(rng() * 180 * 86400),
-    });
+    insOrder.run(
+      i,
+      1 + Math.floor(rng() * 1600),
+      rng() < 0.88 ? 'paid' : 'pending',
+      Number((15 + rng() * 1500).toFixed(2)),
+      now - Math.floor(rng() * 180 * 86400)
+    );
   }
+
+  db.prepare('INSERT INTO worker_state VALUES (?, ?, ?, ?, ?)').run(
+    WORKER_NAME,
+    null,
+    'init',
+    null,
+    'worker not started yet'
+  );
+
+  db.exec('COMMIT');
 };
 
 const dayBucket = (timestampSec) => Math.floor(timestampSec / 86400);
 
-const refreshSummaryOnce = async (note) => {
+// Refresco del resumen: DELETE + INSERT ... SELECT reales contra el motor.
+// Es el proceso batch que convive con la API — el mismo que en PHP corre en un
+// contenedor aparte y en Python en un thread.
+const refreshSummaryOnce = (note) => {
   const started = performance.now();
-  await sleep(8);
-  summaryByCustomer.clear();
-  for (const order of orders) {
-    if (order.status !== 'paid') continue;
-    const day = dayBucket(order.created_at);
-    let perCustomer = summaryByCustomer.get(order.customer_id);
-    if (!perCustomer) {
-      perCustomer = new Map();
-      summaryByCustomer.set(order.customer_id, perCustomer);
-    }
-    const dayEntry = perCustomer.get(day) || { total_amount: 0, order_count: 0, refreshed_at: 0 };
-    dayEntry.total_amount = Number((dayEntry.total_amount + order.total_amount).toFixed(2));
-    dayEntry.order_count += 1;
-    perCustomer.set(day, dayEntry);
-  }
-  const duration_ms = Number((performance.now() - started).toFixed(2));
-  const refreshedAt = Math.floor(Date.now() / 1000);
-  let rowsWritten = 0;
-  for (const perCustomer of summaryByCustomer.values()) {
-    for (const entry of perCustomer.values()) {
-      entry.refreshed_at = refreshedAt;
-      rowsWritten += 1;
-    }
-  }
-  workerState.last_heartbeat = refreshedAt;
-  workerState.last_status = 'ok';
-  workerState.last_duration_ms = duration_ms;
-  workerState.last_message = note;
-  jobRuns.push({
-    id: jobRuns.length + 1,
-    worker_name: WORKER_NAME,
-    status: 'ok',
-    started_at: refreshedAt,
-    finished_at: Math.floor(Date.now() / 1000),
-    duration_ms,
-    rows_written: rowsWritten,
-    note,
-  });
-  if (jobRuns.length > 200) jobRuns.splice(0, jobRuns.length - 200);
-  return { rows_written: rowsWritten, duration_ms };
+  const startedAt = Math.floor(Date.now() / 1000);
+
+  db.exec('BEGIN');
+  db.exec('DELETE FROM customer_daily_summary');
+  const result = db
+    .prepare(
+      `INSERT INTO customer_daily_summary (customer_id, order_date, total_amount, order_count, refreshed_at)
+       SELECT customer_id,
+              CAST(created_at / 86400 AS INTEGER) AS order_date,
+              ROUND(SUM(total_amount), 2)         AS total_amount,
+              COUNT(*)                            AS order_count,
+              ?
+       FROM orders
+       WHERE status = 'paid'
+       GROUP BY customer_id, CAST(created_at / 86400 AS INTEGER)`
+    )
+    .run(startedAt);
+  const rowsWritten = Number(result.changes);
+  const durationMs = Number((performance.now() - started).toFixed(2));
+
+  db.prepare(
+    `UPDATE worker_state
+     SET last_heartbeat = ?, last_status = ?, last_duration_ms = ?, last_message = ?
+     WHERE worker_name = ?`
+  ).run(Math.floor(Date.now() / 1000), 'ok', durationMs, note, WORKER_NAME);
+
+  db.prepare(
+    `INSERT INTO job_runs (worker_name, status, started_at, finished_at, duration_ms, rows_written, note)
+     VALUES (?, ?, ?, ?, ?, ?, ?)`
+  ).run(WORKER_NAME, 'ok', startedAt, Math.floor(Date.now() / 1000), durationMs, rowsWritten, note);
+  db.exec('COMMIT');
+
+  return { rows_written: rowsWritten, duration_ms: durationMs };
 };
 
 const startWorker = () => {
   setInterval(() => {
-    refreshSummaryOnce('periodic summary refresh').catch(() => {
-      workerState.last_status = 'error';
-    });
+    try {
+      refreshSummaryOnce('periodic summary refresh');
+    } catch (_error) {
+      try {
+        db.prepare('UPDATE worker_state SET last_status = ? WHERE worker_name = ?').run(
+          'error',
+          WORKER_NAME
+        );
+      } catch (_ignored) {
+        /* el worker no debe tumbar el proceso */
+      }
+    }
   }, 20000).unref();
 };
 
@@ -267,49 +340,49 @@ const measureEventLoopLag = () =>
     });
   });
 
-const timedQuery = async (work, stats, roundtripMs = ROUNDTRIP_LEGACY_MS) => {
+// El `await sleep` modela el hop de red (async en un driver real). La llamada a
+// SQLite es sincrónica y bloquea el loop: eso es lo que mide event_loop_lag_ms.
+const timedQuery = async (sql, params, stats, roundtripMs = ROUNDTRIP_DEFAULT_MS) => {
   const started = performance.now();
-  await sleep(roundtripMs);
-  const result = work();
+  if (roundtripMs) await sleep(roundtripMs);
+  const rows = db.prepare(sql).all(...params);
   stats.db_time_ms += performance.now() - started;
   stats.db_queries += 1;
-  return result;
+  return rows;
 };
 
 const topCustomersLegacy = async (days, limit, stats) => {
   const sinceDay = dayBucket(Math.floor(Date.now() / 1000) - days * 86400);
-  const aggregated = await timedQuery(
-    () => {
-      const sums = new Map();
-      for (const order of orders) {
-        if (order.status !== 'paid') continue;
-        if (dayBucket(order.created_at) < sinceDay) continue;
-        const current = sums.get(order.customer_id) || { total_spend: 0, order_count: 0 };
-        current.total_spend = Number((current.total_spend + order.total_amount).toFixed(2));
-        current.order_count += 1;
-        sums.set(order.customer_id, current);
-      }
-      return [...sums.entries()]
-        .map(([customer_id, value]) => ({ customer_id, ...value }))
-        .sort((a, b) => b.total_spend - a.total_spend)
-        .slice(0, limit);
-    },
+
+  // Filtro no sargable: CAST(created_at / 86400) impide usar el indice sobre
+  // created_at. El motor recorre la tabla entera.
+  const rows = await timedQuery(
+    `SELECT customer_id, ROUND(SUM(total_amount), 2) AS total_spend, COUNT(*) AS order_count
+     FROM orders
+     WHERE CAST(created_at / 86400 AS INTEGER) >= ? AND status = 'paid'
+     GROUP BY customer_id
+     ORDER BY total_spend DESC
+     LIMIT ?`,
+    [sinceDay, limit],
     stats,
     ROUNDTRIP_LEGACY_MS
   );
 
+  // N+1: dos queries dependientes por cada fila del resultado.
   const enriched = [];
-  for (const row of aggregated) {
-    const customer = await timedQuery(() => customers.get(row.customer_id) || null, stats);
-    const recent = await timedQuery(
-      () =>
-        orders
-          .filter((o) => o.customer_id === row.customer_id)
-          .sort((a, b) => b.created_at - a.created_at)
-          .slice(0, 3),
+  for (const row of rows) {
+    const customer = await timedQuery(
+      'SELECT id, name, tier, region FROM customers WHERE id = ?',
+      [row.customer_id],
       stats
     );
-    enriched.push({ ...row, customer, recent_orders: recent });
+    const recent = await timedQuery(
+      `SELECT id, total_amount, status, created_at
+       FROM orders WHERE customer_id = ? ORDER BY created_at DESC LIMIT 3`,
+      [row.customer_id],
+      stats
+    );
+    enriched.push({ ...row, customer: customer[0] || null, recent_orders: recent });
   }
   return enriched;
 };
@@ -317,90 +390,104 @@ const topCustomersLegacy = async (days, limit, stats) => {
 const topCustomersOptimized = async (days, limit, stats) => {
   const sinceDay = dayBucket(Math.floor(Date.now() / 1000) - days * 86400);
 
-  const aggregated = await timedQuery(
-    () => {
-      const sums = new Map();
-      for (const [customerId, byDay] of summaryByCustomer.entries()) {
-        for (const [day, entry] of byDay.entries()) {
-          if (day < sinceDay) continue;
-          const current = sums.get(customerId) || { total_spend: 0, order_count: 0 };
-          current.total_spend = Number((current.total_spend + entry.total_amount).toFixed(2));
-          current.order_count += entry.order_count;
-          sums.set(customerId, current);
-        }
-      }
-      return [...sums.entries()]
-        .map(([customer_id, value]) => {
-          const customer = customers.get(customer_id);
-          return {
-            customer_id,
-            name: customer ? customer.name : null,
-            tier: customer ? customer.tier : null,
-            region: customer ? customer.region : null,
-            ...value,
-          };
-        })
-        .sort((a, b) => b.total_spend - a.total_spend)
-        .slice(0, limit);
-    },
-    stats,
-    ROUNDTRIP_BATCH_MS
+  // Lectura sargable contra la tabla resumen que mantiene el worker.
+  const rows = await timedQuery(
+    `SELECT c.id AS customer_id, c.name, c.tier, c.region,
+            ROUND(SUM(s.total_amount), 2) AS total_spend,
+            SUM(s.order_count)            AS order_count
+     FROM customer_daily_summary s
+     JOIN customers c ON c.id = s.customer_id
+     WHERE s.order_date >= ?
+     GROUP BY c.id, c.name, c.tier, c.region
+     ORDER BY total_spend DESC
+     LIMIT ?`,
+    [sinceDay, limit],
+    stats
   );
 
-  if (!aggregated.length) return [];
+  if (!rows.length) return [];
 
-  const idSet = new Set(aggregated.map((row) => row.customer_id));
-  const recentMap = await timedQuery(
-    () => {
-      const grouped = new Map();
-      for (const order of orders) {
-        if (!idSet.has(order.customer_id)) continue;
-        const list = grouped.get(order.customer_id) || [];
-        list.push(order);
-        grouped.set(order.customer_id, list);
-      }
-      const out = new Map();
-      for (const [cid, list] of grouped.entries()) {
-        out.set(
-          cid,
-          list
-            .sort((a, b) => b.created_at - a.created_at)
-            .slice(0, 3)
-            .map((o) => ({
-              id: o.id,
-              total_amount: o.total_amount,
-              status: o.status,
-              created_at: o.created_at,
-            }))
-        );
-      }
-      return out;
-    },
-    stats,
-    ROUNDTRIP_BATCH_MS
+  // Un solo batch con window function reemplaza las 2N queries del N+1.
+  const ids = rows.map((row) => row.customer_id);
+  const placeholders = ids.map(() => '?').join(',');
+  const details = await timedQuery(
+    `SELECT customer_id, id, total_amount, status, created_at
+     FROM (
+       SELECT customer_id, id, total_amount, status, created_at,
+              ROW_NUMBER() OVER (PARTITION BY customer_id ORDER BY created_at DESC) AS rn
+       FROM orders
+       WHERE customer_id IN (${placeholders})
+     )
+     WHERE rn <= 3
+     ORDER BY customer_id, created_at DESC`,
+    ids,
+    stats
   );
 
-  return aggregated.map((row) => ({ ...row, recent_orders: recentMap.get(row.customer_id) || [] }));
+  const detailMap = new Map();
+  for (const detail of details) {
+    const list = detailMap.get(detail.customer_id) || [];
+    list.push({
+      id: detail.id,
+      total_amount: detail.total_amount,
+      status: detail.status,
+      created_at: detail.created_at,
+    });
+    detailMap.set(detail.customer_id, list);
+  }
+  return rows.map((row) => ({ ...row, recent_orders: detailMap.get(row.customer_id) || [] }));
 };
 
-const workerStatusPayload = () => ({
-  worker: { ...workerState },
-  recent_runs: jobRuns.slice(-5).reverse(),
-});
+const workerStatusPayload = async (stats) => {
+  const state = await timedQuery(
+    `SELECT worker_name, last_heartbeat, last_status, last_duration_ms, last_message
+     FROM worker_state WHERE worker_name = ?`,
+    [WORKER_NAME],
+    stats,
+    0
+  );
+  const runs = await timedQuery(
+    `SELECT id, status, started_at, finished_at, duration_ms, rows_written, note
+     FROM job_runs WHERE worker_name = ? ORDER BY id DESC LIMIT 5`,
+    [WORKER_NAME],
+    stats,
+    0
+  );
+  return { worker: state[0] || null, recent_runs: runs };
+};
 
-const databaseDiagnostics = () => ({
-  row_counts: {
-    customers: customers.size,
-    orders: orders.length,
-    customer_daily_summary: [...summaryByCustomer.values()].reduce((acc, m) => acc + m.size, 0),
-    job_runs: jobRuns.length,
-  },
-  slowest_worker_runs: [...jobRuns]
-    .sort((a, b) => (b.duration_ms || 0) - (a.duration_ms || 0))
-    .slice(0, 5),
-});
+const databaseDiagnostics = async (stats) => {
+  const counts = (
+    await timedQuery(
+      `SELECT
+         (SELECT COUNT(*) FROM customers)              AS customers_count,
+         (SELECT COUNT(*) FROM orders)                 AS orders_count,
+         (SELECT COUNT(*) FROM customer_daily_summary) AS summary_count,
+         (SELECT COUNT(*) FROM job_runs)               AS job_runs_count`,
+      [],
+      stats,
+      0
+    )
+  )[0];
+  const slowest = await timedQuery(
+    `SELECT id, duration_ms, rows_written, started_at, finished_at, note
+     FROM job_runs ORDER BY duration_ms DESC, id DESC LIMIT 5`,
+    [],
+    stats,
+    0
+  );
+  return {
+    row_counts: {
+      customers: counts.customers_count,
+      orders: counts.orders_count,
+      customer_daily_summary: counts.summary_count,
+      job_runs: counts.job_runs_count,
+    },
+    slowest_worker_runs: slowest,
+  };
+};
 
-const diagnosticsSummary = () => {
+const diagnosticsSummary = async (stats) => {
   const summary = metricsSummary(readMetrics());
   const legacy = summary.routes['/report-legacy'] || {};
   const optimized = summary.routes['/report-optimized'] || {};
@@ -416,17 +503,17 @@ const diagnosticsSummary = () => {
     event_loop: {
       avg_lag_ms: summary.avg_event_loop_lag_ms,
       p95_lag_ms: summary.p95_event_loop_lag_ms,
-      note: 'Lag medido entre setImmediate y la callback. En Node, await secuencial dentro de un bucle bloquea throughput global, no solo la propia request.',
+      note: 'Lag medido entre setImmediate y la callback. node:sqlite es sincronico: cada query del N+1 bloquea el loop mientras corre, no solo espera.',
     },
-    worker: workerStatusPayload(),
-    database: databaseDiagnostics(),
+    worker: await workerStatusPayload(stats),
+    database: await databaseDiagnostics(stats),
     interpretation: {
       legacy_route_should_be_higher:
-        'La ruta legacy agrega sobre datos transaccionales y luego enriquece con N consultas dependientes.',
+        'La ruta legacy agrega sobre datos transaccionales con un filtro no sargable y luego enriquece con 2N queries dependientes.',
       worker_pressure_note:
-        'El worker refresca el resumen cada 20s. La ruta optimized se apoya en ese resultado y deja libre el event loop.',
+        'El worker refresca customer_daily_summary cada 20s con DELETE + INSERT ... SELECT. La ruta optimized lee ese resultado ya agregado.',
       node_specific:
-        'En Node el costo no es solo la latencia de la request: cada await secuencial cede el loop pero el costo agregado degrada throughput global del proceso.',
+        'DatabaseSync bloquea el event loop por query. En Node el N+1 no penaliza solo a quien lo pide: degrada el throughput de todo el proceso, y eso se ve en event_loop_lag_ms.',
     },
   };
 };
@@ -436,6 +523,10 @@ const prometheusLabel = (value) =>
 
 const renderPrometheusMetrics = () => {
   const summary = metricsSummary(readMetrics());
+  const workerRow =
+    db
+      .prepare('SELECT last_status, last_duration_ms FROM worker_state WHERE worker_name = ?')
+      .get(WORKER_NAME) || null;
   const lines = [];
   lines.push('# HELP app_requests_total Total de requests observados por el laboratorio.');
   lines.push('# TYPE app_requests_total counter');
@@ -446,11 +537,11 @@ const renderPrometheusMetrics = () => {
   lines.push(`app_request_latency_ms{stat="p95"} ${summary.p95_ms}`);
   lines.push(`app_request_latency_ms{stat="p99"} ${summary.p99_ms}`);
   lines.push(`app_request_latency_ms{stat="max"} ${summary.max_ms}`);
-  lines.push('# HELP app_db_time_ms Tiempo agregado de DB simulada por request en milisegundos.');
+  lines.push('# HELP app_db_time_ms Tiempo agregado de DB por request en milisegundos.');
   lines.push('# TYPE app_db_time_ms gauge');
   lines.push(`app_db_time_ms{stat="avg"} ${summary.avg_db_time_ms}`);
   lines.push(`app_db_time_ms{stat="p95"} ${summary.p95_db_time_ms}`);
-  lines.push('# HELP app_db_queries Cantidad de queries por request.');
+  lines.push('# HELP app_db_queries Cantidad de queries reales por request.');
   lines.push('# TYPE app_db_queries gauge');
   lines.push(`app_db_queries{stat="avg"} ${summary.avg_db_queries}`);
   lines.push(`app_db_queries{stat="p95"} ${summary.p95_db_queries}`);
@@ -469,16 +560,16 @@ const renderPrometheusMetrics = () => {
     lines.push(`app_route_latency_ms{route="${label}",stat="p99"} ${stats.p99_ms}`);
     lines.push(`app_route_requests_total{route="${label}"} ${stats.count}`);
   }
-  if (workerState.last_duration_ms !== null) {
+  if (workerRow && workerRow.last_duration_ms !== null) {
     lines.push('# HELP app_worker_last_duration_ms Ultima duracion reportada por el worker.');
     lines.push('# TYPE app_worker_last_duration_ms gauge');
     lines.push(
-      `app_worker_last_duration_ms{worker="${prometheusLabel(WORKER_NAME)}"} ${workerState.last_duration_ms}`
+      `app_worker_last_duration_ms{worker="${prometheusLabel(WORKER_NAME)}"} ${workerRow.last_duration_ms}`
     );
     lines.push('# HELP app_worker_status Estado logico del worker. 1=ok, 0=otro estado.');
     lines.push('# TYPE app_worker_status gauge');
     lines.push(
-      `app_worker_status{worker="${prometheusLabel(WORKER_NAME)}",status="${prometheusLabel(workerState.last_status)}"} ${workerState.last_status === 'ok' ? 1 : 0}`
+      `app_worker_status{worker="${prometheusLabel(WORKER_NAME)}",status="${prometheusLabel(workerRow.last_status)}"} ${workerRow.last_status === 'ok' ? 1 : 0}`
     );
   }
   return `${lines.join('\n')}\n`;
@@ -509,13 +600,13 @@ const handler = async (req, res) => {
         case: CASE_NAME,
         stack: APP_STACK,
         goal:
-          'Comparar una ruta legacy con N+1 secuencial (await en bucle) versus una ruta optimizada con resumen pre-calculado y batch.',
+          'Comparar una ruta legacy con filtro no sargable y N+1 sobre SQL real contra una ruta optimizada con tabla resumen y batch.',
         routes: {
           '/health': 'Estado basico del servicio.',
           '/report-legacy?days=30&limit=20':
-            'Consulta defectuosa: agregacion sobre datos transaccionales + N+1 con await secuencial. Bloquea el throughput.',
+            'Consulta defectuosa: filtro no sargable sobre la tabla transaccional + N+1 real contra SQLite.',
           '/report-optimized?days=30&limit=20':
-            'Consulta mejorada: lectura sobre resumen pre-calculado + un solo batch para detalles.',
+            'Consulta mejorada: lectura sobre customer_daily_summary + un solo batch con window function.',
           '/batch/status': 'Estado del worker embebido.',
           '/diagnostics/summary':
             'Resumen correlacionado entre metricas, worker, base local y lag del event loop.',
@@ -525,7 +616,7 @@ const handler = async (req, res) => {
           '/reset-metrics': 'Reinicia metricas locales.',
         },
         node_specific:
-          'En Node, el patron N+1 con await secuencial no solo penaliza la propia request: cede el event loop entre cada query y degrada el throughput global del proceso.',
+          'node:sqlite (DatabaseSync) es sincronico: cada query del N+1 bloquea el event loop. El costo no es solo de la request que lo dispara, es del proceso entero.',
       };
     } else if (uri === '/health') {
       payload = { status: 'ok', stack: APP_STACK };
@@ -536,7 +627,7 @@ const handler = async (req, res) => {
       payload = {
         mode: 'legacy',
         problem:
-          'Filtro no sargable + patron N+1 con await secuencial + lectura directa desde transaccion.',
+          'Filtro no sargable (CAST sobre created_at) + patron N+1 real: 2 queries dependientes por fila.',
         days,
         limit,
         result_count: rows.length,
@@ -551,7 +642,7 @@ const handler = async (req, res) => {
       payload = {
         mode: 'optimized',
         solution:
-          'Resumen pre-calculado por worker + un solo batch para detalles. Mantiene el event loop libre.',
+          'Tabla resumen mantenida por el worker + un solo batch con ROW_NUMBER(). Menos queries, menos bloqueo del loop.',
         days,
         limit,
         result_count: rows.length,
@@ -560,19 +651,28 @@ const handler = async (req, res) => {
         data: rows,
       };
     } else if (uri === '/batch/status') {
-      payload = workerStatusPayload();
+      payload = await workerStatusPayload(stats);
     } else if (uri === '/job-runs') {
       const limit = clampInt(url.searchParams.get('limit') || '10', 1, 50);
-      payload = { limit, runs: [...jobRuns].reverse().slice(0, limit) };
+      payload = {
+        limit,
+        runs: await timedQuery(
+          `SELECT id, worker_name, status, started_at, finished_at, duration_ms, rows_written, note
+           FROM job_runs ORDER BY id DESC LIMIT ?`,
+          [limit],
+          stats,
+          0
+        ),
+      };
     } else if (uri === '/diagnostics/summary') {
-      payload = diagnosticsSummary();
+      payload = await diagnosticsSummary(stats);
     } else if (uri === '/metrics') {
       payload = {
         case: CASE_NAME,
         stack: APP_STACK,
         ...metricsSummary(readMetrics()),
         note:
-          'Metrica util de laboratorio. event_loop_lag_ms es la senal Node-especifica que delata await secuencial bloqueante.',
+          'Metrica util de laboratorio. event_loop_lag_ms es la senal Node-especifica: node:sqlite es sincronico y el N+1 bloquea el loop.',
       };
     } else if (uri === '/metrics-prometheus') {
       skipStoreMetrics = true;
@@ -604,8 +704,9 @@ const handler = async (req, res) => {
   sendJson(res, status, payload);
 };
 
+initSchema();
 seedData();
-refreshSummaryOnce('initial seed').catch(() => {});
+refreshSummaryOnce('initial seed');
 startWorker();
 
 const PORT = Number.parseInt(process.env.PORT || '8080', 10);

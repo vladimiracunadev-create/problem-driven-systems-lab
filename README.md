@@ -81,14 +81,16 @@ Estado actual:
 
 ## 🎯 Honestidad de fidelidad (qué es real vs qué es simulado)
 
-El lab declara explicitamente donde el substrato es real y donde es simulado por decision didactica:
+El lab declara explicitamente donde el substrato es real y donde no:
 
 | Caso | PHP | Python | Node.js | Java | .NET |
 |---|---|---|---|---|---|
-| **02 (N+1)** | PostgreSQL real | SQLite stdlib | **SQLite `node:sqlite`** | **SQLite `sqlite-jdbc`** | **SQLite `Microsoft.Data.Sqlite`** |
-| **01 (latencia)** | PostgreSQL real | SQLite stdlib | Memoria + `setTimeout` (simulado) | Memoria + `sleepMicros` (simulado) | Memoria + `Task.Delay` (simulado) |
+| **01 (latencia)** | PostgreSQL real | SQLite stdlib | SQLite `node:sqlite` | SQLite `sqlite-jdbc` (WAL) | SQLite `Microsoft.Data.Sqlite` (WAL) |
+| **02 (N+1)** | PostgreSQL real | SQLite stdlib | SQLite `node:sqlite` | SQLite `sqlite-jdbc` | SQLite `Microsoft.Data.Sqlite` |
 
-**Caso 02** tiene fidelidad universal — los 5 stacks ejecutan N+1 real contra SQL embebido. **Caso 01** mantiene asimetria: PHP/Python con contencion real, Node/Java/.NET con substrato simulado pero **patron de solucion real** (worker concurrente + cache + readers no bloqueados con primitivas idiomaticas genuinas). La asimetria esta documentada en cada `comparison.md` y en el [ROADMAP — "Fidelidad universal de caso 01"](ROADMAP.md#fidelidad-universal-de-caso-01) como deuda explicita.
+**Los casos 01 y 02 tienen fidelidad universal:** los 5 stacks ejecutan SQL real contra un motor, y `db_hits` / `db_queries_in_request` cuentan ejecuciones reales, no iteraciones de un bucle en memoria. En el caso 01, el filtro no sargable esta verificado con `EXPLAIN QUERY PLAN` (`SCAN orders` vs `SEARCH orders USING INDEX`), no afirmado en prosa.
+
+La unica asimetria que queda es de **naturaleza del motor**, y es deliberada: solo PHP cruza un socket TCP contra un PostgreSQL externo con pool FPM finito. Los otros cuatro embeben el motor — SQL real y plan de ejecucion real, sin hop de red ni pool remoto. Node y Python compensan con un round-trip artificial explicito y documentado en el codigo. Esta distincion esta detallada en cada `comparison.md`.
 
 ## 🔎 Catálogo de Casos Resolutivos
 

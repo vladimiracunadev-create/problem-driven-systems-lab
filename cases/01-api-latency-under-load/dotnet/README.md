@@ -14,24 +14,36 @@ Stack .NET operativo del caso 01. Mismo problema que PHP/Python/Node/Java: N+1 +
 
 ## Contraste
 
-**Legacy** — scan lineal (no sargable) + N+1 contra customers:
+**Legacy** — filtro no sargable + N+1 real contra el motor:
 ```csharp
-foreach (var o in orders)
-    if (o.Region.ToLowerInvariant().StartsWith("n")) scanned.Add(o);
-for (int i = 0; i < take; i++) {
-    Customer c = LookupCustomerOneByOne(o.CustomerId);   // busqueda lineal
-    Thread.SpinWait(1200);                                // costo de roundtrip
+// LOWER(region) envuelve la columna → idx_orders_region queda inutilizable.
+cmd.CommandText = "SELECT id, customer_id, region, amount FROM orders " +
+                  "WHERE LOWER(region) LIKE 'n%' ORDER BY id LIMIT $limit";
+
+// ...y una query dependiente por cada fila devuelta.
+for (int i = 0; i < rows.Count; i++) {
+    using var cmd = db.CreateCommand();
+    cmd.CommandText = "SELECT name, tier FROM customers WHERE id = $id";
+    dbHits++;                                   // db_hits = 1 + N
 }
 ```
 
-**Optimized** — lookup indexado + batch + cache del worker:
+**Optimized** — rango sargable + batches `IN(...)` + tabla resumen del worker:
 ```csharp
-var matched = ordersByRegionPrefix.GetValueOrDefault("n", new List<Order>());   // O(1)
-for (int i = 0; i < take; i++) {
-    if (!batch.ContainsKey(cid)) batch[cid] = customerById[cid];                 // O(1)
-}
-SleepMicros(700);                                                                // 1 roundtrip
-var s = summaryCache[o.CustomerId];                                              // ConcurrentDictionary
+// Mismo predicado, reescrito como rango → recupera el indice.
+"SELECT id, customer_id, region, amount FROM orders " +
+"WHERE region >= 'n' AND region < 'o' ORDER BY id LIMIT $limit"
+
+// Un batch para customers y otro para el resumen. db_hits constante.
+$"SELECT id, name, tier FROM customers WHERE id IN ({placeholders})"
+$"SELECT customer_id, order_count, total_amount FROM customer_summary WHERE customer_id IN ({placeholders})"
+```
+
+Que el primero no use el indice y el segundo si no es una afirmacion del README — lo dice el planner:
+
+```text
+EXPLAIN QUERY PLAN … WHERE LOWER(region) LIKE 'n%'   →  SCAN orders
+EXPLAIN QUERY PLAN … WHERE region >= 'n' AND < 'o'   →  SEARCH orders USING INDEX idx_orders_region
 ```
 
 ## Rutas
@@ -71,4 +83,17 @@ curl http://127.0.0.1:851/health
 
 ## Fidelidad
 
-Este stack simula la contencion con `Thread.SpinWait` / `Task.Delay`. El **patron** (worker `Task.Delay` + `CancellationToken` refrescando `ConcurrentDictionary`, handlers leyendo sin lock, batch loading vs N+1) es real y aprovecha primitivas BCL genuinas; el **substrato del fallo** no — los datos viven en memoria, no hay `Microsoft.Data.Sqlite` ni motor relacional atras. Para ver contencion real de DB en este mismo caso, ver el stack PHP (`../php/README.md`) que corre contra PostgreSQL 16. El compromiso de mover .NET a SQLite via `Microsoft.Data.Sqlite` (siguiendo el patron de caso 02) esta en el [ROADMAP](../../../ROADMAP.md#fidelidad-universal-de-caso-01).
+**Substrato real.** Este stack corre SQL contra SQLite embebido via `Microsoft.Data.Sqlite` 8.0.10 (paquete oficial de Microsoft, ADO.NET-style), en archivo bajo el temp del sistema y con `journal_mode=WAL`. No hay listas en memoria simulando ser una base: `db_hits` cuenta ejecuciones reales — `1 + N` en la ruta legacy, constante en la optimizada.
+
+**El filtro no sargable lo confirma el planner, no el README:**
+
+```text
+LEGACY     WHERE LOWER(region) LIKE 'n%'          →  SCAN orders
+OPTIMIZED  WHERE region >= 'n' AND region < 'o'   →  SEARCH orders USING INDEX idx_orders_region
+```
+
+Envolver la columna en `LOWER()` invalida `idx_orders_region`. El mismo predicado reescrito como rango lo recupera.
+
+**Por que WAL y una conexion por unidad de trabajo:** el worker escribe `customer_summary` mientras las rutas leen. Con WAL los lectores no se bloquean con el escritor — es el equivalente embebido del MVCC que da PostgreSQL en el stack PHP, y es exactamente la propiedad que este caso enseña. `using` / `IDisposable` garantiza el cierre de `SqliteConnection` y `SqliteCommand` incluso en el camino de excepcion, sin fugas de conexion.
+
+Este stack es el espejo exacto del Java: mismo esquema, mismas queries, mismos resultados fila por fila. Para ver contencion sobre un recurso externo compartido (pool FPM contra PostgreSQL via socket TCP), ver el stack PHP (`../php/README.md`).

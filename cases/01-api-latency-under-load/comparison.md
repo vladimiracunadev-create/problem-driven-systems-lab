@@ -6,29 +6,41 @@ Una API de reportes que carga datos de clientes con sus pedidos recientes. La va
 
 ---
 
-## Fidelidad del substrato — asimetria honesta entre stacks
+## Fidelidad del substrato — los 5 stacks contra un motor real
 
-A diferencia del caso 02 (donde los 5 stacks ejecutan SQL real sobre SQLite/PostgreSQL), **caso 01 tiene fidelidad asimetrica**. Esta seccion lo deja explicito antes de que el lector lo descubra leyendo codigo.
+**Los 5 stacks ejecutan SQL real.** No hay datos en memoria simulando ser una base, ni `sleep()` haciendo de latencia de I/O. `db_hits` / `db_queries_in_request` cuentan ejecuciones reales contra un motor en los cinco runtimes.
 
-| Stack | Contencion real | Substrato del fallo |
-|---|---|---|
-| PHP | **Si** | PostgreSQL 16 externo. Pool FPM bloqueado en I/O de red real. `pg_stat_activity` observable. |
-| Python | **Si** | SQLite stdlib con file I/O real + `threading.Thread` worker concurrente compitiendo por `DB_LOCK`. |
-| Node.js | No (substrato simulado) | Datos en memoria + `setTimeout(roundtrip_ms)` simulando el costo de I/O. Worker `setInterval` real. |
-| Java 21 | No (substrato simulado) | Datos en memoria + `sleepMicros()` simulando el costo de I/O. Worker `ScheduledExecutorService` real. |
-| .NET 8 | No (substrato simulado) | Datos en memoria + `Thread.SpinWait` / `Task.Delay` simulando el costo. Worker `Task.Delay` + `CancellationToken` real. |
+| Stack | Motor | Driver / primitiva | Concurrencia lector-escritor |
+|---|---|---|---|
+| PHP | PostgreSQL 16 externo | `PDO` sobre socket TCP | MVCC de PostgreSQL |
+| Python | SQLite (archivo) | `sqlite3` stdlib | `threading.RLock` global |
+| Node.js 22 | SQLite (`:memory:`) | `node:sqlite` → `DatabaseSync` | proceso unico; el motor serializa |
+| Java 21 | SQLite (archivo) | `sqlite-jdbc` → `PreparedStatement` | **WAL** + conexion por request |
+| .NET 8 | SQLite (archivo) | `Microsoft.Data.Sqlite` → `SqliteCommand` | **WAL** + conexion por unidad de trabajo |
 
-**Lo que SI es real en los 5 stacks:**
-- El **patron de la solucion**: worker concurrente refrescando una cache, readers no bloqueados accediendo a la cache, batch loading vs N+1.
-- Las primitivas idiomaticas de concurrencia: `ConcurrentHashMap`/`ConcurrentDictionary` para reads sin lock, `LongAdder`/`Interlocked.Increment` para contadores, `AsyncLocal`/`ThreadLocal` para contexto por request.
-- La metrica `event_loop_lag_ms` en Node bajo carga concurrente (real, medida con `setImmediate` callback).
+### El filtro no sargable, verificado por el motor
 
-**Lo que NO es real en Node/Java/.NET:**
-- La contencion del recurso compartido. En PHP, la N+1 satura un pool FPM finito hablando con un PostgreSQL finito — el cuello duele en el motor. En Node/Java/.NET, el cuello se aproxima con un sleep que paga el thread/loop, pero no hay contencion sobre un recurso externo.
+En Java y .NET la ruta legacy no dice "esto seria lento": el planner lo confirma. `EXPLAIN QUERY PLAN` sobre la misma tabla, con `idx_orders_region` presente:
 
-**Por que se acepta hoy:** la decision es **enseñar la forma idiomatica del patron** en cada lenguaje sin obligar a cada stack a montar PostgreSQL. El lector que quiera ver contencion real va al stack PHP de este mismo caso. Es una eleccion explicita, no un descuido.
+```text
+LEGACY     WHERE LOWER(region) LIKE 'n%'
+           →  SCAN orders                                    (tabla completa)
 
-**Compromiso futuro:** la fidelidad universal en caso 01 (mover Node/Java/.NET a SQLite real, siguiendo el patron ya aplicado a caso 02) esta en el [ROADMAP — "Fidelidad universal de caso 01"](../../ROADMAP.md#fidelidad-universal-de-caso-01).
+OPTIMIZED  WHERE region >= 'n' AND region < 'o'
+           →  SEARCH orders USING INDEX idx_orders_region    (rango indexado)
+```
+
+Envolver la columna en `LOWER()` invalida el indice. Reescribir el mismo predicado como rango lo recupera. Es la leccion central del caso y ahora es reproducible con un comando, no una afirmacion.
+
+### Lo que sigue siendo distinto entre stacks
+
+La asimetria que queda no es de fidelidad, es de **naturaleza del motor**, y es deliberada:
+
+- **PHP corre contra un PostgreSQL externo.** La contencion cruza un socket TCP y satura un pool FPM finito. Es el unico stack donde el cuello se ve con `pg_stat_activity`.
+- **Los otros cuatro corren SQLite embebido.** El SQL es real y el plan de ejecucion es real, pero no hay hop de red ni pool de conexiones remoto. Node y Python compensan con un round-trip artificial explicito (`ROUNDTRIP_*_MS`, documentado en el codigo) para que el costo de N+1 sea medible; Java y .NET no lo necesitan porque el N+1 ya paga `1 + N` ejecuciones reales.
+- **Node es sincronico a proposito.** `DatabaseSync` bloquea el event loop por query. Eso convierte `event_loop_lag_ms` en la señal Node-especifica del caso: el N+1 no penaliza solo a quien lo pide, degrada el throughput del proceso entero.
+
+Quien quiera ver contencion sobre un recurso externo compartido va al stack PHP. Quien quiera ver el mismo problema resuelto con la primitiva idiomatica de cada lenguaje tiene los cinco.
 
 ---
 
@@ -101,80 +113,107 @@ Python construye el `dict` de clientes con una dict comprehension. El acceso por
 
 ---
 
-## Node.js: single-thread event loop, datos en memoria, worker `setInterval`
+## Node.js: single-thread event loop, `node:sqlite` sincronico, worker `setInterval`
 
 **Runtime:** Node.js 22 single-thread con event loop libuv. Cada request es una funcion async que comparte el mismo proceso. Un `await` cede al loop pero no libera ningun thread — el costo agregado de awaits secuenciales degrada throughput global del proceso, no solo de la propia request.
 
-**Motor de datos:** estructuras en memoria (`Map<id, customer>`, array de `orders`) con I/O simulado por `setTimeout(roundtrip_ms)`. La eleccion explicita evita compilar bindings nativos (`better-sqlite3`) y mantiene el foco en el patron de acceso, no en el motor.
+**Motor de datos:** SQLite embebido via `node:sqlite` (`DatabaseSync`), built-in desde Node 22.5. Sin `npm install`, sin bindings nativos que compilar — esa fue la razon para descartar `better-sqlite3` y la que hace viable tener motor real sin sumar dependencias.
 
 **El fallo legacy en Node.js:**
 ```javascript
-for (const row of aggregated) {
-  row.customer = await timedQuery(() => customers.get(row.customer_id), stats);
-  row.recent_orders = await timedQuery(
-    () => orders.filter(o => o.customer_id === row.customer_id)
-                .sort((a,b) => b.created_at - a.created_at).slice(0,3),
-    stats
-  );
+// 1 agregacion con filtro no sargable...
+const rows = await timedQuery(
+  `SELECT customer_id, ROUND(SUM(total_amount), 2) AS total_spend, COUNT(*) AS order_count
+   FROM orders
+   WHERE CAST(created_at / 86400 AS INTEGER) >= ? AND status = 'paid'
+   GROUP BY customer_id ORDER BY total_spend DESC LIMIT ?`,
+  [sinceDay, limit], stats, ROUNDTRIP_LEGACY_MS);
+
+// ...y 2 queries dependientes por cada fila.
+for (const row of rows) {
+  const customer = await timedQuery('SELECT id, name, tier, region FROM customers WHERE id = ?',
+                                    [row.customer_id], stats);
+  const recent = await timedQuery(
+    `SELECT id, total_amount, status, created_at FROM orders
+     WHERE customer_id = ? ORDER BY created_at DESC LIMIT 3`, [row.customer_id], stats);
 }
 ```
-Para 20 pedidos: 41 awaits secuenciales. Cada `await sleep(1.2)` cede al event loop, pero la callback de la siguiente iteracion vuelve a la cola. El loop se mantiene caliente atendiendo otras tareas pero el throughput por request crece linealmente con `limit`. Lo distintivo: bajo concurrencia, la metrica `event_loop_lag_ms` se dispara — es la senal Node-especifica del bloqueo agregado.
+Para 20 clientes: **41 ejecuciones reales** contra el motor (`db_queries_in_request: 41`). El `CAST(created_at / 86400)` invalida `idx_orders_created_customer` — el motor recorre las 36.000 filas de `orders` en cada request.
 
 **La corrección en Node.js:**
 ```javascript
-const idSet = new Set(aggregated.map(row => row.customer_id));
-const recentMap = await timedQuery(() => {
-  const grouped = new Map();
-  for (const order of orders) {
-    if (!idSet.has(order.customer_id)) continue;
-    const list = grouped.get(order.customer_id) || [];
-    list.push(order);
-    grouped.set(order.customer_id, list);
-  }
-  return grouped;
-}, stats);
-return aggregated.map(row => ({ ...row, recent_orders: recentMap.get(row.customer_id) || [] }));
+const placeholders = ids.map(() => '?').join(',');
+const details = await timedQuery(
+  `SELECT customer_id, id, total_amount, status, created_at
+   FROM (
+     SELECT customer_id, id, total_amount, status, created_at,
+            ROW_NUMBER() OVER (PARTITION BY customer_id ORDER BY created_at DESC) AS rn
+     FROM orders WHERE customer_id IN (${placeholders})
+   ) WHERE rn <= 3 ORDER BY customer_id, created_at DESC`,
+  ids, stats);
 ```
-Una sola lectura batch, agrupacion en memoria con `Map.get()` O(1), ensamblado funcional con `.map()`. Sin awaits anidados, sin yields innecesarios al loop entre items.
+Una window function (`ROW_NUMBER() OVER PARTITION BY`) reemplaza las 2N queries dependientes: **2 queries totales**, sin importar el `limit`. El agrupado posterior es un `Map` en memoria — pero sobre un resultado que ya vino resuelto del motor.
 
-**Worker:** `setInterval(refresh, 20000).unref()` embebido en el proceso. El `unref()` permite que el proceso muera limpio si solo queda el timer. Comparte estructuras en memoria con los handlers — no necesita lock porque Node es single-thread.
+**Lo distintivo de este stack:** `DatabaseSync` es **sincronico**. Cada query bloquea el event loop mientras corre. En los demas runtimes el N+1 penaliza al thread que lo ejecuta; en Node penaliza al proceso entero, y `event_loop_lag_ms` es la metrica que lo delata. La espera de red se modela aparte con `await sleep(ROUNDTRIP_*_MS)` porque en un driver cliente-servidor real esa porcion si cederia el loop.
 
-**Observabilidad:** endpoint `/metrics-prometheus` con `event_loop_lag_ms` como senal propia del runtime (medida con `setImmediate` callback). No existe equivalente en PHP-FPM ni Python — es lo que delata el bloqueo agregado del loop.
+**Worker:** `setInterval(refresh, 20000).unref()` embebido en el proceso, ejecutando `DELETE` + `INSERT ... SELECT` reales sobre `customer_daily_summary`. El `unref()` permite que el proceso muera limpio si solo queda el timer.
+
+**Observabilidad:** endpoint `/metrics-prometheus` con `event_loop_lag_ms` como senal propia del runtime (medida con `setImmediate` callback). No existe equivalente en PHP-FPM ni Python.
 
 ---
 
-## Java 21: thread-per-request en JVM, datos en memoria, worker `ScheduledExecutorService`
+## Java 21: thread-per-request en JVM, `sqlite-jdbc` con WAL, worker `ScheduledExecutorService`
 
-**Runtime:** JVM con thread pool (cached executor). Cada request HTTP corre en un thread del pool — paralelismo real limitado por nucleos, no por GIL como Python. Estado compartido entre threads requiere primitivas concurrentes explicitas (`ConcurrentHashMap`, `AtomicReference`, `LongAdder`).
+**Runtime:** JVM con thread pool (cached executor). Cada request HTTP corre en un thread del pool — paralelismo real limitado por nucleos, no por GIL como Python.
 
-**Motor de datos:** Datos en memoria (`ArrayList<Order>`, `HashMap<Integer,Customer>`). Mismo patron que Node: foco en el cuello sin meter PostgreSQL.
+**Motor de datos:** SQLite embebido via `sqlite-jdbc` 3.46.1.3 (driver xerial, un solo JAR sin Maven), en archivo bajo `/tmp` con `journal_mode=WAL`.
 
 **El fallo legacy en Java:**
 ```java
-for (Order o : orders)
-    if (lowerRegion(o.region).startsWith("n")) scanned.add(o);   // scan O(N) no sargable
-for (int i = 0; i < take; i++) {
-    Customer c = lookupCustomerOneByOne(o.customerId);            // busqueda lineal
-    sleepMicros(1200);                                            // roundtrip simulado
+try (PreparedStatement ps = db.prepareStatement(
+        "SELECT id, customer_id, region, amount FROM orders " +
+        "WHERE LOWER(region) LIKE 'n%' ORDER BY id LIMIT ?")) {   // <- no sargable
+    ...
+}
+dbHits++;
+
+for (int i = 0; i < ids.size(); i++) {                            // <- N+1 real
+    try (PreparedStatement ps = db.prepareStatement(
+            "SELECT name, tier FROM customers WHERE id = ?")) {
+        ps.setInt(1, ids.get(i)[1]);
+        ...
+    }
+    dbHits++;
 }
 ```
-Bajo carga concurrente, **cada thread del pool** ejecuta este loop con sleeps secuenciales. El pool se llena rapido (N threads × 1.2ms × hits). Diferencia clave vs Node: aqui el bloqueo es por-thread, no del proceso entero.
+`LOWER(region)` envuelve la columna e invalida `idx_orders_region`. El planner lo confirma:
+
+```text
+EXPLAIN QUERY PLAN … WHERE LOWER(region) LIKE 'n%'   →  SCAN orders
+EXPLAIN QUERY PLAN … WHERE region >= 'n' AND < 'o'   →  SEARCH orders USING INDEX idx_orders_region
+```
 
 **La correccion en Java:**
 ```java
-List<Order> matched = ordersByRegionPrefix.getOrDefault("n", List.of());  // O(1)
-Map<Integer, Customer> batch = new HashMap<>();
-for (int i = 0; i < take; i++) {
-    if (!batch.containsKey(cid)) batch.put(cid, customerById.get(cid));   // O(1)
-}
-sleepMicros(700);                                                          // 1 sola vez
-CustomerSummary s = summaryCache.get(o.customerId);                        // ConcurrentHashMap
+// Mismo predicado, reescrito como rango sargable — recupera el indice.
+"SELECT id, customer_id, region, amount FROM orders " +
+"WHERE region >= 'n' AND region < 'o' ORDER BY id LIMIT ?"
+
+// Un solo batch IN(...) reemplaza las N queries dependientes.
+"SELECT id, name, tier FROM customers WHERE id IN (?,?,?,…)"
+
+// Y la tabla resumen que mantiene el worker.
+"SELECT customer_id, order_count, total_amount FROM customer_summary WHERE customer_id IN (…)"
 ```
-`summaryCache` es `ConcurrentHashMap<Integer, CustomerSummary>` actualizado por el worker. Los handlers leen sin lock — esa es la garantia que da `ConcurrentHashMap` y que `synchronized Map` no daria sin contencion.
+`db_hits` pasa de `1 + N` a un numero constante independiente del `limit`.
 
-**Worker:** `ScheduledExecutorService` corriendo cada 5s en thread daemon. El handler lee `summaryCache` mientras el worker actualiza — sin contencion gracias al modelo de la estructura.
+**Por que WAL:** el worker escribe `customer_summary` mientras los handlers leen. Con `journal_mode=WAL` los lectores no se bloquean con el escritor — es el equivalente embebido del MVCC que da PostgreSQL en el stack PHP. Sin WAL, el `DELETE` + `INSERT ... SELECT` del worker bloquearia cada lectura concurrente, que es precisamente el fallo que el caso enseña a evitar.
 
-**Observabilidad:** `LongAdder` para contadores lock-free (mejor throughput que `synchronized int` bajo carga). p95/p99 calculados sobre buffer circular sincronizado.
+**Worker:** `ScheduledExecutorService` cada 5s en thread daemon, con su propia `Connection`. Shutdown limpio via shutdown hook.
+
+**Gestion de recursos:** `try-with-resources` sobre `Connection`, `PreparedStatement` y `ResultSet`. Es la primitiva que garantiza que una excepcion a mitad del N+1 no deje conexiones colgadas — el mismo problema que el caso 14 del roadmap (pool exhaustion) estudia a fondo.
+
+**Observabilidad:** `LongAdder` para contadores lock-free. p95/p99 sobre buffer circular sincronizado.
 
 ---
 
@@ -182,40 +221,49 @@ CustomerSummary s = summaryCache.get(o.customerId);                        // Co
 
 **Runtime:** .NET 8 sobre `HttpListener` (BCL). El CLR despacha cada request al `ThreadPool` — worker threads reales, paralelismo limitado por nucleos (no por GIL como Python, no por single-thread como Node). Estado compartido entre threads requiere primitivas concurrentes explicitas (`ConcurrentDictionary`, `Interlocked`, `AsyncLocal`).
 
-**Motor de datos:** Datos en memoria (`List<Order>`, `Dictionary<int,Customer>`). Mismo patron que Node y Java: foco en el cuello sin meter PostgreSQL ni EF Core en la ecuacion.
+**Motor de datos:** SQLite embebido via `Microsoft.Data.Sqlite` 8.0.10 (paquete oficial, ADO.NET-style), en archivo bajo el temp del sistema con `journal_mode=WAL`. Sin EF Core: el caso estudia SQL, no un ORM.
 
 **El fallo legacy en C#:**
 ```csharp
-foreach (var o in orders)
-    if (o.Region.ToLowerInvariant().StartsWith("n")) scanned.Add(o);   // scan O(N) no sargable
-for (int i = 0; i < take; i++) {
-    Customer c = LookupCustomerOneByOne(o.CustomerId);   // busqueda lineal
-    Thread.SpinWait(1200);                                // roundtrip simulado
+using (var cmd = db.CreateCommand()) {
+    cmd.CommandText = "SELECT id, customer_id, region, amount FROM orders " +
+                      "WHERE LOWER(region) LIKE 'n%' ORDER BY id LIMIT $limit";   // <- no sargable
+    ...
+}
+dbHits++;
+
+for (int i = 0; i < rows.Count; i++) {                                            // <- N+1 real
+    using var cmd = db.CreateCommand();
+    cmd.CommandText = "SELECT name, tier FROM customers WHERE id = $id";
+    ...
+    dbHits++;
 }
 ```
-Bajo carga concurrente, **cada worker del ThreadPool** ejecuta este loop con sleeps secuenciales. El pool crece bajo demanda pero con penalty (creacion de threads + warmup). Diferencia clave vs Node: el bloqueo es por-thread, no del proceso entero. Diferencia vs Java: el comportamiento es equivalente — la JVM y el CLR comparten el modelo thread-per-request.
+Espejo exacto del Java: mismo esquema, mismas queries, **mismos resultados fila por fila**. Correr `/report-legacy?limit=5` en ambos hubs devuelve `order_id 12, Customer 1315, silver, north, 934` en los dos.
 
 **La correccion en C#:**
 ```csharp
-var matched = ordersByRegionPrefix.GetValueOrDefault("n", new List<Order>());   // O(1)
-var batch = new Dictionary<int, Customer>();
-for (int i = 0; i < take; i++) {
-    if (!batch.ContainsKey(cid)) batch[cid] = customerById[cid];                 // O(1)
-}
-SleepMicros(700);                                                                // 1 sola vez
-CustomerSummary s = summaryCache[o.CustomerId];                                  // ConcurrentDictionary
+// Rango sargable — recupera idx_orders_region.
+"SELECT id, customer_id, region, amount FROM orders " +
+"WHERE region >= 'n' AND region < 'o' ORDER BY id LIMIT $limit"
+
+// Dos batches IN(...) con parametros generados: customers y customer_summary.
+$"SELECT id, name, tier FROM customers WHERE id IN ({placeholders})"
+$"SELECT customer_id, order_count, total_amount FROM customer_summary WHERE customer_id IN ({placeholders})"
 ```
-`summaryCache` es `ConcurrentDictionary<int, CustomerSummary>` actualizado por el worker. Los handlers leen sin lock — esa es la garantia que da `ConcurrentDictionary` y que `Dictionary` con `lock` no daria sin contencion.
 
-**Worker:** `Task.Run(async () => { while (!ct.IsCancellationRequested) { await Task.Delay(5000, ct); ... } })`. El `CancellationToken` propaga shutdown limpio en SIGTERM (idiomatico .NET, sin shutdown hook como Java).
+**Worker:** `Task.Run(async () => { while (!ct.IsCancellationRequested) { await Task.Delay(5000, ct); RefreshSummary(); } })`, con su propia conexion y una transaccion explicita (`BeginTransaction` / `Commit`). El `CancellationToken` propaga shutdown limpio en SIGTERM — idiomatico .NET, sin shutdown hook como Java.
 
-**Observabilidad:** `Interlocked.Increment(ref counter)` para contadores lock-free — equivalente directo del `LongAdder` Java sin la sobrecarga del `synchronized int`. p95/p99 calculados sobre buffer circular protegido con `lock`.
+**Gestion de recursos:** `using` / `IDisposable` sobre `SqliteConnection`, `SqliteCommand` y `SqliteDataReader`. Es el equivalente directo del `try-with-resources` Java: cierre garantizado incluso si el N+1 revienta a la mitad.
+
+**Observabilidad:** `Interlocked.Increment(ref counter)` para contadores lock-free — equivalente del `LongAdder` Java. p95/p99 sobre buffer circular protegido con `lock`.
 
 **Notas idiomaticas vs los otros stacks:**
-- `ConcurrentDictionary<K,V>` cumple el rol de `ConcurrentHashMap<K,V>` Java — misma garantia de lectura sin lock.
-- `Interlocked.Increment` es el equivalente de `LongAdder.increment()` Java o `AtomicInteger.incrementAndGet()`.
+- `using` / `IDisposable` cumple el rol de `try-with-resources` Java — misma garantia de cierre deterministico.
+- `SqliteCommand` con parametros `$nombre` es el analogo del `PreparedStatement` con `?` de JDBC.
+- `Interlocked.Increment` es el equivalente de `LongAdder.increment()` Java.
 - `Task.Delay` + `CancellationToken` reemplaza el `ScheduledExecutorService` + shutdown hook de Java.
-- A diferencia de Node, el CLR permite paralelismo real sin necesidad de `worker_threads`. A diferencia de Python, no hay GIL que serialice bytecode.
+- A diferencia de Node, el CLR permite paralelismo real sin `worker_threads`, y el acceso a SQLite no bloquea un event loop compartido. A diferencia de Python, no hay GIL que serialice bytecode.
 
 ---
 
@@ -223,7 +271,9 @@ CustomerSummary s = summaryCache[o.CustomerId];                                 
 
 | Aspecto | PHP | Python | Node.js | Java | .NET | Razon |
 |---|---|---|---|---|---|---|
-| Motor DB | PostgreSQL 16 (externo) | SQLite (embebida) | Datos en memoria + I/O simulado | Datos en memoria | Datos en memoria | PHP usa motor productivo. Python tiene `sqlite3` en stdlib. Node/Java/.NET mantienen foco en el patron. |
+| Motor DB | PostgreSQL 16 (externo) | SQLite (archivo) | SQLite (`:memory:`) | SQLite (archivo, WAL) | SQLite (archivo, WAL) | Cinco motores reales. Solo PHP cruza un socket TCP; los otros cuatro embeben el motor sin sumar contenedor. |
+| Driver / primitiva | `PDO` | `sqlite3` stdlib | `node:sqlite` → `DatabaseSync` | `sqlite-jdbc` → `PreparedStatement` | `Microsoft.Data.Sqlite` → `SqliteCommand` | Cada stack usa la via idiomatica de su ecosistema, sin ORM. |
+| Cierre de recursos | fin de proceso FPM | `finally` + `close()` | proceso unico, conexion global | `try-with-resources` | `using` / `IDisposable` | La garantia de no filtrar conexiones es lo que cambia entre runtimes. |
 | Worker | Contenedor Docker separado | `threading.Thread` en proceso | `setInterval(...).unref()` en proceso | `ScheduledExecutorService` | `Task.Delay` + `CancellationToken` | FPM no comparte estado. Los demas si — Node sin lock por single-thread; Java/.NET con primitivas concurrentes. |
 | Observabilidad | Prometheus + Grafana | `/metrics-prometheus` | `/metrics-prometheus` + `event_loop_lag_ms` | `LongAdder` + buffer p95/p99 | `Interlocked` + buffer p95/p99 | Solo Node expone lag del loop. Java y .NET exponen contadores lock-free. |
 | Concurrencia | FPM workers (multiproceso) | Threads en un proceso (GIL) | Single-thread event loop | JVM ThreadPool (paralelismo real) | CLR ThreadPool (paralelismo real) | Cinco modelos. Mismo patron N+1, distintas senales bajo carga. |
