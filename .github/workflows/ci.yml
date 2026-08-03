@@ -1,5 +1,9 @@
 name: CI
 
+# GITHUB_TOKEN de solo lectura: este workflow no escribe nada en el repo.
+permissions:
+  contents: read
+
 on:
   push:
     branches:
@@ -9,12 +13,16 @@ on:
 jobs:
   structure:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4
+        with:
+          persist-credentials: false
 
       - name: Setup PHP
-        uses: shivammathur/setup-php@v2
+        uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240  # v2
         with:
           php-version: "8.3"
 
@@ -24,8 +32,17 @@ jobs:
       - name: Validate repository structure
         run: bash scripts/validate-structure.sh
 
+      # Coherencia de versiones de lenguaje: que todos los Dockerfile de un
+      # stack fijen la misma imagen base y que el README declare esa version.
+      # Es determinista y sin red — la deteccion de versiones nuevas publicadas
+      # upstream vive en language-drift.yml, que corre por schedule.
+      - name: Check language version coherence
+        run: bash scripts/check-language-versions.sh
+
   compose-config:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     strategy:
       matrix:
         compose_file:
@@ -123,13 +140,17 @@ jobs:
           - cases/12-single-point-of-knowledge-and-operational-risk/rust/compose.yml
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4
+        with:
+          persist-credentials: false
 
       - name: Validate docker compose file
         run: docker compose -f ${{ matrix.compose_file }} config > /dev/null
 
   compose-smoke:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     strategy:
       matrix:
         include:
@@ -180,7 +201,9 @@ jobs:
             probe_url: http://127.0.0.1:833/health
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4
+        with:
+          persist-credentials: false
 
       - name: Build and boot ${{ matrix.name }}
         run: docker compose -f ${{ matrix.compose_file }} up -d --build
@@ -204,9 +227,13 @@ jobs:
 
   portal-probe:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4
+        with:
+          persist-credentials: false
 
       - name: Build and boot laboratorio PHP completo
         run: docker compose -f compose.root.yml up -d --build
@@ -232,6 +259,8 @@ jobs:
 
   hub-probe:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     strategy:
       fail-fast: false
       matrix:
@@ -262,7 +291,9 @@ jobs:
             cases: "01 02 03 04 05 06 07 08 09 10 11 12"
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4
+        with:
+          persist-credentials: false
 
       - name: Build and boot ${{ matrix.name }}
         run: docker compose -f ${{ matrix.compose_file }} up -d --build

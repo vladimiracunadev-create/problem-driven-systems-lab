@@ -1,0 +1,53 @@
+name: Security
+
+# Escaneo de secretos sobre el arbol y el historial.
+#
+# Por que en un laboratorio didactico: los 12 casos incluyen credenciales de
+# ejemplo (usuarios de PostgreSQL, cadenas de conexion, tokens ficticios en los
+# payloads). Es exactamente el escenario donde un secreto real se cuela por
+# parecerse a los de mentira que ya estan alrededor.
+#
+# Lo que NO cubre: vulnerabilidades de dependencias. Los 12 casos Go y Rust si
+# tienen dependencias reales (`modernc.org/sqlite`, `rusqlite`); auditarlas es
+# trabajo aparte y hoy no esta hecho.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    - cron: "0 11 * * 1"   # lunes 11:00 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: security-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  secretos:
+    name: Escaneo de secretos (gitleaks)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09  # v5
+        with:
+          persist-credentials: false
+          fetch-depth: 0   # gitleaks necesita el historial para `detect`
+
+      - name: Instalar gitleaks
+        env:
+          GITLEAKS_VERSION: "8.18.4"
+        run: |
+          set -euo pipefail
+          curl -sSfL "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz" \
+            | tar -xz -C /usr/local/bin gitleaks
+          gitleaks version
+
+      - name: Detectar secretos en el arbol
+        run: gitleaks detect --no-git --redact -v --source .
+
+      - name: Detectar secretos en el historial
+        run: gitleaks detect --redact -v --source .

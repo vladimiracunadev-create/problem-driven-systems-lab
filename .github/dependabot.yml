@@ -1,0 +1,21 @@
+version: 2
+
+# Solo `github-actions`. Las dependencias de los casos (`modernc.org/sqlite`,
+# `rusqlite`, `sqlite-jdbc`, `Microsoft.Data.Sqlite`) se dejan fuera a proposito:
+# un bump automatico de la libreria de SQLite podria cambiar el plan de ejecucion
+# que el caso 01 usa como evidencia (`SCAN orders` vs `SEARCH orders USING INDEX`),
+# y eso debe revisarlo una persona. Las versiones de lenguaje las vigila
+# .github/workflows/language-drift.yml, que abre un issue en vez de un PR.
+
+updates:
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "07:00"
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "ci"
+    labels:
+      - "mantenimiento"
