@@ -38,3 +38,19 @@ services:
     container_name: pdsl-06-dotnet
     ports:
       - "856:8080"
+
+  go:
+    build:
+      context: ./go
+      dockerfile: Dockerfile
+    container_name: pdsl-06-go
+    ports:
+      - "866:8080"
+
+  rust:
+    build:
+      context: ./rust
+      dockerfile: Dockerfile
+    container_name: pdsl-06-rust
+    ports:
+      - "876:8080"

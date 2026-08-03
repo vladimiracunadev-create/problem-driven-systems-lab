@@ -23,7 +23,7 @@
 | 11 | Reportes pesados que bloquean operacion | Operaciones | Aislamiento de cargas: reporting deja de degradar la operacion. |
 | 12 | Punto unico de conocimiento | Operaciones | Continuidad operacional y reduccion de dependencia critica en personas. |
 
-Los 12 casos estan **OPERATIVOS** en los 5 stacks: PHP/Python/Node.js/Java 21/.NET 8. Detalle de paridad: [`docs/case-catalog.md`](case-catalog.md).
+Los 12 casos estan **OPERATIVOS** en los 7 stacks: PHP/Python/Node.js/Java 21/.NET 8/Go 1.23/Rust 1.83. Detalle de paridad: [`docs/case-catalog.md`](case-catalog.md).
 
 ---
 
@@ -223,7 +223,7 @@ Los 12 casos estan **OPERATIVOS** en los 5 stacks: PHP/Python/Node.js/Java 21/.N
 
 Honestidad explicita para no vender lo que no es:
 
-- **No es un benchmark de lenguajes.** Los 5 stacks (PHP/Python/Node/Java/.NET) resuelven los 12 problemas con primitivas nativas distintas; el contraste muestra criterio, no "cual es mas rapido".
+- **No es un benchmark de lenguajes.** Los 7 stacks (PHP/Python/Node/Java/.NET/Go/Rust) resuelven los 12 problemas con primitivas nativas distintas; el contraste muestra criterio, no "cual es mas rapido". El caso 10 lo dice explicito: lo comparable es la forma de la curva dentro de cada stack, no los milisegundos entre stacks.
 - **No reemplaza plataformas reales.** Tracing distribuido, CI/CD enterprise, mallas de servicios y feature flags globales quedan fuera. Lo que si esta: reproduccion fiel de la **logica operativa** de cada problema.
 - **No es production-grade tal cual.** Modelo de amenaza: localhost / LAN confiable. Para Internet ver [SECURITY.md](../SECURITY.md) (auth, rate limit, TLS son responsabilidad de quien expone).
 - **Paridad multi-stack completa hoy.** PHP + Python + Node.js + Java + .NET cubren los 12 casos cada uno con primitivas idiomaticas distintas. Cualquier caso nuevo se incorpora siguiendo el mismo patron.

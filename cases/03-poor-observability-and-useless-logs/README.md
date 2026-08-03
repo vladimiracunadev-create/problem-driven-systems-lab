@@ -71,6 +71,14 @@ Stack Java operativo con `ThreadLocal<RequestContext>` para propagar `correlatio
 
 Stack .NET operativo con `AsyncLocal<RequestContext>` para propagar `correlation_id` a traves de `await` sobre el `ThreadPool` (equivalente moderno del `ThreadLocal` Java en codigo async), `Guid.NewGuid()` por request, y JSON estructurado con `System.Text.Json` (sin Serilog/NLog — sin dependencias externas). `/logs` devuelve los ultimos 200 logs estructurados. Ver [`dotnet/README.md`](dotnet/README.md). Hub: `http://localhost:8500/03/`. Aislado: puerto `853`.
 
+### Go 1.23 (implementacion operativa)
+
+Stack Go operativo con `context.Context` como contexto **explicito**: el correlation ID viaja como parametro, no en almacenamiento ambiente, y la clave es un tipo privado del paquete. `log/slog` da el JSON estructurado desde la stdlib — unico stack del lab donde el logger no es una libreria externa. Ver [`go/README.md`](go/README.md). Hub: `http://localhost:8600/03/`.
+
+### Rust 1.83 (implementacion operativa)
+
+Stack Rust operativo con `&RequestCtx` prestado por referencia: el borrow checker impide que esa referencia sobreviva al handler, asi que un contexto no puede filtrarse al request siguiente. Es la unica garantia de compilador del lab para este problema. Contrapartida honesta: `std` no trae logger estructurado y el JSON se arma con `format!`. Ver [`rust/README.md`](rust/README.md). Hub: `http://localhost:8700/03/`.
+
 ---
 
 ## ⚖️ Trade-offs
@@ -133,5 +141,5 @@ make compare-up CASE=03-poor-observability-and-useless-logs
 ├── 🐳 compose.compare.yml
 ├── 📚 docs/
 ├── 🔗 shared/
-├── 🐘 php/  🟢 node/  🐍 python/  ☕ java/  🔵 dotnet/
+├── 🐘 php/  🟢 node/  🐍 python/  ☕ java/  🔵 dotnet/  🐹 go/  🦀 rust/
 ```

@@ -1,4 +1,4 @@
-# Caso 09 — Comparativa multi-stack: Integración externa inestable (PHP · Python · Node.js · Java · .NET)
+# Caso 09 — Comparativa multi-stack: Integración externa inestable (PHP · Python · Node.js · Java · .NET · Go · Rust)
 
 ## El problema que ambos resuelven
 
@@ -245,6 +245,47 @@ Interlocked.Exchange(ref breakerState, "closed");
 
 ---
 
+---
+
+## Go 1.23: un canal bufferizado **es** el semaforo
+
+Java usa `Semaphore(5)`, una clase de `java.util.concurrent`. Go no tiene semaforo en la stdlib y no le hace falta:
+
+```go
+var providerBudget = make(chan struct{}, budgetPerWindow)   // 5 permisos
+
+select {
+case <-providerBudget:   // adquirir
+default:                 // sin permisos → degradar a cache, sin bloquear
+}
+```
+
+Dos detalles que no son cosmeticos:
+
+- `struct{}` tiene **tamaño cero**. El canal no guarda datos, solo cuenta.
+- El `select` con `default` da el `tryAcquire()` no bloqueante sin aprender otra API — es la **misma primitiva** del timeout del caso 04 y del bus del caso 08.
+
+Ese es el argumento de fondo de la concurrencia en Go: canal + `select` cubren semaforo, cola, timeout, cancelacion, fan-in y pipeline. En Java cada uno es una clase distinta con su propio contrato.
+
+---
+
+## Rust 1.83: menos expresivo, pero sin unlock que olvidar
+
+`std` de Rust tampoco tiene semaforo. Aca el budget es mas prosaico: un `Mutex<i64>` que se decrementa si hay permisos.
+
+```rust
+let mut permits = PROVIDER_BUDGET.lock().unwrap();
+if *permits <= 0 {
+    return false;      // el MutexGuard se libera AQUI, automaticamente
+}
+*permits -= 1;
+true                   // y aca tambien
+```
+
+En expresividad, Go gana. Pero el guard libera al salir de scope **en todos los caminos de retorno**. En Go, un `mu.Lock()` cuyo `defer mu.Unlock()` falta en una rama de error es un deadlock silencioso que compila y pasa los tests felices. Esa categoria de bug no existe en este codigo, porque no hay unlock que escribir ni que olvidar.
+
+**Verificado en ambos:** `budget_remaining` baja 4→3→2→1→0 y la sexta llamada devuelve `served_from_cache`.
+
 ## Diferencias de decisión, no de corrección
 
 | Aspecto | PHP | Python | Node.js | Razon |
@@ -257,3 +298,20 @@ Interlocked.Exchange(ref breakerState, "closed");
 | Cleanup en cancelacion | `curl_close()` manual | Context manager | `AbortSignal` propaga al runtime | Solo Node tiene cleanup automatico via signal. |
 
 **Lo distintivo de Node:** `AbortSignal.timeout` desacopla el deadline de la libreria HTTP. El mismo signal se puede pasar a `fetch`, a una promesa custom, o a un `EventTarget` — la cancelacion se propaga al runtime sin que el codigo tenga que limpiar timers manualmente. PHP y Python lo hacen via parametros de `cURL`/`requests`, atando deadline a la libreria.
+
+---
+
+## Primitiva central por stack
+
+> Los siete stacks resuelven el mismo problema. Lo que cambia es la primitiva y donde duele.
+
+| Stack | Primitiva central en este caso |
+|---|---|
+| PHP | cache en disco + contador |
+| Python | `threading.Semaphore` |
+| Node.js | contador + `Map` snapshot |
+| Java 21 | `Semaphore` + `AtomicReference` breaker |
+| .NET 8 | `SemaphoreSlim` + `Interlocked.CompareExchange` |
+| Go 1.23 | **`chan struct{}` bufferizado ES el semaforo** (`struct{}` = tamaño cero) |
+| Rust 1.83 | `Mutex<i64>`; menos expresivo, pero **el guard libera en todos los caminos** |
+

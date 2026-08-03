@@ -160,12 +160,14 @@ curl http://localhost:8400/05/state   # heap estable, evictions_total > 4000
 05-memory-pressure-and-resource-leaks/
 ├── README.md                    ← este archivo
 ├── comparison.md                ← comparativa multi-stack PHP · Python · Node · Java
-├── compose.compare.yml          ← levanta los 5 stacks juntos
+├── compose.compare.yml          ← levanta los 7 stacks juntos
 ├── docs/                        ← análisis problem-driven (8 documentos)
 ├── shared/                      ← assets compartidos
 ├── 🐘 php/                      ← `OPERATIVO` — memory_get_usage + retención
 ├── 🐍 python/                   ← `OPERATIVO` — tracemalloc + cache acotada
 ├── 🟢 node/                     ← `OPERATIVO` — process.memoryUsage heap V8
 ├── ☕ java/                     ← `OPERATIVO` — LinkedHashMap LRU + Runtime
-└── 🔵 dotnet/                   ← `OPERATIVO` — LRU manual Dictionary+LinkedList + Process.WorkingSet64
+├── 🔵 dotnet/                   ← `OPERATIVO` — LRU manual Dictionary+LinkedList + Process.WorkingSet64
+├── 🐹 go/                   ← `OPERATIVO` — container/list LRU + runtime.ReadMemStats
+└── 🦀 rust/                   ← `OPERATIVO` — sin GC: impl Drop que cuenta liberaciones
 ```

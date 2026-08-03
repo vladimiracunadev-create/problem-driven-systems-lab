@@ -202,12 +202,14 @@ curl "http://localhost:8400/04/quote-resilient?fail=on"
 04-timeout-chain-and-retry-storms/
 ├── README.md                    ← este archivo
 ├── comparison.md                ← comparativa multi-stack PHP · Python · Node · Java
-├── compose.compare.yml          ← levanta los 5 stacks juntos para comparar
+├── compose.compare.yml          ← levanta los 7 stacks juntos para comparar
 ├── docs/                        ← análisis problem-driven (8 documentos)
 ├── shared/                      ← assets compartidos del caso
 ├── 🐘 php/                      ← `OPERATIVO` — circuit breaker persistente
 ├── 🐍 python/                   ← `OPERATIVO` — stdlib + threading.Lock
 ├── 🟢 node/                     ← `OPERATIVO` — AbortController + CB en memoria
 ├── ☕ java/                     ← `OPERATIVO` — CompletableFuture.orTimeout + CAS
-└── 🔵 dotnet/                   ← `OPERATIVO` — CancellationTokenSource + Interlocked CAS
+├── 🔵 dotnet/                   ← `OPERATIVO` — CancellationTokenSource + Interlocked CAS
+├── 🐹 go/                   ← `OPERATIVO` — context.WithTimeout que cancela aguas abajo
+└── 🦀 rust/                   ← `OPERATIVO` — mpsc::recv_timeout (corta la espera, no el trabajo)
 ```

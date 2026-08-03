@@ -187,12 +187,14 @@ curl http://localhost:8400/07/flows
 07-incremental-monolith-modernization/
 ├── README.md                    ← este archivo
 ├── comparison.md                ← comparativa multi-stack PHP · Python · Node · Java
-├── compose.compare.yml          ← levanta los 5 stacks juntos
+├── compose.compare.yml          ← levanta los 7 stacks juntos
 ├── docs/                        ← análisis problem-driven + postmortem
 ├── shared/                      ← assets compartidos
 ├── 🐘 php/                      ← `OPERATIVO` — routing persistente + ACL
 ├── 🐍 python/                   ← `OPERATIVO` — dict[str, Callable] + stdlib
 ├── 🟢 node/                     ← `OPERATIVO` — Map mutable + ACL closure
 ├── ☕ java/                     ← `OPERATIVO` — ConcurrentHashMap<String, Function>
-└── 🔵 dotnet/                   ← `OPERATIVO` — ConcurrentDictionary<string, Func<Request,Response>> routing + record types
+├── 🔵 dotnet/                   ← `OPERATIVO` — ConcurrentDictionary<string, Func<Request,Response>> routing + record types
+├── 🐹 go/                   ← `OPERATIVO` — map[string]handlerFunc — la firma es el tipo
+└── 🦀 rust/                   ← `OPERATIVO` — Box<dyn Fn + Send + Sync> verificado al registrar
 ```

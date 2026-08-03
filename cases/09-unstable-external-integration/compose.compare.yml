@@ -38,3 +38,19 @@ services:
     container_name: pdsl-09-dotnet
     ports:
       - "859:8080"
+
+  go:
+    build:
+      context: ./go
+      dockerfile: Dockerfile
+    container_name: pdsl-09-go
+    ports:
+      - "869:8080"
+
+  rust:
+    build:
+      context: ./rust
+      dockerfile: Dockerfile
+    container_name: pdsl-09-rust
+    ports:
+      - "879:8080"

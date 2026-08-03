@@ -198,12 +198,14 @@ curl http://localhost:8400/09/sync-events
 09-unstable-external-integration/
 ├── README.md                    ← este archivo
 ├── comparison.md                ← comparativa multi-stack
-├── compose.compare.yml          ← los 5 stacks juntos
+├── compose.compare.yml          ← los 7 stacks juntos
 ├── docs/                        ← análisis + postmortem
 ├── shared/                      ← assets compartidos
 ├── 🐘 php/                      ← `OPERATIVO` — adapter + breaker persistente
 ├── 🐍 python/                   ← `OPERATIVO` — stdlib + Lock + dict cache
 ├── 🟢 node/                     ← `OPERATIVO` — AbortSignal.timeout + CB
 ├── ☕ java/                     ← `OPERATIVO` — Semaphore + cache + AtomicReference
-└── 🔵 dotnet/                   ← `OPERATIVO` — SemaphoreSlim + ConcurrentDictionary cache + Interlocked CAS breaker
+├── 🔵 dotnet/                   ← `OPERATIVO` — SemaphoreSlim + ConcurrentDictionary cache + Interlocked CAS breaker
+├── 🐹 go/                   ← `OPERATIVO` — chan struct{} como semaforo de cuota
+└── 🦀 rust/                   ← `OPERATIVO` — Mutex<i64>; el guard libera en todos los caminos
 ```

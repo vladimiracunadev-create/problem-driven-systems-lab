@@ -8,7 +8,7 @@
 
 ## TL;DR (30 segundos)
 
-- 5+ años de experiencia traducidos en **evidencia operativa**: 12 problemas reales × 5 stacks de producción = **60 endpoints verificables**.
+- 5+ años de experiencia traducidos en **evidencia operativa**: 12 problemas reales × 7 stacks de producción = **84 endpoints verificables**.
 - **No es un repo de "hola mundo" en 5 lenguajes.** Cada caso reproduce un fallo de producción (N+1 real con SQLite embebido, breaker con CAS, leak de memoria con LRU, retry storm con `AbortController`, etc.) y la solución idiomática del stack.
 - **Honestidad técnica explícita:** lo que es DB real, lo que está simulado, lo que falta — todo documentado, nada vendido.
 - **`docker compose up` y verificás vos mismo.** No tenés que confiar en mi palabra.
@@ -20,7 +20,7 @@
 | Portfolio típico | Este lab |
 |---|---|
 | Hello world / TODO app / blog clone | Problemas reales de producción: N+1, retry storms, leaks, circuit breaker, strangler, idempotencia |
-| 1 stack ("soy desarrollador X") | 5 stacks que demuestran que **el problema es lo importante, no la tecnología** |
+| 1 stack ("soy desarrollador X") | 7 stacks que demuestran que **el problema es lo importante, no la tecnología** |
 | README sin ejecutar | `docker compose up` → smoke test verificable en cada caso |
 | Claims sin evidencia | Métricas reales (`db_hits`, `p95`, `breaker_state`, `event_loop_lag_ms`) reportadas en cada response JSON |
 | Esconde lo incompleto | Tabla explícita "fidelidad real vs simulado" + [ROADMAP](ROADMAP.md) con próximos casos y deuda declarada |
@@ -32,7 +32,7 @@
 
 ### 1 — Lee el [README.md](README.md) raíz (2 min)
 
-Vas a ver: tabla de estado actual (5 stacks operativos, 60 endpoints), catálogo de los 12 casos con links, tabla de honestidad de fidelidad, los 5 hubs disponibles.
+Vas a ver: tabla de estado actual (7 stacks operativos, 84 endpoints), catálogo de los 12 casos con links, tabla de honestidad de fidelidad, los 7 hubs disponibles.
 
 ### 2 — Levantá un hub (1 min)
 
@@ -60,7 +60,7 @@ curl "http://localhost:8500/02/orders-optimized?limit=5"
 
 ### 4 — Mirá un comparison.md (1 min)
 
-Abrí [`cases/02-n-plus-one-and-db-bottlenecks/comparison.md`](cases/02-n-plus-one-and-db-bottlenecks/comparison.md) — vas a ver cómo los 5 stacks resuelven el mismo problema con primitivas idiomáticas distintas. Same problem, 5 idiomatic solutions, same observable metric.
+Abrí [`cases/02-n-plus-one-and-db-bottlenecks/comparison.md`](cases/02-n-plus-one-and-db-bottlenecks/comparison.md) — vas a ver cómo los 7 stacks resuelven el mismo problema con primitivas idiomáticas distintas. Same problem, 7 idiomatic solutions, same observable metric.
 
 ---
 
@@ -108,7 +108,7 @@ Los stacks no-PHP usan exclusivamente librería estándar — `HttpServer` JDK, 
 | # | Caso | Por qué importa |
 |---|---|---|
 | 01 | API lenta bajo carga | Patrón worker concurrente + cache + readers no bloqueados. PHP corre contra PostgreSQL real con contención observable; los otros 4 stacks aplican el mismo patrón con substrato simulado (asimetría declarada). |
-| 02 | N+1 y bottlenecks DB | **Los 5 stacks ejecutan N+1 real contra SQL embebido.** `db_hits` mide ejecuciones reales en el motor. Caso con fidelidad universal. |
+| 02 | N+1 y bottlenecks DB | **Los 7 stacks ejecutan N+1 real contra SQL embebido.** `db_hits` mide ejecuciones reales en el motor. Caso con fidelidad universal. |
 | 03 | Observabilidad deficiente | `correlation_id` propagado en pipeline async. `ThreadLocal<RequestContext>` en Java, `AsyncLocal<RequestContext>` en .NET. |
 | 04 | Timeout chain y retry storms | Circuit breaker con CAS atómico, `AbortController` cooperativo, `CompletableFuture.orTimeout`, `CancellationTokenSource` + `Interlocked.CompareExchange`. |
 | 05 | Memory pressure y leaks | LRU manual con `LinkedHashMap.removeEldestEntry` (Java), `Dictionary + LinkedList` (.NET), heap V8 + RSS (Node), `tracemalloc` (Python). |
@@ -202,7 +202,7 @@ Los stacks no-PHP usan exclusivamente librería estándar — `HttpServer` JDK, 
 - **Sitio profesional:** [vladimiracunadev-create.github.io](https://vladimiracunadev-create.github.io/)
 - **GitHub:** [github.com/vladimiracunadev-create](https://github.com/vladimiracunadev-create)
 - **GitLab:** [gitlab.com/vladimir.acuna.dev-group](https://gitlab.com/vladimir.acuna.dev-group/vladimir.acuna.dev-group)
-- **Stack al que aplico:** senior developer / tech lead / staff engineer en cualquiera de los 5 stacks demostrados (preferencia PHP, Python, .NET).
+- **Stack al que aplico:** senior developer / tech lead / staff engineer en cualquiera de los 7 stacks demostrados (preferencia PHP, Python, .NET).
 - **Modalidad:** remoto / híbrido (Argentina) / relocation a evaluar.
 
 ---
@@ -212,7 +212,7 @@ Los stacks no-PHP usan exclusivamente librería estándar — `HttpServer` JDK, 
 - **Frontend complejo / UX / diseño visual.** Mi foco está en backend y operación. La UI nativa de PHP es funcional, no premiada.
 - **Conocimiento profundo de un framework específico de moda.** La idea es justamente lo opuesto: BCL/stdlib donde se puede. Si tu posición es "expertise en Next.js + tRPC + Prisma + Tailwind", este no es el repo que te va a convencer.
 - **Liderazgo de equipos de 50+ personas.** Mi experiencia de liderazgo es a nivel squad técnico, no organizacional.
-- **Paridad sintáctica universal de los 12 casos en los 5 stacks.** Es paridad **funcional con criterio idiomático por runtime** — no traducción literal.
+- **Paridad sintáctica universal de los 12 casos en los 7 stacks.** Es paridad **funcional con criterio idiomático por runtime** — no traducción literal. El caso 11 es el ejemplo explícito: Go y Rust no tienen pool de threads que agotar, así que el aislamiento se modela con un semáforo de concurrencia, no con un `ExecutorService` traducido.
 - **Benchmarks absolutos entre lenguajes.** Las métricas reportadas son operativas (`db_hits`, `latency_ms`), no comparativas marketing.
 
 ---

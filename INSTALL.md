@@ -36,6 +36,8 @@ Cada lenguaje tiene su propio archivo compose en la raíz. Un solo comando levan
 | [`compose.nodejs.yml`](compose.nodejs.yml) | Node.js 22 | `8300` Node hub | `OPERATIVO` |
 | [`compose.java.yml`](compose.java.yml) | Java 21 | `8400` Java hub | `OPERATIVO` |
 | [`compose.dotnet.yml`](compose.dotnet.yml) | .NET 8 | `8500` .NET hub | `OPERATIVO` |
+| [`compose.go.yml`](compose.go.yml) | Go 1.23 | `8600` Go hub | `OPERATIVO` |
+| [`compose.rust.yml`](compose.rust.yml) | Rust 1.83 | `8700` Rust hub | `OPERATIVO` |
 
 ### Topologia de puertos (que levanta cada compose)
 
@@ -47,6 +49,8 @@ flowchart LR
     node["Node hub :8300"]
     java["Java hub :8400"]
     net[".NET hub :8500"]
+    go[["Go hub :8600"]]
+    rs[["Rust hub :8700"]]
     prom["Prometheus :9091"]
     graf["Grafana :3001"]
 
@@ -77,7 +81,7 @@ flowchart LR
     prom --> graf
 ```
 
-8 puertos cubren el lab entero: 5 hubs + portal + Prometheus + Grafana.
+10 puertos cubren el lab entero: 7 hubs + portal + Prometheus + Grafana.
 
 ## 🐘 Laboratorio PHP completo
 
@@ -158,6 +162,10 @@ URLs esperadas:
 
 - .NET hub: `http://localhost:8500/`
 - Casos .NET: `http://localhost:8500/01/health` ... `http://localhost:8500/12/health`
+- Go hub: `http://localhost:8600/`
+- Casos Go: `http://localhost:8600/01/health` ... `http://localhost:8600/12/health`
+- Rust hub: `http://localhost:8700/`
+- Casos Rust: `http://localhost:8700/01/health` ... `http://localhost:8700/12/health`
 
 Para apagar:
 
@@ -278,4 +286,6 @@ docker compose -f compose.portal.yml down
 - PHP, Python y Node.js levantan los 12 casos cada uno con un solo compose en la raiz.
 - Java levanta los 12 casos con `compose.java.yml` (puerto `8400`).
 - .NET levanta los 12 casos con `compose.dotnet.yml` (puerto `8500`).
+- Go levanta los 12 casos con `compose.go.yml` (puerto `8600`).
+- Rust levanta los 12 casos con `compose.rust.yml` (puerto `8700`).
 - Levantar un caso aislado sigue siendo la mejor ruta cuando quieres diagnostico fino o menos consumo de recursos.

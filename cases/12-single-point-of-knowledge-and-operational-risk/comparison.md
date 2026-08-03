@@ -1,4 +1,4 @@
-# Caso 12 — Comparativa multi-stack: Punto único de conocimiento y riesgo operacional (PHP · Python · Node.js · Java · .NET)
+# Caso 12 — Comparativa multi-stack: Punto único de conocimiento y riesgo operacional (PHP · Python · Node.js · Java · .NET · Go · Rust)
 
 ## El problema que ambos resuelven
 
@@ -216,6 +216,49 @@ string fallback = script ?? teamRunbooks[runbookKey];              // degrada al
 
 ---
 
+---
+
+## Go 1.23: comma-ok, y el panic que igual hay que contener
+
+```go
+o := pickOwnerLegacy(scenario)   // *owner, puede ser nil
+script := o.Runbook[runbookKey]  // panic: nil pointer dereference
+```
+
+La firma devuelve `*owner` y **nada obliga a comprobarlo** — ese es el bug que la variante legacy demuestra. `recover()` en un `defer` es lo unico que impide que el incidente tumbe el proceso.
+
+La variante distributed usa comma-ok, que pone la ausencia en la firma:
+
+```go
+func pickOwnerDistributed(scenario string) (*owner, bool)
+```
+
+El llamador no puede usar el valor sin recibir tambien el booleano. Pero `v, _ := m[k]` sigue siendo legal: Go permite descartar el `ok`.
+
+---
+
+## Rust 1.83: `Option<T>` + `?`, el unico donde el compilador exige el chequeo
+
+Los siete lenguajes resuelven la misma pregunta —"¿y si no hay owner?"— con herramientas distintas:
+
+| Stack | Herramienta | ¿Se puede ignorar el chequeo? |
+|---|---|---|
+| PHP / Python | `isset()` / `if x is None` | Si — olvidarlo es un error en runtime |
+| Node | optional chaining `?.` | Si — `undefined` se propaga en silencio |
+| Java | `Optional<T>` | Si — `.get()` sin `isPresent()` compila |
+| .NET | nullable reference types | Si — el chequeo es un warning, no un error |
+| Go | comma-ok `v, ok := m[k]` | Si — `v, _ := m[k]` es legal |
+| **Rust** | **`Option<T>` + `match` exhaustivo** | **No — omitir el brazo `None` no compila** |
+
+Y el operador `?` hace que el camino correcto sea tambien el mas corto de escribir, que es la unica forma de que una convencion sobreviva a un equipo real:
+
+```rust
+let owner  = pick_owner_distributed(scenario)?;
+let script = owner.runbook.get(runbook_key)?;
+```
+
+**Lo que Rust NO hace: impedir el atajo.** `.unwrap()` existe, es una palabra, y convierte cualquier ausencia en un panic. Este caso lo usa a proposito en la variante legacy para demostrarlo. Un `.unwrap()` en produccion es exactamente el mismo olor que un `Optional.get()` sin `isPresent()` — la diferencia es que se puede grepear en una sola pasada.
+
 ## Diferencias de decisión, no de corrección
 
 | Aspecto | PHP | Python | Node.js | Razon |
@@ -227,3 +270,20 @@ string fallback = script ?? teamRunbooks[runbookKey];              // degrada al
 | Estado compartido | Disco (JSON) | Disco (JSON) + variable de modulo | Disco (JSON) | Persistencia cross-restart en los tres. |
 
 **Lo distintivo de Node:** optional chaining (`?.`) hace el contraste legacy/distributed casi tipografico — la "ausencia de runbook" es visible en el codigo como ausencia del operador. PHP y Python lo aproximan con `??` y `.get()` pero con menos elegancia en estructuras anidadas profundas. La leccion operativa es la misma: **el conocimiento implicito siempre se cobra; el conocimiento codificado en defaults seguros sobrevive a la rotacion**.
+
+---
+
+## Primitiva central por stack
+
+> Los siete stacks resuelven el mismo problema. Lo que cambia es la primitiva y donde duele.
+
+| Stack | Primitiva central en este caso |
+|---|---|
+| PHP | `isset()` / `??` |
+| Python | `if x is None` / `dict.get()` |
+| Node.js | optional chaining `?.` |
+| Java 21 | `Optional<T>` + `map`/`orElse` — `.get()` sin `isPresent()` compila |
+| .NET 8 | nullable reference types — el chequeo es warning, no error |
+| Go 1.23 | comma-ok `v, ok := m[k]` — `v, _ :=` sigue siendo legal; `recover()` |
+| Rust 1.83 | **`Option<T>` + `match` exhaustivo: omitir `None` no compila**; `?` propaga |
+

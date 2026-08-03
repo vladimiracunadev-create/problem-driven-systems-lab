@@ -14,9 +14,11 @@
 | Node.js — dispatcher unificado | `docker compose -f compose.nodejs.yml up -d --build` | `8300` hub |
 | Java 21 — dispatcher unificado | `docker compose -f compose.java.yml up -d --build` | `8400` hub |
 | .NET 8 — dispatcher unificado | `docker compose -f compose.dotnet.yml up -d --build` | `8500` hub |
+| Go 1.23 — dispatcher unificado | `docker compose -f compose.go.yml up -d --build` | `8600` hub |
+| Rust 1.83 — dispatcher unificado | `docker compose -f compose.rust.yml up -d --build` | `8700` hub |
 | Portal liviano | `docker compose -f compose.portal.yml up -d --build` | `8080` |
 
-Los cinco stacks pueden correr en paralelo sin colisión de puertos. **PHP/Python/Node/Java/.NET sirven 12 casos cada uno desde `:8100`/`:8200`/`:8300`/`:8400`/`:8500`. 60 endpoints operativos detras de 5 hubs.**
+Los siete stacks pueden correr en paralelo sin colisión de puertos. **PHP/Python/Node/Java/.NET/Go/Rust sirven 12 casos cada uno desde `:8100`/`:8200`/`:8300`/`:8400`/`:8500`/`:8600`/`:8700`. 84 endpoints operativos detras de 7 hubs.**
 
 ### Flujo de una request (de curl al caso)
 
@@ -140,6 +142,10 @@ Cada caso conserva su propio `compose.yml` para reproducir UN problema en aislam
 | Caso 01 .NET | `http://localhost:8500/01/health` | Respuesta saludable |
 | Caso 02 .NET | `http://localhost:8500/02/health` | Respuesta saludable |
 | Casos 03–12 .NET | `http://localhost:8500/03/health` … `http://localhost:8500/12/health` | Respuesta saludable |
+| Go hub — índice | `http://localhost:8600/` | Lista de los 12 casos JSON |
+| Casos 01–12 Go | `http://localhost:8600/01/health` … `http://localhost:8600/12/health` | Respuesta saludable |
+| Rust hub — índice | `http://localhost:8700/` | Lista de los 12 casos JSON |
+| Casos 01–12 Rust | `http://localhost:8700/01/health` … `http://localhost:8700/12/health` | Respuesta saludable |
 
 ### Casos aislados (modo estudio — solo cuando el aislamiento aporta)
 

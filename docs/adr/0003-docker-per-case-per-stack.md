@@ -9,7 +9,7 @@
 
 ## 🔍 Contexto
 
-Un laboratorio con 12 casos y hasta 5 stacks por caso representa potencialmente hasta 60 entornos distintos. Levantar todo al mismo tiempo sería:
+Un laboratorio con 12 casos y hasta 7 stacks por caso representa potencialmente hasta 84 entornos distintos. Levantar todo al mismo tiempo sería:
 
 - costoso en recursos (CPU, memoria, red),
 - difícil de mantener y depurar,

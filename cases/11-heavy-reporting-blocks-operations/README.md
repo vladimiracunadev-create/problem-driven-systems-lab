@@ -193,12 +193,14 @@ curl http://localhost:8400/11/activity       # main_pool_active bajo
 11-heavy-reporting-blocks-operations/
 ├── README.md                    ← este archivo
 ├── comparison.md                ← comparativa multi-stack
-├── compose.compare.yml          ← los 5 stacks juntos
+├── compose.compare.yml          ← los 7 stacks juntos
 ├── docs/                        ← análisis + postmortem
 ├── shared/                      ← assets compartidos
 ├── 🐘 php/                      ← `OPERATIVO` — locks vs cola/replica
 ├── 🐍 python/                   ← `OPERATIVO` — threading + métricas
 ├── 🟢 node/                     ← `OPERATIVO` — monitorEventLoopDelay + setImmediate
 ├── ☕ java/                     ← `OPERATIVO` — ThreadPoolExecutor + reportingPool
-└── 🔵 dotnet/                   ← `OPERATIVO` — ConcurrentExclusiveSchedulerPair + ThreadPool.GetAvailableWorkerThreads
+├── 🔵 dotnet/                   ← `OPERATIVO` — ConcurrentExclusiveSchedulerPair + ThreadPool.GetAvailableWorkerThreads
+├── 🐹 go/                   ← `OPERATIVO` — semaforo de concurrencia (Go no tiene pool)
+└── 🦀 rust/                   ← `OPERATIVO` — Mutex+Condvar, sin busy-wait
 ```

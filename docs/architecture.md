@@ -37,7 +37,7 @@ flowchart TB
     editorial["1. Capa editorial<br/>README · ARCHITECTURE · RUNBOOK · ROADMAP"]
     catalog["2. Capa de metadatos<br/>shared/catalog/cases.json"]
     portal_layer["3a. Portal :8080<br/>index.html · catalog.php · probe.php"]
-    hubs["3b. Hubs raiz<br/>PHP :8100 · Python :8200 · Node :8300 · Java :8400 · .NET :8500"]
+    hubs["3b. Hubs raiz<br/>PHP :8100 · Python :8200 · Node :8300 · Java :8400<br/>.NET :8500 · Go :8600 · Rust :8700"]
     cases_layer["4. Capa de casos<br/>cases/01..12/"]
     stacks_layer["5. Capa de stacks<br/>cada caso × {php, python, node, java, dotnet}"]
 
@@ -70,10 +70,12 @@ Cada lenguaje operativo tiene su propio compose en la raíz — un comando levan
 - `compose.python.yml` — Python: dispatcher único con 12 casos internos (`8200`), stdlib pura, sin dependencias externas
 - `compose.nodejs.yml` — Node.js 22: dispatcher único con 12 casos internos (`8300`), stdlib pura (incluye `node:sqlite` built-in usado en caso 02), sin dependencias externas
 - `compose.java.yml` — Java 21: dispatcher único con 12 casos internos (`8400`), JDK built-in (`HttpServer`, `HttpClient`), sin Maven
-- `compose.dotnet.yml` — .NET 8: dispatcher único con 12 casos internos (`8500`), BCL built-in (`HttpListener`, `System.Text.Json`), sin paquetes externos
+- `compose.dotnet.yml` — .NET 8: dispatcher único con 12 casos internos (`8500`), BCL built-in (`HttpListener`, `System.Text.Json`)
+- `compose.go.yml` — Go 1.23: dispatcher único con 12 casos internos (`8600`), stdlib (`net/http`, `httputil.ReverseProxy`)
+- `compose.rust.yml` — Rust 1.83: dispatcher único con 12 casos internos (`8700`); `std` no trae HTTP, la capa va sobre `TcpListener`
 - `compose.portal.yml` — portal liviano solamente (`8080`)
 
-Los cinco stacks operativos pueden correr en paralelo sin colisión de puertos.
+Los siete stacks operativos pueden correr en paralelo sin colisión de puertos.
 
 La capa visual sigue viviendo en `portal/`, con:
 
@@ -111,7 +113,9 @@ scripts/validate-structure.sh ──▶ .github/workflows/ci.yml ◀── catal
 | `compose.python.yml` | dispatcher Python (`8200`) con los 12 casos internos, stdlib pura, sin dependencias externas |
 | `compose.nodejs.yml` | dispatcher Node.js (`8300`) con los 12 casos internos, stdlib pura |
 | `compose.java.yml` | dispatcher Java (`8400`) con los 12 casos internos, JDK built-in (sin Maven) |
-| `compose.dotnet.yml` | dispatcher .NET 8 (`8500`) con los 12 casos internos, BCL built-in (sin paquetes externos) |
+| `compose.dotnet.yml` | dispatcher .NET 8 (`8500`) con los 12 casos internos, BCL built-in |
+| `compose.go.yml` | dispatcher Go 1.23 (`8600`) con los 12 casos internos, stdlib |
+| `compose.rust.yml` | dispatcher Rust 1.83 (`8700`) con los 12 casos internos, capa HTTP propia |
 | `compose.portal.yml` | portal liviano |
 | `cases/<caso>/<stack>/compose.yml` | escenario concreto y aislado (desarrollo o revision individual) |
 | `cases/<caso>/compose.compare.yml` | comparacion entre stacks del mismo caso |
@@ -135,7 +139,7 @@ La familia PHP reutiliza un runtime comun en `docker/php/Dockerfile`. La familia
 | `11` | ✅ OPERATIVO | ✅ OPERATIVO | ✅ OPERATIVO | ✅ OPERATIVO | ✅ OPERATIVO |
 | `12` | ✅ OPERATIVO | ✅ OPERATIVO | ✅ OPERATIVO | ✅ OPERATIVO | ✅ OPERATIVO |
 
-**OPERATIVO** = lógica real, Docker funcional, evidencia observable. Los 12 casos × 5 stacks (PHP / Python / Node.js 22 / Java 21 / .NET 8) son todos `OPERATIVO` — paridad funcional completa con primitivas idiomáticas distintas por runtime.
+**OPERATIVO** = lógica real, Docker funcional, evidencia observable. Los 12 casos × 7 stacks (PHP / Python / Node.js 22 / Java 21 / .NET 8 / Go 1.23 / Rust 1.83) son todos `OPERATIVO` — paridad funcional completa con primitivas idiomáticas distintas por runtime.
 
 ## 🧭 Regla principal
 
