@@ -1,12 +1,21 @@
 # Caso 10 — Comparativa multi-stack: Arquitectura cara para un problema simple (PHP · Python · Node.js · Java · .NET · Go · Rust)
 
-## El problema que ambos resuelven
+> **TL;DR** — `hops=8` cuesta 8 servicios y ~200 USD/mes estimados; el lookup directo cuesta 1 y 3 USD. **Este caso no tiene ranking de runtime**: el problema es de diseño, y la pendiente es identica en los siete lenguajes.
+
+<!-- nav -->
+`🐘 PHP` · `🐍 Python` · `🟢 Node.js` · `☕ Java 21` · `🔵 .NET 8` · `🐹 Go 1.23` · `🦀 Rust 1.83`
+
+**Estructura:** 🎯 el problema → una seccion por stack → ⚖️ tabla de decision → 📊 primitiva por stack → 🏁 veredicto y ranking
+<!-- /nav -->
+
+
+## 🎯 El problema que ambos resuelven
 
 La resolución de un feature flag. La variante complex simula una arquitectura multi-capa (event bus → rule engine → ORM hydration → serialización) que introduce overhead real sin añadir valor. La variante right-sized resuelve el mismo caso con un lookup directo O(1).
 
 ---
 
-## PHP: json_encode/json_decode loop, object casting, array access O(1)
+## 🐘 PHP: json_encode/json_decode loop, object casting, array access O(1)
 
 **Runtime:** PHP-FPM. Cada request ejecuta la lógica de forma sincrona. El overhead de serialización en PHP tiene un costo de CPU real medible.
 
@@ -50,7 +59,7 @@ PHP resuelve el feature flag con un array asociativo en memoria. El acceso por �
 
 ---
 
-## Python: json.dumps/loads loop, type() dynamic class, dict.get() O(1)
+## 🐍 Python: json.dumps/loads loop, type() dynamic class, dict.get() O(1)
 
 **Runtime:** `ThreadingHTTPServer`. El overhead de serialización en Python también es medible y proporcional a la carga.
 
@@ -89,7 +98,7 @@ Dos `.get()` anidados. Los `dict` de Python son hash tables — acceso O(1) gara
 
 ---
 
-## Node.js: JSON.stringify/parse en bucle vs acceso O(1) directo
+## 🟢 Node.js: JSON.stringify/parse en bucle vs acceso O(1) directo
 
 **Runtime:** Node.js 22 single-thread. El overhead de la sobrearquitectura se materializa como CPU real sobre el event loop — y esa medicion es lo que hace al caso accionable en Node.
 
@@ -119,7 +128,7 @@ const _ = entities[0]?.id;   // O(1)
 
 ---
 
-## Java 21: CPU real medido en `StringBuilder` loops vs `HashMap.get` O(1)
+## ☕ Java 21: CPU real medido en `StringBuilder` loops vs `HashMap.get` O(1)
 
 **Runtime:** JVM con JIT — el JIT optimiza `HashMap.get` agresivamente; el camino complex con N hops de `StringBuilder` no se puede optimizar porque cada hop construye objetos nuevos.
 
@@ -143,7 +152,7 @@ return /* 1 service touched, cost_usd_month=3, lead_time=1 */;
 
 ---
 
-## .NET 8: Dictionary O(1) vs N hops JsonSerializer
+## 🔵 .NET 8: Dictionary O(1) vs N hops JsonSerializer
 
 **Runtime:** .NET 8 sobre `HttpListener`. CLR `ThreadPool`. El "complex" cobra CPU real con `JsonSerializer.Serialize`/`Deserialize` por hop — no `Task.Delay()`.
 
@@ -175,7 +184,7 @@ return /* 1 service touched, cost_usd_month=3, lead_time=1 */;
 
 ---
 
-## Go 1.23 y Rust 1.83: los dos mas rapidos, y por que eso no importa aca
+## 🐹 Go 1.23 y Rust 1.83: los dos mas rapidos, y por que eso no importa aca
 
 El costo de este caso es CPU puro: construir y recorrer buffers.
 
@@ -188,23 +197,22 @@ Lo comparable es la **forma de la curva dentro de cada stack**: lineal en `hops`
 
 **Evidencia de que el trabajo nominal es el mismo:** con `hops=8`, tanto Go como Rust devuelven `payload_bytes: 1719`. Byte por byte, construyen el mismo payload. Lo unico que cambia es cuanto cuesta hacerlo.
 
-## Diferencias de decisión, no de corrección — PHP · Python · Node
+## ⚖️ Diferencias de decision, no de correccion
 
-> Esta tabla contrasta en detalle los tres runtimes interpretados. El contraste de los **siete** stacks esta en la tabla "Primitiva central por stack" al final del documento.
+> Los siete stacks implementan el **mismo algoritmo**. Esta tabla contrasta como lo expresa cada uno.
 
-| Aspecto | PHP | Python | Node.js | Razon |
-|---|---|---|---|---|
-| Overhead simulado | `json_encode/decode` + `(array)(object)` | `json.dumps/loads` + `type()` | `JSON.stringify/parse` + `Object.assign` | Tres formas, mismo costo cualitativo. |
-| Lookup O(1) | Array asociativo PHP `$store[$key]` | Dict Python `FEATURE_STORE.get(key)` | Objeto `STORE[key]` o `Map.get(key)` | Tres hash tables. |
-| Modelo de concurrencia | Multi-proceso (FPM) | Multi-thread con GIL | Single-thread + event loop | Solo Node sufre el costo en latencia visible inmediatamente. |
-| Sintoma observable | Memoria/CPU del proceso | Memoria/CPU del proceso | Latencia subiendo en otras rutas concurrentes | El single-thread de Node hace el costo mas visible. |
-| Constante | `const FEATURE_STORE` (clase) | Modulo-level `dict` | `const STORE = ...` o `Object.freeze(...)` | Tres formas de declarar inmutable-ish. |
+| Aspecto | PHP | Python | Node.js | Java | .NET | Go | Rust | Razon |
+|---|---|---|---|---|---|---|---|---|
+| Construccion del payload | concatenacion | `join` | `JSON.stringify` | `StringBuilder` | `JsonSerializer` | `strings.Builder` | `String::with_capacity` | Todos O(n) en hops; cambia la constante. |
+| Copia al finalizar | si | si | si | **si — `toString()` copia** | si | **no — reinterpreta el buffer** | **no** | Por eso Go y Rust dan numeros mas bajos: menos copias, no mejor algoritmo. |
+| Presion sobre el recolector | n/a (proceso muere) | GC | GC de V8 | GC | **LOH con payloads grandes** | GC | **sin GC** | El coste post-request tambien difiere, y no aparece en `elapsed_ms`. |
+| Forma de la curva | **lineal en hops** | **lineal** | **lineal** | **lineal** | **lineal** | **lineal** | **lineal** | **Identica en los siete.** Es lo unico comparable de este caso. |
 
 **El principio que los siete stacks demuestran es idéntico** (y estos tres, en detalle): la complejidad debe ser proporcional al problema. Lo distintivo de Node: como el event loop es **un solo thread**, el costo de la sobrearquitectura se ve directamente en latencia degradada para otras peticiones concurrentes — el caso 11 lo explora en profundidad con `monitorEventLoopDelay()`.
 
 ---
 
-## Primitiva central por stack
+## 📊 Primitiva central por stack
 
 > Los siete stacks resuelven el mismo problema. Lo que cambia es la primitiva y donde duele.
 
@@ -218,3 +226,20 @@ Lo comparable es la **forma de la curva dentro de cada stack**: lineal en `hops`
 | Go 1.23 | `map` vs `strings.Builder` (cero copias al convertir a string) |
 | Rust 1.83 | `HashMap` vs `String::with_capacity` (sin GC que recoja despues) |
 
+---
+
+## 🏁 Veredicto: este caso **no tiene ranking de runtime**
+
+> Y esa es la conclusion, no una omision.
+
+La sobrearquitectura no es un problema de lenguaje. Los siete stacks producen la **misma curva**: lineal en `hops` para la variante compleja, constante para la right-sized. Con `hops=8`, Go y Rust devuelven ambos `payload_bytes: 1719` — construyen el mismo payload byte por byte.
+
+Go y Rust dan los milisegundos mas bajos porque `strings.Builder` y `String::with_capacity` evitan copias que `StringBuilder.toString()` si hace. **Eso no los convierte en la respuesta.** Un lenguaje rapido no arregla ocho saltos de red que no hacian falta: solo hace que tarden menos en no hacer falta.
+
+| Lo que NO es comparable | Lo que SI es comparable |
+|---|---|
+| `elapsed_ms` entre stacks | La pendiente dentro de cada stack |
+| Que runtime es "mas rapido" | Cuantos servicios toca cada variante |
+| El benchmark | El coste estimado y el lead time |
+
+**Lectura honesta:** si este caso te deja con la conclusion "deberia migrar a Go", lo leiste al reves. La conclusion es "deberia borrar seis de los ocho hops".

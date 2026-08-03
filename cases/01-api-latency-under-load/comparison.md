@@ -1,12 +1,21 @@
 # Caso 01 — Comparativa multi-stack: API lenta bajo carga (PHP · Python · Node.js · Java · .NET · Go · Rust)
 
-## El problema que ambos resuelven
+> **TL;DR** — `db_hits` pasa de `1 + 2N` a constante. El filtro no sargable esta verificado con `EXPLAIN QUERY PLAN`: `SCAN orders` vs `SEARCH orders USING INDEX`. Los 7 stacks corren SQL real; los 4 compilados devuelven la misma fila byte por byte.
+
+<!-- nav -->
+`🐘 PHP` · `🐍 Python` · `🟢 Node.js` · `☕ Java 21` · `🔵 .NET 8` · `🐹 Go 1.23` · `🦀 Rust 1.83`
+
+**Estructura:** 🎯 el problema → una seccion por stack → ⚖️ tabla de decision → 📊 primitiva por stack → 🏁 veredicto y ranking
+<!-- /nav -->
+
+
+## 🎯 El problema que ambos resuelven
 
 Una API de reportes que carga datos de clientes con sus pedidos recientes. La variante legacy hace una consulta por cada cliente dentro de un bucle (N+1). La variante optimizada lee todo en 2-3 consultas consolidadas y deja el ensamblado al runtime del lenguaje.
 
 ---
 
-## Fidelidad del substrato — los 7 stacks contra un motor real
+## 🔬 Fidelidad del substrato — los 7 stacks contra un motor real
 
 **Los 7 stacks ejecutan SQL real.** No hay datos en memoria simulando ser una base, ni `sleep()` haciendo de latencia de I/O. `db_hits` / `db_queries_in_request` cuentan ejecuciones reales contra un motor en los siete runtimes.
 
@@ -44,7 +53,7 @@ Quien quiera ver contencion sobre un recurso externo compartido va al stack PHP.
 
 ---
 
-## PHP: proceso por request, PostgreSQL, worker en contenedor separado
+## 🐘 PHP: proceso por request, PostgreSQL, worker en contenedor separado
 
 **Runtime:** PHP-FPM crea un proceso nuevo por cada request HTTP. Ese proceso vive, ejecuta, y muere. No hay estado compartido entre requests salvo la base de datos.
 
@@ -78,7 +87,7 @@ PHP usa `array_column()` para construir un hash map asociativo en memoria. El ac
 
 ---
 
-## Python: proceso único, SQLite embebida, worker como hilo
+## 🐍 Python: proceso único, SQLite embebida, worker como hilo
 
 **Runtime:** `ThreadingHTTPServer` crea un hilo por request dentro del mismo proceso Python. El GIL de Python serializa ejecución de bytecode, pero lo libera durante I/O (incluido SQLite). Múltiples requests pueden progresar concurrentemente en I/O.
 
@@ -113,7 +122,7 @@ Python construye el `dict` de clientes con una dict comprehension. El acceso por
 
 ---
 
-## Node.js: single-thread event loop, `node:sqlite` sincronico, worker `setInterval`
+## 🟢 Node.js: single-thread event loop, `node:sqlite` sincronico, worker `setInterval`
 
 **Runtime:** Node.js 22 single-thread con event loop libuv. Cada request es una funcion async que comparte el mismo proceso. Un `await` cede al loop pero no libera ningun thread — el costo agregado de awaits secuenciales degrada throughput global del proceso, no solo de la propia request.
 
@@ -162,7 +171,7 @@ Una window function (`ROW_NUMBER() OVER PARTITION BY`) reemplaza las 2N queries 
 
 ---
 
-## Java 21: thread-per-request en JVM, `sqlite-jdbc` con WAL, worker `ScheduledExecutorService`
+## ☕ Java 21: thread-per-request en JVM, `sqlite-jdbc` con WAL, worker `ScheduledExecutorService`
 
 **Runtime:** JVM con thread pool (cached executor). Cada request HTTP corre en un thread del pool — paralelismo real limitado por nucleos, no por GIL como Python.
 
@@ -217,7 +226,7 @@ EXPLAIN QUERY PLAN … WHERE region >= 'n' AND < 'o'   →  SEARCH orders USING 
 
 ---
 
-## .NET 8: ThreadPool del CLR, ConcurrentDictionary como summary cache, worker Task.Delay con CancellationToken
+## 🔵 .NET 8: ThreadPool del CLR, ConcurrentDictionary como summary cache, worker Task.Delay con CancellationToken
 
 **Runtime:** .NET 8 sobre `HttpListener` (BCL). El CLR despacha cada request al `ThreadPool` — worker threads reales, paralelismo limitado por nucleos (no por GIL como Python, no por single-thread como Node). Estado compartido entre threads requiere primitivas concurrentes explicitas (`ConcurrentDictionary`, `Interlocked`, `AsyncLocal`).
 
@@ -269,7 +278,7 @@ $"SELECT customer_id, order_count, total_amount FROM customer_summary WHERE cust
 
 ---
 
-## Go 1.23: `modernc.org/sqlite` en Go puro, worker con goroutine + Ticker
+## 🐹 Go 1.23: `modernc.org/sqlite` en Go puro, worker con goroutine + Ticker
 
 **Runtime:** un binario estatico. `net/http` de la stdlib con una goroutine por request; el runtime las multiplexa sobre `GOMAXPROCS` hilos del SO.
 
@@ -297,7 +306,7 @@ for _, x := range raws {                                          // N+1 real
 
 ---
 
-## Rust 1.83: `rusqlite` bundled, ownership y `Drop` en lugar de cierre explicito
+## 🦀 Rust 1.83: `rusqlite` bundled, ownership y `Drop` en lugar de cierre explicito
 
 **Runtime:** binario compilado, un thread del SO por conexion (`std::thread::spawn`). Sin runtime asincronico.
 
@@ -321,25 +330,23 @@ for (id, cid, region, amount) in rows.iter() {                    // N+1 real
 
 **Verificacion cruzada:** Java, .NET, Go y Rust generan el dataset con el mismo LCG. `/report-legacy?limit=5` devuelve la misma primera fila en los cuatro (`order_id 12, Customer 1315, silver, north, 934`), con `db_hits 6` y 1.531 filas en `customer_summary`.
 
-## Diferencias de decisión, no de corrección — PHP · Python · Node · Java · .NET
+## ⚖️ Diferencias de decision, no de correccion
 
-> Los stacks Go y Rust tienen su seccion propia arriba; el contraste de los **siete** esta en "Primitiva central por stack" al final.
+> Los siete stacks implementan el **mismo algoritmo**. Esta tabla contrasta como lo expresa cada uno.
 
-| Aspecto | PHP | Python | Node.js | Java | .NET | Razon |
-|---|---|---|---|---|---|---|
-| Motor DB | PostgreSQL 16 (externo) | SQLite (archivo) | SQLite (`:memory:`) | SQLite (archivo, WAL) | SQLite (archivo, WAL) | Cinco motores reales. Solo PHP cruza un socket TCP; los otros cuatro embeben el motor sin sumar contenedor. |
-| Driver / primitiva | `PDO` | `sqlite3` stdlib | `node:sqlite` → `DatabaseSync` | `sqlite-jdbc` → `PreparedStatement` | `Microsoft.Data.Sqlite` → `SqliteCommand` | Cada stack usa la via idiomatica de su ecosistema, sin ORM. |
-| Cierre de recursos | fin de proceso FPM | `finally` + `close()` | proceso unico, conexion global | `try-with-resources` | `using` / `IDisposable` | La garantia de no filtrar conexiones es lo que cambia entre runtimes. |
-| Worker | Contenedor Docker separado | `threading.Thread` en proceso | `setInterval(...).unref()` en proceso | `ScheduledExecutorService` | `Task.Delay` + `CancellationToken` | FPM no comparte estado. Los demas si — Node sin lock por single-thread; Java/.NET con primitivas concurrentes. |
-| Observabilidad | Prometheus + Grafana | `/metrics-prometheus` | `/metrics-prometheus` + `event_loop_lag_ms` | `LongAdder` + buffer p95/p99 | `Interlocked` + buffer p95/p99 | Solo Node expone lag del loop. Java y .NET exponen contadores lock-free. |
-| Concurrencia | FPM workers (multiproceso) | Threads en un proceso (GIL) | Single-thread event loop | JVM ThreadPool (paralelismo real) | CLR ThreadPool (paralelismo real) | Cinco modelos. Mismo patron N+1, distintas senales bajo carga. |
-| Costo de await secuencial | Bloquea el proceso FPM completo | Bloquea el thread, libera GIL en I/O | Cede al loop pero penaliza throughput global | Bloquea el thread del pool, otros siguen | Bloquea el thread del pool, otros siguen | El comportamiento bajo carga concurrente es lo que mas diferencia los runtimes. |
+| Aspecto | PHP | Python | Node.js | Java | .NET | Go | Rust | Razon |
+|---|---|---|---|---|---|---|---|---|
+| Motor | PostgreSQL 16 externo | SQLite archivo | SQLite `:memory:` | SQLite archivo + WAL | SQLite archivo + WAL | SQLite archivo + WAL | SQLite archivo + WAL | Solo PHP cruza un socket TCP; los otros seis embeben el motor. |
+| Lectores vs worker | MVCC de PostgreSQL | `threading.RLock` (serializa) | proceso unico | **WAL** | **WAL** | **WAL** | **WAL** | WAL es el equivalente embebido del MVCC: el worker escribe sin bloquear lectores. |
+| Cierre de recursos | fin del proceso FPM | `finally` + `close()` | conexion global | `try-with-resources` | `using`/`IDisposable` | `defer` | **`Drop` — no hay cierre que escribir** | Rust es el unico donde liberar es propiedad del tipo, no una construccion a recordar. |
+| Concurrencia | procesos FPM | threads con GIL | event loop (y `DatabaseSync` lo **bloquea**) | JVM ThreadPool | CLR ThreadPool | goroutines sobre `GOMAXPROCS` | threads del SO 1:1 | En Node el N+1 degrada el proceso entero, no solo su request. |
+| Serializacion JSON | `json_encode` | `json.dumps` | `JSON.stringify` | `StringBuilder` a mano | interpolacion a mano | **`encoding/json` + struct tags** | `format!` a mano | Solo Go serializa el contrato desde tipos. |
 
 **El patron que los siete demuestran es identico:** N+1 vs batch loading. La diferencia observable (`db_queries`, `db_time_ms`) es la misma. Lo que cambia es **donde duele**: en PHP el pool FPM se agota; en Python el thread queda en I/O; en Node se acumula lag del event loop porque `node:sqlite` es sincronico; en Java/.NET se saturan los worker threads del pool; en Go se satura el scheduler sin que exista un pool que agotar; en Rust se ocupan threads del SO 1:1.
 
 ---
 
-## Primitiva central por stack
+## 📊 Primitiva central por stack
 
 > Los siete stacks resuelven el mismo problema. Lo que cambia es la primitiva y donde duele.
 
@@ -353,3 +360,19 @@ for (id, cid, region, amount) in rows.iter() {                    // N+1 real
 | Go 1.23 | `modernc.org/sqlite` (Go puro, sin cgo) + WAL; `defer`; goroutine + `Ticker` |
 | Rust 1.83 | `rusqlite` bundled + WAL; **`Drop` sin cierre explicito**; `std::thread` |
 
+---
+
+## 🏁 Veredicto: que stack resuelve mejor **este** problema
+
+> ⚠️ **Ranking de fit, no de calidad de lenguaje.** Mide que tan directamente las primitivas nativas del runtime expresan la solucion de *este* caso concreto. El orden cambia — a veces se invierte — de un caso a otro: leer varios rankings juntos dice mas que cualquiera por separado.
+
+| | Stack | Por que |
+|---|---|---|
+| 🥇 | **Go 1.23** | WAL + goroutine con `Ticker`: no hay pool que dimensionar ni shutdown hook que registrar, y el binario arranca sin JIT que calentar. La solucion se lee en menos lineas que en cualquier otro stack. |
+| 🥈 | **Java 21 / .NET 8** | WAL + `try-with-resources` / `using` y paralelismo real. Igual de correctos que Go; pagan arranque y verbosidad. |
+| 🥉 | **Rust 1.83** | WAL + `Drop` (nadie escribe el cierre), pero thread-per-connection 1:1 y capa HTTP propia: mas trabajo para el mismo resultado. |
+| 4º | **PHP 8.3** | El **mejor substrato del lab** —PostgreSQL real, contencion observable con `pg_stat_activity`— pero proceso por request: no hay estado compartido que optimizar. |
+| 5º | **Python 3.12** | SQLite real y worker en thread, pero el GIL serializa el trabajo CPU entre lectores. |
+| 6º | **Node.js 22** | `DatabaseSync` es sincronico: cada query del N+1 **bloquea el proceso entero**. Es el peor fit para este caso — y por eso es el que mejor lo enseña, via `event_loop_lag_ms`. |
+
+**Lectura honesta:** Go gana por sustraccion: resuelve el problema sin obligarte a elegir un tamaño de pool, y su worker es tres lineas. Node pierde por la misma razon que lo hace didactico.

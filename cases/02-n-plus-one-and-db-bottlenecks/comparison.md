@@ -1,10 +1,19 @@
 # Caso 02 — Comparativa multi-stack: N+1 y cuellos de botella en base de datos (PHP · Python · Node.js · Java · .NET · Go · Rust)
 
-## El problema que los siete resuelven
+> **TL;DR** — `db_hits` pasa de `21` a `2` con `limit=20`, sin cambiar el resultado. Los 7 stacks ejecutan N+1 real contra un motor: el contador mide `prepare()` + `execute()`, no iteraciones de un bucle.
+
+<!-- nav -->
+`🐘 PHP` · `🐍 Python` · `🟢 Node.js` · `☕ Java 21` · `🔵 .NET 8` · `🐹 Go 1.23` · `🦀 Rust 1.83`
+
+**Estructura:** 🎯 el problema → una seccion por stack → ⚖️ tabla de decision → 📊 primitiva por stack → 🏁 veredicto y ranking
+<!-- /nav -->
+
+
+## 🎯 El problema que los siete resuelven
 
 Un feed de pedidos que necesita devolver, por cada pedido, el cliente, los items, y por cada item el producto y su categoria. La variante legacy construye ese grafo con queries anidadas dentro de bucles. La variante optimizada lo construye con joins consolidados y ensamblado en memoria.
 
-## Fidelidad del substrato — los 7 stacks corren sobre SQL real
+## 🔬 Fidelidad del substrato — los 7 stacks corren sobre SQL real
 
 **Caso 02 ejecuta N+1 real sobre una base relacional embebida en los siete stacks** — igual que el caso 01 desde que se cerro su deuda de fidelidad. El contraste deja de ser "DB vs memoria" y pasa a ser **N+1 sobre el mismo problema, primitivas idiomaticas distintas por lenguaje**:
 
@@ -20,7 +29,7 @@ Un feed de pedidos que necesita devolver, por cada pedido, el cliente, los items
 
 ---
 
-## PHP: PostgreSQL, cursores PDO, agrupacion con array_column
+## 🐘 PHP: PostgreSQL, cursores PDO, agrupacion con array_column
 
 **Runtime:** PHP-FPM. Cada request es un proceso efimero. No hay estructuras de datos que sobrevivan entre requests.
 
@@ -73,7 +82,7 @@ PHP usa `array_column()` e iteracion asociativa. El FPM recupera su rol: procesa
 
 ---
 
-## Python: SQLite, sqlite3 stdlib, dict comprehensions
+## 🐍 Python: SQLite, sqlite3 stdlib, dict comprehensions
 
 **Runtime:** `ThreadingHTTPServer`. Los hilos comparten la conexion SQLite protegida por `threading.RLock`.
 
@@ -122,7 +131,7 @@ Python usa `dict.setdefault()` y list comprehensions. El resultado es funcionalm
 
 ---
 
-## Node.js: SQLite via `node:sqlite` built-in, `db.prepare()`, single-thread
+## 🟢 Node.js: SQLite via `node:sqlite` built-in, `db.prepare()`, single-thread
 
 **Runtime:** Node.js 22 single-thread con event loop. El N+1 anidado se traduce en `for (const order of baseOrders) { const c = stmt.get(order.customer_id); ... }` — el costo es `1 + N + sum(items_por_order * 2)` `prepare()`/`get()` reales contra SQLite.
 
@@ -174,7 +183,7 @@ Dos `prepare().all()` reales. Joins resueltos por SQLite, agrupacion en JS con `
 
 ---
 
-## Java 21: sqlite-jdbc, `PreparedStatement`, batch `IN(...)`
+## ☕ Java 21: sqlite-jdbc, `PreparedStatement`, batch `IN(...)`
 
 **Runtime:** JVM con thread pool. Cada handler corre en thread propio. La `Connection` SQLite es compartida y serializada por SQLite mismo (la libreria `sqlite-jdbc` empaqueta el motor nativo).
 
@@ -223,7 +232,7 @@ Un solo `executeQuery()` con `IN(?, ?, ?, ...)` construido dinamicamente — el 
 
 ---
 
-## .NET 8: Microsoft.Data.Sqlite, `SqliteCommand`, parameter binding
+## 🔵 .NET 8: Microsoft.Data.Sqlite, `SqliteCommand`, parameter binding
 
 **Runtime:** .NET 8 sobre `HttpListener`. El CLR despacha al `ThreadPool`. Cada request puede tomar una `SqliteConnection` (la libreria es thread-safe a nivel de connection, no de command compartido).
 
@@ -279,7 +288,7 @@ Un solo `ExecuteReader()` con `IN(@id0, @id1, ...)` parametrizado. `using` garan
 
 ---
 
-## Go 1.23: `database/sql` + `modernc.org/sqlite`, sin ORM que culpar
+## 🐹 Go 1.23: `database/sql` + `modernc.org/sqlite`, sin ORM que culpar
 
 **Motor:** SQLite en memoria compartida (`file:case02?mode=memory&cache=shared`). Sin `cache=shared`, cada conexion del pool abriria su propia base vacia — es el detalle que hace que el caso funcione con `database/sql`.
 
@@ -298,7 +307,7 @@ db.Query(fmt.Sprintf("SELECT order_id, sku, qty FROM order_items WHERE order_id 
 
 ---
 
-## Rust 1.83: `rusqlite` bundled y el error de cursor que no se puede ignorar
+## 🦀 Rust 1.83: `rusqlite` bundled y el error de cursor que no se puede ignorar
 
 **Motor:** SQLite embebido via `rusqlite` feature `bundled`, archivo con `journal_mode=WAL`.
 
@@ -313,24 +322,22 @@ En Go el equivalente es recorrer `rows.Next()` y **acordarse** de chequear `rows
 
 **Verificacion cruzada:** Go y Rust generan el dataset con el mismo LCG. `/orders-legacy?limit=5` devuelve `order_id 1, customer_id 276` con items `SKU-2369 qty 2` y `SKU-2863 qty 8` en ambos.
 
-## Diferencias de decision, no de correccion — PHP · Python · Node · Java · .NET
+## ⚖️ Diferencias de decision, no de correccion
 
-> Los stacks Go y Rust tienen su seccion propia arriba; el contraste de los **siete** esta en "Primitiva central por stack" al final.
+> Los siete stacks implementan el **mismo algoritmo**. Esta tabla contrasta como lo expresa cada uno.
 
-| Aspecto | PHP | Python | Node.js | Java | .NET | Razon |
-|---|---|---|---|---|---|---|
-| Motor DB | PostgreSQL 16 (externo) | SQLite stdlib | SQLite `node:sqlite` built-in | SQLite `sqlite-jdbc` | SQLite `Microsoft.Data.Sqlite` | PHP usa motor productivo cliente/servidor. Los otros 4 usan SQLite embebido — DB real sin contenedor extra. |
-| Primitiva de query | `PDO::prepare()` | `cursor.execute()` | `db.prepare().get()/all()` | `PreparedStatement.executeQuery()` | `SqliteCommand.ExecuteReader()` | Cinco APIs idiomaticas, mismo patron prepared statement. |
-| Bindings | `?` posicional | `?` posicional | `?` posicional | `?` posicional via `setInt()` | `@named` via `Parameters.Add()` | Cuatro stacks con posicional, .NET con named — la API ADO.NET historicamente prefirio nombre. |
-| Agrupacion | `array_column()` + `foreach` | `dict.setdefault()` + comprehension | `Map.get()` + iteracion | `HashMap.computeIfAbsent()` | `Dictionary.TryGetValue()` | Cinco idiomas, mismo algoritmo O(N) sobre el resultset. |
-| Medicion `db_hits` | counter PHP + `pg_stat_statements` | counter Python | counter Node + `event_loop_lag_ms` | `LongAdder` por ruta | `Interlocked.Increment` por ruta | Todos miden hits reales contra DB. Node suma lag del loop como senal nativa. |
-| Costo del N+1 | Bloquea el proceso FPM completo | Bloquea el thread (GIL libre en I/O) | Bloquea el event loop (SQLite sincronico) | Bloquea el worker del pool | Bloquea el worker del pool | Cinco modelos de concurrencia, mismo patron, distinta senal bajo carga. |
+| Aspecto | PHP | Python | Node.js | Java | .NET | Go | Rust | Razon |
+|---|---|---|---|---|---|---|---|---|
+| Driver | `PDO` | `sqlite3` stdlib | `node:sqlite` | `sqlite-jdbc` | `Microsoft.Data.Sqlite` | `database/sql` | `rusqlite` | Siete APIs idiomaticas sobre el mismo patron. |
+| Batch `IN(...)` | `str_repeat('?,')` | `','.join('?')` | `ids.map(()=>'?')` | `StringBuilder` de `?` | `$id0..$idN` nombrados | `strings.Repeat("?,")` | `vec!["?"; n].join(",")` | Misma tecnica; solo .NET usa binding nombrado por convencion ADO.NET. |
+| Riesgo de N+1 accidental | medio (ORMs opcionales) | medio | medio | **alto — Hibernate lo genera solo** | **alto — EF Core lo genera solo** | **bajo — no hay ORM en stdlib** | **bajo — no hay ORM en stdlib** | Donde hay ORM, el N+1 aparece sin que nadie lo escriba. Ese es el peligro real. |
+| Error de cursor | excepcion PDO | excepcion | excepcion | `SQLException` | `SqliteException` | hay que recordar `rows.Err()` | **`collect::<Result<..>>` obliga a decidir** | Solo Rust hace imposible ignorar un fallo parcial del cursor. |
 
 **El patron que los siete demuestran es identico:** N+1 sobre SQL escala con N*M independientemente del lenguaje o motor. La correccion — batch loading con `IN(...)` + agrupacion en memoria — tambien es identica en concepto. La diferencia observable bajo carga concurrente es **donde duele** y **con que primitiva idiomatica se expresa la solucion**.
 
 ---
 
-## Primitiva central por stack
+## 📊 Primitiva central por stack
 
 > Los siete stacks resuelven el mismo problema. Lo que cambia es la primitiva y donde duele.
 
@@ -344,3 +351,19 @@ En Go el equivalente es recorrer `rows.Next()` y **acordarse** de chequear `rows
 | Go 1.23 | `database/sql` — sin ORM que genere el N+1 por accidente |
 | Rust 1.83 | `rusqlite`; `collect::<Result<Vec<_>>>()` impide ignorar el error de cursor |
 
+---
+
+## 🏁 Veredicto: que stack resuelve mejor **este** problema
+
+> ⚠️ **Ranking de fit, no de calidad de lenguaje.** Mide que tan directamente las primitivas nativas del runtime expresan la solucion de *este* caso concreto. El orden cambia — a veces se invierte — de un caso a otro: leer varios rankings juntos dice mas que cualquiera por separado.
+
+| | Stack | Por que |
+|---|---|---|
+| 🥇 | **Rust 1.83** | `collect::<Result<Vec<_>>>()` hace **imposible** ignorar un fallo parcial del cursor, y sin ORM el N+1 no puede colarse solo. |
+| 🥈 | **Go 1.23** | Mismo argumento —`database/sql` obliga a escribir el SQL— pero olvidarse de `rows.Err()` compila. |
+| 🥉 | **PHP 8.3** | PDO contra PostgreSQL real: es el unico donde el N+1 cruza un socket y el coste es de red, no de CPU. |
+| 4º | **Python 3.12** | `sqlite3` stdlib, directo y legible. |
+| 5º | **Node.js 22** | `node:sqlite` built-in, sin `npm install`. |
+| 6º | **Java 21 / .NET 8** | Las APIs son correctas, pero son **los dos ecosistemas donde este bug nace solo**: Hibernate y EF Core generan el N+1 al iterar una coleccion lazy sin que nadie lo escriba. |
+
+**Lectura honesta:** El ranking se invierte respecto de la intuicion: los stacks con mejor tooling de datos son los mas expuestos, porque el ORM que te ahorra escribir SQL es el mismo que te esconde 41 queries.

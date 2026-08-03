@@ -1,12 +1,21 @@
 # Caso 07 — Comparativa multi-stack: Modernización incremental de monolito (PHP · Python · Node.js · Java · .NET · Go · Rust)
 
-## El problema que ambos resuelven
+> **TL;DR** — el blast radius baja de `4` modulos a `1` cuando el consumer ya migro, y a `2` cuando cae al monolito con ACL. Lo que cambia entre stacks es **cuando falla un handler mal registrado**: al escribir la migracion, o el martes que llega el primer request.
+
+<!-- nav -->
+`🐘 PHP` · `🐍 Python` · `🟢 Node.js` · `☕ Java 21` · `🔵 .NET 8` · `🐹 Go 1.23` · `🦀 Rust 1.83`
+
+**Estructura:** 🎯 el problema → una seccion por stack → ⚖️ tabla de decision → 📊 primitiva por stack → 🏁 veredicto y ranking
+<!-- /nav -->
+
+
+## 🎯 El problema que ambos resuelven
 
 Un dominio de precios acoplado a un monolito. La variante legacy toca múltiples módulos en cada cambio, amplificando el blast radius. La variante strangler usa un ACL (Anti-Corruption Layer) que desacopla el dominio nuevo del legado y migra consumidores uno a uno.
 
 ---
 
-## PHP: stdClass como god class, unset para simular rotura, façade pattern
+## 🐘 PHP: stdClass como god class, unset para simular rotura, façade pattern
 
 **Runtime:** PHP-FPM. El estado del monolito se modela como un objeto `stdClass` con propiedades dinámicas. Las propiedades pueden ser eliminadas con `unset()`, simulando la rotura que ocurre cuando se elimina un módulo del que otros dependen.
 
@@ -59,7 +68,7 @@ $state['migration']['consumers'][$consumer] = [
 
 ---
 
-## Python: dict como god class, KeyError como rotura, dict como ACL
+## 🐍 Python: dict como god class, KeyError como rotura, dict como ACL
 
 **Runtime:** `ThreadingHTTPServer`. El estado del monolito se modela como un `dict` Python con acceso dinámico por clave. La eliminación de una clave con `del` simula la eliminación de un módulo.
 
@@ -113,7 +122,7 @@ El ACL en Python es un dict de funciones (`translate`, `route`). Esto es más fu
 
 ---
 
-## Node.js: Map<consumer, handler> mutable como tabla de routing strangler
+## 🟢 Node.js: Map<consumer, handler> mutable como tabla de routing strangler
 
 **Runtime:** Node.js 22. El monolito legacy se modela como un objeto plano con propiedades cuyo `delete` produce el equivalente al `unset` de PHP. La novedad Node es la **tabla de routing del strangler como `Map` mutable en runtime**.
 
@@ -149,7 +158,7 @@ Mover un consumidor al nuevo modulo es **una linea**: `registerNewHandler('mobil
 
 ---
 
-## Java 21: `ConcurrentHashMap<String, Function>` + ACL como closure
+## ☕ Java 21: `ConcurrentHashMap<String, Function>` + ACL como closure
 
 **Runtime:** JVM con thread pool. Lecturas de la routing table son frecuentes (cada request consulta); escrituras (registrar nuevo handler) son raras. `ConcurrentHashMap` ofrece reads sin lock y writes atomicos por bucket — exactamente el patron de lectura intensa, escritura ocasional.
 
@@ -174,7 +183,7 @@ return legacyMonolith(req);                       // fallback acotado con ACL
 
 ---
 
-## .NET 8: ConcurrentDictionary con Func<Request,Response> como tabla de routing mutable
+## 🔵 .NET 8: ConcurrentDictionary con Func<Request,Response> como tabla de routing mutable
 
 **Runtime:** .NET 8 sobre `HttpListener`. CLR `ThreadPool`. La tabla de routing vive en memoria del proceso unico, compartida entre handlers.
 
@@ -207,7 +216,7 @@ return LegacyMonolith(req);   // fallback acotado con ACL
 
 ---
 
-## Go 1.23: la firma **es** el tipo del handler
+## 🐹 Go 1.23: la firma **es** el tipo del handler
 
 ```go
 type handlerFunc func(request) response
@@ -221,7 +230,7 @@ Java necesita `Function<Request,Response>` y .NET `Func<Request,Response>` — t
 
 ---
 
-## Rust 1.83: `Send + Sync` verificados en el punto de registro
+## 🦀 Rust 1.83: `Send + Sync` verificados en el punto de registro
 
 ```rust
 type Handler = Box<dyn Fn(&Request) -> Response + Send + Sync>;
@@ -236,23 +245,22 @@ El compilador los **verifica al registrar**. Si alguien intenta registrar un clo
 
 En Java, un `Function<Request,Response>` guardado en un `ConcurrentHashMap` puede capturar estado mutable no sincronizado sin que nadie avise: el mapa es concurrente, el closure no. En un strangler eso importa mas que en otros contextos, porque los handlers nuevos se registran **mientras hay trafico** y son justo el codigo menos probado del sistema.
 
-## Diferencias de decisión, no de corrección — PHP · Python · Node
+## ⚖️ Diferencias de decision, no de correccion
 
-> Esta tabla contrasta en detalle los tres runtimes interpretados. El contraste de los **siete** stacks esta en la tabla "Primitiva central por stack" al final del documento.
+> Los siete stacks implementan el **mismo algoritmo**. Esta tabla contrasta como lo expresa cada uno.
 
-| Aspecto | PHP | Python | Node.js | Razon |
-|---|---|---|---|---|
-| Modelo del monolito | `stdClass` con propiedades dinámicas | `dict` con claves dinámicas | `object` plano con propiedades dinámicas | Tres formas, mismo efecto. |
-| Rotura del módulo | `unset($obj->prop)` → Fatal Error | `del dict["key"]` → KeyError | `delete obj.prop` → TypeError al acceso | El efecto es idéntico: acceso posterior falla, distinta excepcion. |
-| ACL / Adapter | Clase `BillingAdapter` con métodos | Dict de funciones (lambdas) | `Map<consumer, handler>` con closures | Node usa la primitiva mas directa: tabla de funciones registrables en runtime. |
-| Mover consumer a nuevo modulo | Instanciar adapter + flag | Asignar funcion al dict | `map.set(consumer, handler)` (1 linea) | Solo Node lo hace sin clase ni patron formal. |
-| Seguimiento de migración | `$state['migration']['consumers'][$consumer]` | `state["migration"]["consumers"][consumer]` | `state.migration.consumers[consumer]` | Idéntica estructura. |
+| Aspecto | PHP | Python | Node.js | Java | .NET | Go | Rust | Razon |
+|---|---|---|---|---|---|---|---|---|
+| Tipo del handler | callable | `Callable` | funcion | `Function<Req,Res>` | `Func<Req,Res>` | **`type handlerFunc func(request) response`** | **`Box<dyn Fn(..) + Send + Sync>`** | En Go la firma *es* el tipo; en Java/.NET es un generico de biblioteca envolviendo el concepto. |
+| Cuando falla un registro erroneo | en runtime | en runtime | en runtime | **compilacion** | **compilacion** | **compilacion** | **compilacion** | Los cuatro tipados avisan al escribir la migracion, no en produccion. |
+| ¿Verifica thread-safety del closure? | no | no | no aplica (single-thread) | no — el mapa es concurrente, el closure no | no | no | **si — `Send + Sync`** | Un handler nuevo que capture estado no sincronizado es el codigo menos probado del sistema. |
+| Estructura de la tabla | array | `dict` | `Map` | `ConcurrentHashMap` | `ConcurrentDictionary` | `map` + **`RWMutex`** | `HashMap` + **`RwLock`** | Go y Rust eligen RW porque se lee en cada request y se escribe una vez por migracion. |
 
 **El patron Strangler Fig es idéntico en los tres:** un mediador intercepta el acceso al dominio, traduce entre modelos, y enruta al servicio nuevo solo para los consumidores que ya migraron. Lo distintivo de Node: la tabla de routing es el `Map` y los handlers son funciones de primera clase — el patron desaparece casi por completo, queda solo la primitiva del lenguaje.
 
 ---
 
-## Primitiva central por stack
+## 📊 Primitiva central por stack
 
 > Los siete stacks resuelven el mismo problema. Lo que cambia es la primitiva y donde duele.
 
@@ -266,3 +274,18 @@ En Java, un `Function<Request,Response>` guardado en un `ConcurrentHashMap` pued
 | Go 1.23 | `map[string]handlerFunc` — **la firma es el tipo**, sin generico envolvente |
 | Rust 1.83 | **`Box<dyn Fn(..) + Send + Sync>` — thread-safety verificada al registrar** |
 
+---
+
+## 🏁 Veredicto: que stack resuelve mejor **este** problema
+
+> ⚠️ **Ranking de fit, no de calidad de lenguaje.** Mide que tan directamente las primitivas nativas del runtime expresan la solucion de *este* caso concreto. El orden cambia — a veces se invierte — de un caso a otro.
+
+| | Stack | Por que |
+|---|---|---|
+| 🥇 | **Rust 1.83** | `Box<dyn Fn(..) + Send + Sync>`: el compilador verifica **en el punto de registro** que el handler es seguro de compartir. En un strangler eso importa porque los handlers nuevos se registran con trafico encima. |
+| 🥈 | **Go 1.23** | La firma *es* el tipo, sin generico envolvente, y `RWMutex` respeta el patron de acceso real (muchas lecturas, una escritura por migracion). |
+| 🥉 | **Java 21 / .NET 8** | `Function`/`Func` en un mapa concurrente. Correcto, pero el mapa es thread-safe y el closure no — y nadie avisa. |
+| 4º | **Node.js 22** | `Map<consumer, handler>` mutable en runtime, legible y directo; sin red de tipos. |
+| 6º | **Python 3.12 / PHP 8.3** | `dict` de callables. Funciona; el error de firma aparece cuando llega el request. |
+
+**Lectura honesta:** Los cuatro tipados avisan al escribir la migracion en vez de en produccion. Rust ademas cubre el caso que los otros tres no ven: el closure que captura estado no sincronizado.
