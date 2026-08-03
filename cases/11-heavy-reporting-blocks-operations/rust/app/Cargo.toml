@@ -1,0 +1,10 @@
+[package]
+name = "case11"
+version = "0.1.0"
+edition = "2021"
+
+# Sin dependencias: solo la biblioteca estandar.
+
+[profile.release]
+opt-level = 2
+strip = true

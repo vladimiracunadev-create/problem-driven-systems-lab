@@ -1,0 +1,35 @@
+# compose.rust.yml — Stack Rust 1.83 (12 casos operativos)
+#
+# Un solo contenedor, un solo puerto.
+# El dispatcher interno enruta por prefijo de path:
+#
+#   GET http://localhost:8700/       → indice de los casos Rust
+#   GET http://localhost:8700/01/... → caso 01
+#   GET http://localhost:8700/12/... → caso 12
+#
+# Los 12 servidores de caso corren como subprocesos internos en puertos
+# 9701-9712 que nunca se exponen al host.
+#
+# Uso:
+#   docker compose -f compose.rust.yml up -d --build
+#   docker compose -f compose.rust.yml down
+#   docker compose -f compose.rust.yml logs -f
+
+services:
+  rust-lab:
+    build:
+      context: .
+      dockerfile: rust-dispatcher/Dockerfile
+    container_name: pdsl-rust-lab
+    ports:
+      - "8700:8700"
+    environment:
+      APP_STACK: "Rust 1.83"
+      PORT: "8700"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:8700/01/health > /dev/null || exit 1"]
+      interval: 10s
+      timeout: 3s
+      retries: 12
+      start_period: 30s
+    restart: unless-stopped

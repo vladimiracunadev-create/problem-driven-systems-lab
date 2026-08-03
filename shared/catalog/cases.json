@@ -164,7 +164,8 @@
         "node",
         "java",
         "dotnet",
-        "go"
+        "go",
+        "rust"
       ],
       "runtime_entries": {
         "php": {
@@ -213,6 +214,14 @@
           "health_path": "/01/health",
           "root_path": "/01/",
           "isolated_compose": "cases/01-api-latency-under-load/go/compose.yml"
+        },
+        "rust": {
+          "port": 8700,
+          "compose_path": "compose.rust.yml",
+          "readme_path": "cases/01-api-latency-under-load/rust/README.md",
+          "health_path": "/01/health",
+          "root_path": "/01/",
+          "isolated_compose": "cases/01-api-latency-under-load/rust/compose.yml"
         }
       }
     },
@@ -245,7 +254,8 @@
         "node",
         "java",
         "dotnet",
-        "go"
+        "go",
+        "rust"
       ],
       "runtime_entries": {
         "php": {
@@ -294,6 +304,14 @@
           "health_path": "/02/health",
           "root_path": "/02/",
           "isolated_compose": "cases/02-n-plus-one-and-db-bottlenecks/go/compose.yml"
+        },
+        "rust": {
+          "port": 8700,
+          "compose_path": "compose.rust.yml",
+          "readme_path": "cases/02-n-plus-one-and-db-bottlenecks/rust/README.md",
+          "health_path": "/02/health",
+          "root_path": "/02/",
+          "isolated_compose": "cases/02-n-plus-one-and-db-bottlenecks/rust/compose.yml"
         }
       }
     },
@@ -326,7 +344,8 @@
         "python",
         "java",
         "dotnet",
-        "go"
+        "go",
+        "rust"
       ],
       "runtime_entries": {
         "php": {
@@ -375,6 +394,14 @@
           "health_path": "/03/health",
           "root_path": "/03/",
           "isolated_compose": "cases/03-poor-observability-and-useless-logs/go/compose.yml"
+        },
+        "rust": {
+          "port": 8700,
+          "compose_path": "compose.rust.yml",
+          "readme_path": "cases/03-poor-observability-and-useless-logs/rust/README.md",
+          "health_path": "/03/health",
+          "root_path": "/03/",
+          "isolated_compose": "cases/03-poor-observability-and-useless-logs/rust/compose.yml"
         }
       }
     },
@@ -407,7 +434,8 @@
         "node",
         "java",
         "dotnet",
-        "go"
+        "go",
+        "rust"
       ],
       "runtime_entries": {
         "php": {
@@ -456,6 +484,14 @@
           "health_path": "/04/health",
           "root_path": "/04/",
           "isolated_compose": "cases/04-timeout-chain-and-retry-storms/go/compose.yml"
+        },
+        "rust": {
+          "port": 8700,
+          "compose_path": "compose.rust.yml",
+          "readme_path": "cases/04-timeout-chain-and-retry-storms/rust/README.md",
+          "health_path": "/04/health",
+          "root_path": "/04/",
+          "isolated_compose": "cases/04-timeout-chain-and-retry-storms/rust/compose.yml"
         }
       }
     },
@@ -488,7 +524,8 @@
         "node",
         "java",
         "dotnet",
-        "go"
+        "go",
+        "rust"
       ],
       "runtime_entries": {
         "php": {
@@ -537,6 +574,14 @@
           "health_path": "/05/health",
           "root_path": "/05/",
           "isolated_compose": "cases/05-memory-pressure-and-resource-leaks/go/compose.yml"
+        },
+        "rust": {
+          "port": 8700,
+          "compose_path": "compose.rust.yml",
+          "readme_path": "cases/05-memory-pressure-and-resource-leaks/rust/README.md",
+          "health_path": "/05/health",
+          "root_path": "/05/",
+          "isolated_compose": "cases/05-memory-pressure-and-resource-leaks/rust/compose.yml"
         }
       }
     },
@@ -569,7 +614,8 @@
         "node",
         "java",
         "dotnet",
-        "go"
+        "go",
+        "rust"
       ],
       "runtime_entries": {
         "php": {
@@ -618,6 +664,14 @@
           "health_path": "/06/health",
           "root_path": "/06/",
           "isolated_compose": "cases/06-broken-pipeline-and-fragile-delivery/go/compose.yml"
+        },
+        "rust": {
+          "port": 8700,
+          "compose_path": "compose.rust.yml",
+          "readme_path": "cases/06-broken-pipeline-and-fragile-delivery/rust/README.md",
+          "health_path": "/06/health",
+          "root_path": "/06/",
+          "isolated_compose": "cases/06-broken-pipeline-and-fragile-delivery/rust/compose.yml"
         }
       }
     },
@@ -650,7 +704,8 @@
         "node",
         "java",
         "dotnet",
-        "go"
+        "go",
+        "rust"
       ],
       "runtime_entries": {
         "php": {
@@ -699,6 +754,14 @@
           "health_path": "/07/health",
           "root_path": "/07/",
           "isolated_compose": "cases/07-incremental-monolith-modernization/go/compose.yml"
+        },
+        "rust": {
+          "port": 8700,
+          "compose_path": "compose.rust.yml",
+          "readme_path": "cases/07-incremental-monolith-modernization/rust/README.md",
+          "health_path": "/07/health",
+          "root_path": "/07/",
+          "isolated_compose": "cases/07-incremental-monolith-modernization/rust/compose.yml"
         }
       }
     },
@@ -731,7 +794,8 @@
         "node",
         "java",
         "dotnet",
-        "go"
+        "go",
+        "rust"
       ],
       "runtime_entries": {
         "php": {
@@ -780,6 +844,14 @@
           "health_path": "/08/health",
           "root_path": "/08/",
           "isolated_compose": "cases/08-critical-module-extraction-without-breaking-operations/go/compose.yml"
+        },
+        "rust": {
+          "port": 8700,
+          "compose_path": "compose.rust.yml",
+          "readme_path": "cases/08-critical-module-extraction-without-breaking-operations/rust/README.md",
+          "health_path": "/08/health",
+          "root_path": "/08/",
+          "isolated_compose": "cases/08-critical-module-extraction-without-breaking-operations/rust/compose.yml"
         }
       }
     },
@@ -812,7 +884,8 @@
         "node",
         "java",
         "dotnet",
-        "go"
+        "go",
+        "rust"
       ],
       "runtime_entries": {
         "php": {
@@ -861,6 +934,14 @@
           "health_path": "/09/health",
           "root_path": "/09/",
           "isolated_compose": "cases/09-unstable-external-integration/go/compose.yml"
+        },
+        "rust": {
+          "port": 8700,
+          "compose_path": "compose.rust.yml",
+          "readme_path": "cases/09-unstable-external-integration/rust/README.md",
+          "health_path": "/09/health",
+          "root_path": "/09/",
+          "isolated_compose": "cases/09-unstable-external-integration/rust/compose.yml"
         }
       }
     },
@@ -893,7 +974,8 @@
         "node",
         "java",
         "dotnet",
-        "go"
+        "go",
+        "rust"
       ],
       "runtime_entries": {
         "php": {
@@ -942,6 +1024,14 @@
           "health_path": "/10/health",
           "root_path": "/10/",
           "isolated_compose": "cases/10-expensive-architecture-for-simple-needs/go/compose.yml"
+        },
+        "rust": {
+          "port": 8700,
+          "compose_path": "compose.rust.yml",
+          "readme_path": "cases/10-expensive-architecture-for-simple-needs/rust/README.md",
+          "health_path": "/10/health",
+          "root_path": "/10/",
+          "isolated_compose": "cases/10-expensive-architecture-for-simple-needs/rust/compose.yml"
         }
       }
     },
@@ -974,7 +1064,8 @@
         "node",
         "java",
         "dotnet",
-        "go"
+        "go",
+        "rust"
       ],
       "runtime_entries": {
         "php": {
@@ -1023,6 +1114,14 @@
           "health_path": "/11/health",
           "root_path": "/11/",
           "isolated_compose": "cases/11-heavy-reporting-blocks-operations/go/compose.yml"
+        },
+        "rust": {
+          "port": 8700,
+          "compose_path": "compose.rust.yml",
+          "readme_path": "cases/11-heavy-reporting-blocks-operations/rust/README.md",
+          "health_path": "/11/health",
+          "root_path": "/11/",
+          "isolated_compose": "cases/11-heavy-reporting-blocks-operations/rust/compose.yml"
         }
       }
     },
@@ -1055,7 +1154,8 @@
         "node",
         "java",
         "dotnet",
-        "go"
+        "go",
+        "rust"
       ],
       "runtime_entries": {
         "php": {
@@ -1104,6 +1204,14 @@
           "health_path": "/12/health",
           "root_path": "/12/",
           "isolated_compose": "cases/12-single-point-of-knowledge-and-operational-risk/go/compose.yml"
+        },
+        "rust": {
+          "port": 8700,
+          "compose_path": "compose.rust.yml",
+          "readme_path": "cases/12-single-point-of-knowledge-and-operational-risk/rust/README.md",
+          "health_path": "/12/health",
+          "root_path": "/12/",
+          "isolated_compose": "cases/12-single-point-of-knowledge-and-operational-risk/rust/compose.yml"
         }
       }
     }
