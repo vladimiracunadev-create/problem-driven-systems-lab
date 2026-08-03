@@ -221,7 +221,9 @@ La razon es estructural: `std` de Rust no tiene runtime asincronico ni cancelaci
 
 **El ranking honesto de este caso:** Go > Rust(`std`) ≈ Java > el resto. Es el unico caso del lab donde Rust queda por detras de Go en la primitiva central, y esta escrito asi a proposito.
 
-## Diferencias de decisión, no de corrección
+## Diferencias de decisión, no de corrección — PHP · Python · Node
+
+> Esta tabla contrasta en detalle los tres runtimes interpretados. El contraste de los **siete** stacks esta en la tabla "Primitiva central por stack" al final del documento.
 
 | Aspecto | PHP | Python | Node.js | Razon |
 |---|---|---|---|---|
@@ -231,7 +233,7 @@ La razon es estructural: `std` de Rust no tiene runtime asincronico ni cancelaci
 | Estado compartido | Disco (procesos FPM aislados) | Disco + opcionalmente en memoria | Disco (sin lock por single-thread) | Cada runtime resuelve segun su modelo de concurrencia. |
 | Fallback quote | JSON en disco | JSON en disco | JSON en disco | Identico — el fallback sobrevive reinicios. |
 
-**El algoritmo que los tres implementan es idéntico:** exponential backoff con jitter, circuit breaker con ventana fija, fallback al ultimo valor conocido. La diferencia practica entre Node y los otros dos es la primitiva de timeout: `AbortController` es la misma que se usa con `fetch` en codigo de produccion, asi que el laboratorio no introduce un patron sintetico — usa el mismo que veria un developer en su trabajo diario.
+**El algoritmo que los siete stacks implementan es idéntico** (y estos tres, en detalle): exponential backoff con jitter, circuit breaker con ventana fija, fallback al ultimo valor conocido. La diferencia practica entre Node y los otros dos es la primitiva de timeout: `AbortController` es la misma que se usa con `fetch` en codigo de produccion, asi que el laboratorio no introduce un patron sintetico — usa el mismo que veria un developer en su trabajo diario.
 
 ---
 

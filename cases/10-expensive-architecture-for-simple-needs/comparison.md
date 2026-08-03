@@ -188,7 +188,9 @@ Lo comparable es la **forma de la curva dentro de cada stack**: lineal en `hops`
 
 **Evidencia de que el trabajo nominal es el mismo:** con `hops=8`, tanto Go como Rust devuelven `payload_bytes: 1719`. Byte por byte, construyen el mismo payload. Lo unico que cambia es cuanto cuesta hacerlo.
 
-## Diferencias de decisión, no de corrección
+## Diferencias de decisión, no de corrección — PHP · Python · Node
+
+> Esta tabla contrasta en detalle los tres runtimes interpretados. El contraste de los **siete** stacks esta en la tabla "Primitiva central por stack" al final del documento.
 
 | Aspecto | PHP | Python | Node.js | Razon |
 |---|---|---|---|---|
@@ -198,7 +200,7 @@ Lo comparable es la **forma de la curva dentro de cada stack**: lineal en `hops`
 | Sintoma observable | Memoria/CPU del proceso | Memoria/CPU del proceso | Latencia subiendo en otras rutas concurrentes | El single-thread de Node hace el costo mas visible. |
 | Constante | `const FEATURE_STORE` (clase) | Modulo-level `dict` | `const STORE = ...` o `Object.freeze(...)` | Tres formas de declarar inmutable-ish. |
 
-**El principio que los tres demuestran es idéntico:** la complejidad debe ser proporcional al problema. Lo distintivo de Node: como el event loop es **un solo thread**, el costo de la sobrearquitectura se ve directamente en latencia degradada para otras peticiones concurrentes — el caso 11 lo explora en profundidad con `monitorEventLoopDelay()`.
+**El principio que los siete stacks demuestran es idéntico** (y estos tres, en detalle): la complejidad debe ser proporcional al problema. Lo distintivo de Node: como el event loop es **un solo thread**, el costo de la sobrearquitectura se ve directamente en latencia degradada para otras peticiones concurrentes — el caso 11 lo explora en profundidad con `monitorEventLoopDelay()`.
 
 ---
 

@@ -40,7 +40,7 @@ La asimetria que queda no es de fidelidad, es de **naturaleza del motor**, y es 
 - **Los otros cuatro corren SQLite embebido.** El SQL es real y el plan de ejecucion es real, pero no hay hop de red ni pool de conexiones remoto. Node y Python compensan con un round-trip artificial explicito (`ROUNDTRIP_*_MS`, documentado en el codigo) para que el costo de N+1 sea medible; Java y .NET no lo necesitan porque el N+1 ya paga `1 + N` ejecuciones reales.
 - **Node es sincronico a proposito.** `DatabaseSync` bloquea el event loop por query. Eso convierte `event_loop_lag_ms` en la señal Node-especifica del caso: el N+1 no penaliza solo a quien lo pide, degrada el throughput del proceso entero.
 
-Quien quiera ver contencion sobre un recurso externo compartido va al stack PHP. Quien quiera ver el mismo problema resuelto con la primitiva idiomatica de cada lenguaje tiene los cinco.
+Quien quiera ver contencion sobre un recurso externo compartido va al stack PHP. Quien quiera ver el mismo problema resuelto con la primitiva idiomatica de cada lenguaje tiene los siete.
 
 ---
 
@@ -321,7 +321,9 @@ for (id, cid, region, amount) in rows.iter() {                    // N+1 real
 
 **Verificacion cruzada:** Java, .NET, Go y Rust generan el dataset con el mismo LCG. `/report-legacy?limit=5` devuelve la misma primera fila en los cuatro (`order_id 12, Customer 1315, silver, north, 934`), con `db_hits 6` y 1.531 filas en `customer_summary`.
 
-## Diferencias de decisión, no de corrección
+## Diferencias de decisión, no de corrección — PHP · Python · Node · Java · .NET
+
+> Los stacks Go y Rust tienen su seccion propia arriba; el contraste de los **siete** esta en "Primitiva central por stack" al final.
 
 | Aspecto | PHP | Python | Node.js | Java | .NET | Razon |
 |---|---|---|---|---|---|---|
@@ -333,7 +335,7 @@ for (id, cid, region, amount) in rows.iter() {                    // N+1 real
 | Concurrencia | FPM workers (multiproceso) | Threads en un proceso (GIL) | Single-thread event loop | JVM ThreadPool (paralelismo real) | CLR ThreadPool (paralelismo real) | Cinco modelos. Mismo patron N+1, distintas senales bajo carga. |
 | Costo de await secuencial | Bloquea el proceso FPM completo | Bloquea el thread, libera GIL en I/O | Cede al loop pero penaliza throughput global | Bloquea el thread del pool, otros siguen | Bloquea el thread del pool, otros siguen | El comportamiento bajo carga concurrente es lo que mas diferencia los runtimes. |
 
-**El patron que los cinco demuestran es identico:** N+1 vs batch loading. La diferencia observable (`db_queries`, `db_time_ms`) es la misma. Lo que cambia es **donde duele**: en PHP el pool FPM se agota; en Python el thread queda en I/O; en Node se acumula lag del event loop; en Java/.NET se saturan los worker threads del pool.
+**El patron que los siete demuestran es identico:** N+1 vs batch loading. La diferencia observable (`db_queries`, `db_time_ms`) es la misma. Lo que cambia es **donde duele**: en PHP el pool FPM se agota; en Python el thread queda en I/O; en Node se acumula lag del event loop porque `node:sqlite` es sincronico; en Java/.NET se saturan los worker threads del pool; en Go se satura el scheduler sin que exista un pool que agotar; en Rust se ocupan threads del SO 1:1.
 
 ---
 

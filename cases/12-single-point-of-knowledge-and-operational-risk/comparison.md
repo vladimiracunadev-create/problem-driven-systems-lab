@@ -259,7 +259,9 @@ let script = owner.runbook.get(runbook_key)?;
 
 **Lo que Rust NO hace: impedir el atajo.** `.unwrap()` existe, es una palabra, y convierte cualquier ausencia en un panic. Este caso lo usa a proposito en la variante legacy para demostrarlo. Un `.unwrap()` en produccion es exactamente el mismo olor que un `Optional.get()` sin `isPresent()` — la diferencia es que se puede grepear en una sola pasada.
 
-## Diferencias de decisión, no de corrección
+## Diferencias de decisión, no de corrección — PHP · Python · Node
+
+> Esta tabla contrasta en detalle los tres runtimes interpretados. El contraste de los **siete** stacks esta en la tabla "Primitiva central por stack" al final del documento.
 
 | Aspecto | PHP | Python | Node.js | Razon |
 |---|---|---|---|---|

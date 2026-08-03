@@ -1,6 +1,6 @@
 # Caso 02 — Comparativa multi-stack: N+1 y cuellos de botella en base de datos (PHP · Python · Node.js · Java · .NET · Go · Rust)
 
-## El problema que los cinco resuelven
+## El problema que los siete resuelven
 
 Un feed de pedidos que necesita devolver, por cada pedido, el cliente, los items, y por cada item el producto y su categoria. La variante legacy construye ese grafo con queries anidadas dentro de bucles. La variante optimizada lo construye con joins consolidados y ensamblado en memoria.
 
@@ -16,7 +16,7 @@ Un feed de pedidos que necesita devolver, por cada pedido, el cliente, los items
 | Java 21 | SQLite (`sqlite-jdbc`) | `Connection` + `PreparedStatement` |
 | .NET 8 | SQLite (`Microsoft.Data.Sqlite`) | `SqliteConnection` + `SqliteCommand` |
 
-`db_hits` ahora es un contador real, no una metrica derivada. La diferencia entre `orders-legacy` y `orders-optimized` es observable a nivel motor en los cinco runtimes. El contrato JSON externo no cambio — lo que cambio es que el numero ahora corresponde a `prepare()` + `execute()` reales contra una DB.
+`db_hits` ahora es un contador real, no una metrica derivada. La diferencia entre `orders-legacy` y `orders-optimized` es observable a nivel motor en los siete runtimes. El contrato JSON externo no cambio — lo que cambio es que el numero ahora corresponde a `prepare()` + `execute()` reales contra una DB.
 
 ---
 
@@ -313,7 +313,9 @@ En Go el equivalente es recorrer `rows.Next()` y **acordarse** de chequear `rows
 
 **Verificacion cruzada:** Go y Rust generan el dataset con el mismo LCG. `/orders-legacy?limit=5` devuelve `order_id 1, customer_id 276` con items `SKU-2369 qty 2` y `SKU-2863 qty 8` en ambos.
 
-## Diferencias de decision, no de correccion
+## Diferencias de decision, no de correccion — PHP · Python · Node · Java · .NET
+
+> Los stacks Go y Rust tienen su seccion propia arriba; el contraste de los **siete** esta en "Primitiva central por stack" al final.
 
 | Aspecto | PHP | Python | Node.js | Java | .NET | Razon |
 |---|---|---|---|---|---|---|
@@ -324,7 +326,7 @@ En Go el equivalente es recorrer `rows.Next()` y **acordarse** de chequear `rows
 | Medicion `db_hits` | counter PHP + `pg_stat_statements` | counter Python | counter Node + `event_loop_lag_ms` | `LongAdder` por ruta | `Interlocked.Increment` por ruta | Todos miden hits reales contra DB. Node suma lag del loop como senal nativa. |
 | Costo del N+1 | Bloquea el proceso FPM completo | Bloquea el thread (GIL libre en I/O) | Bloquea el event loop (SQLite sincronico) | Bloquea el worker del pool | Bloquea el worker del pool | Cinco modelos de concurrencia, mismo patron, distinta senal bajo carga. |
 
-**El patron que los cinco demuestran es identico:** N+1 sobre SQL escala con N*M independientemente del lenguaje o motor. La correccion — batch loading con `IN(...)` + agrupacion en memoria — tambien es identica en concepto. La diferencia observable bajo carga concurrente es **donde duele** y **con que primitiva idiomatica se expresa la solucion**.
+**El patron que los siete demuestran es identico:** N+1 sobre SQL escala con N*M independientemente del lenguaje o motor. La correccion — batch loading con `IN(...)` + agrupacion en memoria — tambien es identica en concepto. La diferencia observable bajo carga concurrente es **donde duele** y **con que primitiva idiomatica se expresa la solucion**.
 
 ---
 

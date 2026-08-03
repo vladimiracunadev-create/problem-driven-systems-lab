@@ -103,7 +103,7 @@ Cada lenguaje operativo tiene su compose raíz — un comando levanta los 12 cas
 
 Los siete stacks pueden correr en paralelo sin colisión de puertos — comparten el mismo patrón hub.
 
-**Por qué importa:** un solo `docker compose up` por stack es la promesa de reproducibilidad. Cualquier evaluador puede levantar uno o los cinco en simultáneo en su laptop.
+**Por qué importa:** un solo `docker compose up` por stack es la promesa de reproducibilidad. Cualquier evaluador puede levantar uno o los siete en simultáneo en su laptop.
 
 ### 4. Casos, stacks e interfaces de usuario
 
@@ -239,20 +239,20 @@ graph LR
 
 ### Mapa de fidelidad por caso
 
-| Caso | PHP | Python | Node.js | Java | .NET | Estado |
-|---|---|---|---|---|---|---|
-| `01` API latency | DB real (PostgreSQL + worker) | DB real (SQLite stdlib + thread worker) | Simulado (`setTimeout`) | Simulado (`sleepMicros`) | Simulado (`Task.Delay`) | OPERATIVO con asimetría documentada |
-| `02` N+1 | DB real (PostgreSQL) | DB real (SQLite stdlib) | **DB real (`node:sqlite`)** | **DB real (`sqlite-jdbc`)** | **DB real (`Microsoft.Data.Sqlite`)** | OPERATIVO con fidelidad universal |
-| `03` Observabilidad | ✅ correlation_id PHP | ✅ Python | ✅ Node | ✅ `ThreadLocal<RequestContext>` | ✅ `AsyncLocal<RequestContext>` | OPERATIVO |
-| `04` Timeout chain | ✅ flock + breaker | ✅ asyncio | ✅ `AbortController` | ✅ `CompletableFuture.orTimeout` + `AtomicRef` CAS | ✅ `CancellationTokenSource` + `Interlocked.CompareExchange` | OPERATIVO |
-| `05` Memory pressure | ✅ flock retention | ✅ tracemalloc | ✅ heap V8 + RSS | ✅ `LinkedHashMap` LRU + Runtime metrics | ✅ LRU manual + `Process.WorkingSet64` | OPERATIVO |
-| `06` Pipeline roto | ✅ preflight + rollback | ✅ | ✅ | ✅ `record` types + state machine | ✅ `with`-expressions rollback | OPERATIVO |
-| `07` Strangler | ✅ | ✅ | ✅ `Map<consumer,handler>` | ✅ `ConcurrentHashMap` | ✅ `ConcurrentDictionary<string,Func>` | OPERATIVO |
-| `08` Extract & proxy | ✅ | ✅ | ✅ `Proxy` + `EventEmitter` | ✅ `Function` proxy + `CopyOnWriteArrayList` | ✅ `Func<Old,New>` + `ImmutableList<Action>` | OPERATIVO |
-| `09` Adapter + breaker | ✅ | ✅ | ✅ `AbortSignal.timeout` | ✅ `Semaphore` budget + breaker | ✅ `SemaphoreSlim` + `Interlocked` breaker | OPERATIVO |
-| `10` Right-sized | ✅ | ✅ | ✅ hops JSON | ✅ N hops `StringBuilder` vs `HashMap` | ✅ N hops `JsonSerializer` LOH vs `Dictionary` | OPERATIVO |
-| `11` Heavy reporting | ✅ | ✅ | ✅ `monitorEventLoopDelay` | ✅ `ThreadPoolExecutor.getActiveCount()` | ✅ `ConcurrentExclusiveSchedulerPair` | OPERATIVO |
-| `12` Bus factor | ✅ runbooks | ✅ | ✅ optional chaining `?.` | ✅ `Optional<T>` | ✅ `?.` + `??` con NRT | OPERATIVO |
+| Caso | Substrato / primitiva por stack | Estado |
+|---|---|---|
+| `01` API latency | **SQL real en los 7.** PostgreSQL+worker (PHP) · SQLite stdlib+thread (Python) · `node:sqlite` (Node) · `sqlite-jdbc`+WAL (Java) · `Microsoft.Data.Sqlite`+WAL (.NET) · `modernc.org/sqlite`+WAL (Go) · `rusqlite` bundled+WAL (Rust) | OPERATIVO, fidelidad universal |
+| `02` N+1 | **SQL real en los 7.** Mismos motores que el caso 01; `db_hits` cuenta ejecuciones contra el motor | OPERATIVO, fidelidad universal |
+| `03` Observabilidad | correlation_id: `ThreadLocal` (Java) · `AsyncLocal` (.NET) · `AsyncLocalStorage` (Node) · **`context.Context` explícito + `log/slog` (Go)** · **`&RequestCtx` con lifetime acotado (Rust)** | OPERATIVO |
+| `04` Timeout chain | `AbortController` (Node) · `orTimeout` (Java) · `CancellationTokenSource` (.NET) · **`context.WithTimeout` que cancela aguas abajo (Go)** · `mpsc::recv_timeout` (Rust, corta la espera no el trabajo) | OPERATIVO |
+| `05` Memory pressure | heap V8 (Node) · `LinkedHashMap` LRU (Java) · LRU manual (.NET) · `container/list` + `runtime.ReadMemStats` (Go) · **`impl Drop` que cuenta liberaciones, sin GC (Rust)** | OPERATIVO |
+| `06` Pipeline roto | `record` + state machine (Java/.NET) · `sync.Mutex` sobre la transacción completa (Go) · **`enum` + `match` exhaustivo (Rust)** | OPERATIVO |
+| `07` Strangler | `Map<consumer,handler>` (Node) · `ConcurrentHashMap` (Java) · `ConcurrentDictionary` (.NET) · `map[string]handlerFunc` (Go) · **`Box<dyn Fn + Send + Sync>` (Rust)** | OPERATIVO |
+| `08` Extract & proxy | `Proxy`+`EventEmitter` (Node) · `CopyOnWriteArrayList` (Java) · `ImmutableList<Action>` (.NET) · **canal con `select`+`default` (Go)** · **`mpsc` single-consumer (Rust)** | OPERATIVO |
+| `09` Adapter + breaker | `AbortSignal.timeout` (Node) · `Semaphore` (Java) · `SemaphoreSlim` (.NET) · **`chan struct{}` como semáforo (Go)** · `Mutex<i64>` con guard automático (Rust) | OPERATIVO |
+| `10` Right-sized | hops JSON (Node) · `StringBuilder` (Java) · `JsonSerializer` LOH (.NET) · `strings.Builder` (Go) · `String::with_capacity` (Rust) | OPERATIVO |
+| `11` Heavy reporting | `monitorEventLoopDelay` (Node) · `ThreadPoolExecutor` (Java) · `ConcurrentExclusiveSchedulerPair` (.NET) · **semáforo de concurrencia — Go y Rust no tienen pool que agotar** | OPERATIVO |
+| `12` Bus factor | `?.` (Node) · `Optional<T>` (Java) · NRT (.NET) · comma-ok + `recover()` (Go) · **`Option<T>` + `?`, `match` exhaustivo (Rust)** | OPERATIVO |
 
 **Lectura clave:** los casos `01` y `02` ya no tienen asimetría de fidelidad — los 7 stacks ejecutan SQL real. La única asimetría que queda es de naturaleza del motor: solo PHP cruza un socket TCP contra PostgreSQL externo; los otros seis embeben SQLite. Del `03` al `12` son patrones puros — no requieren substrato externo, solo primitivas idiomáticas del lenguaje.
 
