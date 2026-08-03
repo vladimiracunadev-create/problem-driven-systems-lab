@@ -163,7 +163,8 @@
         "python",
         "node",
         "java",
-        "dotnet"
+        "dotnet",
+        "go"
       ],
       "runtime_entries": {
         "php": {
@@ -204,6 +205,14 @@
           "root_path": "/01/",
           "isolated_compose": "cases/01-api-latency-under-load/dotnet/compose.yml",
           "isolated_port": 851
+        },
+        "go": {
+          "port": 8600,
+          "compose_path": "compose.go.yml",
+          "readme_path": "cases/01-api-latency-under-load/go/README.md",
+          "health_path": "/01/health",
+          "root_path": "/01/",
+          "isolated_compose": "cases/01-api-latency-under-load/go/compose.yml"
         }
       }
     },
@@ -235,7 +244,8 @@
         "python",
         "node",
         "java",
-        "dotnet"
+        "dotnet",
+        "go"
       ],
       "runtime_entries": {
         "php": {
@@ -276,6 +286,14 @@
           "root_path": "/02/",
           "isolated_compose": "cases/02-n-plus-one-and-db-bottlenecks/dotnet/compose.yml",
           "isolated_port": 852
+        },
+        "go": {
+          "port": 8600,
+          "compose_path": "compose.go.yml",
+          "readme_path": "cases/02-n-plus-one-and-db-bottlenecks/go/README.md",
+          "health_path": "/02/health",
+          "root_path": "/02/",
+          "isolated_compose": "cases/02-n-plus-one-and-db-bottlenecks/go/compose.yml"
         }
       }
     },
@@ -307,7 +325,8 @@
         "node",
         "python",
         "java",
-        "dotnet"
+        "dotnet",
+        "go"
       ],
       "runtime_entries": {
         "php": {
@@ -348,6 +367,14 @@
           "root_path": "/03/",
           "isolated_compose": "cases/03-poor-observability-and-useless-logs/dotnet/compose.yml",
           "isolated_port": 853
+        },
+        "go": {
+          "port": 8600,
+          "compose_path": "compose.go.yml",
+          "readme_path": "cases/03-poor-observability-and-useless-logs/go/README.md",
+          "health_path": "/03/health",
+          "root_path": "/03/",
+          "isolated_compose": "cases/03-poor-observability-and-useless-logs/go/compose.yml"
         }
       }
     },
@@ -379,7 +406,8 @@
         "python",
         "node",
         "java",
-        "dotnet"
+        "dotnet",
+        "go"
       ],
       "runtime_entries": {
         "php": {
@@ -420,6 +448,14 @@
           "root_path": "/04/",
           "isolated_compose": "cases/04-timeout-chain-and-retry-storms/dotnet/compose.yml",
           "isolated_port": 854
+        },
+        "go": {
+          "port": 8600,
+          "compose_path": "compose.go.yml",
+          "readme_path": "cases/04-timeout-chain-and-retry-storms/go/README.md",
+          "health_path": "/04/health",
+          "root_path": "/04/",
+          "isolated_compose": "cases/04-timeout-chain-and-retry-storms/go/compose.yml"
         }
       }
     },
@@ -451,7 +487,8 @@
         "python",
         "node",
         "java",
-        "dotnet"
+        "dotnet",
+        "go"
       ],
       "runtime_entries": {
         "php": {
@@ -492,6 +529,14 @@
           "root_path": "/05/",
           "isolated_compose": "cases/05-memory-pressure-and-resource-leaks/dotnet/compose.yml",
           "isolated_port": 855
+        },
+        "go": {
+          "port": 8600,
+          "compose_path": "compose.go.yml",
+          "readme_path": "cases/05-memory-pressure-and-resource-leaks/go/README.md",
+          "health_path": "/05/health",
+          "root_path": "/05/",
+          "isolated_compose": "cases/05-memory-pressure-and-resource-leaks/go/compose.yml"
         }
       }
     },
@@ -523,7 +568,8 @@
         "python",
         "node",
         "java",
-        "dotnet"
+        "dotnet",
+        "go"
       ],
       "runtime_entries": {
         "php": {
@@ -564,6 +610,14 @@
           "root_path": "/06/",
           "isolated_compose": "cases/06-broken-pipeline-and-fragile-delivery/dotnet/compose.yml",
           "isolated_port": 856
+        },
+        "go": {
+          "port": 8600,
+          "compose_path": "compose.go.yml",
+          "readme_path": "cases/06-broken-pipeline-and-fragile-delivery/go/README.md",
+          "health_path": "/06/health",
+          "root_path": "/06/",
+          "isolated_compose": "cases/06-broken-pipeline-and-fragile-delivery/go/compose.yml"
         }
       }
     },
@@ -595,7 +649,8 @@
         "python",
         "node",
         "java",
-        "dotnet"
+        "dotnet",
+        "go"
       ],
       "runtime_entries": {
         "php": {
@@ -636,6 +691,14 @@
           "root_path": "/07/",
           "isolated_compose": "cases/07-incremental-monolith-modernization/dotnet/compose.yml",
           "isolated_port": 857
+        },
+        "go": {
+          "port": 8600,
+          "compose_path": "compose.go.yml",
+          "readme_path": "cases/07-incremental-monolith-modernization/go/README.md",
+          "health_path": "/07/health",
+          "root_path": "/07/",
+          "isolated_compose": "cases/07-incremental-monolith-modernization/go/compose.yml"
         }
       }
     },
@@ -667,7 +730,8 @@
         "python",
         "node",
         "java",
-        "dotnet"
+        "dotnet",
+        "go"
       ],
       "runtime_entries": {
         "php": {
@@ -708,6 +772,14 @@
           "root_path": "/08/",
           "isolated_compose": "cases/08-critical-module-extraction-without-breaking-operations/dotnet/compose.yml",
           "isolated_port": 858
+        },
+        "go": {
+          "port": 8600,
+          "compose_path": "compose.go.yml",
+          "readme_path": "cases/08-critical-module-extraction-without-breaking-operations/go/README.md",
+          "health_path": "/08/health",
+          "root_path": "/08/",
+          "isolated_compose": "cases/08-critical-module-extraction-without-breaking-operations/go/compose.yml"
         }
       }
     },
@@ -739,7 +811,8 @@
         "python",
         "node",
         "java",
-        "dotnet"
+        "dotnet",
+        "go"
       ],
       "runtime_entries": {
         "php": {
@@ -780,6 +853,14 @@
           "root_path": "/09/",
           "isolated_compose": "cases/09-unstable-external-integration/dotnet/compose.yml",
           "isolated_port": 859
+        },
+        "go": {
+          "port": 8600,
+          "compose_path": "compose.go.yml",
+          "readme_path": "cases/09-unstable-external-integration/go/README.md",
+          "health_path": "/09/health",
+          "root_path": "/09/",
+          "isolated_compose": "cases/09-unstable-external-integration/go/compose.yml"
         }
       }
     },
@@ -811,7 +892,8 @@
         "python",
         "node",
         "java",
-        "dotnet"
+        "dotnet",
+        "go"
       ],
       "runtime_entries": {
         "php": {
@@ -852,6 +934,14 @@
           "root_path": "/10/",
           "isolated_compose": "cases/10-expensive-architecture-for-simple-needs/dotnet/compose.yml",
           "isolated_port": 8510
+        },
+        "go": {
+          "port": 8600,
+          "compose_path": "compose.go.yml",
+          "readme_path": "cases/10-expensive-architecture-for-simple-needs/go/README.md",
+          "health_path": "/10/health",
+          "root_path": "/10/",
+          "isolated_compose": "cases/10-expensive-architecture-for-simple-needs/go/compose.yml"
         }
       }
     },
@@ -883,7 +973,8 @@
         "python",
         "node",
         "java",
-        "dotnet"
+        "dotnet",
+        "go"
       ],
       "runtime_entries": {
         "php": {
@@ -924,6 +1015,14 @@
           "root_path": "/11/",
           "isolated_compose": "cases/11-heavy-reporting-blocks-operations/dotnet/compose.yml",
           "isolated_port": 8511
+        },
+        "go": {
+          "port": 8600,
+          "compose_path": "compose.go.yml",
+          "readme_path": "cases/11-heavy-reporting-blocks-operations/go/README.md",
+          "health_path": "/11/health",
+          "root_path": "/11/",
+          "isolated_compose": "cases/11-heavy-reporting-blocks-operations/go/compose.yml"
         }
       }
     },
@@ -955,7 +1054,8 @@
         "python",
         "node",
         "java",
-        "dotnet"
+        "dotnet",
+        "go"
       ],
       "runtime_entries": {
         "php": {
@@ -996,6 +1096,14 @@
           "root_path": "/12/",
           "isolated_compose": "cases/12-single-point-of-knowledge-and-operational-risk/dotnet/compose.yml",
           "isolated_port": 8512
+        },
+        "go": {
+          "port": 8600,
+          "compose_path": "compose.go.yml",
+          "readme_path": "cases/12-single-point-of-knowledge-and-operational-risk/go/README.md",
+          "health_path": "/12/health",
+          "root_path": "/12/",
+          "isolated_compose": "cases/12-single-point-of-knowledge-and-operational-risk/go/compose.yml"
         }
       }
     }
