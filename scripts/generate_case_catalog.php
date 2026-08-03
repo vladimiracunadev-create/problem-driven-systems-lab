@@ -128,11 +128,19 @@ $lines[] = '| `OPERATIVO` | Implementacion real con Docker y evidencia observabl
 $lines[] = '| `DOCUMENTADO / SCAFFOLD` | Caso bien modelado pero aun no profundizado del todo |';
 $lines[] = '| `PLANIFICADO` | Futuro del roadmap, todavia no presente en el arbol actual |';
 
-$content = implode(PHP_EOL, $lines) . PHP_EOL;
+// LF explicito, no PHP_EOL: en Windows PHP_EOL es "\r\n" y --check daria un
+// falso negativo contra el archivo versionado (que siempre esta en LF).
+$content = implode("\n", $lines) . "\n";
 
 if ($checkMode) {
-    $current = is_file($outputPath) ? file_get_contents($outputPath) : '';
-    if ($current !== $content) {
+    $current = is_file($outputPath) ? (string) file_get_contents($outputPath) : '';
+
+    // Comparacion agnostica al fin de linea: con core.autocrlf=true (Windows) la
+    // copia de trabajo esta en CRLF aunque el blob versionado este en LF. Sin
+    // normalizar, --check daria un falso negativo permanente fuera de Linux.
+    $normalize = static fn (string $value): string => str_replace("\r\n", "\n", $value);
+
+    if ($normalize($current) !== $normalize($content)) {
         fwrite(STDERR, "docs/case-catalog.md esta desalineado con shared/catalog/cases.json\n");
         exit(1);
     }

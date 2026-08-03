@@ -10,7 +10,7 @@
 - Documentacion editorial completa (`README.md`, `RECRUITER.md`, `ARCHITECTURE.md`, `RUNBOOK.md`, `SECURITY.md`, `AWS_MIGRATION.md`, `CONTRIBUTING.md`, `CHANGELOG.md`).
 - Catalogo unificado en `shared/catalog/cases.json` como fuente de verdad del portal, `docs/case-catalog.md` y la narrativa operativa.
 - Portal local con `index.html` + `catalog.php` + `probe.php` server-side para health en vivo.
-- CI con validacion estructural + `compose-config` sobre 40+ archivos + `portal-probe` PHP + `hub-probe` Python/Node/Java sobre los 12 casos por stack en un solo boot.
+- CI con validacion estructural + `compose-config` sobre 66 archivos + `portal-probe` PHP + `hub-probe` Python/Node/Java/.NET sobre los 12 casos por stack en un solo boot.
 
 ## Eje 1 — Nuevos casos de la vida real (13-20)
 
@@ -174,7 +174,7 @@ El `setTimeout`/`sleepMicros`/`Task.Delay` desaparece del substrato; el patron d
 
 ### CI completa
 
-**Estado:** parcial — `compose-config` sobre 40+ archivos, `portal-probe` PHP, `hub-probe` Python/Node/Java/.NET sobre `/health`. Falta validacion funcional.
+**Estado:** parcial — `compose-config` sobre 66 archivos, `portal-probe` PHP, `hub-probe` Python/Node/Java/.NET sobre `/health`. Falta validacion funcional.
 
 **Plan:** workflow GitHub Actions que `docker compose up --build` los 5 stacks en paralelo, corra la suite cross-stack del punto anterior, ejecute un loadtest minimo (`hey -n 1000 -c 50`) contra `/02/orders-legacy` y `/02/orders-optimized` en los 5 hubs, y publique evidencia como artifact (latencias, `db_hits`, p95, p99).
 
@@ -225,5 +225,5 @@ Las fases anteriores quedan registradas para referencia historica:
 - **Fase 1 — Base estructural** (completada): nombre y posicionamiento, portal liviano, estructura problem-driven con 12 casos, documentacion base.
 - **Fase 1.5 — Profesionalizacion documental** (completada): familia documental completa en raiz, alineacion editorial con el ecosistema publico de Vladimir Acuna.
 - **Fase 2 — Profundizacion tecnica** (completada): los 12 casos × 5 stacks (PHP/Python/Node/Java/.NET) operativos con primitivas idiomaticas distintivas por caso y por lenguaje.
-- **Fase 3 — Valor de portafolio** (en progreso): `docs/executive-summary.md` cubierto, diagramas en `ARCHITECTURE.md` cubierto, postmortems pendientes.
+- **Fase 3 — Valor de portafolio** (completada): `docs/executive-summary.md` cubierto, diagramas en `ARCHITECTURE.md` cubierto, postmortems cubiertos (`docs/postmortem.md` en los 12 casos).
 - **Fase 4 — Laboratorio expandido** (en progreso, abierta por este ROADMAP): los 8 casos nuevos (13-20) y las mejoras de plataforma listadas arriba son la continuacion natural.
