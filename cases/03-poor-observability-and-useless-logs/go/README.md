@@ -61,6 +61,8 @@ Java usa `ThreadLocal`, .NET usa `AsyncLocal`, Node usa `AsyncLocalStorage`. Los
 Go va al reves: el contexto es un parametro. Eso tiene una consecuencia operativa concreta —
 
 - Una funcion que no recibe `ctx` **no puede** leer el `correlation_id` por accidente. La ausencia de trazabilidad es visible en la firma, no en un log vacio a las 3 AM.
-- Cuando el trabajo salta de goroutine, el `ctx` tiene que pasarse explicitamente. En los modelos ambiente, saltar de thread pierde el contexto **en silencio**: el codigo compila, corre, y los logs simplemente dejan de tener id.
+- Cuando el trabajo salta de goroutine, el `ctx` tiene que pasarse a mano. En los modelos ambiente, saltar de thread pierde el contexto **en silencio**: el codigo compila, corre, y los logs simplemente dejan de tener id.
 
-El costo es verbosidad: `ctx` aparece como primer parametro en media base de codigo. El beneficio es que perder la correlacion pasa de ser un bug de runtime a un error de compilacion.
+El costo es verbosidad: `ctx` aparece como primer parametro en media base de codigo.
+
+**Lo que Go NO hace, y conviene no exagerar:** el compilador no obliga a propagar el contexto. Lanzar `go func() { ... }()` sin pasarle el `ctx` compila perfectamente, y el trabajo de esa goroutine queda sin correlacionar. Go hace que la dependencia sea **visible en la firma**, no que sea **obligatoria**. La diferencia con los modelos ambiente es de legibilidad y de revision de codigo, no de garantia del compilador — para eso hay que mirar el stack Rust de este mismo caso, donde el borrow checker si impide que la referencia al contexto sobreviva al request.

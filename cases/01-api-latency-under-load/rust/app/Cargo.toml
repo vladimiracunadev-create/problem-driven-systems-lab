@@ -1,0 +1,13 @@
+[package]
+name = "case01"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+# `bundled` compila SQLite desde fuente dentro del binario: no depende de
+# libsqlite3 del sistema ni de que la imagen final traiga el .so.
+rusqlite = { version = "0.32", features = ["bundled"] }
+
+[profile.release]
+opt-level = 2
+strip = true

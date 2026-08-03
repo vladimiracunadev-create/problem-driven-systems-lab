@@ -37,7 +37,7 @@ required_case_docs=(
   trade-offs.md
 )
 
-stacks=(php node python java dotnet go)
+stacks=(php node python java dotnet go rust)
 
 for path in "${required_root[@]}"; do
   test -e "$path"

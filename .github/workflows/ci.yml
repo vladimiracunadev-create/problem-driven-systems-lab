@@ -36,6 +36,7 @@ jobs:
           - compose.java.yml
           - compose.dotnet.yml
           - compose.go.yml
+          - compose.rust.yml
           - cases/01-api-latency-under-load/php/compose.yml
           - cases/02-n-plus-one-and-db-bottlenecks/php/compose.yml
           - cases/03-poor-observability-and-useless-logs/php/compose.yml
@@ -108,6 +109,18 @@ jobs:
           - cases/10-expensive-architecture-for-simple-needs/go/compose.yml
           - cases/11-heavy-reporting-blocks-operations/go/compose.yml
           - cases/12-single-point-of-knowledge-and-operational-risk/go/compose.yml
+          - cases/01-api-latency-under-load/rust/compose.yml
+          - cases/02-n-plus-one-and-db-bottlenecks/rust/compose.yml
+          - cases/03-poor-observability-and-useless-logs/rust/compose.yml
+          - cases/04-timeout-chain-and-retry-storms/rust/compose.yml
+          - cases/05-memory-pressure-and-resource-leaks/rust/compose.yml
+          - cases/06-broken-pipeline-and-fragile-delivery/rust/compose.yml
+          - cases/07-incremental-monolith-modernization/rust/compose.yml
+          - cases/08-critical-module-extraction-without-breaking-operations/rust/compose.yml
+          - cases/09-unstable-external-integration/rust/compose.yml
+          - cases/10-expensive-architecture-for-simple-needs/rust/compose.yml
+          - cases/11-heavy-reporting-blocks-operations/rust/compose.yml
+          - cases/12-single-point-of-knowledge-and-operational-risk/rust/compose.yml
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -242,6 +255,10 @@ jobs:
           - name: go-hub
             compose_file: compose.go.yml
             hub_port: 8600
+            cases: "01 02 03 04 05 06 07 08 09 10 11 12"
+          - name: rust-hub
+            compose_file: compose.rust.yml
+            hub_port: 8700
             cases: "01 02 03 04 05 06 07 08 09 10 11 12"
     steps:
       - name: Checkout
