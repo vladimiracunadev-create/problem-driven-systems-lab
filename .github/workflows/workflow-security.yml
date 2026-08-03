@@ -1,0 +1,109 @@
+name: Workflow security
+
+# Audita los propios archivos .github/workflows/*.yml.
+#
+# Este laboratorio ejecuta `docker compose up --build` sobre 92 archivos en CI.
+# Un workflow comprometido tiene acceso al runner completo, asi que la superficie
+# vale auditarla aunque el repositorio sea didactico.
+#
+# Herramientas:
+#   · actionlint — sintaxis, expresiones y reglas de seguridad basicas.
+#   · zizmor     — analizador estatico especializado en GitHub Actions
+#                  (script injection, permisos excesivos, artefactos filtrados).
+#   · pin-check  — verificacion propia: toda accion de terceros debe estar
+#                  pinneada a un SHA de 40 hex, no a un tag movible (@v4, @main).
+#                  Un tag lo puede reapuntar el autor de la accion; un SHA no.
+#
+# Lo que NO cubre: el contenido de las imagenes Docker que el CI construye.
+# Eso es superficie distinta y hoy no se escanea.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/**'
+      - '.github/dependabot.yml'
+  pull_request:
+    paths:
+      - '.github/workflows/**'
+      - '.github/dependabot.yml'
+  schedule:
+    - cron: '0 5 * * 1'   # lunes 05:00 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: workflow-sec-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  actionlint:
+    name: actionlint (sintaxis + reglas de seguridad)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09  # v5
+        with:
+          persist-credentials: false
+
+      - name: Ejecutar actionlint
+        run: |
+          set -euo pipefail
+          bash <(curl -sSfL https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash)
+          ./actionlint -color
+
+  zizmor:
+    name: zizmor (analisis estatico de Actions)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09  # v5
+        with:
+          persist-credentials: false
+
+      - name: Python
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065  # v5
+        with:
+          python-version: "3.12"
+
+      - name: Instalar y ejecutar zizmor
+        run: |
+          set -euo pipefail
+          python -m pip install --quiet zizmor
+          # `--persona regular` evita el ruido de auditoria exhaustiva y deja
+          # los hallazgos que un mantenedor deberia atender.
+          zizmor --persona regular .github/workflows/
+
+  pin-check:
+    name: pin-check (acciones de terceros con SHA)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09  # v5
+        with:
+          persist-credentials: false
+
+      - name: Verificar que todo `uses:` externo este pinneado a SHA
+        run: |
+          set -euo pipefail
+          fail=0
+          # Se ignoran los `uses:` locales (./algo) y los docker:// .
+          while IFS= read -r line; do
+            ref="${line#*uses:}"
+            ref="$(echo "$ref" | sed 's/#.*//' | xargs)"
+            case "$ref" in
+              ./*|docker://*) continue ;;
+            esac
+            version="${ref##*@}"
+            if ! printf '%s' "$version" | grep -qE '^[0-9a-f]{40}$'; then
+              echo "::error::accion sin pin a SHA -> $ref"
+              fail=1
+            fi
+          done < <(grep -rhE '^\s*(-\s*)?uses:' .github/workflows/ || true)
+          if [ "$fail" -ne 0 ]; then
+            echo "Un tag movible (@v4, @main) lo puede reapuntar el autor de la accion."
+            exit 1
+          fi
+          echo "Todas las acciones estan pinneadas a SHA."

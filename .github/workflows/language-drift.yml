@@ -1,0 +1,85 @@
+name: Language drift
+
+# Detecta que un lenguaje del laboratorio publico una version nueva, o que la
+# version que usamos entro en EOL.
+#
+# Por que existe: los 12 casos resuelven problemas con la primitiva idiomatica
+# de cada runtime. Cuando el lenguaje evoluciona, esa primitiva puede quedar
+# obsoleta y el caso pasa a enseñar la forma vieja de hacer las cosas sin que
+# nadie lo note. Ejemplos concretos que este workflow busca anticipar:
+#
+#   · Java 21 -> 25: `ScopedValue` sale de preview y el `ThreadLocal` del caso
+#     03 pasa de "alternativa razonable" a "lo que ya no se hace".
+#   · Node 22 -> 24: `node:sqlite` deja de ser experimental y el flag
+#     `--experimental-sqlite` de los casos 01 y 02 sobra.
+#   · Rust: si `std` incorpora algo equivalente a un semaforo o a un timeout
+#     cancelable, la limitacion documentada en el caso 04 deja de ser cierta.
+#   · Go 1.25+: cambios en el scheduler alteran el argumento del caso 11.
+#
+# Lo que este workflow NO hace, y conviene no venderlo de mas: no decide si hay
+# que migrar ni abre PRs con el bump. Abre (o actualiza) un unico issue con la
+# tabla de diferencias para que la decision la tome una persona. Un bump
+# automatico de version mayor en un repositorio didactico romperia el contenido
+# antes que arreglarlo.
+#
+# La verificacion determinista —que todos los Dockerfile de un stack fijen la
+# misma imagen y que la documentacion diga esa misma version— vive en
+# scripts/check-language-versions.sh y corre en cada PR dentro de ci.yml.
+
+on:
+  schedule:
+    - cron: "0 6 * * 1"   # lunes 06:00 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: language-drift
+  cancel-in-progress: false
+
+jobs:
+  drift:
+    name: Comparar versiones fijadas vs upstream
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09  # v5
+        with:
+          persist-credentials: false
+
+      - name: Python
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065  # v5
+        with:
+          python-version: "3.12"
+
+      - name: Consultar endoflife.date y comparar
+        id: check
+        run: python scripts/language_drift.py
+        env:
+          GITHUB_STEP_SUMMARY: ${{ env.GITHUB_STEP_SUMMARY }}
+
+      - name: Abrir o actualizar el issue de seguimiento
+        if: steps.check.outputs.drift == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BODY: ${{ steps.check.outputs.body }}
+        run: |
+          set -euo pipefail
+          TITLE="Drift de versiones de lenguaje"
+          EXISTING=$(gh issue list --state open --search "$TITLE in:title" --json number --jq '.[0].number // empty')
+          printf '%s\n' "$BODY" > /tmp/drift.md
+          if [ -n "$EXISTING" ]; then
+            gh issue edit "$EXISTING" --body-file /tmp/drift.md
+            echo "Issue #$EXISTING actualizado."
+          else
+            gh issue create --title "$TITLE" --body-file /tmp/drift.md --label "mantenimiento" || \
+            gh issue create --title "$TITLE" --body-file /tmp/drift.md
+          fi
+
+      - name: Sin drift
+        if: steps.check.outputs.drift != 'true'
+        run: echo "Todas las versiones fijadas siguen vigentes y son las ultimas soportadas."
