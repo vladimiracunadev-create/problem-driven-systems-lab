@@ -1,6 +1,10 @@
-# 🔭 Caso 03 - Node.js con observabilidad comparada
+# 🟢 Caso 03 - Node.js con observabilidad comparada
 
 > Implementacion operativa real del caso 03 en Node.js para comparar logs pobres y telemetria util sin cambiar la historia del problema.
+
+<!-- nav-stack -->
+[⬅️ Caso 03](../README.md) · [⚖️ Comparativa de los 7 stacks](../comparison.md) · [🟢 Perfil de Node.js](../../../docs/languages/node.md) · [🧬 Todos los perfiles](../../../docs/languages/README.md)
+<!-- /nav-stack -->
 
 ## 🎯 Que resuelve
 

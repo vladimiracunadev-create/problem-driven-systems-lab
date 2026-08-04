@@ -1,4 +1,8 @@
-# Caso 08 — Go 1.23
+# 🐹 Caso 08 — Go 1.23
+
+<!-- nav-stack -->
+[⬅️ Caso 08](../README.md) · [⚖️ Comparativa de los 7 stacks](../comparison.md) · [🐹 Perfil de Go](../../../docs/languages/go.md) · [🧬 Todos los perfiles](../../../docs/languages/README.md)
+<!-- /nav-stack -->
 
 Stack Go operativo del caso 08. Cutover big-bang que rompe consumers vs proxy de compatibilidad + bus de eventos.
 

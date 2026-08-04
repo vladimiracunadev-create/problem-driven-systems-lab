@@ -1,6 +1,10 @@
-# 👤 Caso 12 — Python 3.12 con comparacion legacy vs conocimiento distribuido
+# 🐍 Caso 12 — Python 3.12 con comparacion legacy vs conocimiento distribuido
 
 > Implementacion operativa del caso 12 para contrastar dependencia de conocimiento tribal contra una postura mas resiliente.
+
+<!-- nav-stack -->
+[⬅️ Caso 12](../README.md) · [⚖️ Comparativa de los 7 stacks](../comparison.md) · [🐍 Perfil de Python](../../../docs/languages/python.md) · [🧬 Todos los perfiles](../../../docs/languages/README.md)
+<!-- /nav-stack -->
 
 ## 🎯 Que resuelve
 

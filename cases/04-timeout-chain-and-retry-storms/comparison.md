@@ -1,4 +1,4 @@
-# Caso 04 — Comparativa multi-stack: Timeout chain y retry storms (PHP · Python · Node.js · Java · .NET · Go · Rust)
+# ⚖️ Caso 04 — Comparativa multi-stack: Timeout chain y retry storms (PHP · Python · Node.js · Java · .NET · Go · Rust)
 
 > **TL;DR** — legacy tarda ~4 s y falla; resilient corta a 300 ms y, con el breaker abierto, a ~0 ms. La diferencia real entre stacks no es el reloj: es **si el trabajo remoto se abandona o sigue ocupando el recurso**.
 

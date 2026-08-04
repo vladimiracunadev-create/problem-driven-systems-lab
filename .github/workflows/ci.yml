@@ -39,6 +39,17 @@ jobs:
       - name: Check language version coherence
         run: bash scripts/check-language-versions.sh
 
+      - name: Setup Python
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065  # v5
+        with:
+          python-version: "3.12"
+
+      # Los diagramas de docs/assets/ se derivan de shared/catalog/cases.json y
+      # de los veredictos de cada comparison.md. Sin esta verificacion, agregar
+      # un octavo stack dejaria los cinco SVG mostrando siete para siempre.
+      - name: Check generated diagrams
+        run: python scripts/generate_diagrams.py --check
+
   compose-config:
     runs-on: ubuntu-latest
     permissions:

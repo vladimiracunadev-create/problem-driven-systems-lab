@@ -1,4 +1,4 @@
-# Diagnóstico
+# 🔍 Diagnóstico
 
 ## Hipótesis principal
 La latencia no proviene de una espera artificial, sino de una combinación de decisiones técnicas reales:
@@ -20,3 +20,11 @@ La latencia no proviene de una espera artificial, sino de una combinación de de
 - duración del refresh del worker,
 - estado de heartbeat del proceso crítico,
 - diferencia entre una estrategia legacy y una optimizada.
+
+<!-- nav-case-doc -->
+---
+
+**Caso 01 · API lenta bajo carga** — [⬅️ README del caso](../README.md) · [⚖️ Comparativa de los 7 stacks](../comparison.md)
+
+[🗺️ Contexto](context.md) · [🩺 Síntomas](symptoms.md) · **🔍 Diagnóstico** · [🧠 Causas raíz](root-causes.md) · [🛠️ Opciones de solución](solution-options.md) · [⚖️ Trade-offs](trade-offs.md) · [💼 Valor de negocio](business-value.md) · [🔭 Observabilidad](observability.md) · [📈 Benchmarking](benchmarking.md) · [🚨 Postmortem](postmortem.md)
+<!-- /nav-case-doc -->

@@ -2,6 +2,93 @@
 
 Todos los cambios notables de este laboratorio se registran aqui con foco en madurez tecnica y documental.
 
+## 2026-08-04 - Perfiles de lenguaje, protocolo de version y dossier PDF
+
+El workflow `language-drift.yml` (2026-08-03) detecta que un lenguaje publico
+version nueva. Faltaba lo que viene despues: **donde esta escrito que revisar**.
+Sin eso, el aviso llega y nadie sabe si el caso 03 sigue siendo correcto o si
+paso a enseñar la forma vieja de hacer las cosas.
+
+### Added — perfiles de lenguaje
+
+`docs/languages/` con un perfil por stack (`php`, `python`, `node`, `java`,
+`dotnet`, `go`, `rust`) mas indice. Cada uno documenta seis cosas:
+
+| Seccion | Que responde |
+|---|---|
+| Identidad | Que es el lenguaje y para que se usa fuera del lab |
+| Modelo de ejecucion | Como corre el codigo, porque de ahi sale que primitiva es la correcta |
+| Primitivas en el lab | Que usa cada uno de los 12 casos, con enlace al codigo |
+| Rendimiento | Que mide el lab en ese stack y como reproducirlo, con comandos |
+| Limites y problemas sin solucion | Lo que ese runtime **no** puede hacer y que caso lo deja visible |
+| Ciclo de versiones | Version fijada, cadencia upstream y que revisar en el proximo salto |
+
+Las secciones de rendimiento **no publican benchmarks entre lenguajes**: documentan
+que señal expone cada runtime, de donde sale y como reproducir la medicion. La
+pendiente legacy/optimized dentro de un mismo stack es comparable; el tiempo
+absoluto entre stacks no lo es.
+
+### Added — protocolo de actualizacion
+
+`docs/language-upgrade-protocol.md`: checklist de 10 puntos, en orden. El punto
+de partida **no** es el `Dockerfile` sino el perfil del lenguaje — al reves se
+termina con un repositorio que compila en la version nueva y sigue enseñando lo
+de la version vieja. Enlazado desde `README.md`, desde el body del issue que
+genera `language_drift.py` y desde los siete perfiles.
+
+Disparadores concretos ya anotados: `ScopedValue` fuera de preview (Java 25,
+caso 03), `node:sqlite` fuera de experimental (Node 24, casos 01 y 02),
+free-threading de Python (PEP 703, caso 11) y cancelacion en `std` de Rust
+(casos 04 y 09).
+
+### Added — diagramas derivados del catalogo
+
+`scripts/generate_diagrams.py` emite cinco SVG en `docs/assets/`. No se dibujan
+a mano: salen de `shared/catalog/cases.json` y —el mapa de calor de fit— de la
+seccion *Veredicto* de los once `comparison.md` que la tienen. `--check` corre
+en CI: si entra un octavo stack y nadie redibuja, el PR falla.
+
+| Diagrama | Fuente |
+|---|---|
+| `stack-matrix.svg` | catalogo: 12 casos x 7 stacks |
+| `case-map.svg` | catalogo: casos por categoria |
+| `execution-models.svg` | catalogo: bloque `languages` |
+| `fit-ranking.svg` | veredictos de los `comparison.md` |
+| `language-upgrade-flow.svg` | el protocolo |
+
+### Added — dossier PDF
+
+`scripts/build_dossier_pdf.py` compila la documentacion en un PDF con portada,
+indice, tablas, bloques de codigo y los SVG embebidos **como vectores** (via
+`svglib`, sin rasterizar). Dos perfiles: `completo` (todos los `.md`) y
+`ejecutivo` (raiz + `docs/` + README y comparativa de cada caso). Salida en
+`dist/`.
+
+### Added — explicacion para personas no tecnicas
+
+`docs/QUE-ES-ESTO.md`: los 12 problemas en lenguaje de todos los dias, sin jerga,
+con la analogia del taller mecanico. `docs/BEGINNERS_GUIDE.md` se reescribio
+—decia "operativos en PHP, Python y Node.js" cuando ya eran siete stacks— y
+ahora incluye un primer experimento reproducible.
+
+### Changed — barrido visual sobre 215 archivos
+
+- H1 con icono coherente por familia documental.
+- Navegacion de retorno en los 84 README por stack (caso · comparativa · perfil del lenguaje) y en los 84 documentos de `cases/NN/docs/`.
+- Los stubs finos (`business-value.md`, `context.md`, `shared/README.md`) pasan a traer ficha del caso, URLs por stack y nota de honestidad, sincronizados con el catalogo.
+
+### Fixed — incoherencias que el barrido dejo a la vista
+
+| Hallazgo | Estado anterior | Ahora |
+|---|---|---|
+| `cases.json` → `languages` | 5 stacks; decia que Java "aun sin casos operativos" | 7 stacks con version, imagen, hub, modelo de ejecucion y perfil |
+| `runtime_entries.node` | apuntaba a los puertos aislados (`821`…) con `compose_path` por caso | hub `:8300` con `/NN/`, simetrico con Java y .NET; el aislado se conserva en `isolated_port` |
+| `portal/Dockerfile` | `php:8.2-apache` contra `php:8.3-cli-alpine` en los casos | `php:8.3-apache` — el repositorio fijaba dos versiones de PHP |
+| Badge de stacks en 9 README de caso | `PHP · Python · Node · Java · .NET` | los 7, enlazando a `docs/languages/` |
+| `cases/03/README.md` | **sin H1 ni badges** | H1, estado, stacks y categoria |
+| `recommended_github_topics` | sin `go` ni `rust` | completos |
+| `proof_points` del caso 03 | "transferibilidad en PHP, Node.js y Python" | los siete stacks |
+
 ## 2026-08-03 - Barrido documental: el lab pasa de 5 a 7 stacks
 
 Cierra el ciclo abierto por los dos stacks nuevos. Toda la documentacion que

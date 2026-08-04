@@ -1,6 +1,10 @@
-# 🔁 Caso 04 — Node.js 22 con AbortController y circuit breaker
+# 🟢 Caso 04 — Node.js 22 con AbortController y circuit breaker
 
 > Implementacion operativa del caso 04 para estudiar cadenas de timeouts y tormentas de reintentos con evidencia observable, manteniendo paridad funcional con la version Python y aprovechando primitivas nativas del runtime: `AbortController`, `AbortSignal` y `setTimeout` cooperativo.
+
+<!-- nav-stack -->
+[⬅️ Caso 04](../README.md) · [⚖️ Comparativa de los 7 stacks](../comparison.md) · [🟢 Perfil de Node.js](../../../docs/languages/node.md) · [🧬 Todos los perfiles](../../../docs/languages/README.md)
+<!-- /nav-stack -->
 
 ## 🎯 Que resuelve
 

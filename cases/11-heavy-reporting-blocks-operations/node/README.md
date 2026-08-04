@@ -1,6 +1,10 @@
-# Reportes pesados que bloquean la operacion — Node.js
+# 🟢 Caso 11 — Reportes pesados que bloquean la operacion
 
 > Implementacion operativa del caso 11 con paridad al stack PHP. Medicion del impacto sobre la operacion via `perf_hooks.monitorEventLoopDelay()` — la primitiva nativa de Node para detectar bloqueos del loop principal.
+
+<!-- nav-stack -->
+[⬅️ Caso 11](../README.md) · [⚖️ Comparativa de los 7 stacks](../comparison.md) · [🟢 Perfil de Node.js](../../../docs/languages/node.md) · [🧬 Todos los perfiles](../../../docs/languages/README.md)
+<!-- /nav-stack -->
 
 ## Que resuelve
 

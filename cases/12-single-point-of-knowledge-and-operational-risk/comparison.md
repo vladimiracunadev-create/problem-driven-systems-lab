@@ -1,4 +1,4 @@
-# Caso 12 — Comparativa multi-stack: Punto único de conocimiento y riesgo operacional (PHP · Python · Node.js · Java · .NET · Go · Rust)
+# ⚖️ Caso 12 — Comparativa multi-stack: Punto único de conocimiento y riesgo operacional (PHP · Python · Node.js · Java · .NET · Go · Rust)
 
 > **TL;DR** — legacy revienta con owner ausente (`mttr 120`); distributed degrada al runbook del equipo (`mttr ~44`) y `/share-knowledge` sube el bus factor. Siete formas de preguntar "¿y si no hay nadie?", y solo una donde el compilador exige la respuesta.
 

@@ -5,6 +5,12 @@
 > Esta pagina **no** reemplaza el [catalogo tecnico generado](case-catalog.md) ni los `README.md` por caso — los complementa con un foco editorial: que problema de negocio resuelve cada caso y que evidencia deja en pocos minutos.
 >
 > Fuente de verdad: [`shared/catalog/cases.json`](../shared/catalog/cases.json). Los textos de esta pagina derivan de ahi, curados para lectura ejecutiva.
+>
+> 🧭 **¿Sin base tecnica?** Empeza por [¿Que es esto? — explicacion en lenguaje simple](QUE-ES-ESTO.md).
+
+![Los 12 problemas agrupados por naturaleza](assets/case-map.svg)
+
+![Cobertura real de los 12 casos en los 7 stacks](assets/stack-matrix.svg)
 
 ## Mapa rapido
 

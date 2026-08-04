@@ -1,4 +1,8 @@
-# Caso 11 — Java 21
+# ☕ Caso 11 — Java 21
+
+<!-- nav-stack -->
+[⬅️ Caso 11](../README.md) · [⚖️ Comparativa de los 7 stacks](../comparison.md) · [☕ Perfil de Java](../../../docs/languages/java.md) · [🧬 Todos los perfiles](../../../docs/languages/README.md)
+<!-- /nav-stack -->
 
 Stack Java operativo del caso 11. Saturacion del pool principal vs aislamiento por ExecutorService dedicado.
 

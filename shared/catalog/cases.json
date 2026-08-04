@@ -15,6 +15,8 @@
     "python",
     "java",
     "dotnet",
+    "rust",
+    "go",
     "observability",
     "performance",
     "resilience",
@@ -106,32 +108,100 @@
     {
       "key": "php",
       "label": "PHP",
+      "icon": "🐘",
+      "version": "8.3",
+      "version_label": "PHP 8.3",
+      "docker_image": "php:8.3-cli-alpine",
+      "eol_product": "php",
+      "hub_port": 8100,
+      "profile_path": "docs/languages/php.md",
+      "execution_model": "Proceso por peticion, sin estado compartido entre requests",
       "headline": "Stack principal hoy para profundidad funcional y comparacion before/after.",
       "note": "Muestra los doce casos operativos mas maduros del laboratorio en su stack principal."
     },
     {
-      "key": "node",
-      "label": "Node.js",
-      "headline": "Stack operativo real en observabilidad comparada.",
-      "note": "Ideal para mostrar transferibilidad del criterio fuera de PHP."
-    },
-    {
       "key": "python",
       "label": "Python",
-      "headline": "Stack operativo real en los tres primeros casos criticos.",
+      "icon": "🐍",
+      "version": "3.12",
+      "version_label": "Python 3.12",
+      "docker_image": "python:3.12-alpine",
+      "eol_product": "python",
+      "hub_port": 8200,
+      "profile_path": "docs/languages/python.md",
+      "execution_model": "Threads reales con GIL: paralelismo de I/O, no de CPU",
+      "headline": "Stack operativo real sobre los doce casos con primitivas de stdlib.",
       "note": "Permite contrastar rendimiento, N+1 y observabilidad en otro runtime sin abandonar la narrativa problem-first."
+    },
+    {
+      "key": "node",
+      "label": "Node.js",
+      "icon": "🟢",
+      "version": "22",
+      "version_label": "Node.js 22",
+      "docker_image": "node:22-alpine",
+      "eol_product": "nodejs",
+      "hub_port": 8300,
+      "profile_path": "docs/languages/node.md",
+      "execution_model": "Event loop de un solo hilo con I/O asincronico delegado",
+      "headline": "Stack operativo real en observabilidad comparada y cancelacion.",
+      "note": "Ideal para mostrar transferibilidad del criterio fuera de PHP; `monitorEventLoopDelay` hace visible el bloqueo del hilo unico."
     },
     {
       "key": "java",
       "label": "Java",
-      "headline": "Aun sin casos operativos profundizados.",
-      "note": "La estructura existe, pero la madurez real todavia esta en evolucion."
+      "icon": "☕",
+      "version": "21",
+      "version_label": "Java 21",
+      "docker_image": "eclipse-temurin:21-jdk-alpine",
+      "eol_product": "eclipse-temurin",
+      "hub_port": 8400,
+      "profile_path": "docs/languages/java.md",
+      "execution_model": "Threads del SO con paralelismo real; JVM con JIT y GC generacional",
+      "headline": "Stack operativo real con primitivas concurrentes de `java.util.concurrent`.",
+      "note": "Java 21 sirve los doce casos detras del hub `:8400`; el tipado fuerte y el pool explicito hacen visible la capacidad que otros runtimes esconden."
     },
     {
       "key": "dotnet",
       "label": ".NET",
+      "icon": "🔵",
+      "version": "8.0",
+      "version_label": ".NET 8",
+      "docker_image": "mcr.microsoft.com/dotnet/sdk:8.0",
+      "eol_product": "dotnet",
+      "hub_port": 8500,
+      "profile_path": "docs/languages/dotnet.md",
+      "execution_model": "ThreadPool con `async/await` que libera el hilo durante la espera",
       "headline": "Stack operativo real con primitivas BCL distintivas por caso.",
       "note": ".NET 8 sirve los 12 casos detras del hub `:8500` con paridad funcional 1:1 frente a Java."
+    },
+    {
+      "key": "go",
+      "label": "Go",
+      "icon": "🐹",
+      "version": "1.23",
+      "version_label": "Go 1.23",
+      "docker_image": "golang:1.23-alpine",
+      "eol_product": "go",
+      "hub_port": 8600,
+      "profile_path": "docs/languages/go.md",
+      "execution_model": "Goroutines multiplexadas por el runtime sobre threads del SO",
+      "headline": "Stack operativo real donde canal + `select` cubren casi toda la concurrencia.",
+      "note": "`context.Context` propaga deadlines que el callee si observa; sin pool de threads que dimensionar."
+    },
+    {
+      "key": "rust",
+      "label": "Rust",
+      "icon": "🦀",
+      "version": "1.83",
+      "version_label": "Rust 1.83",
+      "docker_image": "rust:1.83-alpine",
+      "eol_product": "rust",
+      "hub_port": 8700,
+      "profile_path": "docs/languages/rust.md",
+      "execution_model": "Threads del SO sin GC; liberacion deterministica por `Drop`",
+      "headline": "Stack operativo real sin recolector de basura ni runtime asincronico.",
+      "note": "La ausencia de GC hace medible en el caso 05 lo que en otros runtimes es una promesa; la contrapartida es que `std` no trae HTTP ni JSON."
     }
   ],
   "cases": [
@@ -183,11 +253,13 @@
           "root_path": "/01/"
         },
         "node": {
-          "port": 821,
-          "compose_path": "cases/01-api-latency-under-load/node/compose.yml",
+          "port": 8300,
+          "compose_path": "compose.nodejs.yml",
           "readme_path": "cases/01-api-latency-under-load/node/README.md",
-          "health_path": "/health",
-          "root_path": "/"
+          "health_path": "/01/health",
+          "root_path": "/01/",
+          "isolated_compose": "cases/01-api-latency-under-load/node/compose.yml",
+          "isolated_port": 821
         },
         "java": {
           "port": 8400,
@@ -273,11 +345,13 @@
           "root_path": "/02/"
         },
         "node": {
-          "port": 822,
-          "compose_path": "cases/02-n-plus-one-and-db-bottlenecks/node/compose.yml",
+          "port": 8300,
+          "compose_path": "compose.nodejs.yml",
           "readme_path": "cases/02-n-plus-one-and-db-bottlenecks/node/README.md",
-          "health_path": "/health",
-          "root_path": "/"
+          "health_path": "/02/health",
+          "root_path": "/02/",
+          "isolated_compose": "cases/02-n-plus-one-and-db-bottlenecks/node/compose.yml",
+          "isolated_port": 822
         },
         "java": {
           "port": 8400,
@@ -330,7 +404,7 @@
       "proof_points": [
         "Compara checkout-legacy contra checkout-observable para ver que cambia cuando existe correlacion real.",
         "Expone logs, trazas, metricas y diagnostics/summary para reconstruir el incidente con evidencia.",
-        "Demuestra transferibilidad del criterio en PHP, Node.js y Python sin vender paridad falsa en otros casos."
+        "Demuestra transferibilidad del criterio en los siete stacks: contexto explicito en Go, lifetime acotado en Rust, AsyncLocal en .NET y ThreadLocal en Java."
       ],
       "look_for": [
         "Si puedes identificar el paso exacto que falla y la dependencia implicada.",
@@ -356,11 +430,13 @@
           "root_path": "/03/"
         },
         "node": {
-          "port": 823,
-          "compose_path": "cases/03-poor-observability-and-useless-logs/node/compose.yml",
+          "port": 8300,
+          "compose_path": "compose.nodejs.yml",
           "readme_path": "cases/03-poor-observability-and-useless-logs/node/README.md",
-          "health_path": "/health",
-          "root_path": "/"
+          "health_path": "/03/health",
+          "root_path": "/03/",
+          "isolated_compose": "cases/03-poor-observability-and-useless-logs/node/compose.yml",
+          "isolated_port": 823
         },
         "python": {
           "port": 8200,
@@ -453,11 +529,13 @@
           "root_path": "/04/"
         },
         "node": {
-          "port": 824,
-          "compose_path": "cases/04-timeout-chain-and-retry-storms/node/compose.yml",
+          "port": 8300,
+          "compose_path": "compose.nodejs.yml",
           "readme_path": "cases/04-timeout-chain-and-retry-storms/node/README.md",
-          "health_path": "/health",
-          "root_path": "/"
+          "health_path": "/04/health",
+          "root_path": "/04/",
+          "isolated_compose": "cases/04-timeout-chain-and-retry-storms/node/compose.yml",
+          "isolated_port": 824
         },
         "java": {
           "port": 8400,
@@ -543,11 +621,13 @@
           "root_path": "/05/"
         },
         "node": {
-          "port": 825,
-          "compose_path": "cases/05-memory-pressure-and-resource-leaks/node/compose.yml",
+          "port": 8300,
+          "compose_path": "compose.nodejs.yml",
           "readme_path": "cases/05-memory-pressure-and-resource-leaks/node/README.md",
-          "health_path": "/health",
-          "root_path": "/"
+          "health_path": "/05/health",
+          "root_path": "/05/",
+          "isolated_compose": "cases/05-memory-pressure-and-resource-leaks/node/compose.yml",
+          "isolated_port": 825
         },
         "java": {
           "port": 8400,
@@ -633,11 +713,13 @@
           "root_path": "/06/"
         },
         "node": {
-          "port": 826,
-          "compose_path": "cases/06-broken-pipeline-and-fragile-delivery/node/compose.yml",
+          "port": 8300,
+          "compose_path": "compose.nodejs.yml",
           "readme_path": "cases/06-broken-pipeline-and-fragile-delivery/node/README.md",
-          "health_path": "/health",
-          "root_path": "/"
+          "health_path": "/06/health",
+          "root_path": "/06/",
+          "isolated_compose": "cases/06-broken-pipeline-and-fragile-delivery/node/compose.yml",
+          "isolated_port": 826
         },
         "java": {
           "port": 8400,
@@ -723,11 +805,13 @@
           "root_path": "/07/"
         },
         "node": {
-          "port": 827,
-          "compose_path": "cases/07-incremental-monolith-modernization/node/compose.yml",
+          "port": 8300,
+          "compose_path": "compose.nodejs.yml",
           "readme_path": "cases/07-incremental-monolith-modernization/node/README.md",
-          "health_path": "/health",
-          "root_path": "/"
+          "health_path": "/07/health",
+          "root_path": "/07/",
+          "isolated_compose": "cases/07-incremental-monolith-modernization/node/compose.yml",
+          "isolated_port": 827
         },
         "java": {
           "port": 8400,
@@ -813,11 +897,13 @@
           "root_path": "/08/"
         },
         "node": {
-          "port": 828,
-          "compose_path": "cases/08-critical-module-extraction-without-breaking-operations/node/compose.yml",
+          "port": 8300,
+          "compose_path": "compose.nodejs.yml",
           "readme_path": "cases/08-critical-module-extraction-without-breaking-operations/node/README.md",
-          "health_path": "/health",
-          "root_path": "/"
+          "health_path": "/08/health",
+          "root_path": "/08/",
+          "isolated_compose": "cases/08-critical-module-extraction-without-breaking-operations/node/compose.yml",
+          "isolated_port": 828
         },
         "java": {
           "port": 8400,
@@ -903,11 +989,13 @@
           "root_path": "/09/"
         },
         "node": {
-          "port": 829,
-          "compose_path": "cases/09-unstable-external-integration/node/compose.yml",
+          "port": 8300,
+          "compose_path": "compose.nodejs.yml",
           "readme_path": "cases/09-unstable-external-integration/node/README.md",
-          "health_path": "/health",
-          "root_path": "/"
+          "health_path": "/09/health",
+          "root_path": "/09/",
+          "isolated_compose": "cases/09-unstable-external-integration/node/compose.yml",
+          "isolated_port": 829
         },
         "java": {
           "port": 8400,
@@ -993,11 +1081,13 @@
           "root_path": "/10/"
         },
         "node": {
-          "port": 8210,
-          "compose_path": "cases/10-expensive-architecture-for-simple-needs/node/compose.yml",
+          "port": 8300,
+          "compose_path": "compose.nodejs.yml",
           "readme_path": "cases/10-expensive-architecture-for-simple-needs/node/README.md",
-          "health_path": "/health",
-          "root_path": "/"
+          "health_path": "/10/health",
+          "root_path": "/10/",
+          "isolated_compose": "cases/10-expensive-architecture-for-simple-needs/node/compose.yml",
+          "isolated_port": 8210
         },
         "java": {
           "port": 8400,
@@ -1083,11 +1173,13 @@
           "root_path": "/11/"
         },
         "node": {
-          "port": 8211,
-          "compose_path": "cases/11-heavy-reporting-blocks-operations/node/compose.yml",
+          "port": 8300,
+          "compose_path": "compose.nodejs.yml",
           "readme_path": "cases/11-heavy-reporting-blocks-operations/node/README.md",
-          "health_path": "/health",
-          "root_path": "/"
+          "health_path": "/11/health",
+          "root_path": "/11/",
+          "isolated_compose": "cases/11-heavy-reporting-blocks-operations/node/compose.yml",
+          "isolated_port": 8211
         },
         "java": {
           "port": 8400,
@@ -1173,11 +1265,13 @@
           "root_path": "/12/"
         },
         "node": {
-          "port": 8212,
-          "compose_path": "cases/12-single-point-of-knowledge-and-operational-risk/node/compose.yml",
+          "port": 8300,
+          "compose_path": "compose.nodejs.yml",
           "readme_path": "cases/12-single-point-of-knowledge-and-operational-risk/node/README.md",
-          "health_path": "/health",
-          "root_path": "/"
+          "health_path": "/12/health",
+          "root_path": "/12/",
+          "isolated_compose": "cases/12-single-point-of-knowledge-and-operational-risk/node/compose.yml",
+          "isolated_port": 8212
         },
         "java": {
           "port": 8400,

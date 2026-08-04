@@ -1,6 +1,10 @@
-# 💸 Caso 10 - PHP 8.3 con comparación complex vs right-sized
+# 🐘 Caso 10 - PHP 8.3 con comparación complex vs right-sized
 
 > Implementación operativa del caso 10 para contrastar sobrearquitectura contra una solución proporcional.
+
+<!-- nav-stack -->
+[⬅️ Caso 10](../README.md) · [⚖️ Comparativa de los 7 stacks](../comparison.md) · [🐘 Perfil de PHP](../../../docs/languages/php.md) · [🧬 Todos los perfiles](../../../docs/languages/README.md)
+<!-- /nav-stack -->
 
 ## 🎯 Qué resuelve
 

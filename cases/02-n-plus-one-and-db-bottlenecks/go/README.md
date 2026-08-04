@@ -1,4 +1,8 @@
-# Caso 02 — Go 1.23
+# 🐹 Caso 02 — Go 1.23
+
+<!-- nav-stack -->
+[⬅️ Caso 02](../README.md) · [⚖️ Comparativa de los 7 stacks](../comparison.md) · [🐹 Perfil de Go](../../../docs/languages/go.md) · [🧬 Todos los perfiles](../../../docs/languages/README.md)
+<!-- /nav-stack -->
 
 Stack Go operativo del caso 02. N+1 real contra SQLite embebido: `1 + N` queries en la ruta legacy, `2` en la optimizada.
 

@@ -1,6 +1,10 @@
-# 🧩 Caso 08 — Python 3.12 con extraccion compatible
+# 🐍 Caso 08 — Python 3.12 con extraccion compatible
 
 > Implementacion operativa del caso 08 para contrastar una extraccion big bang contra una ruta segura con proxy, contratos y cutover por fases.
+
+<!-- nav-stack -->
+[⬅️ Caso 08](../README.md) · [⚖️ Comparativa de los 7 stacks](../comparison.md) · [🐍 Perfil de Python](../../../docs/languages/python.md) · [🧬 Todos los perfiles](../../../docs/languages/README.md)
+<!-- /nav-stack -->
 
 ## 🎯 Que resuelve
 

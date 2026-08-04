@@ -1,4 +1,4 @@
-# Caso 08 — Comparativa multi-stack: Extracción de módulo crítico sin romper la operación (PHP · Python · Node.js · Java · .NET · Go · Rust)
+# ⚖️ Caso 08 — Comparativa multi-stack: Extracción de módulo crítico sin romper la operación (PHP · Python · Node.js · Java · .NET · Go · Rust)
 
 > **TL;DR** — big-bang devuelve `contract_violation`; el proxy traduce `{cost_usd}` a `{price, currency}` y el consumer no se entera. Lo que separa a los stacks es **si el bus de eventos corre en el thread del request o desacoplado**.
 

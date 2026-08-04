@@ -1,4 +1,4 @@
-# Caso 01 — Comparativa multi-stack: API lenta bajo carga (PHP · Python · Node.js · Java · .NET · Go · Rust)
+# ⚖️ Caso 01 — Comparativa multi-stack: API lenta bajo carga (PHP · Python · Node.js · Java · .NET · Go · Rust)
 
 > **TL;DR** — `db_hits` pasa de `1 + 2N` a constante. El filtro no sargable esta verificado con `EXPLAIN QUERY PLAN`: `SCAN orders` vs `SEARCH orders USING INDEX`. Los 7 stacks corren SQL real; los 4 compilados devuelven la misma fila byte por byte.
 

@@ -1,9 +1,20 @@
-# Shared del caso 01
+# 📦 Artefactos compartidos — Caso 01
 
-Esta carpeta contiene utilidades comunes para el caso de API lenta bajo carga.
+> Recursos comunes a las siete implementaciones de **API lenta bajo carga**.
 
-## Incluye
-- `loadtest/run.py`: generador de tráfico concurrente simple, sin dependencias externas.
+<!-- shared-info -->
+Carpeta reservada para lo que no pertenece a un stack en particular:
 
-## Objetivo
-No reemplazar herramientas serias de performance testing, sino dejar una base reproducible y fácil de ejecutar dentro del mismo laboratorio.
+| Tipo | Ejemplos |
+|---|---|
+| 📊 **Datos** | datasets, fixtures, semillas para reproducir el escenario |
+| 📐 **Diagramas** | esquemas del flujo o de la arquitectura del caso |
+| 📄 **Contratos** | payloads de referencia, esquemas de request y response |
+| 📝 **Notas** | apuntes que aplican a todas las implementaciones |
+
+> ℹ️ Si algo solo aplica a un lenguaje, va en la carpeta de ese stack (`php/`, `python/`, `node/`, `java/`, `dotnet/`, `go/`, `rust/`), no acá.
+
+---
+
+[⬅️ Caso 01](../README.md) · [⚖️ Comparativa de los 7 stacks](../comparison.md)
+<!-- /shared-info -->

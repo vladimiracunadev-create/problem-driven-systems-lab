@@ -1,6 +1,10 @@
-# ⚡ Caso 01 — Python 3.12 + SQLite + worker embebido
+# 🐍 Caso 01 — Python 3.12 + SQLite + worker embebido
 
 > Implementacion operativa del caso 01 para estudiar latencia bajo carga con evidencia observable en Python stdlib puro.
+
+<!-- nav-stack -->
+[⬅️ Caso 01](../README.md) · [⚖️ Comparativa de los 7 stacks](../comparison.md) · [🐍 Perfil de Python](../../../docs/languages/python.md) · [🧬 Todos los perfiles](../../../docs/languages/README.md)
+<!-- /nav-stack -->
 
 ## 🎯 Que resuelve
 

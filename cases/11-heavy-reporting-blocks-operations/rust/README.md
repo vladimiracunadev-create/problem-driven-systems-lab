@@ -1,4 +1,8 @@
-# Caso 11 — Rust 1.83
+# 🦀 Caso 11 — Rust 1.83
+
+<!-- nav-stack -->
+[⬅️ Caso 11](../README.md) · [⚖️ Comparativa de los 7 stacks](../comparison.md) · [🦀 Perfil de Rust](../../../docs/languages/rust.md) · [🧬 Todos los perfiles](../../../docs/languages/README.md)
+<!-- /nav-stack -->
 
 Stack Rust operativo del caso 11. Reporte pesado sin acotar vs reporte con concurrencia limitada, midiendo si la operacion conserva aire.
 

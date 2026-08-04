@@ -1,6 +1,10 @@
-# 🌐 Caso 09 — Python 3.12 con adapter y cache defensiva
+# 🐍 Caso 09 — Python 3.12 con adapter y cache defensiva
 
 > Implementacion operativa del caso 09 para contrastar una integracion externa directa contra una variante endurecida.
+
+<!-- nav-stack -->
+[⬅️ Caso 09](../README.md) · [⚖️ Comparativa de los 7 stacks](../comparison.md) · [🐍 Perfil de Python](../../../docs/languages/python.md) · [🧬 Todos los perfiles](../../../docs/languages/README.md)
+<!-- /nav-stack -->
 
 ## 🎯 Que resuelve
 

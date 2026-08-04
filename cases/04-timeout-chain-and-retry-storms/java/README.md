@@ -1,4 +1,8 @@
-# Caso 04 — Java 21
+# ☕ Caso 04 — Java 21
+
+<!-- nav-stack -->
+[⬅️ Caso 04](../README.md) · [⚖️ Comparativa de los 7 stacks](../comparison.md) · [☕ Perfil de Java](../../../docs/languages/java.md) · [🧬 Todos los perfiles](../../../docs/languages/README.md)
+<!-- /nav-stack -->
 
 Stack Java operativo del caso 04. Contraste entre retry storm (5 reintentos sin backoff) vs circuit breaker con timeout cooperativo + fallback cacheado.
 

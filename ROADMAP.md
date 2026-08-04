@@ -1,4 +1,4 @@
-# ROADMAP — Problem-Driven Systems Lab
+# 🗺️ ROADMAP — Problem-Driven Systems Lab
 
 > Hacia donde va el laboratorio: nuevos casos de la vida real, mejoras de plataforma, y compromisos de honestidad tecnica.
 

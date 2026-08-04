@@ -1,4 +1,4 @@
-FROM php:8.2-apache
+FROM php:8.3-apache
 RUN a2enmod rewrite
 RUN printf "DirectoryIndex index.html index.php\n" > /etc/apache2/conf-available/pdsl-directoryindex.conf \
     && a2enconf pdsl-directoryindex

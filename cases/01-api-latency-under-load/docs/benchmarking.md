@@ -1,4 +1,4 @@
-# Benchmark antes/después del caso 1
+# 📈 Benchmark antes/después del caso 1
 
 ## Objetivo
 Comparar de forma reproducible la ruta defectuosa (`/report-legacy`) contra la ruta corregida (`/report-optimized`) usando el mismo hardware acotado, la misma base y el mismo proceso crítico concurrente.
@@ -67,3 +67,11 @@ Artefactos generados:
 
 ## Notas de honestidad
 Este benchmark no pretende reemplazar una prueba de producción real. Sí pretende dejar evidencia reproducible, con recursos acotados, de un patrón muy común: reportes que leen desde tablas transaccionales y se degradan cuando conviven con procesos críticos.
+
+<!-- nav-case-doc -->
+---
+
+**Caso 01 · API lenta bajo carga** — [⬅️ README del caso](../README.md) · [⚖️ Comparativa de los 7 stacks](../comparison.md)
+
+[🗺️ Contexto](context.md) · [🩺 Síntomas](symptoms.md) · [🔍 Diagnóstico](diagnosis.md) · [🧠 Causas raíz](root-causes.md) · [🛠️ Opciones de solución](solution-options.md) · [⚖️ Trade-offs](trade-offs.md) · [💼 Valor de negocio](business-value.md) · [🔭 Observabilidad](observability.md) · **📈 Benchmarking** · [🚨 Postmortem](postmortem.md)
+<!-- /nav-case-doc -->

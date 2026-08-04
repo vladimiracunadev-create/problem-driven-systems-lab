@@ -1,6 +1,10 @@
-# ⚡ Caso 01 - PHP 8 + PostgreSQL + worker concurrente
+# 🐘 Caso 01 - PHP 8 + PostgreSQL + worker concurrente
 
 > Implementacion operativa real del caso 01 para estudiar latencia bajo carga con evidencia observable.
+
+<!-- nav-stack -->
+[⬅️ Caso 01](../README.md) · [⚖️ Comparativa de los 7 stacks](../comparison.md) · [🐘 Perfil de PHP](../../../docs/languages/php.md) · [🧬 Todos los perfiles](../../../docs/languages/README.md)
+<!-- /nav-stack -->
 
 ## 🎯 Que resuelve
 

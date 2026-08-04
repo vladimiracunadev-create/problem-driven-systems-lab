@@ -1,4 +1,8 @@
-# Caso 02 — .NET 8 + SQLite (Microsoft.Data.Sqlite)
+# 🔵 Caso 02 — .NET 8 + SQLite (Microsoft.Data.Sqlite)
+
+<!-- nav-stack -->
+[⬅️ Caso 02](../README.md) · [⚖️ Comparativa de los 7 stacks](../comparison.md) · [🔵 Perfil de .NET](../../../docs/languages/dotnet.md) · [🧬 Todos los perfiles](../../../docs/languages/README.md)
+<!-- /nav-stack -->
 
 Stack .NET operativo del caso 02. Patron N+1 reproducido contra **SQLite real via ADO.NET**, contraste con batch `IN(@id0, @id1, ...)` consolidado.
 

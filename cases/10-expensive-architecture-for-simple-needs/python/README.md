@@ -1,6 +1,10 @@
-# 💸 Caso 10 — Python 3.12 con comparacion complex vs right-sized
+# 🐍 Caso 10 — Python 3.12 con comparacion complex vs right-sized
 
 > Implementacion operativa del caso 10 para contrastar sobrearquitectura contra una solucion proporcional.
+
+<!-- nav-stack -->
+[⬅️ Caso 10](../README.md) · [⚖️ Comparativa de los 7 stacks](../comparison.md) · [🐍 Perfil de Python](../../../docs/languages/python.md) · [🧬 Todos los perfiles](../../../docs/languages/README.md)
+<!-- /nav-stack -->
 
 ## 🎯 Que resuelve
 

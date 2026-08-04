@@ -1,6 +1,10 @@
-# 👤 Caso 12 - PHP 8.3 con comparación legacy vs conocimiento distribuido
+# 🐘 Caso 12 - PHP 8.3 con comparación legacy vs conocimiento distribuido
 
 > Implementación operativa del caso 12 para contrastar dependencia de conocimiento tribal contra una postura más resiliente.
+
+<!-- nav-stack -->
+[⬅️ Caso 12](../README.md) · [⚖️ Comparativa de los 7 stacks](../comparison.md) · [🐘 Perfil de PHP](../../../docs/languages/php.md) · [🧬 Todos los perfiles](../../../docs/languages/README.md)
+<!-- /nav-stack -->
 
 ## 🎯 Qué resuelve
 

@@ -1,4 +1,4 @@
-# Caso 09 — Comparativa multi-stack: Integración externa inestable (PHP · Python · Node.js · Java · .NET · Go · Rust)
+# ⚖️ Caso 09 — Comparativa multi-stack: Integración externa inestable (PHP · Python · Node.js · Java · .NET · Go · Rust)
 
 > **TL;DR** — el budget baja `5→4→3→2→1→0` y la sexta llamada degrada a snapshot en vez de fallar. Siete formas de escribir un semaforo, y una de ellas no necesita que exista la palabra semaforo.
 

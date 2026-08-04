@@ -1,4 +1,8 @@
-# Caso 12 — .NET 8
+# 🔵 Caso 12 — .NET 8
+
+<!-- nav-stack -->
+[⬅️ Caso 12](../README.md) · [⚖️ Comparativa de los 7 stacks](../comparison.md) · [🔵 Perfil de .NET](../../../docs/languages/dotnet.md) · [🧬 Todos los perfiles](../../../docs/languages/README.md)
+<!-- /nav-stack -->
 
 Stack .NET operativo del caso 12. Operadores `?.` (null-conditional) + `??` (null-coalescing) como runbook codificado en el sistema de tipos.
 

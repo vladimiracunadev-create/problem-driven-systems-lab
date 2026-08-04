@@ -1,0 +1,98 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 1032" width="800" height="1032" role="img" aria-label="Mapa de los 12 casos por categoria">
+  <title>Mapa de los 12 casos por categoria</title>
+  <defs>
+    <marker id="arrowhead" markerWidth="9" markerHeight="7" refX="8" refY="3.5" orient="auto">
+      <polygon points="0 0, 9 3.5, 0 7" fill="#2563eb"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="800" height="1032" rx="0" ry="0" fill="#ffffff" stroke="none" stroke-width="1"/>
+  <text x="34" y="42" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="19" fill="#0f172a" text-anchor="start" font-weight="600">Los 12 problemas, agrupados por naturaleza</text>
+<text x="34" y="63" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="12.5" fill="#64748b" text-anchor="start" font-weight="400">El laboratorio se organiza por problema, no por tecnologia. La tecnologia es la variable, el problema es la constante.</text>
+  <rect x="34" y="104" width="6" height="22" rx="3" ry="3" fill="#2563eb" stroke="none" stroke-width="1"/>
+  <text x="50" y="121" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="12.5" fill="#2563eb" text-anchor="start" font-weight="700" letter-spacing="0.6">RENDIMIENTO</text>
+  <text x="158.6" y="121" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="11.5" fill="#64748b" text-anchor="start" font-weight="400">3 casos</text>
+  <rect x="34" y="136" width="236" height="92" rx="9" ry="9" fill="#f1f5f9" stroke="none" stroke-width="1"/>
+  <rect x="34" y="136" width="4" height="92" rx="2" ry="2" fill="#2563eb" stroke="none" stroke-width="1"/>
+  <text x="50" y="158" font-family="SFMono-Regular, Consolas, Liberation Mono, monospace" font-size="11" fill="#2563eb" text-anchor="start" font-weight="700">Caso 01</text>
+  <text x="50" y="177" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="12.5" fill="#0f172a" text-anchor="start" font-weight="600">API lenta bajo carga</text>
+  <text x="50" y="215" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="10.5" fill="#64748b" text-anchor="start" font-weight="400">7 stacks operativos</text>
+  <rect x="282" y="136" width="236" height="92" rx="9" ry="9" fill="#f1f5f9" stroke="none" stroke-width="1"/>
+  <rect x="282" y="136" width="4" height="92" rx="2" ry="2" fill="#2563eb" stroke="none" stroke-width="1"/>
+  <text x="298" y="158" font-family="SFMono-Regular, Consolas, Liberation Mono, monospace" font-size="11" fill="#2563eb" text-anchor="start" font-weight="700">Caso 02</text>
+  <text x="298" y="177" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="12.5" fill="#0f172a" text-anchor="start" font-weight="600">N+1 queries y cuellos de</text>
+  <text x="298" y="193" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="12.5" fill="#0f172a" text-anchor="start" font-weight="600">botella en base de datos</text>
+  <text x="298" y="215" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="10.5" fill="#64748b" text-anchor="start" font-weight="400">7 stacks operativos</text>
+  <rect x="530" y="136" width="236" height="92" rx="9" ry="9" fill="#f1f5f9" stroke="none" stroke-width="1"/>
+  <rect x="530" y="136" width="4" height="92" rx="2" ry="2" fill="#2563eb" stroke="none" stroke-width="1"/>
+  <text x="546" y="158" font-family="SFMono-Regular, Consolas, Liberation Mono, monospace" font-size="11" fill="#2563eb" text-anchor="start" font-weight="700">Caso 05</text>
+  <text x="546" y="177" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="12.5" fill="#0f172a" text-anchor="start" font-weight="600">Presion de memoria y fugas de</text>
+  <text x="546" y="193" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="12.5" fill="#0f172a" text-anchor="start" font-weight="600">recursos</text>
+  <text x="546" y="215" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="10.5" fill="#64748b" text-anchor="start" font-weight="400">7 stacks operativos</text>
+  <rect x="34" y="256" width="6" height="22" rx="3" ry="3" fill="#d97706" stroke="none" stroke-width="1"/>
+  <text x="50" y="273" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="12.5" fill="#d97706" text-anchor="start" font-weight="700" letter-spacing="0.6">RESILIENCIA</text>
+  <text x="158.6" y="273" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="11.5" fill="#64748b" text-anchor="start" font-weight="400">2 casos</text>
+  <rect x="34" y="288" width="236" height="92" rx="9" ry="9" fill="#f1f5f9" stroke="none" stroke-width="1"/>
+  <rect x="34" y="288" width="4" height="92" rx="2" ry="2" fill="#d97706" stroke="none" stroke-width="1"/>
+  <text x="50" y="310" font-family="SFMono-Regular, Consolas, Liberation Mono, monospace" font-size="11" fill="#d97706" text-anchor="start" font-weight="700">Caso 04</text>
+  <text x="50" y="329" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="12.5" fill="#0f172a" text-anchor="start" font-weight="600">Cadena de timeouts y tormentas</text>
+  <text x="50" y="345" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="12.5" fill="#0f172a" text-anchor="start" font-weight="600">de reintentos</text>
+  <text x="50" y="367" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="10.5" fill="#64748b" text-anchor="start" font-weight="400">7 stacks operativos</text>
+  <rect x="282" y="288" width="236" height="92" rx="9" ry="9" fill="#f1f5f9" stroke="none" stroke-width="1"/>
+  <rect x="282" y="288" width="4" height="92" rx="2" ry="2" fill="#d97706" stroke="none" stroke-width="1"/>
+  <text x="298" y="310" font-family="SFMono-Regular, Consolas, Liberation Mono, monospace" font-size="11" fill="#d97706" text-anchor="start" font-weight="700">Caso 09</text>
+  <text x="298" y="329" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="12.5" fill="#0f172a" text-anchor="start" font-weight="600">Integracion externa inestable</text>
+  <text x="298" y="367" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="10.5" fill="#64748b" text-anchor="start" font-weight="400">7 stacks operativos</text>
+  <rect x="34" y="408" width="6" height="22" rx="3" ry="3" fill="#7c3aed" stroke="none" stroke-width="1"/>
+  <text x="50" y="425" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="12.5" fill="#7c3aed" text-anchor="start" font-weight="700" letter-spacing="0.6">OBSERVABILIDAD</text>
+  <text x="184.39999999999998" y="425" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="11.5" fill="#64748b" text-anchor="start" font-weight="400">1 caso</text>
+  <rect x="34" y="440" width="236" height="92" rx="9" ry="9" fill="#f1f5f9" stroke="none" stroke-width="1"/>
+  <rect x="34" y="440" width="4" height="92" rx="2" ry="2" fill="#7c3aed" stroke="none" stroke-width="1"/>
+  <text x="50" y="462" font-family="SFMono-Regular, Consolas, Liberation Mono, monospace" font-size="11" fill="#7c3aed" text-anchor="start" font-weight="700">Caso 03</text>
+  <text x="50" y="481" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="12.5" fill="#0f172a" text-anchor="start" font-weight="600">Observabilidad deficiente y</text>
+  <text x="50" y="497" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="12.5" fill="#0f172a" text-anchor="start" font-weight="600">logs inutiles</text>
+  <text x="50" y="519" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="10.5" fill="#64748b" text-anchor="start" font-weight="400">7 stacks operativos</text>
+  <rect x="34" y="560" width="6" height="22" rx="3" ry="3" fill="#0891b2" stroke="none" stroke-width="1"/>
+  <text x="50" y="577" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="12.5" fill="#0891b2" text-anchor="start" font-weight="700" letter-spacing="0.6">ARQUITECTURA</text>
+  <text x="167.2" y="577" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="11.5" fill="#64748b" text-anchor="start" font-weight="400">3 casos</text>
+  <rect x="34" y="592" width="236" height="92" rx="9" ry="9" fill="#f1f5f9" stroke="none" stroke-width="1"/>
+  <rect x="34" y="592" width="4" height="92" rx="2" ry="2" fill="#0891b2" stroke="none" stroke-width="1"/>
+  <text x="50" y="614" font-family="SFMono-Regular, Consolas, Liberation Mono, monospace" font-size="11" fill="#0891b2" text-anchor="start" font-weight="700">Caso 07</text>
+  <text x="50" y="633" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="12.5" fill="#0f172a" text-anchor="start" font-weight="600">Modernizacion incremental de</text>
+  <text x="50" y="649" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="12.5" fill="#0f172a" text-anchor="start" font-weight="600">monolito</text>
+  <text x="50" y="671" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="10.5" fill="#64748b" text-anchor="start" font-weight="400">7 stacks operativos</text>
+  <rect x="282" y="592" width="236" height="92" rx="9" ry="9" fill="#f1f5f9" stroke="none" stroke-width="1"/>
+  <rect x="282" y="592" width="4" height="92" rx="2" ry="2" fill="#0891b2" stroke="none" stroke-width="1"/>
+  <text x="298" y="614" font-family="SFMono-Regular, Consolas, Liberation Mono, monospace" font-size="11" fill="#0891b2" text-anchor="start" font-weight="700">Caso 08</text>
+  <text x="298" y="633" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="12.5" fill="#0f172a" text-anchor="start" font-weight="600">Extraccion de modulo critico</text>
+  <text x="298" y="649" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="12.5" fill="#0f172a" text-anchor="start" font-weight="600">sin romper operacion</text>
+  <text x="298" y="671" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="10.5" fill="#64748b" text-anchor="start" font-weight="400">7 stacks operativos</text>
+  <rect x="530" y="592" width="236" height="92" rx="9" ry="9" fill="#f1f5f9" stroke="none" stroke-width="1"/>
+  <rect x="530" y="592" width="4" height="92" rx="2" ry="2" fill="#0891b2" stroke="none" stroke-width="1"/>
+  <text x="546" y="614" font-family="SFMono-Regular, Consolas, Liberation Mono, monospace" font-size="11" fill="#0891b2" text-anchor="start" font-weight="700">Caso 10</text>
+  <text x="546" y="633" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="12.5" fill="#0f172a" text-anchor="start" font-weight="600">Arquitectura cara para un</text>
+  <text x="546" y="649" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="12.5" fill="#0f172a" text-anchor="start" font-weight="600">problema simple</text>
+  <text x="546" y="671" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="10.5" fill="#64748b" text-anchor="start" font-weight="400">7 stacks operativos</text>
+  <rect x="34" y="712" width="6" height="22" rx="3" ry="3" fill="#16a34a" stroke="none" stroke-width="1"/>
+  <text x="50" y="729" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="12.5" fill="#16a34a" text-anchor="start" font-weight="700" letter-spacing="0.6">ENTREGA</text>
+  <text x="124.19999999999999" y="729" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="11.5" fill="#64748b" text-anchor="start" font-weight="400">1 caso</text>
+  <rect x="34" y="744" width="236" height="92" rx="9" ry="9" fill="#f1f5f9" stroke="none" stroke-width="1"/>
+  <rect x="34" y="744" width="4" height="92" rx="2" ry="2" fill="#16a34a" stroke="none" stroke-width="1"/>
+  <text x="50" y="766" font-family="SFMono-Regular, Consolas, Liberation Mono, monospace" font-size="11" fill="#16a34a" text-anchor="start" font-weight="700">Caso 06</text>
+  <text x="50" y="785" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="12.5" fill="#0f172a" text-anchor="start" font-weight="600">Pipeline roto y entrega fragil</text>
+  <text x="50" y="823" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="10.5" fill="#64748b" text-anchor="start" font-weight="400">7 stacks operativos</text>
+  <rect x="34" y="864" width="6" height="22" rx="3" ry="3" fill="#be185d" stroke="none" stroke-width="1"/>
+  <text x="50" y="881" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="12.5" fill="#be185d" text-anchor="start" font-weight="700" letter-spacing="0.6">OPERACIONES</text>
+  <text x="158.6" y="881" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="11.5" fill="#64748b" text-anchor="start" font-weight="400">2 casos</text>
+  <rect x="34" y="896" width="236" height="92" rx="9" ry="9" fill="#f1f5f9" stroke="none" stroke-width="1"/>
+  <rect x="34" y="896" width="4" height="92" rx="2" ry="2" fill="#be185d" stroke="none" stroke-width="1"/>
+  <text x="50" y="918" font-family="SFMono-Regular, Consolas, Liberation Mono, monospace" font-size="11" fill="#be185d" text-anchor="start" font-weight="700">Caso 11</text>
+  <text x="50" y="937" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="12.5" fill="#0f172a" text-anchor="start" font-weight="600">Reportes pesados que bloquean</text>
+  <text x="50" y="953" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="12.5" fill="#0f172a" text-anchor="start" font-weight="600">la operacion</text>
+  <text x="50" y="975" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="10.5" fill="#64748b" text-anchor="start" font-weight="400">7 stacks operativos</text>
+  <rect x="282" y="896" width="236" height="92" rx="9" ry="9" fill="#f1f5f9" stroke="none" stroke-width="1"/>
+  <rect x="282" y="896" width="4" height="92" rx="2" ry="2" fill="#be185d" stroke="none" stroke-width="1"/>
+  <text x="298" y="918" font-family="SFMono-Regular, Consolas, Liberation Mono, monospace" font-size="11" fill="#be185d" text-anchor="start" font-weight="700">Caso 12</text>
+  <text x="298" y="937" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="12.5" fill="#0f172a" text-anchor="start" font-weight="600">Punto unico de conocimiento y</text>
+  <text x="298" y="953" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="12.5" fill="#0f172a" text-anchor="start" font-weight="600">riesgo operacional</text>
+  <text x="298" y="975" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="10.5" fill="#64748b" text-anchor="start" font-weight="400">7 stacks operativos</text>
+</svg>

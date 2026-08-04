@@ -84,3 +84,11 @@ deploys con drift sin detectar: 3/mes -> 0 · MTTR rollback: 45 min manual -> <3
 ## 🧭 Para evaluador / reclutador
 
 Este postmortem sirve como **vista de criterio operacional**: como se piensa un incidente, no solo como se resuelve. El [`../README.md`](../README.md) muestra el problema y la solucion; este documento muestra el **proceso de razonamiento** sobre el incidente.
+
+<!-- nav-case-doc -->
+---
+
+**Caso 06 · Pipeline roto y entrega fragil** — [⬅️ README del caso](../README.md) · [⚖️ Comparativa de los 7 stacks](../comparison.md)
+
+[🗺️ Contexto](context.md) · [🩺 Síntomas](symptoms.md) · [🔍 Diagnóstico](diagnosis.md) · [🧠 Causas raíz](root-causes.md) · [🛠️ Opciones de solución](solution-options.md) · [⚖️ Trade-offs](trade-offs.md) · [💼 Valor de negocio](business-value.md) · **🚨 Postmortem**
+<!-- /nav-case-doc -->

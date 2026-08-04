@@ -1,4 +1,8 @@
-# Caso 10 — .NET 8
+# 🔵 Caso 10 — .NET 8
+
+<!-- nav-stack -->
+[⬅️ Caso 10](../README.md) · [⚖️ Comparativa de los 7 stacks](../comparison.md) · [🔵 Perfil de .NET](../../../docs/languages/dotnet.md) · [🧬 Todos los perfiles](../../../docs/languages/README.md)
+<!-- /nav-stack -->
 
 Stack .NET operativo del caso 10. CPU real medido como N hops de serializacion `JsonSerializer` vs `Dictionary` O(1).
 

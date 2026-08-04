@@ -1,6 +1,10 @@
-# 🧠 Caso 05 — Node.js 22 + V8 heap medido
+# 🟢 Caso 05 — Node.js 22 + V8 heap medido
 
 > Implementacion operativa del caso 05 para estudiar presion de memoria y fugas de recursos con evidencia observable, manteniendo paridad funcional con la version Python y aprovechando la primitiva propia del runtime: `process.memoryUsage()` para heap V8 + RSS reales.
+
+<!-- nav-stack -->
+[⬅️ Caso 05](../README.md) · [⚖️ Comparativa de los 7 stacks](../comparison.md) · [🟢 Perfil de Node.js](../../../docs/languages/node.md) · [🧬 Todos los perfiles](../../../docs/languages/README.md)
+<!-- /nav-stack -->
 
 ## 🎯 Que resuelve
 

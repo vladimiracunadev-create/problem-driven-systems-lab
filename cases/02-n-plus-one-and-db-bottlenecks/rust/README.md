@@ -1,4 +1,8 @@
-# Caso 02 — Rust 1.83
+# 🦀 Caso 02 — Rust 1.83
+
+<!-- nav-stack -->
+[⬅️ Caso 02](../README.md) · [⚖️ Comparativa de los 7 stacks](../comparison.md) · [🦀 Perfil de Rust](../../../docs/languages/rust.md) · [🧬 Todos los perfiles](../../../docs/languages/README.md)
+<!-- /nav-stack -->
 
 Stack Rust operativo del caso 02. N+1 real contra SQLite embebido: `1 + N` queries en la ruta legacy, `2` en la optimizada.
 

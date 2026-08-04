@@ -1,4 +1,8 @@
-# Caso 06 — Java 21
+# ☕ Caso 06 — Java 21
+
+<!-- nav-stack -->
+[⬅️ Caso 06](../README.md) · [⚖️ Comparativa de los 7 stacks](../comparison.md) · [☕ Perfil de Java](../../../docs/languages/java.md) · [🧬 Todos los perfiles](../../../docs/languages/README.md)
+<!-- /nav-stack -->
 
 Stack Java operativo del caso 06. Contraste entre deploy directo (sin preflight, sin rollback) vs pipeline controlado (preflight → smoke → promote | rollback).
 

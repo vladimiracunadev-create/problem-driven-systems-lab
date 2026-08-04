@@ -1,4 +1,4 @@
-# Síntomas esperados
+# 🩺 Síntomas esperados
 
 En la ruta legacy deberían observarse síntomas como estos:
 
@@ -13,3 +13,11 @@ En la ruta optimizada se espera:
 - menos trabajo sobre la tabla transaccional,
 - respuesta más estable,
 - mejor convivencia con el proceso crítico.
+
+<!-- nav-case-doc -->
+---
+
+**Caso 01 · API lenta bajo carga** — [⬅️ README del caso](../README.md) · [⚖️ Comparativa de los 7 stacks](../comparison.md)
+
+[🗺️ Contexto](context.md) · **🩺 Síntomas** · [🔍 Diagnóstico](diagnosis.md) · [🧠 Causas raíz](root-causes.md) · [🛠️ Opciones de solución](solution-options.md) · [⚖️ Trade-offs](trade-offs.md) · [💼 Valor de negocio](business-value.md) · [🔭 Observabilidad](observability.md) · [📈 Benchmarking](benchmarking.md) · [🚨 Postmortem](postmortem.md)
+<!-- /nav-case-doc -->

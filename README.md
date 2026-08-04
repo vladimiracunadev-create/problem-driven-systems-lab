@@ -117,6 +117,37 @@ La unica asimetria que queda es de **naturaleza del motor**, y es deliberada: so
 
 El catalogo completo detallado se genera desde metadatos automatizados y vive en [docs/case-catalog.md](docs/case-catalog.md). Cada caso se sirve mediante un robusto servidor en PHP listo para consumir tanto por UI Web como por API.
 
+![Cobertura real de los 12 casos en los 7 stacks](docs/assets/stack-matrix.svg)
+
+## 🧬 Perfiles de lenguaje y mantenimiento por versión
+
+Los 12 casos no resuelven problemas con código genérico: los resuelven con **la primitiva idiomática de cada runtime**. Eso es lo que hace comparables a los siete stacks, y también lo que caduca cuando un lenguaje evoluciona.
+
+**[📁 docs/languages/](docs/languages/README.md) — un perfil por lenguaje**, cada uno con seis secciones: identidad y para qué sirve, modelo de ejecución, primitivas usadas en los 12 casos con enlace al código, qué mide el laboratorio y cómo reproducirlo, límites y problemas sin solución, y ciclo de versiones.
+
+| Stack | Versión | Modelo de ejecución | Perfil |
+| --- | --- | --- | --- |
+| 🐘 PHP | `8.3` | Proceso por petición, sin estado compartido | [php.md](docs/languages/php.md) |
+| 🐍 Python | `3.12` | Threads reales con GIL | [python.md](docs/languages/python.md) |
+| 🟢 Node.js | `22` | Event loop de un solo hilo | [node.md](docs/languages/node.md) |
+| ☕ Java | `21` | Threads del SO, paralelismo real, JVM | [java.md](docs/languages/java.md) |
+| 🔵 .NET | `8.0` | ThreadPool con `async/await` | [dotnet.md](docs/languages/dotnet.md) |
+| 🐹 Go | `1.23` | Goroutines multiplexadas por el runtime | [go.md](docs/languages/go.md) |
+| 🦀 Rust | `1.83` | Threads del SO sin GC, `Drop` determinista | [rust.md](docs/languages/rust.md) |
+
+### 🔄 Qué pasa cuando un lenguaje publica una versión nueva
+
+> Cuando un lenguaje evoluciona, la primitiva que un caso enseña puede quedar obsoleta y el caso pasa a enseñar **la forma vieja de hacer las cosas** sin que nadie lo note. El código sigue compilando, los tests siguen en verde y la documentación sigue afirmando que esa es la manera correcta.
+
+El repositorio trata esto como un procedimiento, no como buena intención:
+
+1. **Detección automática** — [`language-drift.yml`](.github/workflows/language-drift.yml) corre cada lunes, compara los `Dockerfile` contra [endoflife.date](https://endoflife.date) y abre un issue único con la tabla de diferencias.
+2. **Verificación en cada PR** — [`check-language-versions.sh`](scripts/check-language-versions.sh) falla el merge si dos `Dockerfile` del mismo stack divergen, o si la documentación declara una versión que el `Dockerfile` no fija.
+3. **Revisión humana con checklist** — **[docs/language-upgrade-protocol.md](docs/language-upgrade-protocol.md)** define los 10 puntos a revisar y en qué orden: primero si la primitiva sigue siendo idiomática y si alguna limitación documentada dejó de ser cierta, y **recién al final** el `Dockerfile`, las tablas de versión y los diagramas.
+4. **Cierre escrito, siempre** — con PR, incluso cuando la conclusión es que no hay nada que cambiar. El `CHANGELOG` registra por qué se subió, o por qué se decidió no subir.
+
+> ⚠️ **Regla del repositorio:** un bump de versión mayor automático rompe contenido didáctico antes que arreglarlo. El issue informa; la decisión es humana y queda escrita.
+
 ## 🖥️ Portal y experiencia de producto
 
 La raiz del laboratorio ya no es solo una lista de archivos. El portal local ahora cumple cuatro funciones:
@@ -207,10 +238,33 @@ Tambien existen atajos con `make`, pero la ruta soportada y mas portable sigue s
 | [CONTRIBUTING.md](CONTRIBUTING.md) | Reglas para crecer el laboratorio sin degradarlo |
 | [CHANGELOG.md](CHANGELOG.md) | Historial notable de cambios |
 | [docs/architecture.md](docs/architecture.md) | Mapa estructural del repositorio |
+| [docs/languages/](docs/languages/README.md) | 🧬 Perfil de cada lenguaje: para que sirve, primitivas en el lab, rendimiento medible, limitaciones y ciclo de versiones |
+| [docs/language-upgrade-protocol.md](docs/language-upgrade-protocol.md) | 🔄 Que revisar cuando un lenguaje publica version nueva — checklist de 10 puntos |
 | [docs/case-catalog.md](docs/case-catalog.md) | Catalogo sincronizado desde metadatos |
 | [docs/executive-summary.md](docs/executive-summary.md) | 📋 Resumen ejecutivo: los 12 casos en una pagina (problema · valor · evidencia) |
 | [docs/docker-strategy.md](docs/docker-strategy.md) | Por que Docker es el modelo operativo oficial |
 | [docs/recruiter-guide.md](docs/recruiter-guide.md) | Guia extendida para lectores no tecnicos |
+| [docs/QUE-ES-ESTO.md](docs/QUE-ES-ESTO.md) | 🧭 Explicacion en lenguaje simple, sin jerga — para personas ajenas al desarrollo |
+| [docs/BEGINNERS_GUIDE.md](docs/BEGINNERS_GUIDE.md) | 🌱 Ruta de entrada para quien esta empezando a programar |
+
+### 📕 Dossier PDF — todo el material en un solo archivo
+
+La documentacion completa se compila en un PDF imprimible, con portada, indice, tablas, bloques de codigo y los diagramas embebidos **como vectores** (sin rasterizar, se puede hacer zoom sin perder nitidez).
+
+```bash
+python scripts/build_dossier_pdf.py
+```
+
+| Perfil | Contenido | Salida |
+| --- | --- | --- |
+| `completo` (por defecto) | Todos los `.md` del repositorio | `dist/problem-driven-systems-lab-dossier-completo.pdf` |
+| `ejecutivo` | Raiz + `docs/` + README y comparativa de cada caso | `dist/problem-driven-systems-lab-dossier-ejecutivo.pdf` |
+
+```bash
+python scripts/build_dossier_pdf.py --profile ejecutivo
+```
+
+Solo requiere `reportlab` y `svglib` — ambas puras Python, sin binarios del sistema.
 
 ## 🏗️ Arquitectura en una frase
 

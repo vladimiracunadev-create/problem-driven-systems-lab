@@ -1,4 +1,4 @@
-# Observabilidad compartida
+# 🔭 Observabilidad compartida
 
 Carpeta reservada para plantillas y configuraciones compartibles de:
 - Prometheus,

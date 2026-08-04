@@ -1,6 +1,10 @@
-# 🧠 Caso 05 - PHP 8.3 con presión de memoria comparada
+# 🐘 Caso 05 - PHP 8.3 con presión de memoria comparada
 
 > Implementación operativa del caso 05 para mostrar cómo una fuga silenciosa degrada un proceso largo frente a una variante que controla su estado.
+
+<!-- nav-stack -->
+[⬅️ Caso 05](../README.md) · [⚖️ Comparativa de los 7 stacks](../comparison.md) · [🐘 Perfil de PHP](../../../docs/languages/php.md) · [🧬 Todos los perfiles](../../../docs/languages/README.md)
+<!-- /nav-stack -->
 
 ## 🎯 Qué resuelve
 

@@ -1,6 +1,10 @@
-# ⏱️ Caso 04 — Python 3.12 resiliente vs legacy
+# 🐍 Caso 04 — Python 3.12 resiliente vs legacy
 
 > Implementacion operativa del caso 04 para contrastar retries agresivos contra una variante que contiene la falla.
+
+<!-- nav-stack -->
+[⬅️ Caso 04](../README.md) · [⚖️ Comparativa de los 7 stacks](../comparison.md) · [🐍 Perfil de Python](../../../docs/languages/python.md) · [🧬 Todos los perfiles](../../../docs/languages/README.md)
+<!-- /nav-stack -->
 
 ## 🎯 Que resuelve
 

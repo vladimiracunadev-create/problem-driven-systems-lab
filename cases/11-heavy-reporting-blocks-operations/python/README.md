@@ -1,6 +1,10 @@
-# 📊 Caso 11 — Python 3.12 con reporting legacy vs aislado
+# 🐍 Caso 11 — Python 3.12 con reporting legacy vs aislado
 
 > Implementacion operativa del caso 11 para contrastar reporting pesado sobre el primario contra una ruta que protege la operacion.
+
+<!-- nav-stack -->
+[⬅️ Caso 11](../README.md) · [⚖️ Comparativa de los 7 stacks](../comparison.md) · [🐍 Perfil de Python](../../../docs/languages/python.md) · [🧬 Todos los perfiles](../../../docs/languages/README.md)
+<!-- /nav-stack -->
 
 ## 🎯 Que resuelve
 

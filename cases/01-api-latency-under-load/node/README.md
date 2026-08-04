@@ -1,6 +1,10 @@
-# ⚡ Caso 01 — Node.js 22 + `node:sqlite` + worker embebido
+# 🟢 Caso 01 — Node.js 22 + `node:sqlite` + worker embebido
 
 > Implementacion operativa del caso 01 para estudiar latencia bajo carga con evidencia observable, manteniendo paridad funcional con la version PHP+Postgres y Python+SQLite, pero apoyada en las primitivas naturales de Node: event loop, async/await y el modulo built-in `node:sqlite`.
+
+<!-- nav-stack -->
+[⬅️ Caso 01](../README.md) · [⚖️ Comparativa de los 7 stacks](../comparison.md) · [🟢 Perfil de Node.js](../../../docs/languages/node.md) · [🧬 Todos los perfiles](../../../docs/languages/README.md)
+<!-- /nav-stack -->
 
 ## 🎯 Que resuelve
 

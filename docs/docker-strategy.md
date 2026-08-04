@@ -1,4 +1,4 @@
-# Estrategia Docker
+# 🐳 Estrategia Docker
 
 > Como y cuando usar Docker en este laboratorio.
 

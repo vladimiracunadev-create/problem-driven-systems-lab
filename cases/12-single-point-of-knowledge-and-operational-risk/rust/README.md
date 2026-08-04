@@ -1,4 +1,8 @@
-# Caso 12 — Rust 1.83
+# 🦀 Caso 12 — Rust 1.83
+
+<!-- nav-stack -->
+[⬅️ Caso 12](../README.md) · [⚖️ Comparativa de los 7 stacks](../comparison.md) · [🦀 Perfil de Rust](../../../docs/languages/rust.md) · [🧬 Todos los perfiles](../../../docs/languages/README.md)
+<!-- /nav-stack -->
 
 Stack Rust operativo del caso 12. Incidente con owner ausente que revienta vs runbook codificado que degrada de forma controlada.
 

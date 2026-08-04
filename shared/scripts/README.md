@@ -1,4 +1,4 @@
-# Scripts compartidos
+# ⚙️ Scripts compartidos
 
 Aquí pueden vivir scripts futuros de:
 - validación de estructura,

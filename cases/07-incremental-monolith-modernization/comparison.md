@@ -1,4 +1,4 @@
-# Caso 07 — Comparativa multi-stack: Modernización incremental de monolito (PHP · Python · Node.js · Java · .NET · Go · Rust)
+# ⚖️ Caso 07 — Comparativa multi-stack: Modernización incremental de monolito (PHP · Python · Node.js · Java · .NET · Go · Rust)
 
 > **TL;DR** — el blast radius baja de `4` modulos a `1` cuando el consumer ya migro, y a `2` cuando cae al monolito con ACL. Lo que cambia entre stacks es **cuando falla un handler mal registrado**: al escribir la migracion, o el martes que llega el primer request.
 

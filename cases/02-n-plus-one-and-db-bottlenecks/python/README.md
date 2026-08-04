@@ -1,6 +1,10 @@
-# 🔄 Caso 02 — Python 3.12 + SQLite
+# 🐍 Caso 02 — Python 3.12 + SQLite
 
 > Implementacion operativa del caso 02 para demostrar N+1 anidado y una correccion medible sobre la misma base de datos.
+
+<!-- nav-stack -->
+[⬅️ Caso 02](../README.md) · [⚖️ Comparativa de los 7 stacks](../comparison.md) · [🐍 Perfil de Python](../../../docs/languages/python.md) · [🧬 Todos los perfiles](../../../docs/languages/README.md)
+<!-- /nav-stack -->
 
 ## 🎯 Que resuelve
 

@@ -1,4 +1,8 @@
-# Caso 11 — .NET 8
+# 🔵 Caso 11 — .NET 8
+
+<!-- nav-stack -->
+[⬅️ Caso 11](../README.md) · [⚖️ Comparativa de los 7 stacks](../comparison.md) · [🔵 Perfil de .NET](../../../docs/languages/dotnet.md) · [🧬 Todos los perfiles](../../../docs/languages/README.md)
+<!-- /nav-stack -->
 
 Stack .NET operativo del caso 11. Saturacion del `ThreadPool` principal vs aislamiento por `Thread` dedicado (o `ConcurrentExclusiveSchedulerPair`).
 

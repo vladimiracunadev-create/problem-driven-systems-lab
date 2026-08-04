@@ -1,3 +1,20 @@
-# Shared del caso 06
+# 📦 Artefactos compartidos — Caso 06
 
-Carpeta reservada para artefactos compartidos específicos de este caso: datasets, diagramas, notas comunes, contratos o fixtures.
+> Recursos comunes a las siete implementaciones de **Pipeline roto y entrega fragil**.
+
+<!-- shared-info -->
+Carpeta reservada para lo que no pertenece a un stack en particular:
+
+| Tipo | Ejemplos |
+|---|---|
+| 📊 **Datos** | datasets, fixtures, semillas para reproducir el escenario |
+| 📐 **Diagramas** | esquemas del flujo o de la arquitectura del caso |
+| 📄 **Contratos** | payloads de referencia, esquemas de request y response |
+| 📝 **Notas** | apuntes que aplican a todas las implementaciones |
+
+> ℹ️ Si algo solo aplica a un lenguaje, va en la carpeta de ese stack (`php/`, `python/`, `node/`, `java/`, `dotnet/`, `go/`, `rust/`), no acá.
+
+---
+
+[⬅️ Caso 06](../README.md) · [⚖️ Comparativa de los 7 stacks](../comparison.md)
+<!-- /shared-info -->

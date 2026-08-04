@@ -1,4 +1,8 @@
-# Caso 12 — Java 21
+# ☕ Caso 12 — Java 21
+
+<!-- nav-stack -->
+[⬅️ Caso 12](../README.md) · [⚖️ Comparativa de los 7 stacks](../comparison.md) · [☕ Perfil de Java](../../../docs/languages/java.md) · [🧬 Todos los perfiles](../../../docs/languages/README.md)
+<!-- /nav-stack -->
 
 Stack Java operativo del caso 12. `Optional<T>` + chaining seguro como runbook codificado.
 

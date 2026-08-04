@@ -1,6 +1,10 @@
-# Integracion externa inestable — Node.js
+# 🟢 Caso 09 — Integracion externa inestable
 
 > Implementacion operativa del caso 09 con paridad al stack PHP. Hardening basado en `AbortSignal.timeout(ms)` (Node 18+) + circuit breaker de modulo en memoria.
+
+<!-- nav-stack -->
+[⬅️ Caso 09](../README.md) · [⚖️ Comparativa de los 7 stacks](../comparison.md) · [🟢 Perfil de Node.js](../../../docs/languages/node.md) · [🧬 Todos los perfiles](../../../docs/languages/README.md)
+<!-- /nav-stack -->
 
 ## Que resuelve
 

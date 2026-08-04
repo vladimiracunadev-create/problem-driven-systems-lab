@@ -1,4 +1,8 @@
-# Caso 03 — .NET 8
+# 🔵 Caso 03 — .NET 8
+
+<!-- nav-stack -->
+[⬅️ Caso 03](../README.md) · [⚖️ Comparativa de los 7 stacks](../comparison.md) · [🔵 Perfil de .NET](../../../docs/languages/dotnet.md) · [🧬 Todos los perfiles](../../../docs/languages/README.md)
+<!-- /nav-stack -->
 
 Stack .NET operativo del caso 03. Contraste entre logs opacos (`Console.WriteLine` sin contexto) vs estructurados con correlation ID propagado por el pipeline async.
 

@@ -1,4 +1,8 @@
-# Caso 05 — Go 1.23
+# 🐹 Caso 05 — Go 1.23
+
+<!-- nav-stack -->
+[⬅️ Caso 05](../README.md) · [⚖️ Comparativa de los 7 stacks](../comparison.md) · [🐹 Perfil de Go](../../../docs/languages/go.md) · [🧬 Todos los perfiles](../../../docs/languages/README.md)
+<!-- /nav-stack -->
 
 Stack Go operativo del caso 05. Slice global que crece sin limite vs cache LRU acotada.
 

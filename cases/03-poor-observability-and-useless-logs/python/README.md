@@ -1,6 +1,10 @@
-# 🔭 Caso 03 — Python 3.12 con observabilidad comparada
+# 🐍 Caso 03 — Python 3.12 con observabilidad comparada
 
 > Implementacion operativa del caso 03 para contrastar logs pobres contra telemetria util en un mismo flujo funcional.
+
+<!-- nav-stack -->
+[⬅️ Caso 03](../README.md) · [⚖️ Comparativa de los 7 stacks](../comparison.md) · [🐍 Perfil de Python](../../../docs/languages/python.md) · [🧬 Todos los perfiles](../../../docs/languages/README.md)
+<!-- /nav-stack -->
 
 ## 🎯 Que resuelve
 

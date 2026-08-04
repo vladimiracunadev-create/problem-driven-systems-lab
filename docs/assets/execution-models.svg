@@ -1,0 +1,102 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 760" width="1000" height="760" role="img" aria-label="Modelos de ejecucion comparados por stack">
+  <title>Modelos de ejecucion comparados por stack</title>
+  <defs>
+    <marker id="arrowhead" markerWidth="9" markerHeight="7" refX="8" refY="3.5" orient="auto">
+      <polygon points="0 0, 9 3.5, 0 7" fill="#2563eb"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="760" rx="0" ry="0" fill="#ffffff" stroke="none" stroke-width="1"/>
+  <text x="34" y="42" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="19" fill="#0f172a" text-anchor="start" font-weight="600">Un problema, siete modelos de ejecucion</text>
+<text x="34" y="63" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="12.5" fill="#64748b" text-anchor="start" font-weight="400">Por que el mismo caso se resuelve distinto en cada stack: el modelo de ejecucion cambia que primitiva es la correcta.</text>
+  <rect x="34" y="112" width="932" height="74" rx="9" ry="9" fill="#f1f5f9" stroke="none" stroke-width="1"/>
+  <rect x="34" y="112" width="5" height="74" rx="2" ry="2" fill="#6f7fb5" stroke="none" stroke-width="1"/>
+  <text x="54" y="138" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="15" fill="#6f7fb5" text-anchor="start" font-weight="600">PHP</text>
+  <text x="54" y="157" font-family="SFMono-Regular, Consolas, Liberation Mono, monospace" font-size="11" fill="#64748b" text-anchor="start" font-weight="400">PHP 8.3</text>
+  <text x="54" y="174" font-family="SFMono-Regular, Consolas, Liberation Mono, monospace" font-size="10.5" fill="#64748b" text-anchor="start" font-weight="400">hub :8100</text>
+  <line x1="202" y1="126" x2="202" y2="172" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="224" y="138" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="9.5" fill="#64748b" text-anchor="start" font-weight="700" letter-spacing="0.5">MODELO DE EJECUCION</text>
+  <text x="224" y="158" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="12.5" fill="#0f172a" text-anchor="start" font-weight="400">Proceso por peticion, sin estado compartido entre</text>
+  <text x="224" y="174" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="12.5" fill="#0f172a" text-anchor="start" font-weight="400">requests</text>
+  <line x1="594" y1="126" x2="594" y2="172" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="616" y="138" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="9.5" fill="#64748b" text-anchor="start" font-weight="700" letter-spacing="0.5">CONSECUENCIA EN EL LAB</text>
+  <text x="616" y="158" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="11.5" fill="#0f172a" text-anchor="start" font-weight="400">Stack principal hoy para profundidad funcional y</text>
+  <text x="616" y="174" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="11.5" fill="#0f172a" text-anchor="start" font-weight="400">comparacion before/after.</text>
+  <rect x="34" y="198" width="932" height="74" rx="9" ry="9" fill="#f1f5f9" stroke="none" stroke-width="1"/>
+  <rect x="34" y="198" width="5" height="74" rx="2" ry="2" fill="#3b7cb8" stroke="none" stroke-width="1"/>
+  <text x="54" y="224" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="15" fill="#3b7cb8" text-anchor="start" font-weight="600">Python</text>
+  <text x="54" y="243" font-family="SFMono-Regular, Consolas, Liberation Mono, monospace" font-size="11" fill="#64748b" text-anchor="start" font-weight="400">Python 3.12</text>
+  <text x="54" y="260" font-family="SFMono-Regular, Consolas, Liberation Mono, monospace" font-size="10.5" fill="#64748b" text-anchor="start" font-weight="400">hub :8200</text>
+  <line x1="202" y1="212" x2="202" y2="258" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="224" y="224" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="9.5" fill="#64748b" text-anchor="start" font-weight="700" letter-spacing="0.5">MODELO DE EJECUCION</text>
+  <text x="224" y="244" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="12.5" fill="#0f172a" text-anchor="start" font-weight="400">Threads reales con GIL: paralelismo de I/O, no de</text>
+  <text x="224" y="260" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="12.5" fill="#0f172a" text-anchor="start" font-weight="400">CPU</text>
+  <line x1="594" y1="212" x2="594" y2="258" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="616" y="224" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="9.5" fill="#64748b" text-anchor="start" font-weight="700" letter-spacing="0.5">CONSECUENCIA EN EL LAB</text>
+  <text x="616" y="244" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="11.5" fill="#0f172a" text-anchor="start" font-weight="400">Stack operativo real sobre los doce casos con</text>
+  <text x="616" y="260" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="11.5" fill="#0f172a" text-anchor="start" font-weight="400">primitivas de stdlib.</text>
+  <rect x="34" y="284" width="932" height="74" rx="9" ry="9" fill="#f1f5f9" stroke="none" stroke-width="1"/>
+  <rect x="34" y="284" width="5" height="74" rx="2" ry="2" fill="#4b9c46" stroke="none" stroke-width="1"/>
+  <text x="54" y="310" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="15" fill="#4b9c46" text-anchor="start" font-weight="600">Node.js</text>
+  <text x="54" y="329" font-family="SFMono-Regular, Consolas, Liberation Mono, monospace" font-size="11" fill="#64748b" text-anchor="start" font-weight="400">Node.js 22</text>
+  <text x="54" y="346" font-family="SFMono-Regular, Consolas, Liberation Mono, monospace" font-size="10.5" fill="#64748b" text-anchor="start" font-weight="400">hub :8300</text>
+  <line x1="202" y1="298" x2="202" y2="344" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="224" y="310" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="9.5" fill="#64748b" text-anchor="start" font-weight="700" letter-spacing="0.5">MODELO DE EJECUCION</text>
+  <text x="224" y="330" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="12.5" fill="#0f172a" text-anchor="start" font-weight="400">Event loop de un solo hilo con I/O asincronico</text>
+  <text x="224" y="346" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="12.5" fill="#0f172a" text-anchor="start" font-weight="400">delegado</text>
+  <line x1="594" y1="298" x2="594" y2="344" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="616" y="310" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="9.5" fill="#64748b" text-anchor="start" font-weight="700" letter-spacing="0.5">CONSECUENCIA EN EL LAB</text>
+  <text x="616" y="330" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="11.5" fill="#0f172a" text-anchor="start" font-weight="400">Stack operativo real en observabilidad comparada</text>
+  <text x="616" y="346" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="11.5" fill="#0f172a" text-anchor="start" font-weight="400">y cancelacion.</text>
+  <rect x="34" y="370" width="932" height="74" rx="9" ry="9" fill="#f1f5f9" stroke="none" stroke-width="1"/>
+  <rect x="34" y="370" width="5" height="74" rx="2" ry="2" fill="#c4622d" stroke="none" stroke-width="1"/>
+  <text x="54" y="396" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="15" fill="#c4622d" text-anchor="start" font-weight="600">Java</text>
+  <text x="54" y="415" font-family="SFMono-Regular, Consolas, Liberation Mono, monospace" font-size="11" fill="#64748b" text-anchor="start" font-weight="400">Java 21</text>
+  <text x="54" y="432" font-family="SFMono-Regular, Consolas, Liberation Mono, monospace" font-size="10.5" fill="#64748b" text-anchor="start" font-weight="400">hub :8400</text>
+  <line x1="202" y1="384" x2="202" y2="430" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="224" y="396" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="9.5" fill="#64748b" text-anchor="start" font-weight="700" letter-spacing="0.5">MODELO DE EJECUCION</text>
+  <text x="224" y="416" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="12.5" fill="#0f172a" text-anchor="start" font-weight="400">Threads del SO con paralelismo real; JVM con JIT y</text>
+  <text x="224" y="432" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="12.5" fill="#0f172a" text-anchor="start" font-weight="400">GC generacional</text>
+  <line x1="594" y1="384" x2="594" y2="430" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="616" y="396" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="9.5" fill="#64748b" text-anchor="start" font-weight="700" letter-spacing="0.5">CONSECUENCIA EN EL LAB</text>
+  <text x="616" y="416" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="11.5" fill="#0f172a" text-anchor="start" font-weight="400">Stack operativo real con primitivas concurrentes</text>
+  <text x="616" y="432" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="11.5" fill="#0f172a" text-anchor="start" font-weight="400">de `java.util.concurrent`.</text>
+  <rect x="34" y="456" width="932" height="74" rx="9" ry="9" fill="#f1f5f9" stroke="none" stroke-width="1"/>
+  <rect x="34" y="456" width="5" height="74" rx="2" ry="2" fill="#6c4bb6" stroke="none" stroke-width="1"/>
+  <text x="54" y="482" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="15" fill="#6c4bb6" text-anchor="start" font-weight="600">.NET</text>
+  <text x="54" y="501" font-family="SFMono-Regular, Consolas, Liberation Mono, monospace" font-size="11" fill="#64748b" text-anchor="start" font-weight="400">.NET 8</text>
+  <text x="54" y="518" font-family="SFMono-Regular, Consolas, Liberation Mono, monospace" font-size="10.5" fill="#64748b" text-anchor="start" font-weight="400">hub :8500</text>
+  <line x1="202" y1="470" x2="202" y2="516" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="224" y="482" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="9.5" fill="#64748b" text-anchor="start" font-weight="700" letter-spacing="0.5">MODELO DE EJECUCION</text>
+  <text x="224" y="502" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="12.5" fill="#0f172a" text-anchor="start" font-weight="400">ThreadPool con `async/await` que libera el hilo</text>
+  <text x="224" y="518" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="12.5" fill="#0f172a" text-anchor="start" font-weight="400">durante la espera</text>
+  <line x1="594" y1="470" x2="594" y2="516" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="616" y="482" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="9.5" fill="#64748b" text-anchor="start" font-weight="700" letter-spacing="0.5">CONSECUENCIA EN EL LAB</text>
+  <text x="616" y="502" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="11.5" fill="#0f172a" text-anchor="start" font-weight="400">Stack operativo real con primitivas BCL</text>
+  <text x="616" y="518" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="11.5" fill="#0f172a" text-anchor="start" font-weight="400">distintivas por caso.</text>
+  <rect x="34" y="542" width="932" height="74" rx="9" ry="9" fill="#f1f5f9" stroke="none" stroke-width="1"/>
+  <rect x="34" y="542" width="5" height="74" rx="2" ry="2" fill="#2a9bb5" stroke="none" stroke-width="1"/>
+  <text x="54" y="568" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="15" fill="#2a9bb5" text-anchor="start" font-weight="600">Go</text>
+  <text x="54" y="587" font-family="SFMono-Regular, Consolas, Liberation Mono, monospace" font-size="11" fill="#64748b" text-anchor="start" font-weight="400">Go 1.23</text>
+  <text x="54" y="604" font-family="SFMono-Regular, Consolas, Liberation Mono, monospace" font-size="10.5" fill="#64748b" text-anchor="start" font-weight="400">hub :8600</text>
+  <line x1="202" y1="556" x2="202" y2="602" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="224" y="568" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="9.5" fill="#64748b" text-anchor="start" font-weight="700" letter-spacing="0.5">MODELO DE EJECUCION</text>
+  <text x="224" y="588" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="12.5" fill="#0f172a" text-anchor="start" font-weight="400">Goroutines multiplexadas por el runtime sobre</text>
+  <text x="224" y="604" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="12.5" fill="#0f172a" text-anchor="start" font-weight="400">threads del SO</text>
+  <line x1="594" y1="556" x2="594" y2="602" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="616" y="568" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="9.5" fill="#64748b" text-anchor="start" font-weight="700" letter-spacing="0.5">CONSECUENCIA EN EL LAB</text>
+  <text x="616" y="588" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="11.5" fill="#0f172a" text-anchor="start" font-weight="400">Stack operativo real donde canal + `select`</text>
+  <text x="616" y="604" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="11.5" fill="#0f172a" text-anchor="start" font-weight="400">cubren casi toda la concurrencia.</text>
+  <rect x="34" y="628" width="932" height="74" rx="9" ry="9" fill="#f1f5f9" stroke="none" stroke-width="1"/>
+  <rect x="34" y="628" width="5" height="74" rx="2" ry="2" fill="#a8453a" stroke="none" stroke-width="1"/>
+  <text x="54" y="654" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="15" fill="#a8453a" text-anchor="start" font-weight="600">Rust</text>
+  <text x="54" y="673" font-family="SFMono-Regular, Consolas, Liberation Mono, monospace" font-size="11" fill="#64748b" text-anchor="start" font-weight="400">Rust 1.83</text>
+  <text x="54" y="690" font-family="SFMono-Regular, Consolas, Liberation Mono, monospace" font-size="10.5" fill="#64748b" text-anchor="start" font-weight="400">hub :8700</text>
+  <line x1="202" y1="642" x2="202" y2="688" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="224" y="654" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="9.5" fill="#64748b" text-anchor="start" font-weight="700" letter-spacing="0.5">MODELO DE EJECUCION</text>
+  <text x="224" y="674" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="12.5" fill="#0f172a" text-anchor="start" font-weight="400">Threads del SO sin GC; liberacion deterministica por</text>
+  <text x="224" y="690" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="12.5" fill="#0f172a" text-anchor="start" font-weight="400">`Drop`</text>
+  <line x1="594" y1="642" x2="594" y2="688" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="616" y="654" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="9.5" fill="#64748b" text-anchor="start" font-weight="700" letter-spacing="0.5">CONSECUENCIA EN EL LAB</text>
+  <text x="616" y="674" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="11.5" fill="#0f172a" text-anchor="start" font-weight="400">Stack operativo real sin recolector de basura ni</text>
+  <text x="616" y="690" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="11.5" fill="#0f172a" text-anchor="start" font-weight="400">runtime asincronico.</text>
+</svg>

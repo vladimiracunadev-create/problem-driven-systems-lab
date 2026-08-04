@@ -1,6 +1,10 @@
-# Punto unico de conocimiento y riesgo operacional — Node.js
+# 🟢 Caso 12 — Punto unico de conocimiento y riesgo operacional
 
 > Implementacion operativa del caso 12 con paridad al stack PHP. El "runbook" esta codificado en el lenguaje: el modo distribuido usa **optional chaining** (`a?.b?.c ?? default`) para evitar el crash que sufre el modo legacy con acceso ciego.
+
+<!-- nav-stack -->
+[⬅️ Caso 12](../README.md) · [⚖️ Comparativa de los 7 stacks](../comparison.md) · [🟢 Perfil de Node.js](../../../docs/languages/node.md) · [🧬 Todos los perfiles](../../../docs/languages/README.md)
+<!-- /nav-stack -->
 
 ## Que resuelve
 

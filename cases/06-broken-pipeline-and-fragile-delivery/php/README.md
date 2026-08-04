@@ -1,6 +1,10 @@
-# 🚚 Caso 06 - PHP 8.3 con delivery comparado
+# 🐘 Caso 06 - PHP 8.3 con delivery comparado
 
 > Implementación operativa del caso 06 para mostrar la diferencia entre un pipeline frágil y un flujo de entrega con validaciones y rollback.
+
+<!-- nav-stack -->
+[⬅️ Caso 06](../README.md) · [⚖️ Comparativa de los 7 stacks](../comparison.md) · [🐘 Perfil de PHP](../../../docs/languages/php.md) · [🧬 Todos los perfiles](../../../docs/languages/README.md)
+<!-- /nav-stack -->
 
 ## 🎯 Qué resuelve
 
