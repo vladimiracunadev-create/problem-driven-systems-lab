@@ -1,4 +1,4 @@
-# Caso 10 — Comparativa multi-stack: Arquitectura cara para un problema simple (PHP · Python · Node.js · Java · .NET · Go · Rust)
+# ⚖️ Caso 10 — Comparativa multi-stack: Arquitectura cara para un problema simple (PHP · Python · Node.js · Java · .NET · Go · Rust)
 
 > **TL;DR** — `hops=8` cuesta 8 servicios y ~200 USD/mes estimados; el lookup directo cuesta 1 y 3 USD. **Este caso no tiene ranking de runtime**: el problema es de diseño, y la pendiente es identica en los siete lenguajes.
 

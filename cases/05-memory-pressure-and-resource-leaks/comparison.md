@@ -1,4 +1,4 @@
-# Caso 05 — Comparativa multi-stack: Presión de memoria y fugas de recursos (PHP · Python · Node.js · Java · .NET · Go · Rust)
+# ⚖️ Caso 05 — Comparativa multi-stack: Presión de memoria y fugas de recursos (PHP · Python · Node.js · Java · .NET · Go · Rust)
 
 > **TL;DR** — legacy retiene sin limite; optimized se estabiliza en `cap=1000`. Seis stacks tienen GC y la fuga es *memoria referenciada de mas*; Rust no tiene GC y la fuga es *memoria retenida de mas*. Mismo grafico de heap, distinto mecanismo.
 

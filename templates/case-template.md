@@ -1,4 +1,4 @@
-# Plantilla de caso
+# 🧩 Plantilla de caso
 
 ## Problema
 ## Por qué importa

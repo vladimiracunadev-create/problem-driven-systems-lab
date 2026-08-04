@@ -1,4 +1,8 @@
-# Caso 10 — Go 1.23
+# 🐹 Caso 10 — Go 1.23
+
+<!-- nav-stack -->
+[⬅️ Caso 10](../README.md) · [⚖️ Comparativa de los 7 stacks](../comparison.md) · [🐹 Perfil de Go](../../../docs/languages/go.md) · [🧬 Todos los perfiles](../../../docs/languages/README.md)
+<!-- /nav-stack -->
 
 Stack Go operativo del caso 10. N hops con serializacion en cada uno vs un lookup directo.
 

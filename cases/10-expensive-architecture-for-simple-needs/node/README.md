@@ -1,6 +1,10 @@
-# Arquitectura cara para un problema simple — Node.js
+# 🟢 Caso 10 — Arquitectura cara para un problema simple
 
 > Implementacion operativa del caso 10 con paridad al stack PHP. La sobrearquitectura se mide como CPU real: el modo `complex` realiza N rondas de `JSON.stringify`/`JSON.parse` sobre arrays grandes, castigando el event loop. El `right-sized` accede al mismo dato en O(1).
+
+<!-- nav-stack -->
+[⬅️ Caso 10](../README.md) · [⚖️ Comparativa de los 7 stacks](../comparison.md) · [🟢 Perfil de Node.js](../../../docs/languages/node.md) · [🧬 Todos los perfiles](../../../docs/languages/README.md)
+<!-- /nav-stack -->
 
 ## Que resuelve
 

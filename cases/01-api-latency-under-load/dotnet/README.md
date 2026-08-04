@@ -1,4 +1,8 @@
-# Caso 01 — .NET 8
+# 🔵 Caso 01 — .NET 8
+
+<!-- nav-stack -->
+[⬅️ Caso 01](../README.md) · [⚖️ Comparativa de los 7 stacks](../comparison.md) · [🔵 Perfil de .NET](../../../docs/languages/dotnet.md) · [🧬 Todos los perfiles](../../../docs/languages/README.md)
+<!-- /nav-stack -->
 
 Stack .NET operativo del caso 01. Mismo problema que PHP/Python/Node/Java: N+1 + filtro no sargable bajo carga + worker concurrente. Primitivas BCL distintas.
 

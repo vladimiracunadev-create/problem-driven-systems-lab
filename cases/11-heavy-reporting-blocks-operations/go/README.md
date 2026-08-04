@@ -1,4 +1,8 @@
-# Caso 11 — Go 1.23
+# 🐹 Caso 11 — Go 1.23
+
+<!-- nav-stack -->
+[⬅️ Caso 11](../README.md) · [⚖️ Comparativa de los 7 stacks](../comparison.md) · [🐹 Perfil de Go](../../../docs/languages/go.md) · [🧬 Todos los perfiles](../../../docs/languages/README.md)
+<!-- /nav-stack -->
 
 Stack Go operativo del caso 11. Reporte pesado sin acotar vs reporte con concurrencia limitada, midiendo si la operacion conserva aire.
 

@@ -1,6 +1,10 @@
-# Extraccion de modulo critico sin romper operacion — Node.js
+# 🟢 Caso 08 — Extraccion de modulo critico sin romper operacion
 
 > Implementacion operativa del caso 08 con paridad al stack PHP. Compatibilidad de contrato implementada con `Proxy` nativo + `EventEmitter` para emitir cada avance de cutover.
+
+<!-- nav-stack -->
+[⬅️ Caso 08](../README.md) · [⚖️ Comparativa de los 7 stacks](../comparison.md) · [🟢 Perfil de Node.js](../../../docs/languages/node.md) · [🧬 Todos los perfiles](../../../docs/languages/README.md)
+<!-- /nav-stack -->
 
 ## Que resuelve
 

@@ -1,4 +1,8 @@
-# Caso 05 — .NET 8
+# 🔵 Caso 05 — .NET 8
+
+<!-- nav-stack -->
+[⬅️ Caso 05](../README.md) · [⚖️ Comparativa de los 7 stacks](../comparison.md) · [🔵 Perfil de .NET](../../../docs/languages/dotnet.md) · [🧬 Todos los perfiles](../../../docs/languages/README.md)
+<!-- /nav-stack -->
 
 Stack .NET operativo del caso 05. Fuga real cross-request (`List<byte[]>` estatico) vs LRU acotada construida manualmente con `Dictionary + LinkedList`.
 

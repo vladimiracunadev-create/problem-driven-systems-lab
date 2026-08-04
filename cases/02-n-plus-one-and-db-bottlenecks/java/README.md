@@ -1,4 +1,8 @@
-# Caso 02 — Java 21 + SQLite (sqlite-jdbc)
+# ☕ Caso 02 — Java 21 + SQLite (sqlite-jdbc)
+
+<!-- nav-stack -->
+[⬅️ Caso 02](../README.md) · [⚖️ Comparativa de los 7 stacks](../comparison.md) · [☕ Perfil de Java](../../../docs/languages/java.md) · [🧬 Todos los perfiles](../../../docs/languages/README.md)
+<!-- /nav-stack -->
 
 Stack Java operativo del caso 02. Patron N+1 reproducido contra **SQLite real via JDBC**, contraste con batch `IN(...)` consolidado.
 

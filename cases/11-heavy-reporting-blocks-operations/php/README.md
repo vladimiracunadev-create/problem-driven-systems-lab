@@ -1,6 +1,10 @@
-# 📊 Caso 11 - PHP 8.3 con reporting legacy vs aislado
+# 🐘 Caso 11 - PHP 8.3 con reporting legacy vs aislado
 
 > Implementación operativa del caso 11 para contrastar reporting pesado sobre el primario contra una ruta que protege la operación.
+
+<!-- nav-stack -->
+[⬅️ Caso 11](../README.md) · [⚖️ Comparativa de los 7 stacks](../comparison.md) · [🐘 Perfil de PHP](../../../docs/languages/php.md) · [🧬 Todos los perfiles](../../../docs/languages/README.md)
+<!-- /nav-stack -->
 
 ## 🎯 Qué resuelve
 

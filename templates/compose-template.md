@@ -1,4 +1,4 @@
-# Convención compose
+# 🐳 Convención compose
 
 - un `compose.yml` por stack,
 - nombres de servicio claros,

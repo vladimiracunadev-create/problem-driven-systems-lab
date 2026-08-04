@@ -1,6 +1,10 @@
-# 🏗️ Caso 07 — Python 3.12 con modernizacion incremental comparada
+# 🐍 Caso 07 — Python 3.12 con modernizacion incremental comparada
 
 > Implementacion operativa del caso 07 para contrastar un cambio sobre un monolito acoplado contra una ruta strangler con migracion gradual.
+
+<!-- nav-stack -->
+[⬅️ Caso 07](../README.md) · [⚖️ Comparativa de los 7 stacks](../comparison.md) · [🐍 Perfil de Python](../../../docs/languages/python.md) · [🧬 Todos los perfiles](../../../docs/languages/README.md)
+<!-- /nav-stack -->
 
 ## 🎯 Que resuelve
 

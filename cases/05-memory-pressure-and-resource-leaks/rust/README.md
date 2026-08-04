@@ -1,4 +1,8 @@
-# Caso 05 — Rust 1.83
+# 🦀 Caso 05 — Rust 1.83
+
+<!-- nav-stack -->
+[⬅️ Caso 05](../README.md) · [⚖️ Comparativa de los 7 stacks](../comparison.md) · [🦀 Perfil de Rust](../../../docs/languages/rust.md) · [🧬 Todos los perfiles](../../../docs/languages/README.md)
+<!-- /nav-stack -->
 
 Stack Rust operativo del caso 05. `Vec` global que crece sin limite vs cache LRU acotada, con liberacion deterministica y contada.
 

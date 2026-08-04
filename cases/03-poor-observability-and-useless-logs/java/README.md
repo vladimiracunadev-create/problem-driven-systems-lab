@@ -1,4 +1,8 @@
-# Caso 03 — Java 21
+# ☕ Caso 03 — Java 21
+
+<!-- nav-stack -->
+[⬅️ Caso 03](../README.md) · [⚖️ Comparativa de los 7 stacks](../comparison.md) · [☕ Perfil de Java](../../../docs/languages/java.md) · [🧬 Todos los perfiles](../../../docs/languages/README.md)
+<!-- /nav-stack -->
 
 Stack Java operativo del caso 03. Contraste entre logs opacos (`println` sin contexto) vs estructurados con correlation ID propagado.
 

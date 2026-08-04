@@ -1,6 +1,10 @@
-# Modernizacion incremental de monolito — Node.js
+# 🟢 Caso 07 — Modernizacion incremental de monolito
 
 > Implementacion operativa del caso 07 con paridad al stack PHP. Strangler implementado como `Map<consumer, handler>` mutable en runtime — la primitiva mas directa de Node para mover trafico gradualmente sin redeploy.
+
+<!-- nav-stack -->
+[⬅️ Caso 07](../README.md) · [⚖️ Comparativa de los 7 stacks](../comparison.md) · [🟢 Perfil de Node.js](../../../docs/languages/node.md) · [🧬 Todos los perfiles](../../../docs/languages/README.md)
+<!-- /nav-stack -->
 
 ## Que resuelve
 

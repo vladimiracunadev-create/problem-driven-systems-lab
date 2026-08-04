@@ -1,6 +1,10 @@
-# 🌐 Caso 09 - PHP 8.3 con adapter y cache defensiva
+# 🐘 Caso 09 - PHP 8.3 con adapter y cache defensiva
 
 > Implementación operativa del caso 09 para contrastar una integración externa directa contra una variante endurecida.
+
+<!-- nav-stack -->
+[⬅️ Caso 09](../README.md) · [⚖️ Comparativa de los 7 stacks](../comparison.md) · [🐘 Perfil de PHP](../../../docs/languages/php.md) · [🧬 Todos los perfiles](../../../docs/languages/README.md)
+<!-- /nav-stack -->
 
 ## 🎯 Qué resuelve
 

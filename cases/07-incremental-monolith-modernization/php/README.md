@@ -1,6 +1,10 @@
-# 🏗️ Caso 07 - PHP 8.3 con modernización incremental comparada
+# 🐘 Caso 07 - PHP 8.3 con modernización incremental comparada
 
 > Implementación operativa del caso 07 para contrastar un cambio sobre un monolito acoplado contra una ruta strangler con migración gradual.
+
+<!-- nav-stack -->
+[⬅️ Caso 07](../README.md) · [⚖️ Comparativa de los 7 stacks](../comparison.md) · [🐘 Perfil de PHP](../../../docs/languages/php.md) · [🧬 Todos los perfiles](../../../docs/languages/README.md)
+<!-- /nav-stack -->
 
 ## 🎯 Qué resuelve
 

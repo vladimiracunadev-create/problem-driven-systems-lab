@@ -1,6 +1,10 @@
-# 🔭 Caso 03 - PHP 8 con observabilidad comparada
+# 🐘 Caso 03 - PHP 8 con observabilidad comparada
 
 > Implementacion operativa real del caso 03 para contrastar logs pobres contra telemetria util en un mismo flujo funcional.
+
+<!-- nav-stack -->
+[⬅️ Caso 03](../README.md) · [⚖️ Comparativa de los 7 stacks](../comparison.md) · [🐘 Perfil de PHP](../../../docs/languages/php.md) · [🧬 Todos los perfiles](../../../docs/languages/README.md)
+<!-- /nav-stack -->
 
 ## 🎯 Que resuelve
 

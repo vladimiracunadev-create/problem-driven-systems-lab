@@ -1,4 +1,8 @@
-# Caso 07 — Java 21
+# ☕ Caso 07 — Java 21
+
+<!-- nav-stack -->
+[⬅️ Caso 07](../README.md) · [⚖️ Comparativa de los 7 stacks](../comparison.md) · [☕ Perfil de Java](../../../docs/languages/java.md) · [🧬 Todos los perfiles](../../../docs/languages/README.md)
+<!-- /nav-stack -->
 
 Stack Java operativo del caso 07. Strangler con routing por consumer + ACL como closure.
 

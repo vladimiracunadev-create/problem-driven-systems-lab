@@ -1,4 +1,8 @@
-# Caso 04 — .NET 8
+# 🔵 Caso 04 — .NET 8
+
+<!-- nav-stack -->
+[⬅️ Caso 04](../README.md) · [⚖️ Comparativa de los 7 stacks](../comparison.md) · [🔵 Perfil de .NET](../../../docs/languages/dotnet.md) · [🧬 Todos los perfiles](../../../docs/languages/README.md)
+<!-- /nav-stack -->
 
 Stack .NET operativo del caso 04. Contraste entre retry storm (5 reintentos sin backoff) vs circuit breaker con timeout cooperativo + fallback cacheado.
 

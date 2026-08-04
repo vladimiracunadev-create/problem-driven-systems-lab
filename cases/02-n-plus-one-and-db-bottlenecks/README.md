@@ -1,6 +1,7 @@
 # 🔄 Caso 02 — N+1 queries y cuellos de botella en base de datos
 
 [![Estado](https://img.shields.io/badge/Estado-Implementado%20PHP-success)](php/)
+[![Stacks](https://img.shields.io/badge/Stacks-7%20operativos%20%C2%B7%20PHP%20%C2%B7%20Python%20%C2%B7%20Node%20%C2%B7%20Java%20%C2%B7%20.NET%20%C2%B7%20Go%20%C2%B7%20Rust-blue)](../../docs/languages/README.md)
 [![Categoría](https://img.shields.io/badge/Categoría-Rendimiento-red)](../../README.md)
 
 > [!IMPORTANT]

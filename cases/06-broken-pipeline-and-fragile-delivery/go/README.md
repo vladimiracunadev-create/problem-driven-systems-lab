@@ -1,4 +1,8 @@
-# Caso 06 — Go 1.23
+# 🐹 Caso 06 — Go 1.23
+
+<!-- nav-stack -->
+[⬅️ Caso 06](../README.md) · [⚖️ Comparativa de los 7 stacks](../comparison.md) · [🐹 Perfil de Go](../../../docs/languages/go.md) · [🧬 Todos los perfiles](../../../docs/languages/README.md)
+<!-- /nav-stack -->
 
 Stack Go operativo del caso 06. Deploy directo sin red de seguridad vs preflight → smoke → promote | rollback.
 

@@ -1,4 +1,8 @@
-# Caso 04 — Rust 1.83
+# 🦀 Caso 04 — Rust 1.83
+
+<!-- nav-stack -->
+[⬅️ Caso 04](../README.md) · [⚖️ Comparativa de los 7 stacks](../comparison.md) · [🦀 Perfil de Rust](../../../docs/languages/rust.md) · [🧬 Todos los perfiles](../../../docs/languages/README.md)
+<!-- /nav-stack -->
 
 Stack Rust operativo del caso 04. Reintentos sin control vs deadline + circuit breaker + fallback.
 

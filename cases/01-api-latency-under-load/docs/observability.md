@@ -1,4 +1,4 @@
-# Observabilidad del caso 1
+# 🔭 Observabilidad del caso 1
 
 ## Capas disponibles
 ### 1. Métrica local de aplicación
@@ -59,3 +59,11 @@ curl http://localhost:811/batch/status
 - dashboards perfectos para todos los stacks
 
 Sí deja una base honesta y útil para demostrar diagnóstico, comparación y mejora medible.
+
+<!-- nav-case-doc -->
+---
+
+**Caso 01 · API lenta bajo carga** — [⬅️ README del caso](../README.md) · [⚖️ Comparativa de los 7 stacks](../comparison.md)
+
+[🗺️ Contexto](context.md) · [🩺 Síntomas](symptoms.md) · [🔍 Diagnóstico](diagnosis.md) · [🧠 Causas raíz](root-causes.md) · [🛠️ Opciones de solución](solution-options.md) · [⚖️ Trade-offs](trade-offs.md) · [💼 Valor de negocio](business-value.md) · **🔭 Observabilidad** · [📈 Benchmarking](benchmarking.md) · [🚨 Postmortem](postmortem.md)
+<!-- /nav-case-doc -->

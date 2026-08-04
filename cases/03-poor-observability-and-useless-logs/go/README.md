@@ -1,4 +1,8 @@
-# Caso 03 — Go 1.23
+# 🐹 Caso 03 — Go 1.23
+
+<!-- nav-stack -->
+[⬅️ Caso 03](../README.md) · [⚖️ Comparativa de los 7 stacks](../comparison.md) · [🐹 Perfil de Go](../../../docs/languages/go.md) · [🧬 Todos los perfiles](../../../docs/languages/README.md)
+<!-- /nav-stack -->
 
 Stack Go operativo del caso 03. Logs opacos vs estructurados con correlation ID propagado.
 

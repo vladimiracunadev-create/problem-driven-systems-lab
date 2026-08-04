@@ -1,4 +1,8 @@
-# Caso 05 — Java 21
+# ☕ Caso 05 — Java 21
+
+<!-- nav-stack -->
+[⬅️ Caso 05](../README.md) · [⚖️ Comparativa de los 7 stacks](../comparison.md) · [☕ Perfil de Java](../../../docs/languages/java.md) · [🧬 Todos los perfiles](../../../docs/languages/README.md)
+<!-- /nav-stack -->
 
 Stack Java operativo del caso 05. Fuga real cross-request (`ArrayList<byte[]>` estatico) vs LRU acotada built-in (`LinkedHashMap.removeEldestEntry`).
 

@@ -1,4 +1,4 @@
-# Plantilla de diagnóstico
+# 🔍 Plantilla de diagnóstico
 
 - Señal observada:
 - Entorno afectado:

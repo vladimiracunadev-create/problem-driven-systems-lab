@@ -1,4 +1,4 @@
-# Caso 03 — Comparativa multi-stack: Observabilidad deficiente y logs inútiles (PHP · Python · Node.js · Java · .NET · Go · Rust)
+# ⚖️ Caso 03 — Comparativa multi-stack: Observabilidad deficiente y logs inútiles (PHP · Python · Node.js · Java · .NET · Go · Rust)
 
 > **TL;DR** — el mismo fallo pasa de `[ERROR] checkout failed` a un evento JSON con `correlation_id`, `reason` y `limit`. Lo que cambia entre stacks es **quien garantiza que el contexto no se pierda**: nadie, el revisor, o el compilador.
 

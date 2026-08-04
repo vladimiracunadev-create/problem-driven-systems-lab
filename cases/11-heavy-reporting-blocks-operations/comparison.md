@@ -1,4 +1,4 @@
-# Caso 11 — Comparativa multi-stack: Reportes pesados que bloquean la operación (PHP · Python · Node.js · Java · .NET · Go · Rust)
+# ⚖️ Caso 11 — Comparativa multi-stack: Reportes pesados que bloquean la operación (PHP · Python · Node.js · Java · .NET · Go · Rust)
 
 > **TL;DR** — el reporte sin acotar le come CPU a `/order-write`; con limitador, la operacion conserva su latencia. Es el caso que **no se traduce literal**: Go y Rust no tienen pool de threads que agotar.
 

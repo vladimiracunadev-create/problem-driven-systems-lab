@@ -1,6 +1,10 @@
-# Pipeline roto y entrega fragil — Node.js
+# 🟢 Caso 06 — Pipeline roto y entrega fragil
 
 > Implementacion operativa del caso 06 con paridad funcional al stack PHP, usando primitivas nativas de Node 22: `AbortController` + `AbortSignal` para cancelacion cooperativa del pipeline.
+
+<!-- nav-stack -->
+[⬅️ Caso 06](../README.md) · [⚖️ Comparativa de los 7 stacks](../comparison.md) · [🟢 Perfil de Node.js](../../../docs/languages/node.md) · [🧬 Todos los perfiles](../../../docs/languages/README.md)
+<!-- /nav-stack -->
 
 ## Que resuelve
 

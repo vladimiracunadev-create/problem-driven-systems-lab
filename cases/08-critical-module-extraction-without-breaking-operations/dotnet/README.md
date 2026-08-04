@@ -1,4 +1,8 @@
-# Caso 08 — .NET 8
+# 🔵 Caso 08 — .NET 8
+
+<!-- nav-stack -->
+[⬅️ Caso 08](../README.md) · [⚖️ Comparativa de los 7 stacks](../comparison.md) · [🔵 Perfil de .NET](../../../docs/languages/dotnet.md) · [🧬 Todos los perfiles](../../../docs/languages/README.md)
+<!-- /nav-stack -->
 
 Stack .NET operativo del caso 08. Cutover gradual con proxy de compatibilidad de contrato + event bus thread-safe basado en `event Action`.
 

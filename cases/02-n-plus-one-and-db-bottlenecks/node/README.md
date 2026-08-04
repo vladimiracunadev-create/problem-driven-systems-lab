@@ -1,6 +1,10 @@
-# 🔁 Caso 02 — Node.js 22 + SQLite embebido (`node:sqlite`)
+# 🟢 Caso 02 — Node.js 22 + SQLite embebido (`node:sqlite`)
 
 > Implementacion operativa del caso 02 para estudiar N+1 y cuellos de botella relacionales con evidencia observable, manteniendo paridad funcional con la version PHP+Postgres y Python+SQLite — y ahora con **SQL real bajo el contraste** en Node tambien.
+
+<!-- nav-stack -->
+[⬅️ Caso 02](../README.md) · [⚖️ Comparativa de los 7 stacks](../comparison.md) · [🟢 Perfil de Node.js](../../../docs/languages/node.md) · [🧬 Todos los perfiles](../../../docs/languages/README.md)
+<!-- /nav-stack -->
 
 ## 🎯 Que resuelve
 

@@ -1,4 +1,8 @@
-# Caso 06 — .NET 8
+# 🔵 Caso 06 — .NET 8
+
+<!-- nav-stack -->
+[⬅️ Caso 06](../README.md) · [⚖️ Comparativa de los 7 stacks](../comparison.md) · [🔵 Perfil de .NET](../../../docs/languages/dotnet.md) · [🧬 Todos los perfiles](../../../docs/languages/README.md)
+<!-- /nav-stack -->
 
 Stack .NET operativo del caso 06. Contraste entre deploy directo (sin preflight, sin rollback) vs pipeline controlado (preflight → smoke → promote | rollback).
 

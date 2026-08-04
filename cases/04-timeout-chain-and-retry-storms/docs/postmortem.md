@@ -84,3 +84,11 @@ tiempo bajo provider degradado: 22 min caida -> 0 (fallback cacheado) · retries
 ## 🧭 Para evaluador / reclutador
 
 Este postmortem sirve como **vista de criterio operacional**: como se piensa un incidente, no solo como se resuelve. El [`../README.md`](../README.md) muestra el problema y la solucion; este documento muestra el **proceso de razonamiento** sobre el incidente.
+
+<!-- nav-case-doc -->
+---
+
+**Caso 04 · Cadena de timeouts y tormentas de reintentos** — [⬅️ README del caso](../README.md) · [⚖️ Comparativa de los 7 stacks](../comparison.md)
+
+[🗺️ Contexto](context.md) · [🩺 Síntomas](symptoms.md) · [🔍 Diagnóstico](diagnosis.md) · [🧠 Causas raíz](root-causes.md) · [🛠️ Opciones de solución](solution-options.md) · [⚖️ Trade-offs](trade-offs.md) · [💼 Valor de negocio](business-value.md) · **🚨 Postmortem**
+<!-- /nav-case-doc -->

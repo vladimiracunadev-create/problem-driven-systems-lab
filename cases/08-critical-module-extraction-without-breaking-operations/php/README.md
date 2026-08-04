@@ -1,6 +1,10 @@
-# 🧩 Caso 08 - PHP 8.3 con extracción compatible
+# 🐘 Caso 08 - PHP 8.3 con extracción compatible
 
 > Implementación operativa del caso 08 para contrastar una extracción big bang contra una ruta segura con proxy, contratos y cutover por consumidor.
+
+<!-- nav-stack -->
+[⬅️ Caso 08](../README.md) · [⚖️ Comparativa de los 7 stacks](../comparison.md) · [🐘 Perfil de PHP](../../../docs/languages/php.md) · [🧬 Todos los perfiles](../../../docs/languages/README.md)
+<!-- /nav-stack -->
 
 ## 🎯 Qué resuelve
 

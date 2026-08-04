@@ -25,6 +25,28 @@ El objetivo es mostrar cómo **el mismo problema se manifiesta y se resuelve de 
 
 ---
 
+> 🧬 **Cada stack tiene su perfil completo en [docs/languages/](languages/README.md)**: para qué sirve el lenguaje, primitivas que usa en los 12 casos, qué mide el laboratorio y cómo reproducirlo, límites documentados y qué revisar cuando publique una versión nueva.
+
+---
+
+## ⚙️ Modelos de ejecución comparados
+
+![Modelos de ejecución comparados por stack](assets/execution-models.svg)
+
+El modelo de ejecución no es un dato de color: es lo que decide qué primitiva es la correcta. Un semáforo en Go es un canal; en Java es una clase `Semaphore`; en PHP es un archivo en disco. Los tres resuelven el caso 09, y las tres decisiones son correctas **en su modelo**.
+
+---
+
+## 🏆 Dónde encaja mejor cada stack
+
+![Ranking de fit por caso y stack](assets/fit-ranking.svg)
+
+Este mapa de calor se deriva automáticamente de la sección *Veredicto* de los `comparison.md` — no se escribe a mano. Ninguna fila es toda verde: **cada lenguaje gana en unos casos y pierde en otros**, que es exactamente lo que hace que valga la pena compararlos.
+
+> ⚠️ Es un ranking de **fit con el problema**, no de calidad de lenguaje.
+
+---
+
 ## 🔍 Qué se estudia al comparar stacks
 
 | Dimensión | Pregunta que responde |

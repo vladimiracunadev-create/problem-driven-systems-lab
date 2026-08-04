@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 568" width="1000" height="568" role="img" aria-label="Protocolo de actualizacion por version de lenguaje">
+  <title>Protocolo de actualizacion por version de lenguaje</title>
+  <defs>
+    <marker id="arrowhead" markerWidth="9" markerHeight="7" refX="8" refY="3.5" orient="auto">
+      <polygon points="0 0, 9 3.5, 0 7" fill="#2563eb"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="568" rx="0" ry="0" fill="#ffffff" stroke="none" stroke-width="1"/>
+  <text x="34" y="42" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="19" fill="#0f172a" text-anchor="start" font-weight="600">Protocolo: que pasa cuando un lenguaje publica version nueva</text>
+<text x="34" y="63" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="12.5" fill="#64748b" text-anchor="start" font-weight="400">La deteccion es automatica. La decision es humana. El repositorio nunca se sube de version solo.</text>
+  <rect x="34" y="106" width="210" height="92" rx="10" ry="10" fill="#ffffff" stroke="#2563eb" stroke-width="2"/>
+  <circle cx="58" cy="130" r="13" fill="#2563eb"/>
+  <text x="58" y="135" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="13" fill="#ffffff" text-anchor="middle" font-weight="700">1</text>
+  <text x="80" y="135" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="14" fill="#0f172a" text-anchor="start" font-weight="600">Deteccion</text>
+  <text x="50" y="162" font-family="SFMono-Regular, Consolas, Liberation Mono, monospace" font-size="11" fill="#64748b" text-anchor="start" font-weight="400">language-drift.yml</text>
+  <text x="50" y="177" font-family="SFMono-Regular, Consolas, Liberation Mono, monospace" font-size="11" fill="#64748b" text-anchor="start" font-weight="400">lunes 06:00 UTC</text>
+  <line x1="250" y1="152.0" x2="260" y2="152.0" stroke="#2563eb" stroke-width="2"/><polygon points="268,152.0 260,147.5 260,156.5" fill="#2563eb"/>
+  <rect x="274" y="106" width="210" height="92" rx="10" ry="10" fill="#ffffff" stroke="#d97706" stroke-width="2"/>
+  <circle cx="298" cy="130" r="13" fill="#d97706"/>
+  <text x="298" y="135" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="13" fill="#ffffff" text-anchor="middle" font-weight="700">2</text>
+  <text x="320" y="135" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="14" fill="#0f172a" text-anchor="start" font-weight="600">Triage</text>
+  <text x="290" y="162" font-family="SFMono-Regular, Consolas, Liberation Mono, monospace" font-size="11" fill="#64748b" text-anchor="start" font-weight="400">Issue unico con tabla</text>
+  <text x="290" y="177" font-family="SFMono-Regular, Consolas, Liberation Mono, monospace" font-size="11" fill="#64748b" text-anchor="start" font-weight="400">fijada vs upstream</text>
+  <line x1="490" y1="152.0" x2="500" y2="152.0" stroke="#2563eb" stroke-width="2"/><polygon points="508,152.0 500,147.5 500,156.5" fill="#2563eb"/>
+  <rect x="514" y="106" width="210" height="92" rx="10" ry="10" fill="#ffffff" stroke="#7c3aed" stroke-width="2"/>
+  <circle cx="538" cy="130" r="13" fill="#7c3aed"/>
+  <text x="538" y="135" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="13" fill="#ffffff" text-anchor="middle" font-weight="700">3</text>
+  <text x="560" y="135" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="14" fill="#0f172a" text-anchor="start" font-weight="600">Revision</text>
+  <text x="530" y="162" font-family="SFMono-Regular, Consolas, Liberation Mono, monospace" font-size="11" fill="#64748b" text-anchor="start" font-weight="400">Codigo + docs de</text>
+  <text x="530" y="177" font-family="SFMono-Regular, Consolas, Liberation Mono, monospace" font-size="11" fill="#64748b" text-anchor="start" font-weight="400">ese stack</text>
+  <line x1="730" y1="152.0" x2="740" y2="152.0" stroke="#2563eb" stroke-width="2"/><polygon points="748,152.0 740,147.5 740,156.5" fill="#2563eb"/>
+  <rect x="754" y="106" width="210" height="92" rx="10" ry="10" fill="#ffffff" stroke="#16a34a" stroke-width="2"/>
+  <circle cx="778" cy="130" r="13" fill="#16a34a"/>
+  <text x="778" y="135" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="13" fill="#ffffff" text-anchor="middle" font-weight="700">4</text>
+  <text x="800" y="135" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="14" fill="#0f172a" text-anchor="start" font-weight="600">Cierre</text>
+  <text x="770" y="162" font-family="SFMono-Regular, Consolas, Liberation Mono, monospace" font-size="11" fill="#64748b" text-anchor="start" font-weight="400">PR con bump o nota</text>
+  <text x="770" y="177" font-family="SFMono-Regular, Consolas, Liberation Mono, monospace" font-size="11" fill="#64748b" text-anchor="start" font-weight="400">de 'no aplica'</text>
+  <text x="34" y="242" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="14" fill="#0f172a" text-anchor="start" font-weight="600">Que se revisa en la etapa 3 — y por que no basta con cambiar el Dockerfile</text>
+  <rect x="34" y="270" width="470" height="58" rx="8" ry="8" fill="#f1f5f9" stroke="none" stroke-width="1"/>
+  <rect x="34" y="270" width="4" height="58" rx="2" ry="2" fill="#2563eb" stroke="none" stroke-width="1"/>
+  <text x="50" y="292" font-family="SFMono-Regular, Consolas, Liberation Mono, monospace" font-size="12.5" fill="#0f172a" text-anchor="start" font-weight="600">Dockerfile</text>
+  <text x="50" y="311" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="10.8" fill="#64748b" text-anchor="start" font-weight="400">Los 12 casos del stack y el hub. Uno solo desalineado y el mismo caso corre en dos runtimes.</text>
+  <rect x="526" y="270" width="470" height="58" rx="8" ry="8" fill="#f1f5f9" stroke="none" stroke-width="1"/>
+  <rect x="526" y="270" width="4" height="58" rx="2" ry="2" fill="#7c3aed" stroke="none" stroke-width="1"/>
+  <text x="542" y="292" font-family="SFMono-Regular, Consolas, Liberation Mono, monospace" font-size="12.5" fill="#0f172a" text-anchor="start" font-weight="600">Codigo del caso</text>
+  <text x="542" y="311" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="10.8" fill="#64748b" text-anchor="start" font-weight="400">¿La primitiva que el caso enseña sigue siendo idiomatica, o el lenguaje ya la reemplazo?</text>
+  <rect x="34" y="340" width="470" height="58" rx="8" ry="8" fill="#f1f5f9" stroke="none" stroke-width="1"/>
+  <rect x="34" y="340" width="4" height="58" rx="2" ry="2" fill="#d97706" stroke="none" stroke-width="1"/>
+  <text x="50" y="362" font-family="SFMono-Regular, Consolas, Liberation Mono, monospace" font-size="12.5" fill="#0f172a" text-anchor="start" font-weight="600">comparison.md</text>
+  <text x="50" y="381" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="10.8" fill="#64748b" text-anchor="start" font-weight="400">La comparativa entre stacks del caso afectado. Es lo que un lector usa para decidir.</text>
+  <rect x="526" y="340" width="470" height="58" rx="8" ry="8" fill="#f1f5f9" stroke="none" stroke-width="1"/>
+  <rect x="526" y="340" width="4" height="58" rx="2" ry="2" fill="#0891b2" stroke="none" stroke-width="1"/>
+  <text x="542" y="362" font-family="SFMono-Regular, Consolas, Liberation Mono, monospace" font-size="12.5" fill="#0f172a" text-anchor="start" font-weight="600">docs/languages/</text>
+  <text x="542" y="381" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="10.8" fill="#64748b" text-anchor="start" font-weight="400">Perfil del lenguaje: version, primitivas y limitaciones que quiza dejaron de ser ciertas.</text>
+  <rect x="34" y="410" width="470" height="58" rx="8" ry="8" fill="#f1f5f9" stroke="none" stroke-width="1"/>
+  <rect x="34" y="410" width="4" height="58" rx="2" ry="2" fill="#16a34a" stroke="none" stroke-width="1"/>
+  <text x="50" y="432" font-family="SFMono-Regular, Consolas, Liberation Mono, monospace" font-size="12.5" fill="#0f172a" text-anchor="start" font-weight="600">README + stack-map</text>
+  <text x="50" y="451" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="10.8" fill="#64748b" text-anchor="start" font-weight="400">Las tablas de version visibles. check-language-versions.sh falla si divergen.</text>
+  <rect x="526" y="410" width="470" height="58" rx="8" ry="8" fill="#f1f5f9" stroke="none" stroke-width="1"/>
+  <rect x="526" y="410" width="4" height="58" rx="2" ry="2" fill="#64748b" stroke="none" stroke-width="1"/>
+  <text x="542" y="432" font-family="SFMono-Regular, Consolas, Liberation Mono, monospace" font-size="12.5" fill="#0f172a" text-anchor="start" font-weight="600">CHANGELOG</text>
+  <text x="542" y="451" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="10.8" fill="#64748b" text-anchor="start" font-weight="400">Por que se subio, o por que se decidio no subir. La decision vale mas que el numero.</text>
+  <rect x="34" y="494" width="962" height="40" rx="8" ry="8" fill="#fef3c7" stroke="none" stroke-width="1"/>
+  <text x="50" y="519" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="11.5" fill="#78350f" text-anchor="start" font-weight="400">Regla: un bump de version mayor automatico rompe contenido didactico antes que arreglarlo. El issue informa; la persona decide.</text>
+</svg>

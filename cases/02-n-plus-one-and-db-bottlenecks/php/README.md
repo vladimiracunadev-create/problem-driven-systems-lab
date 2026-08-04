@@ -1,6 +1,10 @@
-# 🔄 Caso 02 - PHP 8 + PostgreSQL
+# 🐘 Caso 02 - PHP 8 + PostgreSQL
 
 > Implementacion operativa real del caso 02 para demostrar N+1 y una correccion medible sobre la misma base de datos.
+
+<!-- nav-stack -->
+[⬅️ Caso 02](../README.md) · [⚖️ Comparativa de los 7 stacks](../comparison.md) · [🐘 Perfil de PHP](../../../docs/languages/php.md) · [🧬 Todos los perfiles](../../../docs/languages/README.md)
+<!-- /nav-stack -->
 
 ## 🎯 Que resuelve
 

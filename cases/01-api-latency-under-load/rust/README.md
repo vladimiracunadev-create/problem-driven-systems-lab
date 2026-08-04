@@ -1,4 +1,8 @@
-# Caso 01 — Rust 1.83
+# 🦀 Caso 01 — Rust 1.83
+
+<!-- nav-stack -->
+[⬅️ Caso 01](../README.md) · [⚖️ Comparativa de los 7 stacks](../comparison.md) · [🦀 Perfil de Rust](../../../docs/languages/rust.md) · [🧬 Todos los perfiles](../../../docs/languages/README.md)
+<!-- /nav-stack -->
 
 Stack Rust operativo del caso 01. Filtro no sargable + N+1 real contra SQLite embebido, conviviendo con un worker que refresca una tabla resumen.
 

@@ -1,4 +1,4 @@
-# Caso 06 — Comparativa multi-stack: Pipeline roto y entrega frágil (PHP · Python · Node.js · Java · .NET · Go · Rust)
+# ⚖️ Caso 06 — Comparativa multi-stack: Pipeline roto y entrega frágil (PHP · Python · Node.js · Java · .NET · Go · Rust)
 
 > **TL;DR** — legacy deja el ambiente `degraded`; controlled bloquea en preflight o revierte a la version previa. Lo que separa a los stacks es **si el estado no contemplado es un `else` silencioso o un error de compilacion**.
 

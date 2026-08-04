@@ -1,4 +1,8 @@
-# Caso 04 — Go 1.23
+# 🐹 Caso 04 — Go 1.23
+
+<!-- nav-stack -->
+[⬅️ Caso 04](../README.md) · [⚖️ Comparativa de los 7 stacks](../comparison.md) · [🐹 Perfil de Go](../../../docs/languages/go.md) · [🧬 Todos los perfiles](../../../docs/languages/README.md)
+<!-- /nav-stack -->
 
 Stack Go operativo del caso 04. Reintentos sin control vs deadline cooperativo + circuit breaker + fallback.
 

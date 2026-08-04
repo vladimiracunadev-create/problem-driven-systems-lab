@@ -1,4 +1,8 @@
-# Caso 08 — Rust 1.83
+# 🦀 Caso 08 — Rust 1.83
+
+<!-- nav-stack -->
+[⬅️ Caso 08](../README.md) · [⚖️ Comparativa de los 7 stacks](../comparison.md) · [🦀 Perfil de Rust](../../../docs/languages/rust.md) · [🧬 Todos los perfiles](../../../docs/languages/README.md)
+<!-- /nav-stack -->
 
 Stack Rust operativo del caso 08. Cutover big-bang que rompe consumers vs proxy de compatibilidad + bus de eventos.
 

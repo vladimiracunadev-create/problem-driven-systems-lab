@@ -1,4 +1,4 @@
-# Caso 02 — Comparativa multi-stack: N+1 y cuellos de botella en base de datos (PHP · Python · Node.js · Java · .NET · Go · Rust)
+# ⚖️ Caso 02 — Comparativa multi-stack: N+1 y cuellos de botella en base de datos (PHP · Python · Node.js · Java · .NET · Go · Rust)
 
 > **TL;DR** — `db_hits` pasa de `21` a `2` con `limit=20`, sin cambiar el resultado. Los 7 stacks ejecutan N+1 real contra un motor: el contador mide `prepare()` + `execute()`, no iteraciones de un bucle.
 

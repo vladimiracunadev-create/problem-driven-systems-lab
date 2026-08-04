@@ -1,4 +1,4 @@
-# Causas raíz del problema
+# 🧠 Causas raíz del problema
 
 ## Ruta legacy
 - usa la tabla `orders` directamente para agregación,
@@ -17,3 +17,11 @@ La corrección no se basa en “esperar menos”, sino en cambiar estrategia:
 - menor número de consultas,
 - payload más contenido,
 - mejor separación entre transacción y reporte.
+
+<!-- nav-case-doc -->
+---
+
+**Caso 01 · API lenta bajo carga** — [⬅️ README del caso](../README.md) · [⚖️ Comparativa de los 7 stacks](../comparison.md)
+
+[🗺️ Contexto](context.md) · [🩺 Síntomas](symptoms.md) · [🔍 Diagnóstico](diagnosis.md) · **🧠 Causas raíz** · [🛠️ Opciones de solución](solution-options.md) · [⚖️ Trade-offs](trade-offs.md) · [💼 Valor de negocio](business-value.md) · [🔭 Observabilidad](observability.md) · [📈 Benchmarking](benchmarking.md) · [🚨 Postmortem](postmortem.md)
+<!-- /nav-case-doc -->

@@ -1,7 +1,7 @@
 # 🚚 Caso 06 — Pipeline roto y entrega frágil
 
 [![Estado](https://img.shields.io/badge/Estado-Multi--stack%20operativo-success)](php/README.md)
-[![Stacks](https://img.shields.io/badge/Stacks-PHP%20%C2%B7%20Python%20%C2%B7%20Node%20%C2%B7%20Java%20%C2%B7%20.NET-blue)](#-stacks-disponibles)
+[![Stacks](https://img.shields.io/badge/Stacks-7%20operativos%20%C2%B7%20PHP%20%C2%B7%20Python%20%C2%B7%20Node%20%C2%B7%20Java%20%C2%B7%20.NET%20%C2%B7%20Go%20%C2%B7%20Rust-blue)](../../docs/languages/README.md)
 [![Categoría](https://img.shields.io/badge/Categoría-Entrega-purple)](../../README.md)
 
 > [!IMPORTANT]
