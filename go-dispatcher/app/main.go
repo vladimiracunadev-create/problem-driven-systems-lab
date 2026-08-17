@@ -49,6 +49,7 @@ var cases = []caseInfo{
 	{"12", 9612, "Punto unico de conocimiento", "/app/cases/12/case12"},
 	{"13", 9613, "Cache stampede y thundering herd", "/app/cases/13/case13"},
 	{"14", 9614, "Agotamiento del pool de conexiones", "/app/cases/14/case14"},
+	{"15", 9615, "Backpressure en colas de mensajes", "/app/cases/15/case15"},
 }
 
 var (

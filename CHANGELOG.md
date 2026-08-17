@@ -2,6 +2,92 @@
 
 Todos los cambios notables de este laboratorio se registran aqui con foco en madurez tecnica y documental.
 
+## 2026-08-17 - Caso 15: backpressure en colas de mensajes en los 7 stacks
+
+Tercer caso del **Eje 1 del ROADMAP**. El lab pasa a **15 casos x 7 stacks = 105
+endpoints**.
+
+### Added — caso 15, backpressure en colas de mensajes
+
+`cases/15-message-queue-backpressure/` con las **7 implementaciones**.
+
+Contrato uniforme: `/produce-unbounded` y `/produce-bounded` con tres politicas
+por parametro (`block`, `drop_oldest`, `dead_letter`), mas `/queue/state` y
+`/dlq`. Metricas centrales: `queue_depth_peak` y `oldest_msg_age_ms_peak` —
+las dos que casi nunca estan en el dashboard y son las unicas que delatan el
+problema.
+
+El caso es sobre que **no hay opcion gratis**:
+
+| Politica | Que paga |
+|---|---|
+| `block` | latencia: la lentitud viaja aguas arriba hasta el cliente |
+| `drop_oldest` | datos: se pierden mensajes, en silencio salvo que se cuenten |
+| `dead_letter` | deuda operativa: alguien tiene que mirar esa cola (caso 20) |
+
+La cola sin limite parece una cuarta opcion sin costo. No lo es: solo difiere el
+pago hasta el OOM, y mientras tanto **el throughput se ve perfecto**.
+
+### El criterio de ranking cambio respecto de los otros casos
+
+Aca no se midio cual stack expresa mejor la solucion sino **cual hace mas dificil
+escribir el bug**, porque el bug tiene dos formas: la cola sin techo y el
+descarte que nadie cuenta.
+
+- **Go primero** porque no existe `make(chan T)` con buffer infinito. La version
+  incorrecta hay que construirla a mano con una slice y un mutex, y sale **mas
+  larga** que la correcta.
+- **Rust segundo**: el limite esta en el tipo (`Sender<T>` vs `SyncSender<T>`),
+  asi que la confusion no compila. Y `TrySendError::Full(T)` devuelve la
+  propiedad del mensaje rechazado — la mejor primitiva del set para una DLQ.
+- **.NET tercero**: unico stack donde la politica es un **enum del constructor**,
+  decidida una vez para todo el sistema, con callback de descarte incluido.
+- **Java quinto** pese a tener la mejor taxonomia de rechazo (`put`/`offer`/
+  `offer(timeout)`, espejo de las `RejectedExecutionHandler`): porque
+  `ConcurrentLinkedQueue` implementa la **misma interfaz `Queue`** que
+  `ArrayBlockingQueue` y no tiene capacidad. Sacar el freno del sistema entero es
+  un cambio de una linea que compila y pasa los tests.
+- **Node sexto** siendo el **unico stack donde el backpressure es parte del
+  protocolo del runtime** (`write()` devuelve `false`, `'drain'` avisa cuando
+  seguir) — porque tambien es el unico donde ignorar esa señal compila, pasa los
+  tests y funciona en desarrollo.
+- **PHP septimo**, y con la leccion mas transferible: no tiene cola en proceso,
+  asi que su backpressure vive en `listen.backlog` de FPM, en `pm.max_children`
+  y en la DLQ del broker. Es el stack que mejor enseña que **el freno es una
+  propiedad del sistema entero, no de la cola**.
+
+### Fuera de alcance a proposito
+
+El ROADMAP pedia "slow-down al producer devolviendo 429". No se implemento:
+devolver 429 sin backoff del cliente alimenta una tormenta de reintentos, que es
+el [caso 04](cases/04-timeout-chain-and-retry-storms/README.md). Queda anotado
+como frontera entre casos, no como deuda.
+
+### Fixed durante la construccion
+
+`self._stop = threading.Event()` en el consumidor de Python pisaba
+`Thread._stop()`, un metodo interno que `join()` llama. El sintoma era un
+`TypeError: 'Event' object is not callable` en cada rafaga. Renombrado a
+`_halt`. Es el tipo de colision que solo aparece al heredar de `Thread`.
+
+### Changed — integracion
+
+- **Dispatchers**: registro del caso 15 y puerto interno en los siete
+  (`:9015` PHP/Python/Node, `:9415` Java, `:9515` .NET, `:9615` Go, `:9715` Rust).
+- **`ci.yml`**: matriz `compose-config` de 106 a **113 archivos**; `hub-probe`
+  valida 15 casos por stack; `compose-smoke` suma `case15-python` y `case15-node`.
+- **`shared/catalog/cases.json`** + `docs/case-catalog.md` + los cinco SVG.
+- **Perfiles de lenguaje**: agregado de veredictos recalculado. **Go pasa a 6
+  oros**, Rust conserva 7.
+
+### Verificado
+
+Los 7 stacks levantados con Docker. Con 120 mensajes y consumidor 3x mas lento:
+sin limite `queue_depth_peak` = 120 y `oldest_msg_age_ms_peak` ~ 250-475 ms;
+acotada a 32 esa espera baja a ~70-134 ms. Las tres politicas producen su costo
+propio: ~200 ms de productor frenado en `block`, 87-88 descartados en
+`drop_oldest`, 87-88 a la DLQ en `dead_letter`. Identico en los siete.
+
 ## 2026-08-17 - Caso 14: agotamiento del pool de conexiones en los 7 stacks
 
 Segundo caso del **Eje 1 del ROADMAP**. El lab pasa a **14 casos x 7 stacks = 98

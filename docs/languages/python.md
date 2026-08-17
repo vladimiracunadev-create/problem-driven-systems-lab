@@ -1,6 +1,6 @@
 # 🐍 Python
 
-> **Versión fijada:** `3.12` · **Imagen base:** `python:3.12-alpine` · **Hub:** `:8200` · **Casos operativos:** 14 / 14
+> **Versión fijada:** `3.12` · **Imagen base:** `python:3.12-alpine` · **Hub:** `:8200` · **Casos operativos:** 15 / 15
 
 [⬅️ Volver a los perfiles de lenguaje](README.md) · [🗺️ Mapa de stacks](../stack-map.md) · [🔄 Protocolo de actualización](../language-upgrade-protocol.md)
 
@@ -49,6 +49,7 @@ El *Global Interpreter Lock* permite que solo un thread ejecute bytecode de Pyth
 | [12 · Punto único](../../cases/12-single-point-of-knowledge-and-operational-risk/python/README.md) | `if x is None` / `dict.get()` | Disciplina pura, cero respaldo del lenguaje |
 | [13 · Cache stampede](../../cases/13-cache-stampede-and-thundering-herd/python/README.md) | dict de vuelos + `threading.Event` | `Event` **es** el «esperá a que otro termine»; no hace falta librería |
 | [14 · Pool de conexiones](../../cases/14-connection-pool-exhaustion/python/README.md) | `queue.Queue` + `@contextmanager` | La stdlib trae la estructura; el `finally` del generador aporta la disciplina |
+| [15 · Backpressure](../../cases/15-message-queue-backpressure/python/README.md) | `queue.Queue(maxsize=N)` | Las tres políticas están en la firma de `put()`: bloquear, `Full`, o esperar acotado |
 
 > 💡 **El patrón que solo se ve mirando la columna entera:** ninguno de los doce casos necesita instalar nada. `sqlite3`, `logging`, `threading`, `gc` y `re` alcanzan. Es el argumento más fuerte de Python en este laboratorio y no tiene que ver con rendimiento: tiene que ver con cuánto código de terceros hay que auditar para llegar a producción.
 
@@ -98,10 +99,10 @@ curl -s localhost:8200/11/diagnostics/summary
 
 ## 🏆 Dónde gana y dónde pierde en el laboratorio
 
-Agregado de los veredictos de las 13 comparativas que rankean: **0 primeros puestos, media 5.0**.
+Agregado de los veredictos de las 14 comparativas que rankean: **0 primeros puestos, media 4.9**.
 
 - 🥉 **Tercero en 03** — `LoggerAdapter` + `JsonFormatter`: la API más difícil de violar por accidente del set completo. Es el mejor resultado de Python en el laboratorio y no tiene nada que ver con rendimiento.
-- **4º en 02, 06, 09 y 14** — `sqlite3` y `threading.Semaphore` de stdlib, correctos y directos.
+- **4º en 02, 06, 09, 14 y 15** — `sqlite3` y `threading.Semaphore` de stdlib, correctos y directos.
 - **6º en 04, 05, 07, 08, 12 y 13** — los casos donde el lenguaje no respalda la corrección con nada. En el 13 se suma el GIL: sin una barrera explícita, la estampida ni siquiera se deja observar.
 
 **Lectura honesta:** Python queda sexto en cinco casos, y el laboratorio no lo maquilla. Lo que aporta es distinto: es el único stack que expone un límite estructural real —el GIL— y el que llega más lejos sin instalar nada. En un repositorio que compara criterio y no velocidad, ambas cosas cuentan.
@@ -134,4 +135,4 @@ El detalle del procedimiento está en [docs/language-upgrade-protocol.md](../lan
 docker compose -f compose.python.yml up -d --build
 ```
 
-Los 14 casos quedan servidos en `http://localhost:8200/NN/`. Cada caso trae además su propio `compose.yml` para correrlo aislado.
+Los 15 casos quedan servidos en `http://localhost:8200/NN/`. Cada caso trae además su propio `compose.yml` para correrlo aislado.

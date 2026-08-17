@@ -1,6 +1,6 @@
 # 🗂️ Catalogo de casos
 
-> Lista completa de los 14 casos del laboratorio generada desde `shared/catalog/cases.json`.
+> Lista completa de los 15 casos del laboratorio generada desde `shared/catalog/cases.json`.
 
 ## 📊 Estado actual
 
@@ -20,6 +20,7 @@
 | 👤 | [12 - Punto unico de conocimiento y riesgo operacional](../cases/12-single-point-of-knowledge-and-operational-risk/README.md) | Operaciones | [👉 Senior Analysis](../cases/12-single-point-of-knowledge-and-operational-risk/php/README.md) | `OPERATIVO` | `php`, `python`, `node`, `java`, `dotnet`, `go`, `rust` | Ayuda a discutir continuidad operacional, documentacion y reduccion de dependencia critica en personas. |
 | 🌧️ | [13 - Cache stampede y thundering herd](../cases/13-cache-stampede-and-thundering-herd/README.md) | Rendimiento | [👉 Senior Analysis](../cases/13-cache-stampede-and-thundering-herd/php/README.md) | `OPERATIVO` | `php`, `python`, `node`, `java`, `dotnet`, `go`, `rust` | Evita caidas autoinfligidas en el momento de mayor fragilidad del sistema y reduce la capacidad reservada del origen. |
 | 🚰 | [14 - Agotamiento del pool de conexiones](../cases/14-connection-pool-exhaustion/README.md) | Rendimiento | [👉 Senior Analysis](../cases/14-connection-pool-exhaustion/php/README.md) | `OPERATIVO` | `php`, `python`, `node`, `java`, `dotnet`, `go`, `rust` | Evita indisponibilidades progresivas que tienen al reinicio como unico remedio, y dimensiona el pool con una formula en vez de con intuicion. |
+| 🌊 | [15 - Backpressure en colas de mensajes](../cases/15-message-queue-backpressure/README.md) | Resiliencia | [👉 Senior Analysis](../cases/15-message-queue-backpressure/php/README.md) | `OPERATIVO` | `php`, `python`, `node`, `java`, `dotnet`, `go`, `rust` | Evita caidas por memoria y perdidas silenciosas de mensajes, y obliga a decidir explicitamente que se sacrifica cuando el consumidor no da abasto. |
 
 ## ✅ Casos operativos hoy
 
@@ -106,6 +107,12 @@
 - Stacks operativos: `php`, `python`, `node`, `java`, `dotnet`, `go`, `rust`
 - Impacto de negocio: Evita indisponibilidades progresivas que tienen al reinicio como unico remedio, y dimensiona el pool con una formula en vez de con intuicion.
 - Que demuestra: Contrasta /pool-leaky y /pool-managed sobre la misma carga con leaked = acquired - released como metrica central.
+
+### 🌊 [15 - Backpressure en colas de mensajes](../cases/15-message-queue-backpressure/README.md)
+
+- Stacks operativos: `php`, `python`, `node`, `java`, `dotnet`, `go`, `rust`
+- Impacto de negocio: Evita caidas por memoria y perdidas silenciosas de mensajes, y obliga a decidir explicitamente que se sacrifica cuando el consumidor no da abasto.
+- Que demuestra: Contrasta /produce-unbounded y /produce-bounded con las tres politicas sobre la misma carga.
 
 ## 🧭 Rutas de evaluacion
 

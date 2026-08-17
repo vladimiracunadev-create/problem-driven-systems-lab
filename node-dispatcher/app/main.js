@@ -38,6 +38,7 @@ const CASES = {
   '12': { port: 9012, name: 'Punto unico de conocimiento',        server: '/cases/12/server.js' },
   '13': { port: 9013, name: 'Cache stampede y thundering herd',  server: '/cases/13/server.js' },
   '14': { port: 9014, name: 'Agotamiento del pool de conexiones',  server: '/cases/14/server.js' },
+  '15': { port: 9015, name: 'Backpressure en colas de mensajes',  server: '/cases/15/server.js' },
 };
 
 const DISPATCH_PORT = Number.parseInt(process.env.PORT || '8300', 10);

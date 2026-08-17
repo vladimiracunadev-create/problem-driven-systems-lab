@@ -17,6 +17,7 @@ COPY cases/11-heavy-reporting-blocks-operations/python/app/server.py    /cases/1
 COPY cases/12-single-point-of-knowledge-and-operational-risk/python/app/server.py /cases/12/server.py
 COPY cases/13-cache-stampede-and-thundering-herd/python/app/server.py /cases/13/server.py
 COPY cases/14-connection-pool-exhaustion/python/app/server.py /cases/14/server.py
+COPY cases/15-message-queue-backpressure/python/app/server.py /cases/15/server.py
 
 # Dispatcher
 COPY python-dispatcher/app/main.py /app/main.py

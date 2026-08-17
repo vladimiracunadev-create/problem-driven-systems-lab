@@ -23,7 +23,7 @@ Estas están en el código y funcionan hoy. Verificadas por revisión manual:
 | Vector típico | Cómo se defiende | Dónde mirar |
 |---|---|---|
 | **SQL injection** | PDO prepared statements en los casos `01`/`02` PHP. Los `IN(...)` se construyen con `placeholderList()` que solo emite `?, ?, ?` count-based; los IDs vienen siempre de `(int) $row['customer_id']` (server-side, nunca del request). | [`cases/01-api-latency-under-load/php/app/bootstrap.php:105`](cases/01-api-latency-under-load/php/app/bootstrap.php:105) |
-| **Inyección de scenario / consumer / domain** | Allowlist estricto en los 14 casos: `if (!ALLOWED.includes(x)) x = default`. Equivalente con `in_array(...)` en PHP. | Todos los casos |
+| **Inyección de scenario / consumer / domain** | Allowlist estricto en los 15 casos: `if (!ALLOWED.includes(x)) x = default`. Equivalente con `in_array(...)` en PHP. | Todos los casos |
 | **Validación de release / SKU** | Regex allowlist: `/^[A-Za-z0-9._-]{3,32}$/`, `/^[A-Z0-9-]{4,20}$/`. | Casos `06` y `09` |
 | **Numeric clamping** | `clampInt(value, min, max)` en TODOS los enteros que llegan por query params (rows, accounts, orders, limit, etc.). | Todos los casos |
 | **Path traversal en storage** | `STORAGE_DIR = path.join(os.tmpdir(), 'pdsl-caseXX-node')` — string fijo, sin user input. Idem en Python (`tempfile.gettempdir()`) y PHP (`sys_get_temp_dir()`). | Todos los casos |
@@ -49,7 +49,7 @@ Estas son ausencias **intencionales** (es un lab, no un servicio productivo) o l
 | # | Hallazgo | Impacto si se expone | Mitigación |
 |---|---|---|---|
 | **A1** | **Sin autenticación.** Ningún endpoint valida `Authorization`, cookie, CSRF token ni IP de origen. Cualquier cliente que alcance el host puede invocar `/reset-lab`, `/deploy-controlled`, `/share-knowledge`, etc. | Wipeo de telemetría, falsificación de deployments simulados, escrituras repetidas en `/tmp`. | Reverse proxy con auth básica/JWT/SSO delante de los hubs. O middleware `if (req.headers['x-pdsl-token'] !== process.env.LAB_TOKEN) return 401`. |
-| **A2** | **DoS por bloqueo intencional del event loop (caso `11` Node).** El `blockEventLoop(ms)` hace `while (Date.now() < end) {}` sincrónico hasta 900ms por request. Es **pedagógico** (la gracia del caso es mostrar el bloqueo), pero permite DoS si se combina con concurrencia. | 10 requests concurrentes ≈ 9 segundos de unresponsiveness para los 14 casos del hub Node `:8300`. | Si hay carga concurrente real, usar el `compose.yml` per-case del caso 11 (`:8211`) en lugar del hub. Reducir el cap a 200ms. |
+| **A2** | **DoS por bloqueo intencional del event loop (caso `11` Node).** El `blockEventLoop(ms)` hace `while (Date.now() < end) {}` sincrónico hasta 900ms por request. Es **pedagógico** (la gracia del caso es mostrar el bloqueo), pero permite DoS si se combina con concurrencia. | 10 requests concurrentes ≈ 9 segundos de unresponsiveness para los 15 casos del hub Node `:8300`. | Si hay carga concurrente real, usar el `compose.yml` per-case del caso 11 (`:8211`) en lugar del hub. Reducir el cap a 200ms. |
 
 ### Hallazgos medios
 

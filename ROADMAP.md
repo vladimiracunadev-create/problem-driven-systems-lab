@@ -4,18 +4,18 @@
 
 ## Estado actual (2026-08-17)
 
-- **14 casos × 7 stacks operativos = 98 endpoints** detras de 7 hubs simetricos (`compose.root.yml` PHP `:8100`, `compose.python.yml` Python `:8200`, `compose.nodejs.yml` Node `:8300`, `compose.java.yml` Java `:8400`, `compose.dotnet.yml` .NET `:8500`, `compose.go.yml` Go `:8600`, `compose.rust.yml` Rust `:8700`).
+- **15 casos × 7 stacks operativos = 105 endpoints** detras de 7 hubs simetricos (`compose.root.yml` PHP `:8100`, `compose.python.yml` Python `:8200`, `compose.nodejs.yml` Node `:8300`, `compose.java.yml` Java `:8400`, `compose.dotnet.yml` .NET `:8500`, `compose.go.yml` Go `:8600`, `compose.rust.yml` Rust `:8700`).
 - **Casos 01 y 02 con fidelidad universal:** los 7 stacks ejecutan SQL real sobre un motor — PostgreSQL en PHP, SQLite stdlib en Python, `node:sqlite` built-in en Node, `sqlite-jdbc` en Java, `Microsoft.Data.Sqlite` en .NET, `modernc.org/sqlite` (Go puro, sin cgo) en Go, `rusqlite` feature `bundled` en Rust. `db_hits` / `db_queries_in_request` cuentan ejecuciones reales contra motor en los siete runtimes.
 - **Caso 01 con el filtro no sargable verificado por el planner:** `EXPLAIN QUERY PLAN` devuelve `SCAN orders` para `WHERE LOWER(region) LIKE 'n%'` y `SEARCH orders USING INDEX idx_orders_region` para el mismo predicado reescrito como rango. Java y .NET usan `journal_mode=WAL` para que el worker que refresca el resumen no bloquee a los lectores — el equivalente embebido del MVCC de PostgreSQL.
 - **Asimetria que queda, por diseño:** solo PHP cruza un socket TCP contra un motor externo con pool FPM finito. Los otros seis embeben el motor. Node y Python conservan un round-trip artificial explicito que modela el hop de red ausente. Documentado en cada `comparison.md` y `README.md` de stack, no escondido.
 - Documentacion editorial completa (`README.md`, `RECRUITER.md`, `ARCHITECTURE.md`, `RUNBOOK.md`, `SECURITY.md`, `AWS_MIGRATION.md`, `CONTRIBUTING.md`, `CHANGELOG.md`).
 - Catalogo unificado en `shared/catalog/cases.json` como fuente de verdad del portal, `docs/case-catalog.md` y la narrativa operativa.
 - Portal local con `index.html` + `catalog.php` + `probe.php` server-side para health en vivo.
-- CI con validacion estructural + `compose-config` sobre 106 archivos + `portal-probe` PHP + `hub-probe` Python/Node/Java/.NET/Go/Rust sobre los 14 casos por stack en un solo boot.
+- CI con validacion estructural + `compose-config` sobre 113 archivos + `portal-probe` PHP + `hub-probe` Python/Node/Java/.NET/Go/Rust sobre los 15 casos por stack en un solo boot.
 
 ## Eje 1 — Nuevos casos de la vida real (13-20)
 
-> **Progreso: 2 de 8 entregados.** Los casos 13 y 14 estan operativos en los 7 stacks. Los casos 15-20 siguen en especificacion.
+> **Progreso: 3 de 8 entregados.** Los casos 13, 14 y 15 estan operativos en los 7 stacks. Los casos 16-20 siguen en especificacion.
 
 Ocho casos adicionales que extienden el lab con problemas que se ven en sistemas productivos reales. Cada uno mantiene el formato problem-driven: sintoma observable → causa raiz tecnica → solucion idiomatica por stack → evidencia medible.
 
@@ -83,7 +83,25 @@ Y una decision de fidelidad que va al reves de la del caso 13: aca el trabajo **
 
 ---
 
-### Caso 15 — Message queue backpressure
+### Caso 15 — Message queue backpressure — ✅ ENTREGADO (2026-08-17)
+
+**Estado:** operativo en los **7 stacks**. Ver [`cases/15-message-queue-backpressure/`](cases/15-message-queue-backpressure/README.md).
+
+**Lo que se construyo, contra lo que se habia planeado:**
+
+| Planeado | Entregado |
+|---|---|
+| Node + Java + Python | Los 7 stacks, por la misma razon estructural que los casos 13 y 14. |
+| bounded queue + rejection policy (`block` / `drop_oldest` / `dead_letter`), DLQ con counter | Las tres politicas ejecutables por parametro, mas la DLQ inspeccionable en `/dlq`. |
+| `queue_depth`, `oldest_msg_age_ms`, `messages_dropped_total`, throughput | Los cuatro, mas `queue_bytes_peak` y `producer_blocked_ms` — el costo de frenar, que sin medirlo no se ve. |
+| slow-down al producer con 429 | **Fuera de alcance a proposito.** Devolver 429 sin backoff del cliente alimenta una tormenta de reintentos, que es el caso 04. Queda anotado como frontera, no como deuda. |
+
+**Lo que salio del camino y vale registrar:** el caso termino siendo sobre **que no hay opcion gratis**. Las tres politicas pagan cosas distintas —latencia, datos, deuda operativa— y la cola sin limite parece una cuarta opcion sin costo solo porque el pago llega despues y de golpe.
+
+El ranking quedo decidido por un criterio distinto al de los otros casos: no cual expresa mejor la solucion, sino **cual hace mas dificil escribir el bug**. Gana Go porque no existe el canal con buffer infinito — la version incorrecta hay que construirla a mano y sale mas larga que la correcta. Node queda sexto siendo el unico stack donde el backpressure es parte del protocolo del runtime, porque tambien es el unico donde ignorarlo compila, pasa los tests y funciona en desarrollo.
+
+<details>
+<summary>Especificacion original del caso</summary>
 
 **Sintoma:** productores mas rapidos que consumidores. La cola interna crece sin limite, la memoria del proceso explota, eventualmente el OOM killer lo mata. O peor: la cola es bounded silenciosamente y los mensajes se pierden sin alerta.
 
@@ -94,6 +112,8 @@ Y una decision de fidelidad que va al reves de la del caso 13: aca el trabajo **
 **Stacks objetivo iniciales:** Node (`stream.Writable` con `highWaterMark`) + Java (`ArrayBlockingQueue` + `RejectedExecutionHandler`) + Python (`queue.Queue(maxsize=N)`).
 
 **Que medir:** `queue_depth` en cada momento, `oldest_msg_age_ms` (edad del mensaje mas viejo en cola), `messages_dropped_total`, throughput sostenible vs spike.
+
+</details>
 
 ---
 
@@ -202,7 +222,7 @@ Dos decisiones que salieron del camino y vale la pena registrar:
 - Agregar dashboards Grafana por stack (latencia p50/p95/p99, `db_hits`, `event_loop_lag_ms` Node, `ThreadPool.GetAvailableWorkerThreads` .NET, `ThreadPoolExecutor.getActiveCount()` Java).
 - Centralizar via un solo Prometheus que scrappea los 7 hubs.
 
-**Estimado:** ~200 lineas por stack en el dispatcher para exponer un agregado de los 14 casos del stack. Dashboards Grafana JSON commiteados en `cases/01-api-latency-under-load/shared/observability/`.
+**Estimado:** ~200 lineas por stack en el dispatcher para exponer un agregado de los 15 casos del stack. Dashboards Grafana JSON commiteados en `cases/01-api-latency-under-load/shared/observability/`.
 
 ---
 
@@ -250,7 +270,7 @@ Compromisos editoriales transversales para que el lab no venda fidelidad que no 
 
 **Estado:** pendiente.
 
-**Plan:** seccion nueva en el `README.md` raiz que liste los 14 casos con una columna por stack indicando si el substrato es real (DB / kernel / network) o simulado (sleep / memoria / setTimeout). Vista de un vistazo, sin tener que abrir cada `comparison.md`.
+**Plan:** seccion nueva en el `README.md` raiz que liste los 15 casos con una columna por stack indicando si el substrato es real (DB / kernel / network) o simulado (sleep / memoria / setTimeout). Vista de un vistazo, sin tener que abrir cada `comparison.md`.
 
 ---
 
@@ -266,8 +286,8 @@ Compromisos editoriales transversales para que el lab no venda fidelidad que no 
 
 Las fases anteriores quedan registradas para referencia historica:
 
-- **Fase 1 — Base estructural** (completada): nombre y posicionamiento, portal liviano, estructura problem-driven con 14 casos, documentacion base.
+- **Fase 1 — Base estructural** (completada): nombre y posicionamiento, portal liviano, estructura problem-driven con 15 casos, documentacion base.
 - **Fase 1.5 — Profesionalizacion documental** (completada): familia documental completa en raiz, alineacion editorial con el ecosistema publico de Vladimir Acuna.
-- **Fase 2 — Profundizacion tecnica** (completada): los 14 casos × 7 stacks (PHP/Python/Node/Java/.NET/Go/Rust) operativos con primitivas idiomaticas distintivas por caso y por lenguaje.
-- **Fase 3 — Valor de portafolio** (completada): `docs/executive-summary.md` cubierto, diagramas en `ARCHITECTURE.md` cubierto, postmortems cubiertos (`docs/postmortem.md` en los 14 casos).
+- **Fase 2 — Profundizacion tecnica** (completada): los 15 casos × 7 stacks (PHP/Python/Node/Java/.NET/Go/Rust) operativos con primitivas idiomaticas distintivas por caso y por lenguaje.
+- **Fase 3 — Valor de portafolio** (completada): `docs/executive-summary.md` cubierto, diagramas en `ARCHITECTURE.md` cubierto, postmortems cubiertos (`docs/postmortem.md` en los 15 casos).
 - **Fase 4 — Laboratorio expandido** (en progreso, abierta por este ROADMAP): los 8 casos nuevos (13-20) y las mejoras de plataforma listadas arriba son la continuacion natural.

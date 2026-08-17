@@ -1,6 +1,6 @@
 # 🗺️ Mapa de problemas
 
-> Los 14 casos del laboratorio con su descripción técnica, síntomas y valor de negocio.
+> Los 15 casos del laboratorio con su descripción técnica, síntomas y valor de negocio.
 
 ---
 
@@ -22,6 +22,7 @@
 | 🧑‍💼 12 | Operaciones | Conocimiento crítico concentrado en una sola persona o módulo | Reducir riesgo organizacional y mejorar continuidad |
 | 🌩️ 13 | Rendimiento | La clave caliente de cache expira y los N llamadores golpean el origen a la vez | Evitar caídas autoinfligidas y reducir capacidad reservada del origen |
 | 🚰 14 | Rendimiento | El pool se achica en silencio hasta que no queda ninguna conexión | Eliminar el reinicio preventivo del runbook y dimensionar con una fórmula |
+| 🌊 15 | Resiliencia | El productor va más rápido que el consumidor y la cola crece sin techo | Evitar caídas por memoria y decidir explícitamente qué se sacrifica |
 
 ---
 
@@ -210,3 +211,17 @@
 - Reiniciar arregla el síntoma por unas horas
 
 **Valor:** Elimina el reinicio preventivo como parte del runbook y reemplaza el dimensionado por intuición con la ley de Little sobre throughput medido.
+
+---
+
+### 🌊 15 — Backpressure en colas de mensajes
+
+**Problema:** El productor va más rápido que el consumidor y la cola absorbe la diferencia. Sin límite, crece hasta el OOM; con límite, hay que elegir qué pasa cuando se llena — y las tres opciones cuestan algo.
+
+**Síntomas frecuentes:**
+- Memoria que crece de forma monótona y OOM killer cada tantas horas
+- Throughput alto y sin errores, pero resultados minutos atrasados
+- Mensajes que se pierden sin error, sin log y sin métrica
+- Reiniciar «arregla» la memoria y pierde todo lo que había en cola
+
+**Valor:** Evita caídas por memoria y pérdidas silenciosas, y convierte el sacrificio en una decisión explícita y documentada en vez de un accidente.

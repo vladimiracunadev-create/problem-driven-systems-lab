@@ -6,7 +6,7 @@
 
 ## 🎯 Por qué existe esta carpeta
 
-El laboratorio resuelve **los mismos 14 problemas en 7 lenguajes**. Eso obliga a una pregunta que un repositorio de un solo stack nunca se hace:
+El laboratorio resuelve **los mismos 15 problemas en 7 lenguajes**. Eso obliga a una pregunta que un repositorio de un solo stack nunca se hace:
 
 > ¿La primitiva que este caso enseña sigue siendo *la forma idiomática actual*, o el lenguaje ya incorporó algo que la reemplaza?
 
@@ -18,7 +18,7 @@ Cada perfil documenta seis cosas:
 |---|---|
 | 🪪 **Identidad** | Qué es el lenguaje y para qué se usa fuera de este laboratorio |
 | ⚙️ **Modelo de ejecución** | Cómo corre el código, porque de ahí sale qué primitiva es la correcta |
-| 🧰 **Primitivas en el lab** | Qué usa cada uno de los 14 casos, con enlace al código |
+| 🧰 **Primitivas en el lab** | Qué usa cada uno de los 15 casos, con enlace al código |
 | 📈 **Rendimiento** | Qué mide el laboratorio en este stack y cómo reproducirlo |
 | 🚧 **Límites y problemas sin solución** | Lo que este runtime **no** puede hacer, y qué caso lo deja visible |
 | 🔄 **Ciclo de versiones** | Versión fijada, cadencia upstream y qué revisar en el próximo salto |
@@ -92,6 +92,6 @@ Cada perfil termina con una sección `🔄 Ciclo de versiones` que dice, para *e
 |---|---|
 | [docs/language-upgrade-protocol.md](../language-upgrade-protocol.md) | El procedimiento de actualización, paso a paso |
 | [docs/stack-map.md](../stack-map.md) | Por qué hay múltiples lenguajes y qué se estudia al comparar |
-| [docs/case-catalog.md](../case-catalog.md) | Los 14 casos con su estado real y stacks operativos |
+| [docs/case-catalog.md](../case-catalog.md) | Los 15 casos con su estado real y stacks operativos |
 | [docs/case-methodology.md](../case-methodology.md) | Cómo se construye un caso antes de escribir código |
 | `cases/NN-*/comparison.md` | La comparativa de los 7 stacks para un caso concreto |

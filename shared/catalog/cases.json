@@ -5,7 +5,7 @@
     "hero_title": "Evalúa el laboratorio con evidencia real: elige una audiencia o un stack tecnológico",
     "audience_message": "Diseñado para especialistas en selección, líderes técnicos y equipos de ingeniería que buscan validar criterio técnico con escenarios reproducibles."
   },
-  "recommended_github_about": "🧪 Laboratorio de sistemas distribuido con 14 casos reales Docker-first para diagnosticar y resolver problemas criticos de rendimiento, observabilidad, resiliencia y arquitectura 🐳",
+  "recommended_github_about": "🧪 Laboratorio de sistemas distribuido con 15 casos reales Docker-first para diagnosticar y resolver problemas criticos de rendimiento, observabilidad, resiliencia y arquitectura 🐳",
   "recommended_github_topics": [
     "problem-driven",
     "docker",
@@ -1502,6 +1502,104 @@
           "root_path": "/14/",
           "isolated_compose": "cases/14-connection-pool-exhaustion/rust/compose.yml",
           "isolated_port": 8714
+        }
+      }
+    },
+    {
+      "id": "15",
+      "icon": "🌊",
+      "slug": "message-queue-backpressure",
+      "title": "Backpressure en colas de mensajes",
+      "category": "Resiliencia",
+      "status": "OPERATIVO",
+      "level_detail": "Cola acotada con la primitiva de cada runtime: el freno vive en listen.backlog de FPM en PHP, queue.Queue(maxsize=N) con la politica en la firma de put() en Python, stream.Writable con highWaterMark y el evento drain en Node, ArrayBlockingQueue con put/offer/offer(timeout) en Java, Channel.CreateBounded con BoundedChannelFullMode como enum del constructor en .NET, canal bufferizado con select y default en Go, y mpsc::sync_channel en Rust — donde el limite esta en el tipo y TrySendError::Full devuelve el mensaje rechazado adentro",
+      "summary": "Productores mas rapidos que consumidores: la cola sin limite crece hasta el OOM y la acotada obliga a elegir entre frenar, perder o mudar el problema.",
+      "case_readme_path": "cases/15-message-queue-backpressure/README.md",
+      "business_outcome": "Evita caidas por memoria y perdidas silenciosas de mensajes, y obliga a decidir explicitamente que se sacrifica cuando el consumidor no da abasto.",
+      "recruiter_pitch": "Muestra que el throughput se ve perfecto hasta el segundo antes del OOM, y que las tres formas de acotar una cola pagan cosas distintas: latencia, datos o deuda operativa.",
+      "proof_points": [
+        "Contrasta /produce-unbounded y /produce-bounded con las tres politicas sobre la misma carga.",
+        "Hace visible queue_depth_peak, oldest_msg_age_ms_peak y queue_bytes_peak: profundidad, latencia real y memoria.",
+        "Expone messages_dropped_total y dlq_depth para que ninguna perdida quede sin contar."
+      ],
+      "look_for": [
+        "Si queue_depth_peak sin limite iguala al total producido: la cola absorbio todo.",
+        "Si oldest_msg_age_ms_peak es 3 o 4 veces mayor sin limite que con limite, con el mismo throughput.",
+        "Si cada politica acotada paga algo distinto: producer_blocked_ms en block, dropped en drop_oldest, dlq_depth en dead_letter."
+      ],
+      "honesty_note": "La cola vive dentro del proceso y los mensajes son objetos en memoria, no un broker real. El tiempo de consumo es una espera, que es el modelo fiel: un consumidor se demora esperando I/O, no quemando CPU. En PHP el productor y el consumidor son pasos del mismo bucle porque el lenguaje no tiene concurrencia dentro del proceso.",
+      "operational_stacks": [
+        "php",
+        "python",
+        "node",
+        "java",
+        "dotnet",
+        "go",
+        "rust"
+      ],
+      "runtime_entries": {
+        "php": {
+          "port": 8100,
+          "compose_path": "compose.root.yml",
+          "readme_path": "cases/15-message-queue-backpressure/php/README.md",
+          "health_path": "/15/health",
+          "root_path": "/15/",
+          "isolated_compose": "cases/15-message-queue-backpressure/php/compose.yml",
+          "isolated_port": 8115
+        },
+        "python": {
+          "port": 8200,
+          "compose_path": "compose.python.yml",
+          "readme_path": "cases/15-message-queue-backpressure/python/README.md",
+          "health_path": "/15/health",
+          "root_path": "/15/",
+          "isolated_compose": "cases/15-message-queue-backpressure/python/compose.yml",
+          "isolated_port": 8315
+        },
+        "node": {
+          "port": 8300,
+          "compose_path": "compose.nodejs.yml",
+          "readme_path": "cases/15-message-queue-backpressure/node/README.md",
+          "health_path": "/15/health",
+          "root_path": "/15/",
+          "isolated_compose": "cases/15-message-queue-backpressure/node/compose.yml",
+          "isolated_port": 8215
+        },
+        "java": {
+          "port": 8400,
+          "compose_path": "compose.java.yml",
+          "readme_path": "cases/15-message-queue-backpressure/java/README.md",
+          "health_path": "/15/health",
+          "root_path": "/15/",
+          "isolated_compose": "cases/15-message-queue-backpressure/java/compose.yml",
+          "isolated_port": 8415
+        },
+        "dotnet": {
+          "port": 8500,
+          "compose_path": "compose.dotnet.yml",
+          "readme_path": "cases/15-message-queue-backpressure/dotnet/README.md",
+          "health_path": "/15/health",
+          "root_path": "/15/",
+          "isolated_compose": "cases/15-message-queue-backpressure/dotnet/compose.yml",
+          "isolated_port": 8515
+        },
+        "go": {
+          "port": 8600,
+          "compose_path": "compose.go.yml",
+          "readme_path": "cases/15-message-queue-backpressure/go/README.md",
+          "health_path": "/15/health",
+          "root_path": "/15/",
+          "isolated_compose": "cases/15-message-queue-backpressure/go/compose.yml",
+          "isolated_port": 8615
+        },
+        "rust": {
+          "port": 8700,
+          "compose_path": "compose.rust.yml",
+          "readme_path": "cases/15-message-queue-backpressure/rust/README.md",
+          "health_path": "/15/health",
+          "root_path": "/15/",
+          "isolated_compose": "cases/15-message-queue-backpressure/rust/compose.yml",
+          "isolated_port": 8715
         }
       }
     }
