@@ -1,6 +1,6 @@
 # 🔵 .NET
 
-> **Versión fijada:** `8.0` (LTS) · **Imagen base:** `mcr.microsoft.com/dotnet/sdk:8.0` · **Hub:** `:8500` · **Casos operativos:** 12 / 12
+> **Versión fijada:** `8.0` (LTS) · **Imagen base:** `mcr.microsoft.com/dotnet/sdk:8.0` · **Hub:** `:8500` · **Casos operativos:** 13 / 13
 
 [⬅️ Volver a los perfiles de lenguaje](README.md) · [🗺️ Mapa de stacks](../stack-map.md) · [🔄 Protocolo de actualización](../language-upgrade-protocol.md)
 
@@ -47,6 +47,7 @@
 | [10 · Sobre-arquitectura](../../cases/10-expensive-architecture-for-simple-needs/dotnet/README.md) | `Dictionary.TryGetValue` + `Stopwatch` | El "right-sized", con medición directa del CPU por request |
 | [11 · Reportes](../../cases/11-heavy-reporting-blocks-operations/dotnet/README.md) | `ThreadPool.SetMaxThreads(4)` + scheduler dedicado | **Modelo canónico del problema**, junto con Java |
 | [12 · Punto único](../../cases/12-single-point-of-knowledge-and-operational-risk/dotnet/README.md) | `?.` null-conditional + `??` null-coalescing | Con nullable reference types el compilador avisa. **Limitación:** avisa, no obliga |
+| [13 · Cache stampede](../../cases/13-cache-stampede-and-thundering-herd/dotnet/README.md) | `Lazy<Task<T>>` con `ExecutionAndPublication` | `GetOrAdd` **no** garantiza fábrica única; la garantía la aporta `Lazy` |
 
 > 💡 **El patrón que solo se ve mirando la columna entera:** .NET usa `Interlocked.CompareExchange` donde Java usa `AtomicReference`. El CAS explícito hace visible que la transición del breaker es una operación atómica de comparar-y-cambiar; en Java el `set()` lo esconde. Es la misma corrección con distinta cantidad de verdad a la vista.
 
@@ -97,14 +98,15 @@ curl -s "localhost:8500/11/order-write"                  # el pool principal que
 
 ## 🏆 Dónde gana y dónde pierde en el laboratorio
 
-Agregado de los veredictos de las 11 comparativas que rankean: **1 primer puesto, media 3.3**.
+Agregado de los veredictos de las 12 comparativas que rankean: **1 primer puesto, media 3.4**.
 
 - 🥇 **Gana en 11** — junto con Java: cuando el problema es el pool, tener pool explícito es la herramienta exacta.
 - 🥈 **Segundo en 01 y 06** — `record` types con `with`-expressions modelan el rollback mejor que casi cualquier otro stack.
 - 🥉 **Tercero en 04, 07 y 09** — `CancellationToken` y `SemaphoreSlim` son claros y directos.
+- **5º en 13** — `GetOrAdd` no garantiza fábrica única y el envoltorio `Lazy` que sí lo hace no es obvio.
 - **6º en 02** — mismo motivo que Java: el ORM del ecosistema fabrica el bug.
 
-**Lectura honesta:** empate exacto con Java (3.3). La ventaja concreta de .NET en este laboratorio es el caso 03 —`AsyncLocal` fluye por `await`, que es más de lo que logra un `ThreadLocal` reutilizado— y la de Java es el caso 05, con la única LRU built-in del set.
+**Lectura honesta:** dos décimas detrás de Java. La ventaja concreta de .NET en este laboratorio es el caso 03 —`AsyncLocal` fluye por `await`, que es más de lo que logra un `ThreadLocal` reutilizado— y la de Java es el caso 05, con la única LRU built-in del set.
 
 ---
 
@@ -134,4 +136,4 @@ El detalle del procedimiento está en [docs/language-upgrade-protocol.md](../lan
 docker compose -f compose.dotnet.yml up -d --build
 ```
 
-Los 12 casos quedan servidos en `http://localhost:8500/NN/`. Cada caso trae además su propio `compose.yml` para correrlo aislado.
+Los 13 casos quedan servidos en `http://localhost:8500/NN/`. Cada caso trae además su propio `compose.yml` para correrlo aislado.

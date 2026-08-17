@@ -175,7 +175,7 @@ def diagram_stack_matrix(cat: dict) -> str:
         header(
             left,
             42,
-            "Cobertura real: 12 casos x 7 stacks",
+            f"Cobertura real: {len(cases)} casos x {len(langs)} stacks",
             "Cada celda marcada es codigo que levanta con Docker y resuelve el caso con la primitiva idiomatica del runtime.",
         )
     ]
@@ -258,7 +258,7 @@ def diagram_case_map(cat: dict) -> str:
         header(
             left,
             42,
-            "Los 12 problemas, agrupados por naturaleza",
+            f"Los {len(cases)} problemas, agrupados por naturaleza",
             "El laboratorio se organiza por problema, no por tecnologia. La tecnologia es la variable, el problema es la constante.",
         )
     ]
@@ -328,7 +328,7 @@ def diagram_upgrade_flow(cat: dict) -> str:
     ry += 14
 
     revisiones = [
-        ("Dockerfile", "Los 12 casos del stack y el hub. Uno solo desalineado y el mismo caso corre en dos runtimes.", ACCENT),
+        ("Dockerfile", "Todos los casos del stack y el hub. Uno solo desalineado y el mismo caso corre en dos runtimes.", ACCENT),
         ("Codigo del caso", "¿La primitiva que el caso enseña sigue siendo idiomatica, o el lenguaje ya la reemplazo?", "#7c3aed"),
         ("comparison.md", "La comparativa entre stacks del caso afectado. Es lo que un lector usa para decidir.", WARN),
         ("docs/languages/", "Perfil del lenguaje: version, primitivas y limitaciones que quiza dejaron de ser ciertas.", "#0891b2"),

@@ -2,6 +2,97 @@
 
 Todos los cambios notables de este laboratorio se registran aqui con foco en madurez tecnica y documental.
 
+## 2026-08-17 - Eje 1 abre con el caso 13: cache stampede en los 7 stacks
+
+Primer caso del **Eje 1 del ROADMAP** (casos nuevos de la vida real, 13-20). El
+lab pasa de 12 a **13 casos x 7 stacks = 91 endpoints**.
+
+### Added — caso 13, cache stampede y thundering herd
+
+`cases/13-cache-stampede-and-thundering-herd/` con las **7 implementaciones**,
+no las tres que el ROADMAP preveia. La razon es estructural: `validate-structure.sh`
+exige las siete carpetas de stack por caso, y servir `/13/` en tres hubs y 404 en
+los otros cuatro habria roto la simetria que es la identidad del laboratorio.
+
+Contrato uniforme en los siete: `/cache-naive` y `/cache-singleflight` sobre la
+misma rafaga, con `origin_computations` como metrica central, mas
+`stampede_depth`, `coalesced_waiters`, `served_stale` y `p99_wait_ms`.
+
+Primitiva idiomatica distinta por runtime:
+
+| Stack | Primitiva | De donde sale la garantia de ejecucion unica |
+|---|---|---|
+| PHP | `flock(LOCK_EX)` + double-checked locking | del sistema de archivos, entre procesos |
+| Python | dict de vuelos + `threading.Event` | del `Lock` que protege el dict |
+| Node | `Map<key, Promise>` | del orden que escribe el autor (`set` antes del `await`) |
+| Java | `ConcurrentHashMap.computeIfAbsent` | **del mapa**: atomica por clave |
+| .NET | `Lazy<Task<T>>` en `ConcurrentDictionary` | **del `Lazy`**, no del diccionario |
+| Go | `sync.WaitGroup` + map bajo `Mutex` | del mutex que protege el registro |
+| Rust | `Arc<Flight>` con `Mutex` + `Condvar` | del mutex, y el `Arc` la hace segura de por vida |
+
+### Fixed durante la construccion — dos cosas que el caso enseñaba mal
+
+**1. Single-flight sin double check da 3 o 4 recalculos, no 1.** La primera
+version registraba el vuelo, calculaba y borraba la entrada. Con `cost` chico, el
+lider de la primera generacion terminaba antes de que los ultimos llamadores
+llegaran al registro, y esos se volvian lideres de una segunda generacion. Java
+daba 3, Go 2, Rust 7. El arreglo es una relectura de la cache **dentro** del
+vuelo — el mismo double check que PHP no puede omitir porque su lock vive en el
+almacenamiento. Quedo aplicado en los siete y documentado como la mitad del
+patron que se olvida.
+
+**2. En Python la estampida no se dejaba observar.** Sin barrera, el primer hilo
+completaba su digest dentro de su propio quantum del GIL y los otros quince
+encontraban el valor fresco: `origin_computations` daba 1 y la variante naive
+**parecia correcta**. Un falso verde que dependia de `sys.setswitchinterval`. La
+barrera de dos fases no infla el numero: reproduce que, cuando una clave caliente
+expira, los N requests ya estaban en vuelo y todos leyeron la cache antes de que
+ninguno alcanzara a escribirla.
+
+### Changed — integracion en los 7 hubs
+
+- **Dispatchers**: registro del caso 13 y puerto interno en los siete
+  (`:9013` PHP/Python/Node, `:9413` Java, `:9513` .NET, `:9613` Go, `:9713` Rust),
+  mas el `COPY` correspondiente en cada Dockerfile, el `spawn_case` de
+  `entrypoint.sh` y el miembro `case13` del workspace de cargo.
+- **`ci.yml`**: matriz `compose-config` de 92 a **99 archivos**; `hub-probe`
+  valida los 13 casos por stack en un solo boot; `compose-smoke` suma
+  `case13-go` y `case13-rust`.
+- **`shared/catalog/cases.json`**: entrada completa del caso 13 con
+  `runtime_entries` de los siete stacks. `docs/case-catalog.md` y los cinco SVG
+  de `docs/assets/` regenerados desde ahi.
+
+### Changed — generadores que dejan de hardcodear el conteo
+
+`generate_case_catalog.php`, `generate_diagrams.py` y `check-language-versions.sh`
+derivaban el numero de casos de una constante escrita a mano. Ahora lo cuentan.
+Es lo que evita que el proximo caso deje cinco diagramas diciendo "12" para
+siempre.
+
+### Changed — barrido documental
+
+`README.md`, `ARCHITECTURE.md`, `RECRUITER.md`, `RUNBOOK.md`, `INSTALL.md`,
+`SECURITY.md`, `AWS_MIGRATION.md`, `ROADMAP.md`, `docs/architecture.md`,
+`docs/executive-summary.md`, `docs/problem-map.md`, `docs/QUE-ES-ESTO.md`,
+`docs/stack-map.md`, `docs/docker-strategy.md`, `docs/BEGINNERS_GUIDE.md`,
+`docs/usage-and-scope.md`, `docs/positioning-and-objective.md`,
+`docs/language-upgrade-protocol.md` y los siete `docs/languages/*.md`.
+
+En los perfiles de lenguaje se recalculo el agregado de veredictos leyendo los
+`comparison.md` con el mismo parser de `generate_diagrams.py`, en vez de editar
+los numeros a mano: Go pasa a **5 oros** (gana tambien el 13), Rust conserva 6.
+
+Los ADR de `docs/adr/` y las entradas historicas de este CHANGELOG **no se
+tocaron**: son registros fechados, no afirmaciones sobre el estado de hoy.
+
+### Verificado
+
+Los siete hubs levantados con Docker y probados caso por caso: `13/13` en
+`compose.root.yml`, `compose.python.yml`, `compose.nodejs.yml`,
+`compose.java.yml`, `compose.dotnet.yml`, `compose.go.yml` y `compose.rust.yml`.
+Con `concurrency=16`: los siete dan **16 recalculos** en la variante naive y
+**1 recalculo con 15 `coalesced_waiters`** en la corregida.
+
 ## 2026-08-04 - Perfiles de lenguaje, protocolo de version y dossier PDF
 
 El workflow `language-drift.yml` (2026-08-03) detecta que un lenguaje publico

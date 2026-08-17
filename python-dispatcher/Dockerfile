@@ -2,7 +2,7 @@ FROM python:3.12-alpine
 
 WORKDIR /app
 
-# Copiar cada server.py de los 12 casos en /cases/{id}/server.py
+# Copiar cada server.py de cada caso en /cases/{id}/server.py
 COPY cases/01-api-latency-under-load/python/app/server.py               /cases/01/server.py
 COPY cases/02-n-plus-one-and-db-bottlenecks/python/app/server.py        /cases/02/server.py
 COPY cases/03-poor-observability-and-useless-logs/python/app/server.py  /cases/03/server.py
@@ -15,6 +15,7 @@ COPY cases/09-unstable-external-integration/python/app/server.py        /cases/0
 COPY cases/10-expensive-architecture-for-simple-needs/python/app/server.py /cases/10/server.py
 COPY cases/11-heavy-reporting-blocks-operations/python/app/server.py    /cases/11/server.py
 COPY cases/12-single-point-of-knowledge-and-operational-risk/python/app/server.py /cases/12/server.py
+COPY cases/13-cache-stampede-and-thundering-herd/python/app/server.py /cases/13/server.py
 
 # Dispatcher
 COPY python-dispatcher/app/main.py /app/main.py

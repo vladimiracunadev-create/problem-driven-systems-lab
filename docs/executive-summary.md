@@ -1,4 +1,4 @@
-# 📋 Resumen ejecutivo — los 12 casos en una pagina
+# 📋 Resumen ejecutivo — los 13 casos en una pagina
 
 > Vista de portafolio para evaluadores no tecnicos (reclutadores, lideres de producto, finanzas, CTO sin tiempo). Cada caso resume **problema → valor de negocio → evidencia reproducible → link al detalle tecnico**.
 >
@@ -8,9 +8,9 @@
 >
 > 🧭 **¿Sin base tecnica?** Empeza por [¿Que es esto? — explicacion en lenguaje simple](QUE-ES-ESTO.md).
 
-![Los 12 problemas agrupados por naturaleza](assets/case-map.svg)
+![Los 13 problemas agrupados por naturaleza](assets/case-map.svg)
 
-![Cobertura real de los 12 casos en los 7 stacks](assets/stack-matrix.svg)
+![Cobertura real de los 13 casos en los 7 stacks](assets/stack-matrix.svg)
 
 ## Mapa rapido
 
@@ -28,8 +28,9 @@
 | 10 | Arquitectura cara para un problema simple | Arquitectura | Decisiones tecnologicas proporcionales al problema de negocio. |
 | 11 | Reportes pesados que bloquean operacion | Operaciones | Aislamiento de cargas: reporting deja de degradar la operacion. |
 | 12 | Punto unico de conocimiento | Operaciones | Continuidad operacional y reduccion de dependencia critica en personas. |
+| 13 | Cache stampede y thundering herd | Rendimiento | Evita caidas autoinfligidas cuando la cache deja de proteger al origen. |
 
-Los 12 casos estan **OPERATIVOS** en los 7 stacks: PHP/Python/Node.js/Java 21/.NET 8/Go 1.23/Rust 1.83. Detalle de paridad: [`docs/case-catalog.md`](case-catalog.md).
+Los 13 casos estan **OPERATIVOS** en los 7 stacks: PHP/Python/Node.js/Java 21/.NET 8/Go 1.23/Rust 1.83. Detalle de paridad: [`docs/case-catalog.md`](case-catalog.md).
 
 ---
 
@@ -225,14 +226,30 @@ Los 12 casos estan **OPERATIVOS** en los 7 stacks: PHP/Python/Node.js/Java 21/.N
 
 ---
 
+## Caso 13 — Cache stampede y thundering herd
+
+**Categoria:** Rendimiento · **Stacks operativos:** PHP, Python, Node.js, Java 21, .NET 8, Go 1.23, Rust 1.83
+
+**Problema.** Una clave de cache caliente expira y los N requests que la estaban usando van todos al origen a recalcular el mismo valor. La cache marca 99% de hit rate mientras el sistema se cae en el 1% restante.
+
+**Valor.** Evita caidas autoinfligidas en la franja horaria mas fragil del sistema y reduce la capacidad reservada del origen. El indicador honesto no es el hit rate sino cuantos recalculos simultaneos recibe el origen cuando la cache deja de proteger.
+
+**Evidencia.** `/cache-naive` vs `/cache-singleflight` sobre la misma rafaga. Con 16 llamadores: 16 recalculos sin coordinacion, 1 con ella y 15 `coalesced_waiters`. Visibiliza `origin_computations`, `stampede_depth`, `served_stale` y el jitter aplicado por clave en `/cache/state`.
+
+**Honestidad.** El origen es CPU real (un digest iterativo), no una consulta a una base de datos. Lo que se mide con fidelidad es `origin_computations`; la latencia absoluta depende del runtime y no es comparable entre stacks.
+
+→ Detalle: [cases/13-cache-stampede-and-thundering-herd/README.md](../cases/13-cache-stampede-and-thundering-herd/README.md)
+
+---
+
 ## Que NO encontraras en este laboratorio
 
 Honestidad explicita para no vender lo que no es:
 
-- **No es un benchmark de lenguajes.** Los 7 stacks (PHP/Python/Node/Java/.NET/Go/Rust) resuelven los 12 problemas con primitivas nativas distintas; el contraste muestra criterio, no "cual es mas rapido". El caso 10 lo dice explicito: lo comparable es la forma de la curva dentro de cada stack, no los milisegundos entre stacks.
+- **No es un benchmark de lenguajes.** Los 7 stacks (PHP/Python/Node/Java/.NET/Go/Rust) resuelven los 13 problemas con primitivas nativas distintas; el contraste muestra criterio, no "cual es mas rapido". El caso 10 lo dice explicito: lo comparable es la forma de la curva dentro de cada stack, no los milisegundos entre stacks.
 - **No reemplaza plataformas reales.** Tracing distribuido, CI/CD enterprise, mallas de servicios y feature flags globales quedan fuera. Lo que si esta: reproduccion fiel de la **logica operativa** de cada problema.
 - **No es production-grade tal cual.** Modelo de amenaza: localhost / LAN confiable. Para Internet ver [SECURITY.md](../SECURITY.md) (auth, rate limit, TLS son responsabilidad de quien expone).
-- **Paridad multi-stack completa hoy.** PHP + Python + Node.js + Java + .NET cubren los 12 casos cada uno con primitivas idiomaticas distintas. Cualquier caso nuevo se incorpora siguiendo el mismo patron.
+- **Paridad multi-stack completa hoy.** PHP + Python + Node.js + Java + .NET cubren los 13 casos cada uno con primitivas idiomaticas distintas. Cualquier caso nuevo se incorpora siguiendo el mismo patron.
 
 ## Postmortems narrativos por caso
 
@@ -252,6 +269,7 @@ Cada caso tiene un `postmortem.md` en formato incidente real (severidad, timelin
 | 10 | [Lead time de 16 dias para agregar un boolean](../cases/10-expensive-architecture-for-simple-needs/docs/postmortem.md) | SEV-3 |
 | 11 | [Reporte mensual tumba el checkout 47 min](../cases/11-heavy-reporting-blocks-operations/docs/postmortem.md) | SEV-1 |
 | 12 | [Pre-prod caido 6 h porque la persona estaba de vacaciones](../cases/12-single-point-of-knowledge-and-operational-risk/docs/postmortem.md) | SEV-2 |
+| 13 | [La base cae 94 segundos a las 03:00 sin que suba el trafico](../cases/13-cache-stampede-and-thundering-herd/docs/postmortem.md) | SEV-1 |
 
 ## Rutas rapidas
 

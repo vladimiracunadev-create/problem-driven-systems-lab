@@ -1,14 +1,14 @@
-# compose.python.yml — Stack Python completo (los 12 casos)
+# compose.python.yml — Stack Python completo (todos los casos del lab)
 #
 # Un solo contenedor, un solo puerto.
 # El dispatcher interno enruta por prefijo de path:
 #
 #   GET http://localhost:8200/       → índice de casos
 #   GET http://localhost:8200/01/... → caso 01
-#   GET http://localhost:8200/12/... → caso 12
+#   GET http://localhost:8200/13/... → caso 13
 #
-# Los 12 servidores de caso corren como subprocesos internos
-# en puertos 9001-9012 que nunca se exponen al host.
+# Los servidores de caso corren como subprocesos internos
+# en puertos 90NN que nunca se exponen al host.
 #
 # Uso:
 #   docker compose -f compose.python.yml up -d --build

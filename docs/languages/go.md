@@ -1,6 +1,6 @@
 # 🐹 Go
 
-> **Versión fijada:** `1.23` · **Imagen base:** `golang:1.23-alpine` · **Hub:** `:8600` · **Casos operativos:** 12 / 12
+> **Versión fijada:** `1.23` · **Imagen base:** `golang:1.23-alpine` · **Hub:** `:8600` · **Casos operativos:** 13 / 13
 
 [⬅️ Volver a los perfiles de lenguaje](README.md) · [🗺️ Mapa de stacks](../stack-map.md) · [🔄 Protocolo de actualización](../language-upgrade-protocol.md)
 
@@ -50,6 +50,7 @@ Una tabla por caso, con la primitiva central y por qué se eligió. Es el materi
 | [10 · Sobre-arquitectura](../../cases/10-expensive-architecture-for-simple-needs/go/README.md) | `strings.Builder` + mapa de solo lectura | Se llena una vez al arrancar, así que no necesita lock |
 | [11 · Reportes](../../cases/11-heavy-reporting-blocks-operations/go/README.md) | `chan struct{}` con capacidad N + `runtime.Gosched()` | Limitador de concurrencia. Es **la misma primitiva** del caso 09 y del 08 |
 | [12 · Punto único](../../cases/12-single-point-of-knowledge-and-operational-risk/go/README.md) | comma-ok (`v, ok := m[k]`) | La ausencia está en el tipo de retorno: no se puede usar el valor sin recibir el booleano |
+| [13 · Cache stampede](../../cases/13-cache-stampede-and-thundering-herd/go/README.md) | `sync.WaitGroup` como contador con espera | `singleflight` sin dependencias: el líder hace `Add(1)`, los seguidores `Wait()` |
 
 > 💡 **El patrón que solo se ve mirando la columna entera:** los casos 04, 08, 09 y 11 resuelven cuatro problemas distintos —cancelación, bus de eventos, semáforo de cuota y limitador de concurrencia— con **canal + `select`**. En los otros seis stacks son cuatro APIs diferentes que hay que conocer por separado.
 
@@ -103,13 +104,13 @@ Lo que Go **no** resuelve, documentado con el mismo criterio que lo que sí:
 
 ## 🏆 Dónde gana y dónde pierde en el laboratorio
 
-Agregado de los veredictos de las 11 comparativas que rankean: **4 primeros puestos, media 1.7** — el mejor promedio del set.
+Agregado de los veredictos de las 12 comparativas que rankean: **5 primeros puestos, media 1.7** — el mejor promedio del set.
 
-- 🥇 **Gana en 01, 04, 08 y 09** — todos los casos donde el problema es concurrencia o cancelación. La economía conceptual del canal se paga sola.
+- 🥇 **Gana en 01, 04, 08, 09 y 13** — todos los casos donde el problema es concurrencia, cancelación o coordinación. La economía conceptual del canal —y del `WaitGroup`— se paga sola.
 - 🥈 **Segundo en 02, 03, 05, 07, 11 y 12** — sólido en todo, sin picos.
 - 🥉 **Tercero en 06** — el único caso donde la falta de exhaustividad de tipos le cuesta el podio.
 
-**Lectura honesta:** Go es el stack más consistente del laboratorio, no el más brillante. Rust gana más casos (6 contra 4) pero también cae al quinto puesto en el caso 04. Go nunca baja del tercero.
+**Lectura honesta:** Go es el stack más consistente del laboratorio, no el más brillante. Rust gana más casos (6 contra 5) pero también cae al quinto puesto en el caso 04. Go nunca baja del tercero.
 
 ---
 
@@ -139,4 +140,4 @@ El detalle del procedimiento —qué archivos tocar y en qué orden— está en 
 docker compose -f compose.go.yml up -d --build
 ```
 
-Los 12 casos quedan servidos en `http://localhost:8600/NN/`. Para correr un caso aislado —útil cuando la medición necesita el runtime limpio— cada caso trae su propio `compose.yml` en `cases/NN-*/go/`.
+Los 13 casos quedan servidos en `http://localhost:8600/NN/`. Para correr un caso aislado —útil cuando la medición necesita el runtime limpio— cada caso trae su propio `compose.yml` en `cases/NN-*/go/`.

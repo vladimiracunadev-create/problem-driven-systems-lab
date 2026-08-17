@@ -1,11 +1,11 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1050 578" width="1050" height="578" role="img" aria-label="Ranking de fit por caso y stack">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1110 578" width="1110" height="578" role="img" aria-label="Ranking de fit por caso y stack">
   <title>Ranking de fit por caso y stack</title>
   <defs>
     <marker id="arrowhead" markerWidth="9" markerHeight="7" refX="8" refY="3.5" orient="auto">
       <polygon points="0 0, 9 3.5, 0 7" fill="#2563eb"/>
     </marker>
   </defs>
-  <rect x="0" y="0" width="1050" height="578" rx="0" ry="0" fill="#ffffff" stroke="none" stroke-width="1"/>
+  <rect x="0" y="0" width="1110" height="578" rx="0" ry="0" fill="#ffffff" stroke="none" stroke-width="1"/>
   <text x="34" y="42" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="19" fill="#0f172a" text-anchor="start" font-weight="600">Que stack expresa mejor cada problema</text>
 <text x="34" y="63" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="12.5" fill="#64748b" text-anchor="start" font-weight="400">Agregado de los veredictos de cada comparison.md. Mide fit con el problema, no calidad del lenguaje.</text>
   <text x="34" y="84" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="11.5" fill="#64748b" text-anchor="start" font-weight="400">Verde oscuro = primer puesto en ese caso. Gris = el ultimo. Ningun stack gana en todo, y ese es el punto del laboratorio.</text>
@@ -20,6 +20,7 @@
   <text x="676.0" y="138" font-family="SFMono-Regular, Consolas, Liberation Mono, monospace" font-size="12" fill="#64748b" text-anchor="middle" font-weight="600">09</text>
   <text x="736.0" y="138" font-family="SFMono-Regular, Consolas, Liberation Mono, monospace" font-size="12" fill="#64748b" text-anchor="middle" font-weight="600">11</text>
   <text x="796.0" y="138" font-family="SFMono-Regular, Consolas, Liberation Mono, monospace" font-size="12" fill="#64748b" text-anchor="middle" font-weight="600">12</text>
+  <text x="856.0" y="138" font-family="SFMono-Regular, Consolas, Liberation Mono, monospace" font-size="12" fill="#64748b" text-anchor="middle" font-weight="600">13</text>
   <text x="34" y="138" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="9.5" fill="#64748b" text-anchor="start" font-weight="700" letter-spacing="0.5">CASO</text>
   <rect x="34" y="158" width="4" height="28" rx="2" ry="2" fill="#6f7fb5" stroke="none" stroke-width="1"/>
   <text x="48" y="176" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="13" fill="#0f172a" text-anchor="start" font-weight="600">PHP</text>
@@ -45,8 +46,10 @@
   <text x="736.0" y="176" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="12.5" fill="#0f172a" text-anchor="middle" font-weight="600">6º</text>
   <rect x="770" y="156" width="52" height="30" rx="6" ry="6" fill="#f1f5f9" stroke="none" stroke-width="1"/>
   <text x="796.0" y="176" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="12.5" fill="#0f172a" text-anchor="middle" font-weight="600">6º</text>
-  <text x="842" y="176" font-family="SFMono-Regular, Consolas, Liberation Mono, monospace" font-size="11.5" fill="#64748b" text-anchor="start" font-weight="400">0 oros</text>
-  <text x="908" y="176" font-family="SFMono-Regular, Consolas, Liberation Mono, monospace" font-size="11.5" fill="#64748b" text-anchor="start" font-weight="400">media 5.5</text>
+  <rect x="830" y="156" width="52" height="30" rx="6" ry="6" fill="#f8fafc" stroke="none" stroke-width="1"/>
+  <text x="856.0" y="176" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="12.5" fill="#0f172a" text-anchor="middle" font-weight="600">7º</text>
+  <text x="902" y="176" font-family="SFMono-Regular, Consolas, Liberation Mono, monospace" font-size="11.5" fill="#64748b" text-anchor="start" font-weight="400">0 oros</text>
+  <text x="968" y="176" font-family="SFMono-Regular, Consolas, Liberation Mono, monospace" font-size="11.5" fill="#64748b" text-anchor="start" font-weight="400">media 5.7</text>
   <rect x="34" y="202" width="4" height="28" rx="2" ry="2" fill="#3b7cb8" stroke="none" stroke-width="1"/>
   <text x="48" y="220" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="13" fill="#0f172a" text-anchor="start" font-weight="600">Python</text>
   <rect x="170" y="200" width="52" height="30" rx="6" ry="6" fill="#e2e8f0" stroke="none" stroke-width="1"/>
@@ -71,8 +74,10 @@
   <text x="736.0" y="220" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="12.5" fill="#0f172a" text-anchor="middle" font-weight="600">5º</text>
   <rect x="770" y="200" width="52" height="30" rx="6" ry="6" fill="#f1f5f9" stroke="none" stroke-width="1"/>
   <text x="796.0" y="220" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="12.5" fill="#0f172a" text-anchor="middle" font-weight="600">6º</text>
-  <text x="842" y="220" font-family="SFMono-Regular, Consolas, Liberation Mono, monospace" font-size="11.5" fill="#64748b" text-anchor="start" font-weight="400">0 oros</text>
-  <text x="908" y="220" font-family="SFMono-Regular, Consolas, Liberation Mono, monospace" font-size="11.5" fill="#64748b" text-anchor="start" font-weight="400">media 5.0</text>
+  <rect x="830" y="200" width="52" height="30" rx="6" ry="6" fill="#f1f5f9" stroke="none" stroke-width="1"/>
+  <text x="856.0" y="220" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="12.5" fill="#0f172a" text-anchor="middle" font-weight="600">6º</text>
+  <text x="902" y="220" font-family="SFMono-Regular, Consolas, Liberation Mono, monospace" font-size="11.5" fill="#64748b" text-anchor="start" font-weight="400">0 oros</text>
+  <text x="968" y="220" font-family="SFMono-Regular, Consolas, Liberation Mono, monospace" font-size="11.5" fill="#64748b" text-anchor="start" font-weight="400">media 5.1</text>
   <rect x="34" y="246" width="4" height="28" rx="2" ry="2" fill="#4b9c46" stroke="none" stroke-width="1"/>
   <text x="48" y="264" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="13" fill="#0f172a" text-anchor="start" font-weight="600">Node.js</text>
   <rect x="170" y="244" width="52" height="30" rx="6" ry="6" fill="#f1f5f9" stroke="none" stroke-width="1"/>
@@ -97,8 +102,10 @@
   <text x="736.0" y="264" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="12.5" fill="#0f172a" text-anchor="middle" font-weight="600">4º</text>
   <rect x="770" y="244" width="52" height="30" rx="6" ry="6" fill="#e2e8f0" stroke="none" stroke-width="1"/>
   <text x="796.0" y="264" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="12.5" fill="#0f172a" text-anchor="middle" font-weight="600">5º</text>
-  <text x="842" y="264" font-family="SFMono-Regular, Consolas, Liberation Mono, monospace" font-size="11.5" fill="#64748b" text-anchor="start" font-weight="400">0 oros</text>
-  <text x="908" y="264" font-family="SFMono-Regular, Consolas, Liberation Mono, monospace" font-size="11.5" fill="#64748b" text-anchor="start" font-weight="400">media 4.5</text>
+  <rect x="830" y="244" width="52" height="30" rx="6" ry="6" fill="#86bb72" stroke="none" stroke-width="1"/>
+  <text x="856.0" y="264" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="12.5" fill="#0f172a" text-anchor="middle" font-weight="600">3º</text>
+  <text x="902" y="264" font-family="SFMono-Regular, Consolas, Liberation Mono, monospace" font-size="11.5" fill="#64748b" text-anchor="start" font-weight="400">0 oros</text>
+  <text x="968" y="264" font-family="SFMono-Regular, Consolas, Liberation Mono, monospace" font-size="11.5" fill="#64748b" text-anchor="start" font-weight="400">media 4.4</text>
   <rect x="34" y="290" width="4" height="28" rx="2" ry="2" fill="#c4622d" stroke="none" stroke-width="1"/>
   <text x="48" y="308" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="13" fill="#0f172a" text-anchor="start" font-weight="600">Java</text>
   <rect x="170" y="288" width="52" height="30" rx="6" ry="6" fill="#4d9a54" stroke="none" stroke-width="1"/>
@@ -123,8 +130,10 @@
   <text x="736.0" y="308" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="12.5" fill="#ffffff" text-anchor="middle" font-weight="600">1º</text>
   <rect x="770" y="288" width="52" height="30" rx="6" ry="6" fill="#86bb72" stroke="none" stroke-width="1"/>
   <text x="796.0" y="308" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="12.5" fill="#0f172a" text-anchor="middle" font-weight="600">3º</text>
-  <text x="842" y="308" font-family="SFMono-Regular, Consolas, Liberation Mono, monospace" font-size="11.5" fill="#64748b" text-anchor="start" font-weight="400">1 oro</text>
-  <text x="908" y="308" font-family="SFMono-Regular, Consolas, Liberation Mono, monospace" font-size="11.5" fill="#64748b" text-anchor="start" font-weight="400">media 3.3</text>
+  <rect x="830" y="288" width="52" height="30" rx="6" ry="6" fill="#4d9a54" stroke="none" stroke-width="1"/>
+  <text x="856.0" y="308" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="12.5" fill="#ffffff" text-anchor="middle" font-weight="600">2º</text>
+  <text x="902" y="308" font-family="SFMono-Regular, Consolas, Liberation Mono, monospace" font-size="11.5" fill="#64748b" text-anchor="start" font-weight="400">1 oro</text>
+  <text x="968" y="308" font-family="SFMono-Regular, Consolas, Liberation Mono, monospace" font-size="11.5" fill="#64748b" text-anchor="start" font-weight="400">media 3.2</text>
   <rect x="34" y="334" width="4" height="28" rx="2" ry="2" fill="#6c4bb6" stroke="none" stroke-width="1"/>
   <text x="48" y="352" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="13" fill="#0f172a" text-anchor="start" font-weight="600">.NET</text>
   <rect x="170" y="332" width="52" height="30" rx="6" ry="6" fill="#4d9a54" stroke="none" stroke-width="1"/>
@@ -149,8 +158,10 @@
   <text x="736.0" y="352" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="12.5" fill="#ffffff" text-anchor="middle" font-weight="600">1º</text>
   <rect x="770" y="332" width="52" height="30" rx="6" ry="6" fill="#cbd5e1" stroke="none" stroke-width="1"/>
   <text x="796.0" y="352" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="12.5" fill="#0f172a" text-anchor="middle" font-weight="600">4º</text>
-  <text x="842" y="352" font-family="SFMono-Regular, Consolas, Liberation Mono, monospace" font-size="11.5" fill="#64748b" text-anchor="start" font-weight="400">1 oro</text>
-  <text x="908" y="352" font-family="SFMono-Regular, Consolas, Liberation Mono, monospace" font-size="11.5" fill="#64748b" text-anchor="start" font-weight="400">media 3.3</text>
+  <rect x="830" y="332" width="52" height="30" rx="6" ry="6" fill="#e2e8f0" stroke="none" stroke-width="1"/>
+  <text x="856.0" y="352" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="12.5" fill="#0f172a" text-anchor="middle" font-weight="600">5º</text>
+  <text x="902" y="352" font-family="SFMono-Regular, Consolas, Liberation Mono, monospace" font-size="11.5" fill="#64748b" text-anchor="start" font-weight="400">1 oro</text>
+  <text x="968" y="352" font-family="SFMono-Regular, Consolas, Liberation Mono, monospace" font-size="11.5" fill="#64748b" text-anchor="start" font-weight="400">media 3.4</text>
   <rect x="34" y="378" width="4" height="28" rx="2" ry="2" fill="#2a9bb5" stroke="none" stroke-width="1"/>
   <text x="48" y="396" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="13" fill="#0f172a" text-anchor="start" font-weight="600">Go</text>
   <rect x="170" y="376" width="52" height="30" rx="6" ry="6" fill="#15803d" stroke="none" stroke-width="1"/>
@@ -175,8 +186,10 @@
   <text x="736.0" y="396" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="12.5" fill="#ffffff" text-anchor="middle" font-weight="600">2º</text>
   <rect x="770" y="376" width="52" height="30" rx="6" ry="6" fill="#4d9a54" stroke="none" stroke-width="1"/>
   <text x="796.0" y="396" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="12.5" fill="#ffffff" text-anchor="middle" font-weight="600">2º</text>
-  <text x="842" y="396" font-family="SFMono-Regular, Consolas, Liberation Mono, monospace" font-size="11.5" fill="#64748b" text-anchor="start" font-weight="400">4 oros</text>
-  <text x="908" y="396" font-family="SFMono-Regular, Consolas, Liberation Mono, monospace" font-size="11.5" fill="#64748b" text-anchor="start" font-weight="400">media 1.7</text>
+  <rect x="830" y="376" width="52" height="30" rx="6" ry="6" fill="#15803d" stroke="none" stroke-width="1"/>
+  <text x="856.0" y="396" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="12.5" fill="#ffffff" text-anchor="middle" font-weight="600">1º</text>
+  <text x="902" y="396" font-family="SFMono-Regular, Consolas, Liberation Mono, monospace" font-size="11.5" fill="#64748b" text-anchor="start" font-weight="400">5 oros</text>
+  <text x="968" y="396" font-family="SFMono-Regular, Consolas, Liberation Mono, monospace" font-size="11.5" fill="#64748b" text-anchor="start" font-weight="400">media 1.7</text>
   <rect x="34" y="422" width="4" height="28" rx="2" ry="2" fill="#a8453a" stroke="none" stroke-width="1"/>
   <text x="48" y="440" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="13" fill="#0f172a" text-anchor="start" font-weight="600">Rust</text>
   <rect x="170" y="420" width="52" height="30" rx="6" ry="6" fill="#86bb72" stroke="none" stroke-width="1"/>
@@ -201,9 +214,11 @@
   <text x="736.0" y="440" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="12.5" fill="#0f172a" text-anchor="middle" font-weight="600">3º</text>
   <rect x="770" y="420" width="52" height="30" rx="6" ry="6" fill="#15803d" stroke="none" stroke-width="1"/>
   <text x="796.0" y="440" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="12.5" fill="#ffffff" text-anchor="middle" font-weight="600">1º</text>
-  <text x="842" y="440" font-family="SFMono-Regular, Consolas, Liberation Mono, monospace" font-size="11.5" fill="#64748b" text-anchor="start" font-weight="400">6 oros</text>
-  <text x="908" y="440" font-family="SFMono-Regular, Consolas, Liberation Mono, monospace" font-size="11.5" fill="#64748b" text-anchor="start" font-weight="400">media 1.9</text>
-  <rect x="34" y="484" width="982" height="60" rx="8" ry="8" fill="#f1f5f9" stroke="none" stroke-width="1"/>
+  <rect x="830" y="420" width="52" height="30" rx="6" ry="6" fill="#cbd5e1" stroke="none" stroke-width="1"/>
+  <text x="856.0" y="440" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="12.5" fill="#0f172a" text-anchor="middle" font-weight="600">4º</text>
+  <text x="902" y="440" font-family="SFMono-Regular, Consolas, Liberation Mono, monospace" font-size="11.5" fill="#64748b" text-anchor="start" font-weight="400">6 oros</text>
+  <text x="968" y="440" font-family="SFMono-Regular, Consolas, Liberation Mono, monospace" font-size="11.5" fill="#64748b" text-anchor="start" font-weight="400">media 2.1</text>
+  <rect x="34" y="484" width="1042" height="60" rx="8" ry="8" fill="#f1f5f9" stroke="none" stroke-width="1"/>
   <text x="50" y="508" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="11.5" fill="#0f172a" text-anchor="start" font-weight="400">Go gana por economia conceptual —una primitiva, canal + select, cubre semaforo, timeout, cola y cancelacion—;</text>
   <text x="50" y="526" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="11.5" fill="#0f172a" text-anchor="start" font-weight="400">Rust por lo que el compilador impide. Java y .NET dominan donde el problema ES el pool de threads (caso 11).</text>
 </svg>

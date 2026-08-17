@@ -31,7 +31,7 @@ Cuatro palabras más que vas a ver, y nada más:
 
 Imaginá un **taller mecánico de enseñanza**.
 
-- Hay **12 fallas típicas** de auto: el motor se recalienta, el auto no arranca en frío, el freno chilla, gasta más nafta de la cuenta.
+- Hay **fallas típicas** de auto: el motor se recalienta, el auto no arranca en frío, el freno chilla, gasta más nafta de la cuenta.
 - Cada falla está **reproducida a propósito** en un auto del taller. No se cuenta la falla: se provoca, para que se pueda ver.
 - Para cada falla hay **dos autos al lado**: uno con el problema y otro ya arreglado. Se pueden encender los dos y comparar.
 - Y la parte interesante: la misma falla está reproducida en **siete marcas distintas de auto**. Un motor japonés y uno alemán se recalientan igual, pero se arreglan diferente, porque están construidos diferente.
@@ -40,9 +40,9 @@ Este repositorio es ese taller. Las "marcas de auto" son siete lenguajes de prog
 
 ---
 
-## 🧩 Los 12 problemas, en palabras de todos los días
+## 🧩 Los 13 problemas, en palabras de todos los días
 
-![Los 12 problemas agrupados por naturaleza](assets/case-map.svg)
+![Los 13 problemas agrupados por naturaleza](assets/case-map.svg)
 
 | # | El nombre técnico | Qué significa en la vida real |
 |---|---|---|
@@ -58,8 +58,9 @@ Este repositorio es ese taller. Las "marcas de auto" son siete lenguajes de prog
 | **10** | Arquitectura cara para un problema simple | Se construyó algo enorme y costoso para resolver algo que necesitaba mucho menos. Un camión para llevar el pan |
 | **11** | Reportes pesados que bloquean la operación | Alguien pide un informe grande y, mientras se genera, el resto del sistema se frena |
 | **12** | Punto único de conocimiento y riesgo operacional | Una sola persona sabe cómo funciona algo importante. Si se va de vacaciones, nadie puede resolverlo |
+| **13** | Cache stampede y thundering herd | El sistema guarda respuestas listas para no repetir trabajo. Cuando esa copia vence, todos los pedidos que la estaban usando van a buscarla a la vez y tumban lo que había detrás |
 
-Ninguno de estos problemas es inventado. Los doce son cosas que pasan todas las semanas en empresas reales.
+Ninguno de estos problemas es inventado. Todos son cosas que pasan todas las semanas en empresas reales.
 
 ---
 
@@ -120,7 +121,7 @@ Lo importante de ese cuadro: **ninguna fila es toda verde**. Cada lenguaje gana 
 
 No hace falta ejecutar nada para sacar conclusiones. Se puede leer, en este orden:
 
-1. **[El resumen ejecutivo](executive-summary.md)** — los 12 casos en una página, con el valor de negocio de cada uno.
+1. **[El resumen ejecutivo](executive-summary.md)** — los 13 casos en una página, con el valor de negocio de cada uno.
 2. **Un caso cualquiera** — por ejemplo [el 02](../cases/02-n-plus-one-and-db-bottlenecks/README.md), que es el más fácil de entender sin saber programar. Está la explicación del problema antes que cualquier código.
 3. **Una comparativa** — el archivo `comparison.md` de ese mismo caso, que muestra los siete lenguajes lado a lado y termina con un veredicto razonado.
 4. **[La guía para reclutadores](recruiter-guide.md)** — qué señales mirar y, sobre todo, **qué no** conviene concluir.
@@ -163,7 +164,7 @@ Los pasos detallados están en [INSTALL.md](../INSTALL.md). Si algo no arranca, 
 | Documento | Para qué |
 |---|---|
 | [BEGINNERS_GUIDE.md](BEGINNERS_GUIDE.md) | Ruta para quien está empezando a programar |
-| [executive-summary.md](executive-summary.md) | Los 12 casos en una página |
+| [executive-summary.md](executive-summary.md) | Los 13 casos en una página |
 | [recruiter-guide.md](recruiter-guide.md) | Qué mirar si tu trabajo es evaluar perfiles técnicos |
 | [languages/](languages/README.md) | Qué es cada lenguaje y para qué sirve, uno por uno |
 | [../README.md](../README.md) | La puerta de entrada técnica completa |

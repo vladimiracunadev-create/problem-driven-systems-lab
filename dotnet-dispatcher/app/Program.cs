@@ -38,6 +38,7 @@ internal static class Program
         new CaseInfo("10", 9510, "Arquitectura cara para algo simple",      "/app/cases/10"),
         new CaseInfo("11", 9511, "Reportes pesados que bloquean operacion", "/app/cases/11"),
         new CaseInfo("12", 9512, "Punto unico de conocimiento",             "/app/cases/12"),
+        new CaseInfo("13", 9513, "Cache stampede y thundering herd",       "/app/cases/13"),
     };
 
     private static readonly int DispatchPort =

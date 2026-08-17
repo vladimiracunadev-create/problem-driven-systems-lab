@@ -1,6 +1,6 @@
 # Workspace usado SOLO en el build del dispatcher.
 #
-# Compilar los 12 casos por separado haria que rusqlite (que usan los casos 01
+# Compilar los casos por separado haria que rusqlite (que usan los casos 01
 # y 02) se compile dos veces — son ~80 s cada vez. Con un workspace, cargo
 # resuelve y compila las dependencias compartidas una sola vez y todos los
 # binarios salen a un `target/` comun.
@@ -9,6 +9,7 @@ resolver = "2"
 members = [
     "case01", "case02", "case03", "case04", "case05", "case06",
     "case07", "case08", "case09", "case10", "case11", "case12",
+    "case13",
     "dispatcher",
 ]
 

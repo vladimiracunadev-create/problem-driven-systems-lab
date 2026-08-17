@@ -1,6 +1,6 @@
-# compose.root.yml — Stack PHP completo (los 12 casos + portal + servicios reales)
+# compose.root.yml — Stack PHP completo (todos los casos + portal + servicios reales)
 #
-# Despues del refactor a php-dispatcher: los 12 casos PHP corren como
+# Despues del refactor a php-dispatcher: los casos PHP corren como
 # subprocesos internos en :9001-:9012 dentro de un solo contenedor `php-lab`,
 # espejo del modelo de compose.python.yml y compose.nodejs.yml.
 #
@@ -16,9 +16,9 @@
 #
 # Endpoints:
 #   http://localhost:8080         portal
-#   http://localhost:8100/        index del PHP hub (12 casos via /XX/...)
+#   http://localhost:8100/        index del PHP hub (casos via /XX/...)
 #   http://localhost:8100/01/...  caso 01 (con DB real)
-#   http://localhost:8100/12/...  caso 12
+#   http://localhost:8100/13/...  caso 13
 #   http://localhost:9091         Prometheus
 #   http://localhost:3001         Grafana
 
@@ -53,7 +53,7 @@ services:
       - case02
 
   # ---------------------------------------------------------------------------
-  # PHP Lab — un solo contenedor, los 12 casos como subprocesos internos
+  # PHP Lab — un solo contenedor, los casos como subprocesos internos
   # Sustituye al antiguo nginx php-hub + 12 caseXX-app separados.
   # ---------------------------------------------------------------------------
 

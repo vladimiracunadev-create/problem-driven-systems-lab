@@ -1,0 +1,20 @@
+services:
+  app:
+    build:
+      context: ../../..
+      dockerfile: docker/php/Dockerfile
+      args:
+        APP_DIR: cases/13-cache-stampede-and-thundering-herd/php/app
+    container_name: pdsl-13-php-app
+    environment:
+      APP_STACK: PHP 8.3
+    command: ["php", "-S", "0.0.0.0:8080", "-t", "/app", "/app/index.php"]
+    ports:
+      - "8113:8080"
+    healthcheck:
+      test: ["CMD", "php", "-r", "echo 'ok';"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+    mem_limit: 256m
+    cpus: 0.75

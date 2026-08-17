@@ -55,7 +55,7 @@ for entry in "${STACKS[@]}"; do
   if [ "$count" -eq 0 ]; then
     note "· ${stack}: sin Dockerfile propio (se omite)"
   elif [ "$count" -eq 1 ]; then
-    ok "${stack}: ${images[0]} en los 12 casos"
+    ok "${stack}: ${images[0]} en todos los casos"
   else
     bad "${stack}: ${count} imagenes base distintas -> ${images[*]}"
     note "  Un caso quedaria en otro runtime segun como se levante."

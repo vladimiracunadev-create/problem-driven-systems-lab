@@ -11,7 +11,7 @@ RUN apk add --no-cache libpq tini \
 
 WORKDIR /app
 
-# Copiar las 12 apps PHP de cada caso en /cases/{id}/
+# Copiar las apps PHP de cada caso en /cases/{id}/
 COPY cases/01-api-latency-under-load/php/app/                                          /cases/01/
 COPY cases/02-n-plus-one-and-db-bottlenecks/php/app/                                   /cases/02/
 COPY cases/03-poor-observability-and-useless-logs/php/app/                             /cases/03/
@@ -24,6 +24,7 @@ COPY cases/09-unstable-external-integration/php/app/                            
 COPY cases/10-expensive-architecture-for-simple-needs/php/app/                         /cases/10/
 COPY cases/11-heavy-reporting-blocks-operations/php/app/                               /cases/11/
 COPY cases/12-single-point-of-knowledge-and-operational-risk/php/app/                  /cases/12/
+COPY cases/13-cache-stampede-and-thundering-herd/php/app/                            /cases/13/
 
 # Dispatcher + entrypoint
 COPY php-dispatcher/app/entrypoint.sh /app/entrypoint.sh

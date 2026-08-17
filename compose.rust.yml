@@ -1,13 +1,13 @@
-# compose.rust.yml — Stack Rust 1.83 (12 casos operativos)
+# compose.rust.yml — Stack Rust 1.83 (todos los casos operativos)
 #
 # Un solo contenedor, un solo puerto.
 # El dispatcher interno enruta por prefijo de path:
 #
 #   GET http://localhost:8700/       → indice de los casos Rust
 #   GET http://localhost:8700/01/... → caso 01
-#   GET http://localhost:8700/12/... → caso 12
+#   GET http://localhost:8700/13/... → caso 13
 #
-# Los 12 servidores de caso corren como subprocesos internos en puertos
+# Los servidores de caso corren como subprocesos internos en puertos
 # 9701-9712 que nunca se exponen al host.
 #
 # Uso:

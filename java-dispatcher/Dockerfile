@@ -9,7 +9,7 @@ RUN apk add --no-cache wget \
  && wget -q -O /opt/sqlite-jdbc.jar \
     https://repo1.maven.org/maven2/org/xerial/sqlite-jdbc/3.46.1.3/sqlite-jdbc-3.46.1.3.jar
 
-# Copiar cada Main.java de los 12 casos operativos en /cases/{id}/Main.java
+# Copiar cada Main.java de los casos operativos en /cases/{id}/Main.java
 COPY cases/01-api-latency-under-load/java/app/Main.java                                  /cases/01/Main.java
 COPY cases/02-n-plus-one-and-db-bottlenecks/java/app/Main.java                           /cases/02/Main.java
 COPY cases/03-poor-observability-and-useless-logs/java/app/Main.java                     /cases/03/Main.java
@@ -22,11 +22,12 @@ COPY cases/09-unstable-external-integration/java/app/Main.java                  
 COPY cases/10-expensive-architecture-for-simple-needs/java/app/Main.java                 /cases/10/Main.java
 COPY cases/11-heavy-reporting-blocks-operations/java/app/Main.java                       /cases/11/Main.java
 COPY cases/12-single-point-of-knowledge-and-operational-risk/java/app/Main.java          /cases/12/Main.java
+COPY cases/13-cache-stampede-and-thundering-herd/java/app/Main.java             /cases/13/Main.java
 
 # Dispatcher
 COPY java-dispatcher/app/Dispatcher.java /app/Dispatcher.java
 
-# Compilar cada Main.java en su propio directorio (los 12 casos comparten
+# Compilar cada Main.java en su propio directorio (todos los casos comparten
 # la clase top-level `Main` — compilarlos juntos en un solo javac produce
 # "duplicate class". Compilados por separado, cada Main.class queda en
 # /cases/0X/ y el Dispatcher los carga con -cp /cases/0X).
@@ -42,6 +43,7 @@ RUN javac -cp /opt/sqlite-jdbc.jar /cases/01/Main.java \
  && javac /cases/10/Main.java \
  && javac /cases/11/Main.java \
  && javac /cases/12/Main.java \
+ && javac /cases/13/Main.java \
  && javac /app/Dispatcher.java
 
 EXPOSE 8400

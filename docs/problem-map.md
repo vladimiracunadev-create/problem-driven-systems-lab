@@ -1,6 +1,6 @@
 # 🗺️ Mapa de problemas
 
-> Los 12 casos del laboratorio con su descripción técnica, síntomas y valor de negocio.
+> Los 13 casos del laboratorio con su descripción técnica, síntomas y valor de negocio.
 
 ---
 
@@ -20,6 +20,7 @@
 | 💰 10 | Arquitectura | Solución técnica más cara y compleja de lo que el problema necesita | Reducir costos y acelerar entrega con foco en el negocio |
 | 📊 11 | Operaciones | Consultas de reporting que compiten con operación transaccional | Proteger la operación diaria durante analítica pesada |
 | 🧑‍💼 12 | Operaciones | Conocimiento crítico concentrado en una sola persona o módulo | Reducir riesgo organizacional y mejorar continuidad |
+| 🌩️ 13 | Rendimiento | La clave caliente de cache expira y los N llamadores golpean el origen a la vez | Evitar caídas autoinfligidas y reducir capacidad reservada del origen |
 
 ---
 
@@ -180,3 +181,17 @@
 - Flujos críticos que nadie fuera de una persona entiende
 
 **Valor:** Reduce riesgo organizacional, mejora continuidad y hace al producto más sostenible a largo plazo.
+
+---
+
+### 🌩️ 13 — Cache stampede y thundering herd
+
+**Problema:** Una clave de cache caliente expira y, en ese instante, todos los requests que la estaban usando encuentran el hueco a la vez. Ninguno sabe que los otros existen, así que todos van al origen a recalcular el mismo valor.
+
+**Síntomas frecuentes:**
+- La base cae 90 segundos exactos a la misma hora, sin que suba el tráfico
+- Hit rate de cache al 99% y aun así picos de miles de consultas idénticas al origen
+- p99 que se dispara en escalón, no en rampa
+- Reiniciar el servicio de cache provoca la caída en vez de arreglarla
+
+**Valor:** Evita caídas autoinfligidas en el momento de mayor fragilidad del sistema y reduce la capacidad que hay que reservar «por las dudas» en el origen.

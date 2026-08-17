@@ -1,7 +1,7 @@
-# rust-dispatcher — un solo contenedor con dispatcher + 12 casos (Rust 1.83).
+# rust-dispatcher — un solo contenedor con dispatcher + los casos del lab (Rust 1.83).
 #
 # Espejo del patron java-dispatcher / dotnet-dispatcher / go-dispatcher: el
-# stage de build compila los 12 casos y el runtime los junta en /app/cases/0X/.
+# stage de build compila los casos y el runtime los junta en /app/cases/NN/.
 #
 # A diferencia de los otros, aca se arma un WORKSPACE de cargo. Compilar los 12
 # crates por separado haria que rusqlite (casos 01 y 02) se compile dos veces —
@@ -25,12 +25,13 @@ COPY cases/09-unstable-external-integration/rust/app/                           
 COPY cases/10-expensive-architecture-for-simple-needs/rust/app/                  /src/case10/
 COPY cases/11-heavy-reporting-blocks-operations/rust/app/                        /src/case11/
 COPY cases/12-single-point-of-knowledge-and-operational-risk/rust/app/           /src/case12/
+COPY cases/13-cache-stampede-and-thundering-herd/rust/app/                     /src/case13/
 COPY rust-dispatcher/app/                                                        /src/dispatcher/
 
 # Los manifests de cada caso declaran [profile.release] para poder compilarse
 # en aislamiento. Dentro de un workspace ese perfil se ignora y cargo lo avisa
 # en cada crate; se recorta para que el build salga limpio.
-RUN for d in case01 case02 case03 case04 case05 case06 case07 case08 case09 case10 case11 case12 dispatcher; do \
+RUN for d in case01 case02 case03 case04 case05 case06 case07 case08 case09 case10 case11 case12 case13 dispatcher; do \
       sed -i '/^\[profile\.release\]/,$d' /src/$d/Cargo.toml; \
     done \
  && cargo build --release
@@ -53,6 +54,7 @@ COPY --from=build /src/target/release/case09 /app/cases/09/case09
 COPY --from=build /src/target/release/case10 /app/cases/10/case10
 COPY --from=build /src/target/release/case11 /app/cases/11/case11
 COPY --from=build /src/target/release/case12 /app/cases/12/case12
+COPY --from=build /src/target/release/case13 /app/cases/13/case13
 
 EXPOSE 8700
 ENV PORT=8700

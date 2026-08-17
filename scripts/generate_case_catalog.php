@@ -38,7 +38,7 @@ usort(
 $lines = [];
 $lines[] = '# 🗂️ Catalogo de casos';
 $lines[] = '';
-$lines[] = '> Lista completa de los 12 casos del laboratorio generada desde `shared/catalog/cases.json`.';
+$lines[] = sprintf('> Lista completa de los %d casos del laboratorio generada desde `shared/catalog/cases.json`.', count($cases));
 $lines[] = '';
 $lines[] = '## 📊 Estado actual';
 $lines[] = '';

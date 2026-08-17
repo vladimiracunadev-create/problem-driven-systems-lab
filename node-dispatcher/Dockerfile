@@ -4,7 +4,7 @@ FROM node:22-alpine
 
 WORKDIR /app
 
-# Copiar cada server.js de los 12 casos en /cases/{id}/server.js
+# Copiar cada server.js de cada caso en /cases/{id}/server.js
 COPY cases/01-api-latency-under-load/node/app/server.js               /cases/01/server.js
 COPY cases/02-n-plus-one-and-db-bottlenecks/node/app/server.js        /cases/02/server.js
 COPY cases/03-poor-observability-and-useless-logs/node/app/server.js  /cases/03/server.js
@@ -17,6 +17,7 @@ COPY cases/09-unstable-external-integration/node/app/server.js        /cases/09/
 COPY cases/10-expensive-architecture-for-simple-needs/node/app/server.js /cases/10/server.js
 COPY cases/11-heavy-reporting-blocks-operations/node/app/server.js    /cases/11/server.js
 COPY cases/12-single-point-of-knowledge-and-operational-risk/node/app/server.js /cases/12/server.js
+COPY cases/13-cache-stampede-and-thundering-herd/node/app/server.js /cases/13/server.js
 
 # Dispatcher
 COPY node-dispatcher/app/main.js /app/main.js

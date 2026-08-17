@@ -1,11 +1,11 @@
-# go-dispatcher — un solo contenedor con dispatcher + 12 casos (Go 1.23).
+# go-dispatcher — un solo contenedor con dispatcher + los casos del lab (Go 1.23).
 #
 # Espejo del patron java-dispatcher / dotnet-dispatcher: el stage de build
 # compila cada caso por separado y el runtime los junta en /app/cases/0X/.
 #
 # Cada caso es su propio `package main` con su go.mod, asi que se compilan de a
 # uno. Los casos 01 y 02 usan modernc.org/sqlite (Go puro) y necesitan
-# `go mod tidy`; los otros diez son solo stdlib y compilan sin red.
+# `go mod tidy`; el resto son solo stdlib y compilan sin red.
 #
 # CGO_ENABLED=0 en todos: binarios estaticos, imagen final sin toolchain de C.
 FROM golang:1.23-alpine AS build
@@ -28,7 +28,8 @@ COPY cases/09-unstable-external-integration/go/app/                             
 COPY cases/10-expensive-architecture-for-simple-needs/go/app/                        /src/case10/
 COPY cases/11-heavy-reporting-blocks-operations/go/app/                              /src/case11/
 COPY cases/12-single-point-of-knowledge-and-operational-risk/go/app/                 /src/case12/
-RUN for n in 03 04 05 06 07 08 09 10 11 12; do \
+COPY cases/13-cache-stampede-and-thundering-herd/go/app/                           /src/case13/
+RUN for n in 03 04 05 06 07 08 09 10 11 12 13; do \
       cd /src/case$n && CGO_ENABLED=0 go build -trimpath -o /out/cases/$n/case$n . || exit 1; \
     done
 

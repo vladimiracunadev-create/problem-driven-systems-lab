@@ -39,7 +39,7 @@
   <rect x="34" y="270" width="470" height="58" rx="8" ry="8" fill="#f1f5f9" stroke="none" stroke-width="1"/>
   <rect x="34" y="270" width="4" height="58" rx="2" ry="2" fill="#2563eb" stroke="none" stroke-width="1"/>
   <text x="50" y="292" font-family="SFMono-Regular, Consolas, Liberation Mono, monospace" font-size="12.5" fill="#0f172a" text-anchor="start" font-weight="600">Dockerfile</text>
-  <text x="50" y="311" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="10.8" fill="#64748b" text-anchor="start" font-weight="400">Los 12 casos del stack y el hub. Uno solo desalineado y el mismo caso corre en dos runtimes.</text>
+  <text x="50" y="311" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="10.8" fill="#64748b" text-anchor="start" font-weight="400">Todos los casos del stack y el hub. Uno solo desalineado y el mismo caso corre en dos…</text>
   <rect x="526" y="270" width="470" height="58" rx="8" ry="8" fill="#f1f5f9" stroke="none" stroke-width="1"/>
   <rect x="526" y="270" width="4" height="58" rx="2" ry="2" fill="#7c3aed" stroke="none" stroke-width="1"/>
   <text x="542" y="292" font-family="SFMono-Regular, Consolas, Liberation Mono, monospace" font-size="12.5" fill="#0f172a" text-anchor="start" font-weight="600">Codigo del caso</text>

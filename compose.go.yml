@@ -1,13 +1,13 @@
-# compose.go.yml — Stack Go 1.23 (12 casos operativos)
+# compose.go.yml — Stack Go 1.23 (todos los casos operativos)
 #
 # Un solo contenedor, un solo puerto.
 # El dispatcher interno enruta por prefijo de path:
 #
 #   GET http://localhost:8600/       → indice de los casos Go
 #   GET http://localhost:8600/01/... → caso 01
-#   GET http://localhost:8600/12/... → caso 12
+#   GET http://localhost:8600/13/... → caso 13
 #
-# Los 12 servidores de caso corren como subprocesos internos en puertos
+# Los servidores de caso corren como subprocesos internos en puertos
 # 9601-9612 que nunca se exponen al host.
 #
 # Uso:

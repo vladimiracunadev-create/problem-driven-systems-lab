@@ -1,6 +1,6 @@
 # ☕ Java
 
-> **Versión fijada:** `21` (LTS) · **Imagen base:** `eclipse-temurin:21-jdk-alpine` · **Hub:** `:8400` · **Casos operativos:** 12 / 12
+> **Versión fijada:** `21` (LTS) · **Imagen base:** `eclipse-temurin:21-jdk-alpine` · **Hub:** `:8400` · **Casos operativos:** 13 / 13
 
 [⬅️ Volver a los perfiles de lenguaje](README.md) · [🗺️ Mapa de stacks](../stack-map.md) · [🔄 Protocolo de actualización](../language-upgrade-protocol.md)
 
@@ -47,6 +47,7 @@ Java es un lenguaje de tipado estático que compila a bytecode y corre sobre la 
 | [10 · Sobre-arquitectura](../../cases/10-expensive-architecture-for-simple-needs/java/README.md) | `HashMap.get` + `System.nanoTime()` | El "right-sized" del caso, con medición directa del CPU por request |
 | [11 · Reportes](../../cases/11-heavy-reporting-blocks-operations/java/README.md) | `ThreadPoolExecutor` acotado + pool de reporting separado | **El modelo canónico del problema.** Dos pools, telemetría directa de ambos |
 | [12 · Punto único](../../cases/12-single-point-of-knowledge-and-operational-risk/java/README.md) | `Optional<T>` + `map`/`flatMap`/`orElse` | Runbook codificado. **Limitación:** `.get()` sin `isPresent()` compila igual |
+| [13 · Cache stampede](../../cases/13-cache-stampede-and-thundering-herd/java/README.md) | `ConcurrentHashMap.computeIfAbsent` | **Atómico por clave**: mirar si existe y crearlo son una sola operación indivisible |
 
 > 💡 **El patrón que solo se ve mirando la columna entera:** Java tiene una clase distinta para cada problema de concurrencia — `Semaphore`, `CompletableFuture`, `ConcurrentHashMap`, `CopyOnWriteArrayList`, `ThreadPoolExecutor`, `AtomicReference`, `LongAdder`. Es lo opuesto a Go, donde canal + `select` cubre casi todo. Más superficie que aprender; también más precisión cuando se conoce.
 
@@ -97,14 +98,14 @@ curl -s "localhost:8400/11/order-write"                # el pool principal quedo
 
 ## 🏆 Dónde gana y dónde pierde en el laboratorio
 
-Agregado de los veredictos de las 11 comparativas que rankean: **1 primer puesto, media 3.3**.
+Agregado de los veredictos de las 12 comparativas que rankean: **1 primer puesto, media 3.2**.
 
 - 🥇 **Gana en 11** — cuando el problema *es* el pool de threads, tener pool explícito y observable es la herramienta exacta.
-- 🥈 **Segundo en 01 y 06** — paralelismo real y `record` types inmutables.
+- 🥈 **Segundo en 01, 06 y 13** — paralelismo real, `record` types inmutables y el `computeIfAbsent` atómico que elimina la ventana check-then-act.
 - 🥉 **Tercero en 05, 07, 09 y 12** — sólido, con las limitaciones documentadas arriba.
 - **6º en 02** — no por la API (JDBC es correcto), sino porque es uno de los dos ecosistemas donde el N+1 **nace solo**.
 
-**Lectura honesta:** Java y .NET empatan en 3.3 y ganan exactamente el mismo caso. Son casi intercambiables en este laboratorio, y las diferencias reales aparecen en los detalles: `AsyncLocal` de .NET fluye por `await` mejor que `ThreadLocal`; `LinkedHashMap` de Java es la única LRU built-in del set.
+**Lectura honesta:** Java y .NET quedan a dos décimas y ganan exactamente el mismo caso. Son casi intercambiables en este laboratorio, y las diferencias reales aparecen en los detalles: `AsyncLocal` de .NET fluye por `await` mejor que `ThreadLocal`; `LinkedHashMap` de Java es la única LRU built-in del set.
 
 ---
 
@@ -134,4 +135,4 @@ El detalle del procedimiento está en [docs/language-upgrade-protocol.md](../lan
 docker compose -f compose.java.yml up -d --build
 ```
 
-Los 12 casos quedan servidos en `http://localhost:8400/NN/`. Cada caso trae además su propio `compose.yml` para correrlo aislado.
+Los 13 casos quedan servidos en `http://localhost:8400/NN/`. Cada caso trae además su propio `compose.yml` para correrlo aislado.

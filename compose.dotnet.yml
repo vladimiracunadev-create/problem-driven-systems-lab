@@ -1,13 +1,13 @@
-# compose.dotnet.yml — Stack .NET 8 (12 casos operativos)
+# compose.dotnet.yml — Stack .NET 8 (todos los casos operativos)
 #
 # Un solo contenedor, un solo puerto.
 # El dispatcher interno enruta por prefijo de path:
 #
 #   GET http://localhost:8500/       → indice de los casos .NET
 #   GET http://localhost:8500/01/... → caso 01
-#   GET http://localhost:8500/12/... → caso 12
+#   GET http://localhost:8500/13/... → caso 13
 #
-# Los 12 servidores de caso corren como subprocesos internos en puertos
+# Los servidores de caso corren como subprocesos internos en puertos
 # 9501-9512 que nunca se exponen al host.
 #
 # Uso:

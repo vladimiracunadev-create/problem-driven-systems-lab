@@ -16,8 +16,8 @@ problem-driven-systems-lab/
 |- CONTRIBUTING.md
 |- CHANGELOG.md
 |- ROADMAP.md
-|- compose.root.yml       ← PHP: 12 casos + portal + DB + observabilidad
-|- compose.python.yml     ← Python: 12 casos, stdlib pura
+|- compose.root.yml       ← PHP: 13 casos + portal + DB + observabilidad
+|- compose.python.yml     ← Python: 13 casos, stdlib pura
 |- compose.portal.yml     ← portal liviano solamente
 |- docker/
 |- .github/workflows/ci.yml
@@ -64,15 +64,15 @@ La raiz contiene documentos para lectura ejecutiva, tecnica y operacional. Esta 
 
 ### 3. Capa de portal y stacks raíz
 
-Cada lenguaje operativo tiene su propio compose en la raíz — un comando levanta los 12 casos de ese lenguaje:
+Cada lenguaje operativo tiene su propio compose en la raíz — un comando levanta los 13 casos de ese lenguaje:
 
-- `compose.root.yml` — PHP: portal (`8080`) + dispatcher PHP `php-lab` (`8100`, 12 casos internos en `:9001-:9012`) + PostgreSQL (casos 01–02) + worker case01 + Prometheus (`9091`) + Grafana (`3001`)
-- `compose.python.yml` — Python: dispatcher único con 12 casos internos (`8200`), stdlib pura, sin dependencias externas
-- `compose.nodejs.yml` — Node.js 22: dispatcher único con 12 casos internos (`8300`), stdlib pura (incluye `node:sqlite` built-in usado en caso 02), sin dependencias externas
-- `compose.java.yml` — Java 21: dispatcher único con 12 casos internos (`8400`), JDK built-in (`HttpServer`, `HttpClient`), sin Maven
-- `compose.dotnet.yml` — .NET 8: dispatcher único con 12 casos internos (`8500`), BCL built-in (`HttpListener`, `System.Text.Json`)
-- `compose.go.yml` — Go 1.23: dispatcher único con 12 casos internos (`8600`), stdlib (`net/http`, `httputil.ReverseProxy`)
-- `compose.rust.yml` — Rust 1.83: dispatcher único con 12 casos internos (`8700`); `std` no trae HTTP, la capa va sobre `TcpListener`
+- `compose.root.yml` — PHP: portal (`8080`) + dispatcher PHP `php-lab` (`8100`, 13 casos internos en `:9001-:9013`) + PostgreSQL (casos 01–02) + worker case01 + Prometheus (`9091`) + Grafana (`3001`)
+- `compose.python.yml` — Python: dispatcher único con 13 casos internos (`8200`), stdlib pura, sin dependencias externas
+- `compose.nodejs.yml` — Node.js 22: dispatcher único con 13 casos internos (`8300`), stdlib pura (incluye `node:sqlite` built-in usado en caso 02), sin dependencias externas
+- `compose.java.yml` — Java 21: dispatcher único con 13 casos internos (`8400`), JDK built-in (`HttpServer`, `HttpClient`), sin Maven
+- `compose.dotnet.yml` — .NET 8: dispatcher único con 13 casos internos (`8500`), BCL built-in (`HttpListener`, `System.Text.Json`)
+- `compose.go.yml` — Go 1.23: dispatcher único con 13 casos internos (`8600`), stdlib (`net/http`, `httputil.ReverseProxy`)
+- `compose.rust.yml` — Rust 1.83: dispatcher único con 13 casos internos (`8700`); `std` no trae HTTP, la capa va sobre `TcpListener`
 - `compose.portal.yml` — portal liviano solamente (`8080`)
 
 Los siete stacks operativos pueden correr en paralelo sin colisión de puertos.
@@ -109,13 +109,13 @@ scripts/validate-structure.sh ──▶ .github/workflows/ci.yml ◀── catal
 
 | Pieza | Rol |
 | --- | --- |
-| `compose.root.yml` | portal (`8080`) + `php-lab` dispatcher (`8100`, 12 casos PHP como subprocesos internos) + DB caso 01-02 + worker + Prometheus + Grafana |
-| `compose.python.yml` | dispatcher Python (`8200`) con los 12 casos internos, stdlib pura, sin dependencias externas |
-| `compose.nodejs.yml` | dispatcher Node.js (`8300`) con los 12 casos internos, stdlib pura |
-| `compose.java.yml` | dispatcher Java (`8400`) con los 12 casos internos, JDK built-in (sin Maven) |
-| `compose.dotnet.yml` | dispatcher .NET 8 (`8500`) con los 12 casos internos, BCL built-in |
-| `compose.go.yml` | dispatcher Go 1.23 (`8600`) con los 12 casos internos, stdlib |
-| `compose.rust.yml` | dispatcher Rust 1.83 (`8700`) con los 12 casos internos, capa HTTP propia |
+| `compose.root.yml` | portal (`8080`) + `php-lab` dispatcher (`8100`, 13 casos PHP como subprocesos internos) + DB caso 01-02 + worker + Prometheus + Grafana |
+| `compose.python.yml` | dispatcher Python (`8200`) con los 13 casos internos, stdlib pura, sin dependencias externas |
+| `compose.nodejs.yml` | dispatcher Node.js (`8300`) con los 13 casos internos, stdlib pura |
+| `compose.java.yml` | dispatcher Java (`8400`) con los 13 casos internos, JDK built-in (sin Maven) |
+| `compose.dotnet.yml` | dispatcher .NET 8 (`8500`) con los 13 casos internos, BCL built-in |
+| `compose.go.yml` | dispatcher Go 1.23 (`8600`) con los 13 casos internos, stdlib |
+| `compose.rust.yml` | dispatcher Rust 1.83 (`8700`) con los 13 casos internos, capa HTTP propia |
 | `compose.portal.yml` | portal liviano |
 | `cases/<caso>/<stack>/compose.yml` | escenario concreto y aislado (desarrollo o revision individual) |
 | `cases/<caso>/compose.compare.yml` | comparacion entre stacks del mismo caso |
@@ -139,7 +139,7 @@ La familia PHP reutiliza un runtime comun en `docker/php/Dockerfile`. La familia
 | `11` | ✅ OPERATIVO | ✅ OPERATIVO | ✅ OPERATIVO | ✅ OPERATIVO | ✅ OPERATIVO |
 | `12` | ✅ OPERATIVO | ✅ OPERATIVO | ✅ OPERATIVO | ✅ OPERATIVO | ✅ OPERATIVO |
 
-**OPERATIVO** = lógica real, Docker funcional, evidencia observable. Los 12 casos × 7 stacks (PHP / Python / Node.js 22 / Java 21 / .NET 8 / Go 1.23 / Rust 1.83) son todos `OPERATIVO` — paridad funcional completa con primitivas idiomáticas distintas por runtime.
+**OPERATIVO** = lógica real, Docker funcional, evidencia observable. Los 13 casos × 7 stacks (PHP / Python / Node.js 22 / Java 21 / .NET 8 / Go 1.23 / Rust 1.83) son todos `OPERATIVO` — paridad funcional completa con primitivas idiomáticas distintas por runtime.
 
 ## 🧭 Regla principal
 

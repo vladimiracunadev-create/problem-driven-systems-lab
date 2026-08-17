@@ -5,7 +5,7 @@
     "hero_title": "Evalúa el laboratorio con evidencia real: elige una audiencia o un stack tecnológico",
     "audience_message": "Diseñado para especialistas en selección, líderes técnicos y equipos de ingeniería que buscan validar criterio técnico con escenarios reproducibles."
   },
-  "recommended_github_about": "🧪 Laboratorio de sistemas distribuido con 12 casos reales Docker-first para diagnosticar y resolver problemas críticos de rendimiento, observabilidad, resiliencia y arquitectura 🐳",
+  "recommended_github_about": "🧪 Laboratorio de sistemas distribuido con 13 casos reales Docker-first para diagnosticar y resolver problemas criticos de rendimiento, observabilidad, resiliencia y arquitectura 🐳",
   "recommended_github_topics": [
     "problem-driven",
     "docker",
@@ -1306,6 +1306,104 @@
           "health_path": "/12/health",
           "root_path": "/12/",
           "isolated_compose": "cases/12-single-point-of-knowledge-and-operational-risk/rust/compose.yml"
+        }
+      }
+    },
+    {
+      "id": "13",
+      "icon": "🌧️",
+      "slug": "cache-stampede-and-thundering-herd",
+      "title": "Cache stampede y thundering herd",
+      "category": "Rendimiento",
+      "status": "OPERATIVO",
+      "level_detail": "Single-flight con la primitiva idiomatica de cada runtime: flock + double-checked locking en PHP, dict de vuelos con threading.Event en Python, Map<key, Promise> en Node, ConcurrentHashMap.computeIfAbsent atomico en Java, Lazy<Task<T>> con ExecutionAndPublication en .NET, singleflight escrito a mano con sync.WaitGroup en Go, Arc<Flight> con Mutex y Condvar en Rust",
+      "summary": "Cuando la clave caliente expira, los N llamadores concurrentes recalculan el mismo valor y el origen recibe la rafaga entera.",
+      "case_readme_path": "cases/13-cache-stampede-and-thundering-herd/README.md",
+      "business_outcome": "Evita caidas autoinfligidas en el momento de mayor fragilidad del sistema y reduce la capacidad reservada del origen.",
+      "recruiter_pitch": "Muestra que un hit rate del 99% no protege de nada si los fallos coinciden en el tiempo, y mide el arreglo con un solo numero.",
+      "proof_points": [
+        "Contrasta /cache-naive y /cache-singleflight sobre la misma rafaga con origin_computations como metrica central.",
+        "Hace visible stampede_depth, coalesced_waiters y served_stale en cada ejecucion.",
+        "Expone cache/state con soft TTL, hard TTL y el jitter aplicado por clave."
+      ],
+      "look_for": [
+        "Si origin_computations sube linealmente con concurrency en naive y se queda en 1 en singleflight.",
+        "Si coalesced_waiters da concurrency - 1: es la prueba de que el resto se colgo del mismo recalculo.",
+        "Si el double check dentro del vuelo esta presente en los siete stacks; sin el, el patron da 3 o 4 recalculos."
+      ],
+      "honesty_note": "El origen es CPU real (un digest iterativo), no una consulta a una base de datos. Lo que se mide con fidelidad es origin_computations; la latencia absoluta depende del runtime y no es comparable entre stacks. En PHP los N llamadores se recorren en secuencia porque el servidor embebido es de un solo proceso.",
+      "operational_stacks": [
+        "php",
+        "python",
+        "node",
+        "java",
+        "dotnet",
+        "go",
+        "rust"
+      ],
+      "runtime_entries": {
+        "php": {
+          "port": 8100,
+          "compose_path": "compose.root.yml",
+          "readme_path": "cases/13-cache-stampede-and-thundering-herd/php/README.md",
+          "health_path": "/13/health",
+          "root_path": "/13/",
+          "isolated_compose": "cases/13-cache-stampede-and-thundering-herd/php/compose.yml",
+          "isolated_port": 8113
+        },
+        "python": {
+          "port": 8200,
+          "compose_path": "compose.python.yml",
+          "readme_path": "cases/13-cache-stampede-and-thundering-herd/python/README.md",
+          "health_path": "/13/health",
+          "root_path": "/13/",
+          "isolated_compose": "cases/13-cache-stampede-and-thundering-herd/python/compose.yml",
+          "isolated_port": 8313
+        },
+        "node": {
+          "port": 8300,
+          "compose_path": "compose.nodejs.yml",
+          "readme_path": "cases/13-cache-stampede-and-thundering-herd/node/README.md",
+          "health_path": "/13/health",
+          "root_path": "/13/",
+          "isolated_compose": "cases/13-cache-stampede-and-thundering-herd/node/compose.yml",
+          "isolated_port": 8213
+        },
+        "java": {
+          "port": 8400,
+          "compose_path": "compose.java.yml",
+          "readme_path": "cases/13-cache-stampede-and-thundering-herd/java/README.md",
+          "health_path": "/13/health",
+          "root_path": "/13/",
+          "isolated_compose": "cases/13-cache-stampede-and-thundering-herd/java/compose.yml",
+          "isolated_port": 8413
+        },
+        "dotnet": {
+          "port": 8500,
+          "compose_path": "compose.dotnet.yml",
+          "readme_path": "cases/13-cache-stampede-and-thundering-herd/dotnet/README.md",
+          "health_path": "/13/health",
+          "root_path": "/13/",
+          "isolated_compose": "cases/13-cache-stampede-and-thundering-herd/dotnet/compose.yml",
+          "isolated_port": 8513
+        },
+        "go": {
+          "port": 8600,
+          "compose_path": "compose.go.yml",
+          "readme_path": "cases/13-cache-stampede-and-thundering-herd/go/README.md",
+          "health_path": "/13/health",
+          "root_path": "/13/",
+          "isolated_compose": "cases/13-cache-stampede-and-thundering-herd/go/compose.yml",
+          "isolated_port": 8613
+        },
+        "rust": {
+          "port": 8700,
+          "compose_path": "compose.rust.yml",
+          "readme_path": "cases/13-cache-stampede-and-thundering-herd/rust/README.md",
+          "health_path": "/13/health",
+          "root_path": "/13/",
+          "isolated_compose": "cases/13-cache-stampede-and-thundering-herd/rust/compose.yml",
+          "isolated_port": 8713
         }
       }
     }

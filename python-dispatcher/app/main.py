@@ -1,7 +1,7 @@
 """
-Python Lab Dispatcher — un solo contenedor, un solo puerto para los 12 casos.
+Python Lab Dispatcher — un solo contenedor, un solo puerto para todos los casos.
 
-Cada caso corre como subproceso interno en un puerto local (9001-9012).
+Cada caso corre como subproceso interno en un puerto local (9001-90NN).
 El dispatcher escucha en :8200 y enruta por prefijo de path:
 
     GET /01/health          → case 01 server (interno :9001)
@@ -40,6 +40,7 @@ CASES = {
     "10": {"port": 9010, "name": "Arquitectura cara para algo simple", "server": "/cases/10/server.py"},
     "11": {"port": 9011, "name": "Reportes que bloquean la operacion", "server": "/cases/11/server.py"},
     "12": {"port": 9012, "name": "Punto unico de conocimiento",        "server": "/cases/12/server.py"},
+    "13": {"port": 9013, "name": "Cache stampede y thundering herd",     "server": "/cases/13/server.py"},
 }
 
 DISPATCH_PORT = int(os.environ.get("PORT", "8200"))
@@ -138,7 +139,7 @@ class DispatchHandler(BaseHTTPRequestHandler):
             payload = {
                 "lab":   "Problem-Driven Systems Lab",
                 "stack": APP_STACK,
-                "info":  "Dispatcher Python — un contenedor, un puerto, 12 casos.",
+                "info":  f"Dispatcher Python — un contenedor, un puerto, {len(CASES)} casos.",
                 "usage": "GET /{caso}/{ruta}  →  e.g. /01/health, /05/batch-legacy",
                 "cases": {
                     cid: {
@@ -182,7 +183,7 @@ if __name__ == "__main__":
     wait_for_cases(timeout=20.0)
 
     print(f"[dispatcher] Listo. Escuchando en :{DISPATCH_PORT}")
-    print(f"[dispatcher] Rutas: /01/ ... /12/  →  casos internos :9001 ... :9012")
+    print(f"[dispatcher] Rutas: /01/ ... /{max(CASES)}/  →  casos internos :9001 ... :{CASES[max(CASES)]['port']}")
 
     server = HTTPServer(("0.0.0.0", DISPATCH_PORT), DispatchHandler)
     server.serve_forever()

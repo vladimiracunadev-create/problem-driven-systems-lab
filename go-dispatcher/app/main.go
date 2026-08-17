@@ -47,6 +47,7 @@ var cases = []caseInfo{
 	{"10", 9610, "Arquitectura cara para algo simple", "/app/cases/10/case10"},
 	{"11", 9611, "Reportes que bloquean operacion", "/app/cases/11/case11"},
 	{"12", 9612, "Punto unico de conocimiento", "/app/cases/12/case12"},
+	{"13", 9613, "Cache stampede y thundering herd", "/app/cases/13/case13"},
 }
 
 var (

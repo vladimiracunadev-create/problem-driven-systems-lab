@@ -1,7 +1,7 @@
 'use strict';
 
 /**
- * Node Lab Dispatcher — un solo contenedor, un solo puerto para los 12 casos.
+ * Node Lab Dispatcher — un solo contenedor, un solo puerto para todos los casos.
  *
  * Cada caso corre como subproceso interno en un puerto local.
  * El dispatcher escucha en :8300 y enruta por prefijo de path:
@@ -36,6 +36,7 @@ const CASES = {
   '10': { port: 9010, name: 'Arquitectura cara para algo simple', server: '/cases/10/server.js' },
   '11': { port: 9011, name: 'Reportes que bloquean la operacion', server: '/cases/11/server.js' },
   '12': { port: 9012, name: 'Punto unico de conocimiento',        server: '/cases/12/server.js' },
+  '13': { port: 9013, name: 'Cache stampede y thundering herd',  server: '/cases/13/server.js' },
 };
 
 const DISPATCH_PORT = Number.parseInt(process.env.PORT || '8300', 10);
@@ -150,7 +151,7 @@ const handler = async (req, res) => {
     const payload = {
       lab: 'Problem-Driven Systems Lab',
       stack: APP_STACK,
-      info: 'Dispatcher Node.js — un contenedor, un puerto, 12 casos.',
+      info: `Dispatcher Node.js — un contenedor, un puerto, ${Object.keys(CASES).length} casos.`,
       usage: 'GET /{caso}/{ruta}  →  e.g. /01/health, /05/batch-legacy',
       cases: Object.fromEntries(
         Object.entries(CASES).map(([cid, info]) => [
@@ -203,7 +204,7 @@ process.on('SIGINT',  () => shutdown('SIGINT'));
   await waitForCases(20000);
 
   console.log(`[dispatcher] Listo. Escuchando en :${DISPATCH_PORT}`);
-  console.log('[dispatcher] Rutas: /01/ → :9101, /02/.../12/ → :9002...:9012');
+  console.log('[dispatcher] Rutas: /01/ → :9101, /02/.../NN/ → :9002...');
 
   http.createServer(handler).listen(DISPATCH_PORT, '0.0.0.0');
 })();
