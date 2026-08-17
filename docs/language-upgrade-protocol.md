@@ -6,7 +6,7 @@
 
 ## 🎯 El problema que este protocolo resuelve
 
-Los 13 casos de este laboratorio no resuelven problemas con código genérico: los resuelven con **la primitiva idiomática de cada runtime**. Esa es toda la propuesta de valor del repositorio, y también su punto de caducidad.
+Los 14 casos de este laboratorio no resuelven problemas con código genérico: los resuelven con **la primitiva idiomática de cada runtime**. Esa es toda la propuesta de valor del repositorio, y también su punto de caducidad.
 
 Cuando un lenguaje evoluciona, la primitiva que un caso enseña puede quedar obsoleta y el caso pasa a enseñar **la forma vieja de hacer las cosas** sin que nadie lo note. El código sigue compilando. Los tests siguen en verde. Docker sigue levantando. Y la documentación sigue afirmando que esa es la manera correcta.
 
@@ -82,7 +82,7 @@ Para el stack afectado, en este orden:
 - [ ] **3. ¿Alguna limitación documentada dejó de ser cierta?** — Sección `🚧 Límites, problemas sin solución y desafíos`. Una limitación que se volvió falsa es peor que una primitiva vieja: es documentación que miente.
 - [ ] **4. Código de los casos afectados** — `cases/NN-*/<stack>/`. Solo los casos que la revisión anterior marcó.
 - [ ] **5. `comparison.md` de esos casos** — `cases/NN-*/comparison.md`. Es lo que un lector usa para decidir, e incluye la tabla de decisión, la primitiva central por stack y el **veredicto con ranking**. Si la primitiva cambió, el veredicto puede haber cambiado.
-- [ ] **6. `Dockerfile`** — los 13 casos del stack **y** el hub. Uno solo desalineado y el mismo caso corre en dos runtimes según cómo se levante.
+- [ ] **6. `Dockerfile`** — los 14 casos del stack **y** el hub. Uno solo desalineado y el mismo caso corre en dos runtimes según cómo se levante.
 - [ ] **7. `shared/catalog/cases.json`** — bloque `languages`: `version`, `version_label`, `docker_image`. Es la fuente de verdad del portal y de los diagramas.
 - [ ] **8. Tablas de versión visibles** — [`README.md`](../README.md) y [`docs/stack-map.md`](stack-map.md). `check-language-versions.sh` falla el PR si divergen del `Dockerfile`.
 - [ ] **9. Diagramas** — `python scripts/generate_diagrams.py`. Los SVG de `docs/assets/` llevan la versión fijada de cada stack.
@@ -124,7 +124,7 @@ chore(java): Java 21 -> 25 — ScopedValue reemplaza al ThreadLocal del caso 03
 - caso 03 reescrito sobre ScopedValue; ThreadLocal queda documentado como
   la forma previa y por que se usaba
 - comparison.md del caso 03: veredicto revisado, Java sube de 5o a 3o
-- Dockerfile de los 13 casos + hub, cases.json, README y stack-map
+- Dockerfile de los 14 casos + hub, cases.json, README y stack-map
 - diagramas regenerados
 ```
 

@@ -2,6 +2,84 @@
 
 Todos los cambios notables de este laboratorio se registran aqui con foco en madurez tecnica y documental.
 
+## 2026-08-17 - Caso 14: agotamiento del pool de conexiones en los 7 stacks
+
+Segundo caso del **Eje 1 del ROADMAP**. El lab pasa a **14 casos x 7 stacks = 98
+endpoints**.
+
+### Added — caso 14, agotamiento del pool de conexiones
+
+`cases/14-connection-pool-exhaustion/` con las **7 implementaciones**, no las
+tres que el ROADMAP preveia, por la misma razon estructural del caso 13.
+
+Contrato uniforme: `/pool-leaky` y `/pool-managed` sobre la misma carga, con
+`leaked` = `acquired - released` como metrica central, mas `hung`,
+`failed_timeout`, `pool_available_after`, `pool_wait_ms_p99` y `littles_law`.
+
+El caso combina dos defectos que se necesitan mutuamente: la devolucion solo en
+el camino feliz (cada excepcion se lleva una conexion) y la adquisicion sin
+deadline (el que llega tarde no falla, se queda). El resultado es una
+indisponibilidad que **no produce errores**: los requests no terminan, asi que
+no generan muestras de latencia y el p99 no se dispara — desaparece del grafico.
+
+| Stack | Pool | Deadline | Garantia de devolucion |
+|---|---|---|---|
+| PHP | array en el proceso | — (un solo proceso) | `finally` |
+| Python | `queue.Queue(maxsize=N)` | `get(timeout=...)` | `@contextmanager` |
+| Node | array + cola de waiters | `AbortSignal.timeout()` | `finally` en `async` |
+| Java | `ArrayBlockingQueue` | `poll(timeout, unit)` | try-with-resources |
+| .NET | `SemaphoreSlim` + `ConcurrentBag` | `WaitAsync(timeout)` → `false` | `using var` |
+| Go | `chan *conn` bufferizado | `select` + `time.NewTimer` | `defer` |
+| Rust | `Mutex<Vec<Conn>>` + `Condvar` | `wait_timeout` | `impl Drop` |
+
+### El hallazgo del caso: Rust gana por lo que impide
+
+Es el **unico caso del laboratorio donde Rust primero no es por expresividad
+sino por lo que el lenguaje no deja escribir**. Con `impl Drop` la fuga no se
+puede producir por descuido: el `Drop` corre en el return feliz, en el temprano
+y durante el desenrollado por panic.
+
+Por eso la variante leaky de Rust tuvo que escribirse a proposito con
+`std::mem::forget(lease)` — la unica forma de perder un recurso en Rust seguro.
+En los otros seis stacks el leak es lo que pasa si uno se distrae; aca hay que
+pedirlo por su nombre, y el nombre es grepeable.
+
+El reverso: **Go baja al quinto puesto por una sola linea**. El canal
+bufferizado como pool es la expresion mas economica del set, pero `defer
+p.release(c)` hay que acordarse de escribirlo, y olvidarlo compila igual.
+
+### Una decision de fidelidad al reves que la del caso 13
+
+Aca el trabajo que retiene la conexion **si** es un `sleep`. Una conexion se
+retiene mientras se espera a la red, no mientras se quema CPU. En el caso 13 un
+`sleep` habria escondido el punto; aca quemar CPU lo esconderia. Misma pregunta
+—que recurso escasea de verdad—, respuestas opuestas, y las dos documentadas.
+
+### Fixed durante la construccion
+
+`(idx % 100) < fail_rate` parecia un reparto de fallos razonable y no lo era:
+con 24 requests y `fail_rate=25` fallaban **las 24**, porque todos los indices
+son menores que 25. La variante managed reportaba 24 fallos de query y el
+contraste quedaba ilegible. Se reemplazo por `(idx * 37) % 100 < fail_rate`, que
+dispersa los fallos por toda la tanda. Aplicado en los siete stacks.
+
+### Changed — integracion
+
+- **Dispatchers**: registro del caso 14 y puerto interno en los siete
+  (`:9014` PHP/Python/Node, `:9414` Java, `:9514` .NET, `:9614` Go, `:9714` Rust).
+- **`ci.yml`**: matriz `compose-config` de 99 a **106 archivos**; `hub-probe`
+  valida 14 casos por stack; `compose-smoke` suma `case14-java` y `case14-dotnet`.
+- **`shared/catalog/cases.json`** + `docs/case-catalog.md` + los cinco SVG.
+- **Perfiles de lenguaje**: agregado de veredictos recalculado desde los
+  `comparison.md`. **Rust pasa a 7 oros** (gana tambien el 14).
+
+### Verificado
+
+Los 7 stacks levantados con Docker. Con pool de 4, 24 requests y 25% de fallo:
+`leaked=4`, `hung≈12`, `pool_available_after=0/4` y ~2 s de pared en la variante
+con fuga; `leaked=0`, `pool_available_after=4/4` y ~155 ms en la corregida.
+Identico en los siete.
+
 ## 2026-08-17 - Eje 1 abre con el caso 13: cache stampede en los 7 stacks
 
 Primer caso del **Eje 1 del ROADMAP** (casos nuevos de la vida real, 13-20). El

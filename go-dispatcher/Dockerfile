@@ -29,7 +29,8 @@ COPY cases/10-expensive-architecture-for-simple-needs/go/app/                   
 COPY cases/11-heavy-reporting-blocks-operations/go/app/                              /src/case11/
 COPY cases/12-single-point-of-knowledge-and-operational-risk/go/app/                 /src/case12/
 COPY cases/13-cache-stampede-and-thundering-herd/go/app/                           /src/case13/
-RUN for n in 03 04 05 06 07 08 09 10 11 12 13; do \
+COPY cases/14-connection-pool-exhaustion/go/app/                           /src/case14/
+RUN for n in 03 04 05 06 07 08 09 10 11 12 13 14; do \
       cd /src/case$n && CGO_ENABLED=0 go build -trimpath -o /out/cases/$n/case$n . || exit 1; \
     done
 

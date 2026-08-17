@@ -25,6 +25,7 @@ COPY cases/10-expensive-architecture-for-simple-needs/php/app/                  
 COPY cases/11-heavy-reporting-blocks-operations/php/app/                               /cases/11/
 COPY cases/12-single-point-of-knowledge-and-operational-risk/php/app/                  /cases/12/
 COPY cases/13-cache-stampede-and-thundering-herd/php/app/                            /cases/13/
+COPY cases/14-connection-pool-exhaustion/php/app/                            /cases/14/
 
 # Dispatcher + entrypoint
 COPY php-dispatcher/app/entrypoint.sh /app/entrypoint.sh

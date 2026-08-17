@@ -5,7 +5,7 @@
     "hero_title": "Evalúa el laboratorio con evidencia real: elige una audiencia o un stack tecnológico",
     "audience_message": "Diseñado para especialistas en selección, líderes técnicos y equipos de ingeniería que buscan validar criterio técnico con escenarios reproducibles."
   },
-  "recommended_github_about": "🧪 Laboratorio de sistemas distribuido con 13 casos reales Docker-first para diagnosticar y resolver problemas criticos de rendimiento, observabilidad, resiliencia y arquitectura 🐳",
+  "recommended_github_about": "🧪 Laboratorio de sistemas distribuido con 14 casos reales Docker-first para diagnosticar y resolver problemas criticos de rendimiento, observabilidad, resiliencia y arquitectura 🐳",
   "recommended_github_topics": [
     "problem-driven",
     "docker",
@@ -1404,6 +1404,104 @@
           "root_path": "/13/",
           "isolated_compose": "cases/13-cache-stampede-and-thundering-herd/rust/compose.yml",
           "isolated_port": 8713
+        }
+      }
+    },
+    {
+      "id": "14",
+      "icon": "🚰",
+      "slug": "connection-pool-exhaustion",
+      "title": "Agotamiento del pool de conexiones",
+      "category": "Rendimiento",
+      "status": "OPERATIVO",
+      "level_detail": "Devolucion garantizada con la primitiva de cada runtime: finally en PHP, @contextmanager sobre queue.Queue en Python, finally con AbortSignal.timeout en Node, try-with-resources sobre ArrayBlockingQueue en Java, using var con SemaphoreSlim.WaitAsync en .NET, canal bufferizado como pool con select y defer en Go, impl Drop en Rust — donde fugar exige escribir mem::forget a proposito",
+      "summary": "Un pool chico, sin timeout de adquisicion y con fugas en el camino de excepcion deja de dar conexiones para siempre.",
+      "case_readme_path": "cases/14-connection-pool-exhaustion/README.md",
+      "business_outcome": "Evita indisponibilidades progresivas que tienen al reinicio como unico remedio, y dimensiona el pool con una formula en vez de con intuicion.",
+      "recruiter_pitch": "Muestra que un pool vacio y uno ocupado se ven igual en el dashboard, y que cuando el p99 desaparece del grafico la mala noticia es peor que una latencia alta.",
+      "proof_points": [
+        "Contrasta /pool-leaky y /pool-managed sobre la misma carga con leaked = acquired - released como metrica central.",
+        "Hace visible hung, failed_timeout y pool_available_after: si al terminar el pool no volvio a su tamaño, hubo fuga.",
+        "Expone littles_law con el tamaño de pool recomendado calculado desde el throughput medido, no estimado."
+      ],
+      "look_for": [
+        "Si leaked es exactamente el numero de fallos en la variante leaky y 0 en la corregida.",
+        "Si hung crece hasta consumir el resto de la carga: es el pool agotado en vivo.",
+        "Si failed_timeout reemplaza a hung en la variante corregida: el mismo problema de capacidad, pero contable."
+      ],
+      "honesty_note": "Las conexiones son objetos en memoria, no sockets contra una base real, y el tiempo de query es un sleep. Eso ultimo es deliberado y mas fiel que quemar CPU: una conexion se retiene mientras se espera a la red. En PHP las N requests se recorren en secuencia porque el servidor embebido es de un solo proceso.",
+      "operational_stacks": [
+        "php",
+        "python",
+        "node",
+        "java",
+        "dotnet",
+        "go",
+        "rust"
+      ],
+      "runtime_entries": {
+        "php": {
+          "port": 8100,
+          "compose_path": "compose.root.yml",
+          "readme_path": "cases/14-connection-pool-exhaustion/php/README.md",
+          "health_path": "/14/health",
+          "root_path": "/14/",
+          "isolated_compose": "cases/14-connection-pool-exhaustion/php/compose.yml",
+          "isolated_port": 8114
+        },
+        "python": {
+          "port": 8200,
+          "compose_path": "compose.python.yml",
+          "readme_path": "cases/14-connection-pool-exhaustion/python/README.md",
+          "health_path": "/14/health",
+          "root_path": "/14/",
+          "isolated_compose": "cases/14-connection-pool-exhaustion/python/compose.yml",
+          "isolated_port": 8314
+        },
+        "node": {
+          "port": 8300,
+          "compose_path": "compose.nodejs.yml",
+          "readme_path": "cases/14-connection-pool-exhaustion/node/README.md",
+          "health_path": "/14/health",
+          "root_path": "/14/",
+          "isolated_compose": "cases/14-connection-pool-exhaustion/node/compose.yml",
+          "isolated_port": 8214
+        },
+        "java": {
+          "port": 8400,
+          "compose_path": "compose.java.yml",
+          "readme_path": "cases/14-connection-pool-exhaustion/java/README.md",
+          "health_path": "/14/health",
+          "root_path": "/14/",
+          "isolated_compose": "cases/14-connection-pool-exhaustion/java/compose.yml",
+          "isolated_port": 8414
+        },
+        "dotnet": {
+          "port": 8500,
+          "compose_path": "compose.dotnet.yml",
+          "readme_path": "cases/14-connection-pool-exhaustion/dotnet/README.md",
+          "health_path": "/14/health",
+          "root_path": "/14/",
+          "isolated_compose": "cases/14-connection-pool-exhaustion/dotnet/compose.yml",
+          "isolated_port": 8514
+        },
+        "go": {
+          "port": 8600,
+          "compose_path": "compose.go.yml",
+          "readme_path": "cases/14-connection-pool-exhaustion/go/README.md",
+          "health_path": "/14/health",
+          "root_path": "/14/",
+          "isolated_compose": "cases/14-connection-pool-exhaustion/go/compose.yml",
+          "isolated_port": 8614
+        },
+        "rust": {
+          "port": 8700,
+          "compose_path": "compose.rust.yml",
+          "readme_path": "cases/14-connection-pool-exhaustion/rust/README.md",
+          "health_path": "/14/health",
+          "root_path": "/14/",
+          "isolated_compose": "cases/14-connection-pool-exhaustion/rust/compose.yml",
+          "isolated_port": 8714
         }
       }
     }

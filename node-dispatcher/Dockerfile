@@ -18,6 +18,7 @@ COPY cases/10-expensive-architecture-for-simple-needs/node/app/server.js /cases/
 COPY cases/11-heavy-reporting-blocks-operations/node/app/server.js    /cases/11/server.js
 COPY cases/12-single-point-of-knowledge-and-operational-risk/node/app/server.js /cases/12/server.js
 COPY cases/13-cache-stampede-and-thundering-herd/node/app/server.js /cases/13/server.js
+COPY cases/14-connection-pool-exhaustion/node/app/server.js /cases/14/server.js
 
 # Dispatcher
 COPY node-dispatcher/app/main.js /app/main.js

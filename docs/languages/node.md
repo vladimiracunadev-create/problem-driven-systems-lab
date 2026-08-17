@@ -1,6 +1,6 @@
 # 🟢 Node.js
 
-> **Versión fijada:** `22` (LTS) · **Imagen base:** `node:22-alpine` · **Hub:** `:8300` · **Casos operativos:** 13 / 13
+> **Versión fijada:** `22` (LTS) · **Imagen base:** `node:22-alpine` · **Hub:** `:8300` · **Casos operativos:** 14 / 14
 
 [⬅️ Volver a los perfiles de lenguaje](README.md) · [🗺️ Mapa de stacks](../stack-map.md) · [🔄 Protocolo de actualización](../language-upgrade-protocol.md)
 
@@ -46,6 +46,7 @@ Node.js es un runtime de JavaScript construido sobre V8 (el motor de Chrome) con
 | [11 · Reportes](../../cases/11-heavy-reporting-blocks-operations/node/README.md) | `worker_threads` | La única forma de sacar el CPU del loop sin frenar el proceso |
 | [12 · Punto único](../../cases/12-single-point-of-knowledge-and-operational-risk/node/README.md) | optional chaining `?.` | Cómodo. **Limitación:** propaga `undefined` en silencio hasta que explota tres capas más arriba |
 | [13 · Cache stampede](../../cases/13-cache-stampede-and-thundering-herd/node/README.md) | `Map<key, Promise>` | La Promise ya es el single-flight. Tres líneas — y el orden del `set` es toda la garantía |
+| [14 · Pool de conexiones](../../cases/14-connection-pool-exhaustion/node/README.md) | `AbortSignal.timeout` + `finally` | Sin deadline, el que espera es una Promise invisible que no responde nunca |
 
 > 💡 **El patrón que solo se ve mirando la columna entera:** Node es el stack donde más soluciones dependen de la disciplina y menos del lenguaje. `AsyncLocalStorage` funciona pero nada impide filtrarlo; `?.` propaga `undefined` sin avisar; el bus de eventos notifica en línea. A cambio, tiene la mejor primitiva de cancelación del set.
 
@@ -96,11 +97,11 @@ curl -s localhost:8300/01/metrics                          # db_hits constante, 
 
 ## 🏆 Dónde gana y dónde pierde en el laboratorio
 
-Agregado de los veredictos de las 12 comparativas que rankean: **0 primeros puestos, media 4.4**.
+Agregado de los veredictos de las 13 comparativas que rankean: **0 primeros puestos, media 4.5**.
 
 - 🥈 **Segundo en 04** — `AbortController` es la mejor primitiva de cancelación del set después de `context.Context`, y la única que se pasa igual a `fetch` que a una promesa propia.
 - 🥉 **Tercero en 08 y 13** — `EventEmitter` + `Proxy` para el bus de eventos; `Map<key, Promise>` como el single-flight más corto del lab.
-- **6º en 01, 03 y 09** — el modelo de un solo hilo y la falta de respaldo del lenguaje le cuestan tres casos.
+- **6º en 01, 03, 09 y 14** — el modelo de un solo hilo y la falta de respaldo del lenguaje le cuestan tres casos.
 
 **Lectura honesta:** Node no gana ningún caso, y el laboratorio no lo maquilla. Lo que sí hace es ganar el argumento del caso 01 *por el lado contrario*: es el peor stack posible para un N+1 síncrono, y precisamente por eso es donde el problema se ve con más claridad. Un stack puede ser valioso para enseñar sin ser el que mejor resuelve.
 
@@ -132,4 +133,4 @@ El detalle del procedimiento está en [docs/language-upgrade-protocol.md](../lan
 docker compose -f compose.nodejs.yml up -d --build
 ```
 
-Los 13 casos quedan servidos en `http://localhost:8300/NN/`. Cada caso trae además su propio `compose.yml` para correrlo aislado — útil en los casos 01 y 11, donde la medición del event loop necesita el runtime sin ruido de los otros once casos.
+Los 14 casos quedan servidos en `http://localhost:8300/NN/`. Cada caso trae además su propio `compose.yml` para correrlo aislado — útil en los casos 01 y 11, donde la medición del event loop necesita el runtime sin ruido de los otros once casos.

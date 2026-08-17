@@ -82,6 +82,7 @@ jobs:
           - cases/11-heavy-reporting-blocks-operations/php/compose.yml
           - cases/12-single-point-of-knowledge-and-operational-risk/php/compose.yml
           - cases/13-cache-stampede-and-thundering-herd/php/compose.yml
+          - cases/14-connection-pool-exhaustion/php/compose.yml
           - cases/01-api-latency-under-load/node/compose.yml
           - cases/02-n-plus-one-and-db-bottlenecks/node/compose.yml
           - cases/03-poor-observability-and-useless-logs/node/compose.yml
@@ -95,6 +96,7 @@ jobs:
           - cases/11-heavy-reporting-blocks-operations/node/compose.yml
           - cases/12-single-point-of-knowledge-and-operational-risk/node/compose.yml
           - cases/13-cache-stampede-and-thundering-herd/node/compose.yml
+          - cases/14-connection-pool-exhaustion/node/compose.yml
           - cases/01-api-latency-under-load/python/compose.yml
           - cases/02-n-plus-one-and-db-bottlenecks/python/compose.yml
           - cases/03-poor-observability-and-useless-logs/python/compose.yml
@@ -108,6 +110,7 @@ jobs:
           - cases/11-heavy-reporting-blocks-operations/python/compose.yml
           - cases/12-single-point-of-knowledge-and-operational-risk/python/compose.yml
           - cases/13-cache-stampede-and-thundering-herd/python/compose.yml
+          - cases/14-connection-pool-exhaustion/python/compose.yml
           - cases/01-api-latency-under-load/java/compose.yml
           - cases/02-n-plus-one-and-db-bottlenecks/java/compose.yml
           - cases/03-poor-observability-and-useless-logs/java/compose.yml
@@ -121,6 +124,7 @@ jobs:
           - cases/11-heavy-reporting-blocks-operations/java/compose.yml
           - cases/12-single-point-of-knowledge-and-operational-risk/java/compose.yml
           - cases/13-cache-stampede-and-thundering-herd/java/compose.yml
+          - cases/14-connection-pool-exhaustion/java/compose.yml
           - cases/01-api-latency-under-load/dotnet/compose.yml
           - cases/02-n-plus-one-and-db-bottlenecks/dotnet/compose.yml
           - cases/03-poor-observability-and-useless-logs/dotnet/compose.yml
@@ -134,6 +138,7 @@ jobs:
           - cases/11-heavy-reporting-blocks-operations/dotnet/compose.yml
           - cases/12-single-point-of-knowledge-and-operational-risk/dotnet/compose.yml
           - cases/13-cache-stampede-and-thundering-herd/dotnet/compose.yml
+          - cases/14-connection-pool-exhaustion/dotnet/compose.yml
           - cases/01-api-latency-under-load/go/compose.yml
           - cases/02-n-plus-one-and-db-bottlenecks/go/compose.yml
           - cases/03-poor-observability-and-useless-logs/go/compose.yml
@@ -147,6 +152,7 @@ jobs:
           - cases/11-heavy-reporting-blocks-operations/go/compose.yml
           - cases/12-single-point-of-knowledge-and-operational-risk/go/compose.yml
           - cases/13-cache-stampede-and-thundering-herd/go/compose.yml
+          - cases/14-connection-pool-exhaustion/go/compose.yml
           - cases/01-api-latency-under-load/rust/compose.yml
           - cases/02-n-plus-one-and-db-bottlenecks/rust/compose.yml
           - cases/03-poor-observability-and-useless-logs/rust/compose.yml
@@ -160,6 +166,7 @@ jobs:
           - cases/11-heavy-reporting-blocks-operations/rust/compose.yml
           - cases/12-single-point-of-knowledge-and-operational-risk/rust/compose.yml
           - cases/13-cache-stampede-and-thundering-herd/rust/compose.yml
+          - cases/14-connection-pool-exhaustion/rust/compose.yml
     steps:
       - name: Checkout
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4
@@ -228,6 +235,12 @@ jobs:
           - name: case13-rust
             compose_file: cases/13-cache-stampede-and-thundering-herd/rust/compose.yml
             probe_url: http://127.0.0.1:8713/health
+          - name: case14-java
+            compose_file: cases/14-connection-pool-exhaustion/java/compose.yml
+            probe_url: http://127.0.0.1:8414/health
+          - name: case14-dotnet
+            compose_file: cases/14-connection-pool-exhaustion/dotnet/compose.yml
+            probe_url: http://127.0.0.1:8514/health
     steps:
       - name: Checkout
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4
@@ -297,27 +310,27 @@ jobs:
           - name: python-hub
             compose_file: compose.python.yml
             hub_port: 8200
-            cases: "01 02 03 04 05 06 07 08 09 10 11 12 13"
+            cases: "01 02 03 04 05 06 07 08 09 10 11 12 13 14"
           - name: node-hub
             compose_file: compose.nodejs.yml
             hub_port: 8300
-            cases: "01 02 03 04 05 06 07 08 09 10 11 12 13"
+            cases: "01 02 03 04 05 06 07 08 09 10 11 12 13 14"
           - name: java-hub
             compose_file: compose.java.yml
             hub_port: 8400
-            cases: "01 02 03 04 05 06 07 08 09 10 11 12 13"
+            cases: "01 02 03 04 05 06 07 08 09 10 11 12 13 14"
           - name: dotnet-hub
             compose_file: compose.dotnet.yml
             hub_port: 8500
-            cases: "01 02 03 04 05 06 07 08 09 10 11 12 13"
+            cases: "01 02 03 04 05 06 07 08 09 10 11 12 13 14"
           - name: go-hub
             compose_file: compose.go.yml
             hub_port: 8600
-            cases: "01 02 03 04 05 06 07 08 09 10 11 12 13"
+            cases: "01 02 03 04 05 06 07 08 09 10 11 12 13 14"
           - name: rust-hub
             compose_file: compose.rust.yml
             hub_port: 8700
-            cases: "01 02 03 04 05 06 07 08 09 10 11 12 13"
+            cases: "01 02 03 04 05 06 07 08 09 10 11 12 13 14"
     steps:
       - name: Checkout
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4

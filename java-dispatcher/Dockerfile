@@ -23,6 +23,7 @@ COPY cases/10-expensive-architecture-for-simple-needs/java/app/Main.java        
 COPY cases/11-heavy-reporting-blocks-operations/java/app/Main.java                       /cases/11/Main.java
 COPY cases/12-single-point-of-knowledge-and-operational-risk/java/app/Main.java          /cases/12/Main.java
 COPY cases/13-cache-stampede-and-thundering-herd/java/app/Main.java             /cases/13/Main.java
+COPY cases/14-connection-pool-exhaustion/java/app/Main.java             /cases/14/Main.java
 
 # Dispatcher
 COPY java-dispatcher/app/Dispatcher.java /app/Dispatcher.java
@@ -44,6 +45,7 @@ RUN javac -cp /opt/sqlite-jdbc.jar /cases/01/Main.java \
  && javac /cases/11/Main.java \
  && javac /cases/12/Main.java \
  && javac /cases/13/Main.java \
+ && javac /cases/14/Main.java \
  && javac /app/Dispatcher.java
 
 EXPOSE 8400

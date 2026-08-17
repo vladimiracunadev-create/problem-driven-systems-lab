@@ -1,6 +1,6 @@
 # 🦀 Rust
 
-> **Versión fijada:** `1.83` · **Imagen base:** `rust:1.83-alpine` · **Hub:** `:8700` · **Casos operativos:** 13 / 13
+> **Versión fijada:** `1.83` · **Imagen base:** `rust:1.83-alpine` · **Hub:** `:8700` · **Casos operativos:** 14 / 14
 
 [⬅️ Volver a los perfiles de lenguaje](README.md) · [🗺️ Mapa de stacks](../stack-map.md) · [🔄 Protocolo de actualización](../language-upgrade-protocol.md)
 
@@ -48,6 +48,7 @@ El laboratorio usa Rust **sin runtime asincrónico**: `std::thread` y un thread 
 | [11 · Reportes](../../cases/11-heavy-reporting-blocks-operations/rust/README.md) | `Mutex<usize>` + `Condvar` | El que no consigue slot **duerme** hasta ser despertado: espera pasiva, sin busy-wait |
 | [12 · Punto único](../../cases/12-single-point-of-knowledge-and-operational-risk/rust/README.md) | `Option<T>` + operador `?` + `match` exhaustivo | Omitir el brazo `None` **no compila**. El `?` propaga la ausencia sin escribir un solo `if` |
 | [13 · Cache stampede](../../cases/13-cache-stampede-and-thundering-herd/rust/README.md) | `Arc<Flight>` con `Mutex` + `Condvar` | La `std` no trae `Future` ejecutable; el `Arc` obliga a que el vuelo sobreviva al mapa |
+| [14 · Pool de conexiones](../../cases/14-connection-pool-exhaustion/rust/README.md) | `impl Drop` sobre `Lease` | No hay línea que olvidar; fugar exige llamar a `mem::forget` por su nombre |
 
 > 💡 **El patrón que solo se ve mirando la columna entera:** en los casos 03, 06, 07, 08 y 12 la corrección no la impone la disciplina del programador sino el compilador. Son cinco categorías de bug que en los otros seis stacks se evitan *acordándose*.
 
@@ -99,15 +100,15 @@ curl -s localhost:8700/05/state          # dropped_total refleja exactamente lo 
 
 ## 🏆 Dónde gana y dónde pierde en el laboratorio
 
-Agregado de los veredictos de las 12 comparativas que rankean: **6 primeros puestos, media 2.1** — más oros que ningún otro stack.
+Agregado de los veredictos de las 13 comparativas que rankean: **7 primeros puestos, media 2.0** — más oros que ningún otro stack.
 
-- 🥇 **Gana en 02, 03, 05, 06, 07 y 12** — todos los casos donde el sistema de tipos o el `Drop` determinista convierten un error de runtime en un error de compilación.
+- 🥇 **Gana en 02, 03, 05, 06, 07, 12 y 14** — en el 14 por lo que el lenguaje **impide**: `impl Drop` hace que fugar una conexión no se pueda escribir por descuido — todos los casos donde el sistema de tipos o el `Drop` determinista convierten un error de runtime en un error de compilación.
 - 🥈 **Segundo en 08 y 09** — pierde el primer puesto contra Go por expresividad, no por corrección.
 - 🥉 **Tercero en 01 y 11** — el thread-per-connection 1:1 le cuesta el podio.
 - **4º en 13** — hay que construir el single-flight entero con `Condvar`: el compilador protege del use-after-remove, pero no regala la primitiva.
 - **5º en 04** — la limitación de `recv_timeout`, documentada arriba.
 
-**Lectura honesta:** Rust tiene el mayor rango del laboratorio. Es primero seis veces y quinto una vez. Go promedia mejor porque nunca baja del tercer puesto; Rust brilla donde el compilador aporta y queda al descubierto donde `std` no llega.
+**Lectura honesta:** Rust tiene el mayor rango del laboratorio. Es primero siete veces y quinto una vez. Go promedia mejor porque nunca baja del tercer puesto; Rust brilla donde el compilador aporta y queda al descubierto donde `std` no llega.
 
 ---
 
@@ -137,4 +138,4 @@ El detalle del procedimiento está en [docs/language-upgrade-protocol.md](../lan
 docker compose -f compose.rust.yml up -d --build
 ```
 
-Los 13 casos quedan servidos en `http://localhost:8700/NN/`. La primera compilación es notablemente más lenta que la de los otros seis stacks — es esperable, no es un fallo del build.
+Los 14 casos quedan servidos en `http://localhost:8700/NN/`. La primera compilación es notablemente más lenta que la de los otros seis stacks — es esperable, no es un fallo del build.

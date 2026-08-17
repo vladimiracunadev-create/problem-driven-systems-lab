@@ -17,7 +17,7 @@
 | 5 | Destrabar lo que no arranque | [RUNBOOK.md](../RUNBOOK.md) |
 | 6 | Comparar el mismo caso en otro lenguaje | `cases/NN-*/comparison.md` |
 
-> 💡 Los **13 casos están operativos en los 7 stacks**: PHP, Python, Node.js, Java, .NET, Go y Rust. Podés recorrer cualquier caso en cualquiera de ellos.
+> 💡 Los **14 casos están operativos en los 7 stacks**: PHP, Python, Node.js, Java, .NET, Go y Rust. Podés recorrer cualquier caso en cualquiera de ellos.
 
 ---
 
@@ -28,7 +28,7 @@
 | **Problem-driven** | El problema manda; el stack se elige para resolverlo, no al revés |
 | **Operativo** | Caso implementado con evidencia real y Docker funcional |
 | **Legacy vs optimized** | Las dos variantes de cada caso: la que tiene el problema y la que lo resuelve. Están vivas al mismo tiempo para poder compararlas |
-| **Hub** | Un contenedor que sirve los 13 casos de un lenguaje detrás de un puerto (`:8100` PHP, `:8300` Node, …) |
+| **Hub** | Un contenedor que sirve los 14 casos de un lenguaje detrás de un puerto (`:8100` PHP, `:8300` Node, …) |
 | **Modo aislado** | Levantar un solo caso en su propio contenedor, útil cuando la medición necesita el runtime sin ruido |
 | **Primitiva** | La herramienta que el lenguaje trae de fábrica para resolver algo (un canal en Go, un `Semaphore` en Java) |
 | **Comparativa** | El `comparison.md` de cada caso: los 7 stacks lado a lado y un veredicto razonado |
@@ -37,7 +37,7 @@
 
 ## 🚪 Por dónde empezar
 
-![Los 13 problemas agrupados por naturaleza](assets/case-map.svg)
+![Los 14 problemas agrupados por naturaleza](assets/case-map.svg)
 
 | Caso | Por qué empezar ahí |
 |---|---|
@@ -133,4 +133,4 @@ Para entender qué es cada lenguaje y en qué es bueno, están los [perfiles de 
 | [languages/](languages/README.md) | Qué es cada lenguaje, sus primitivas y sus límites |
 | [case-methodology.md](case-methodology.md) | Cómo se construye un caso antes de escribir código |
 | [docker-strategy.md](docker-strategy.md) | Por qué Docker es el modelo operativo del laboratorio |
-| [executive-summary.md](executive-summary.md) | Los 13 casos en una página |
+| [executive-summary.md](executive-summary.md) | Los 14 casos en una página |

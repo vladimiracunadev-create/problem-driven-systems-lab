@@ -1,6 +1,6 @@
 # 🗺️ Mapa de problemas
 
-> Los 13 casos del laboratorio con su descripción técnica, síntomas y valor de negocio.
+> Los 14 casos del laboratorio con su descripción técnica, síntomas y valor de negocio.
 
 ---
 
@@ -21,6 +21,7 @@
 | 📊 11 | Operaciones | Consultas de reporting que compiten con operación transaccional | Proteger la operación diaria durante analítica pesada |
 | 🧑‍💼 12 | Operaciones | Conocimiento crítico concentrado en una sola persona o módulo | Reducir riesgo organizacional y mejorar continuidad |
 | 🌩️ 13 | Rendimiento | La clave caliente de cache expira y los N llamadores golpean el origen a la vez | Evitar caídas autoinfligidas y reducir capacidad reservada del origen |
+| 🚰 14 | Rendimiento | El pool se achica en silencio hasta que no queda ninguna conexión | Eliminar el reinicio preventivo del runbook y dimensionar con una fórmula |
 
 ---
 
@@ -195,3 +196,17 @@
 - Reiniciar el servicio de cache provoca la caída en vez de arreglarla
 
 **Valor:** Evita caídas autoinfligidas en el momento de mayor fragilidad del sistema y reduce la capacidad que hay que reservar «por las dudas» en el origen.
+
+---
+
+### 🚰 14 — Agotamiento del pool de conexiones
+
+**Problema:** El pool pierde una conexión cada vez que una query lanza, porque la devolución está solo en el camino feliz. Y como la adquisición no tiene deadline, el que llega cuando ya no hay conexiones no falla: se queda.
+
+**Síntomas frecuentes:**
+- «Could not get connection from pool» con tráfico moderado, no en un pico
+- La base sana: CPU bajo, pocas conexiones activas, sin queries lentas
+- El p99 **desaparece del gráfico** en vez de dispararse
+- Reiniciar arregla el síntoma por unas horas
+
+**Valor:** Elimina el reinicio preventivo como parte del runbook y reemplaza el dimensionado por intuición con la ley de Little sobre throughput medido.

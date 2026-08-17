@@ -1,6 +1,6 @@
 # 🗂️ Catalogo de casos
 
-> Lista completa de los 13 casos del laboratorio generada desde `shared/catalog/cases.json`.
+> Lista completa de los 14 casos del laboratorio generada desde `shared/catalog/cases.json`.
 
 ## 📊 Estado actual
 
@@ -19,6 +19,7 @@
 | 📊 | [11 - Reportes pesados que bloquean la operacion](../cases/11-heavy-reporting-blocks-operations/README.md) | Operaciones | [👉 Senior Analysis](../cases/11-heavy-reporting-blocks-operations/php/README.md) | `OPERATIVO` | `php`, `python`, `node`, `java`, `dotnet`, `go`, `rust` | Permite discutir aislamiento de cargas, reporting y proteccion de flujos operativos. |
 | 👤 | [12 - Punto unico de conocimiento y riesgo operacional](../cases/12-single-point-of-knowledge-and-operational-risk/README.md) | Operaciones | [👉 Senior Analysis](../cases/12-single-point-of-knowledge-and-operational-risk/php/README.md) | `OPERATIVO` | `php`, `python`, `node`, `java`, `dotnet`, `go`, `rust` | Ayuda a discutir continuidad operacional, documentacion y reduccion de dependencia critica en personas. |
 | 🌧️ | [13 - Cache stampede y thundering herd](../cases/13-cache-stampede-and-thundering-herd/README.md) | Rendimiento | [👉 Senior Analysis](../cases/13-cache-stampede-and-thundering-herd/php/README.md) | `OPERATIVO` | `php`, `python`, `node`, `java`, `dotnet`, `go`, `rust` | Evita caidas autoinfligidas en el momento de mayor fragilidad del sistema y reduce la capacidad reservada del origen. |
+| 🚰 | [14 - Agotamiento del pool de conexiones](../cases/14-connection-pool-exhaustion/README.md) | Rendimiento | [👉 Senior Analysis](../cases/14-connection-pool-exhaustion/php/README.md) | `OPERATIVO` | `php`, `python`, `node`, `java`, `dotnet`, `go`, `rust` | Evita indisponibilidades progresivas que tienen al reinicio como unico remedio, y dimensiona el pool con una formula en vez de con intuicion. |
 
 ## ✅ Casos operativos hoy
 
@@ -99,6 +100,12 @@
 - Stacks operativos: `php`, `python`, `node`, `java`, `dotnet`, `go`, `rust`
 - Impacto de negocio: Evita caidas autoinfligidas en el momento de mayor fragilidad del sistema y reduce la capacidad reservada del origen.
 - Que demuestra: Contrasta /cache-naive y /cache-singleflight sobre la misma rafaga con origin_computations como metrica central.
+
+### 🚰 [14 - Agotamiento del pool de conexiones](../cases/14-connection-pool-exhaustion/README.md)
+
+- Stacks operativos: `php`, `python`, `node`, `java`, `dotnet`, `go`, `rust`
+- Impacto de negocio: Evita indisponibilidades progresivas que tienen al reinicio como unico remedio, y dimensiona el pool con una formula en vez de con intuicion.
+- Que demuestra: Contrasta /pool-leaky y /pool-managed sobre la misma carga con leaked = acquired - released como metrica central.
 
 ## 🧭 Rutas de evaluacion
 
