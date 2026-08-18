@@ -45,6 +45,7 @@ internal static class Program
         new CaseInfo("17", 9517, "Migracion de esquema sin downtime",       "/app/cases/17"),
         new CaseInfo("18", 9518, "Arranque en frio y retraso del autoescalado",       "/app/cases/18"),
         new CaseInfo("19", 9519, "Deriva del indice de busqueda y CDC roto",       "/app/cases/19"),
+        new CaseInfo("20", 9520, "La dead letter queue olvidada",       "/app/cases/20"),
     };
 
     private static readonly int DispatchPort =

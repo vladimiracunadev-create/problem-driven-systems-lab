@@ -43,6 +43,7 @@ const CASES = {
   '17': { port: 9017, name: 'Migracion de esquema sin downtime',  server: '/cases/17/server.js' },
   '18': { port: 9018, name: 'Arranque en frio y retraso del autoescalado',  server: '/cases/18/server.js' },
   '19': { port: 9019, name: 'Deriva del indice de busqueda y CDC roto',  server: '/cases/19/server.js' },
+  '20': { port: 9020, name: 'La dead letter queue olvidada',  server: '/cases/20/server.js' },
 };
 
 const DISPATCH_PORT = Number.parseInt(process.env.PORT || '8300', 10);

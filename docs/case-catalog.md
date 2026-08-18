@@ -1,6 +1,6 @@
 # 🗂️ Catalogo de casos
 
-> Lista completa de los 19 casos del laboratorio generada desde `shared/catalog/cases.json`.
+> Lista completa de los 20 casos del laboratorio generada desde `shared/catalog/cases.json`.
 
 ## 📊 Estado actual
 
@@ -25,6 +25,7 @@
 | 🧬 | [17 - Migracion de esquema sin downtime](../cases/17-zero-downtime-schema-migration/README.md) | Entrega | [👉 Senior Analysis](../cases/17-zero-downtime-schema-migration/php/README.md) | `OPERATIVO` | `php`, `python`, `node`, `java`, `dotnet`, `go`, `rust` | Permite cambiar el esquema de una tabla caliente sin ventana de mantenimiento ni 503 para el usuario final. |
 | ❄️ | [18 - Arranque en frio y retraso del autoescalado](../cases/18-cold-start-and-autoscale-lag/README.md) | Resiliencia | [👉 Senior Analysis](../cases/18-cold-start-and-autoscale-lag/php/README.md) | `OPERATIVO` | `php`, `python`, `node`, `java`, `dotnet`, `go`, `rust` | Elimina los 503 durante los escalados y habilita autoescalado agresivo con confianza, que es la forma de que el autoescalado ahorre dinero en vez de mover el problema. |
 | 🔎 | [19 - Deriva del indice de busqueda y CDC roto](../cases/19-search-index-drift-and-broken-cdc/README.md) | Observabilidad | [👉 Senior Analysis](../cases/19-search-index-drift-and-broken-cdc/php/README.md) | `OPERATIVO` | `php`, `python`, `node`, `java`, `dotnet`, `go`, `rust` | Elimina la categoria entera de 'el producto existe pero no aparece', que en un catalogo son productos que no se pueden comprar. |
+| 🪦 | [20 - La dead letter queue olvidada](../cases/20-forgotten-dead-letter-queue/README.md) | Resiliencia | [👉 Senior Analysis](../cases/20-forgotten-dead-letter-queue/php/README.md) | `OPERATIVO` | `php`, `python`, `node`, `java`, `dotnet`, `go`, `rust` | Elimina la perdida silenciosa de datos y convierte 'se proceso' en una afirmacion sobre la que se puede construir: conciliaciones, garantias de entrega, SLA de procesamiento. |
 
 ## ✅ Casos operativos hoy
 
@@ -141,6 +142,12 @@
 - Stacks operativos: `php`, `python`, `node`, `java`, `dotnet`, `go`, `rust`
 - Impacto de negocio: Elimina la categoria entera de 'el producto existe pero no aparece', que en un catalogo son productos que no se pueden comprar.
 - Que demuestra: Contrasta /search-drifted y /search-reconciled con recall y precision medidos con consultas reales.
+
+### 🪦 [20 - La dead letter queue olvidada](../cases/20-forgotten-dead-letter-queue/README.md)
+
+- Stacks operativos: `php`, `python`, `node`, `java`, `dotnet`, `go`, `rust`
+- Impacto de negocio: Elimina la perdida silenciosa de datos y convierte 'se proceso' en una afirmacion sobre la que se puede construir: conciliaciones, garantias de entrega, SLA de procesamiento.
+- Que demuestra: Contrasta /consume-silent y /consume-observed: 13,87% de dead-letter contra 3,97%.
 
 ## 🧭 Rutas de evaluacion
 

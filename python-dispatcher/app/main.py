@@ -47,6 +47,7 @@ CASES = {
     "17": {"port": 9017, "name": "Migracion de esquema sin downtime",     "server": "/cases/17/server.py"},
     "18": {"port": 9018, "name": "Arranque en frio y retraso del autoescalado",     "server": "/cases/18/server.py"},
     "19": {"port": 9019, "name": "Deriva del indice de busqueda y CDC roto",     "server": "/cases/19/server.py"},
+    "20": {"port": 9020, "name": "La dead letter queue olvidada",     "server": "/cases/20/server.py"},
 }
 
 DISPATCH_PORT = int(os.environ.get("PORT", "8200"))

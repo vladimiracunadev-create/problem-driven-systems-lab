@@ -54,6 +54,7 @@ var cases = []caseInfo{
 	{"17", 9617, "Migracion de esquema sin downtime", "/app/cases/17/case17"},
 	{"18", 9618, "Arranque en frio y retraso del autoescalado", "/app/cases/18/case18"},
 	{"19", 9619, "Deriva del indice de busqueda y CDC roto", "/app/cases/19/case19"},
+	{"20", 9620, "La dead letter queue olvidada", "/app/cases/20/case20"},
 }
 
 var (

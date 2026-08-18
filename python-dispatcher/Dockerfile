@@ -22,6 +22,7 @@ COPY cases/16-idempotency-and-duplicate-effects/python/app/server.py /cases/16/s
 COPY cases/17-zero-downtime-schema-migration/python/app/server.py /cases/17/server.py
 COPY cases/18-cold-start-and-autoscale-lag/python/app/server.py /cases/18/server.py
 COPY cases/19-search-index-drift-and-broken-cdc/python/app/server.py /cases/19/server.py
+COPY cases/20-forgotten-dead-letter-queue/python/app/server.py /cases/20/server.py
 
 # Dispatcher
 COPY python-dispatcher/app/main.py /app/main.py

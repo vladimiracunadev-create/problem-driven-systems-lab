@@ -24,7 +24,7 @@ Durante un lanzamiento de campaña, el tráfico se multiplicó por seis en once 
 
 La aplicación —Java 21 sobre Spring— tarda unos 18 segundos entre arrancar el proceso y poder atender: contexto de Spring, pool de conexiones, cliente de un servicio de identidad con TLS.
 
-`/health` es el endpoint por defecto del framework y responde 200 en cuanto el servidor HTTP levanta, **antes** del contexto. Sin `readinessProbe`, Kubernetes trata a un pod como listo apenas el contenedor arranca. El `Service` empezó a enrutarle tráfico a los 19 segundos de distancia de poder atenderlo.
+`/health` es el endpoint por defecto del framework y responde 200 en cuanto el servidor HTTP levanta, **antes** del contexto. Sin `readinessProbe`, Kubernetes trata a un pod como listo apenas el contenedor arranca. El `Service` empezó a enrutarle tráfico a los 20 segundos de distancia de poder atenderlo.
 
 Con 10 pods nuevos en ventanas superpuestas, una fracción grande del tráfico total cayó en pods que no podían responder.
 

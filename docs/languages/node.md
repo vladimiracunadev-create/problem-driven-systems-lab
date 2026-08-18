@@ -1,6 +1,6 @@
 # 🟢 Node.js
 
-> **Versión fijada:** `22` (LTS) · **Imagen base:** `node:22-alpine` · **Hub:** `:8300` · **Casos operativos:** 19 / 19
+> **Versión fijada:** `22` (LTS) · **Imagen base:** `node:22-alpine` · **Hub:** `:8300` · **Casos operativos:** 20 / 20
 
 [⬅️ Volver a los perfiles de lenguaje](README.md) · [🗺️ Mapa de stacks](../stack-map.md) · [🔄 Protocolo de actualización](../language-upgrade-protocol.md)
 
@@ -52,6 +52,7 @@ Node.js es un runtime de JavaScript construido sobre V8 (el motor de Chrome) con
 | [17 · Migración sin downtime](../../cases/17-zero-downtime-schema-migration/node/README.md) | el event loop **es** el lock | Ni siquiera el timeout del lector puede dispararse: no falla, no responde |
 | [18 · Arranque en frío](../../cases/18-cold-start-and-autoscale-lag/node/README.md) | V8 en capas · `--build-snapshot` | Mide 1,1x, pero su cold start real vive en el grafo de `require`, que este caso no alcanza |
 | [19 · Deriva del índice](../../cases/19-search-index-drift-and-broken-cdc/node/README.md) | el `await` que falta | **El único stack donde el bug se produce por NO escribir algo** |
+| [20 · DLQ olvidada](../../cases/20-forgotten-dead-letter-queue/node/README.md) | `instanceof` + `error.cause` | **Frágil por diseño**: se rompe entre copias de paquete, workers y bibliotecas nativas |
 
 > 💡 **El patrón que solo se ve mirando la columna entera:** Node es el stack donde más soluciones dependen de la disciplina y menos del lenguaje. `AsyncLocalStorage` funciona pero nada impide filtrarlo; `?.` propaga `undefined` sin avisar; el bus de eventos notifica en línea. A cambio, tiene la mejor primitiva de cancelación del set.
 
@@ -102,10 +103,12 @@ curl -s localhost:8300/01/metrics                          # db_hits constante, 
 
 ## 🏆 Dónde gana y dónde pierde en el laboratorio
 
-Agregado de los veredictos de las 18 comparativas que rankean: **0 primeros puestos, media 5.0**.
+Agregado de los veredictos de las 19 comparativas que rankean: **0 primeros puestos, media 5.1**.
 
 - 🥈 **Segundo en 04** — `AbortController` es la mejor primitiva de cancelación del set después de `context.Context`, y la única que se pasa igual a `fetch` que a una promesa propia.
 - 🥉 **Tercero en 08 y 13** — `EventEmitter` + `Proxy` para el bus de eventos; `Map<key, Promise>` como el single-flight más corto del lab.
+- **7º en 20** — el único stack donde la herramienta de clasificación es **frágil por diseño**: `instanceof` se rompe entre copias de paquete, workers y bibliotecas nativas, y la alternativa práctica es comparar strings.
+- **7º en 20** — el único stack donde la herramienta de clasificación es **frágil por diseño**: `instanceof` se rompe entre copias de paquete, workers y bibliotecas nativas, y la alternativa práctica es comparar strings.
 - **7º en 19** — el único stack donde el bug se produce **por no escribir algo**: `indice.escribir(doc)` sin `await` compila, parece correcto y manda el error a un rechazo sin dueño.
 - **5º en 18** — plano en lo medido (1,1x), pero su arranque en frío real vive en el grafo de `require`, que este caso no alcanza; los snapshots lo resuelven y están fuera del camino por defecto.
 - **7º en 17** — el lock exclusivo es el event loop entero, y ni siquiera el timeout del lector puede dispararse: no falla rápido, no responde.
@@ -141,4 +144,4 @@ El detalle del procedimiento está en [docs/language-upgrade-protocol.md](../lan
 docker compose -f compose.nodejs.yml up -d --build
 ```
 
-Los 19 casos quedan servidos en `http://localhost:8300/NN/`. Cada caso trae además su propio `compose.yml` para correrlo aislado — útil en los casos 01 y 11, donde la medición del event loop necesita el runtime sin ruido de los otros once casos.
+Los 20 casos quedan servidos en `http://localhost:8300/NN/`. Cada caso trae además su propio `compose.yml` para correrlo aislado — útil en los casos 01 y 11, donde la medición del event loop necesita el runtime sin ruido de los otros once casos.

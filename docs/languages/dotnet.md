@@ -1,6 +1,6 @@
 # 🔵 .NET
 
-> **Versión fijada:** `8.0` (LTS) · **Imagen base:** `mcr.microsoft.com/dotnet/sdk:8.0` · **Hub:** `:8500` · **Casos operativos:** 19 / 19
+> **Versión fijada:** `8.0` (LTS) · **Imagen base:** `mcr.microsoft.com/dotnet/sdk:8.0` · **Hub:** `:8500` · **Casos operativos:** 20 / 20
 
 [⬅️ Volver a los perfiles de lenguaje](README.md) · [🗺️ Mapa de stacks](../stack-map.md) · [🔄 Protocolo de actualización](../language-upgrade-protocol.md)
 
@@ -54,6 +54,7 @@
 | [17 · Migración sin downtime](../../cases/17-zero-downtime-schema-migration/dotnet/README.md) | `ReaderWriterLockSlim` + `TryEnterReadLock(ms)` | Deadline como valor de retorno; `IDisposable` y sin modo justo |
 | [18 · Arranque en frío](../../cases/18-cold-start-and-autoscale-lag/dotnet/README.md) | `PublishReadyToRun` · `TieredPGO` · `PublishAot` | Tiene la curva (2,3x) y **la respuesta en la caja**: tres líneas del `.csproj` |
 | [19 · Deriva del índice](../../cases/19-search-index-drift-and-broken-cdc/dotnet/README.md) | `Except` / `Join` tipados | Las tres caras como una sola forma; la pereza de LINQ es la trampa |
+| [20 · DLQ olvidada](../../cases/20-forgotten-dead-letter-queue/dotnet/README.md) | `catch (e) when (...)` | **La única primitiva del lab que decide antes de desenrollar la pila** |
 
 > 💡 **El patrón que solo se ve mirando la columna entera:** .NET usa `Interlocked.CompareExchange` donde Java usa `AtomicReference`. El CAS explícito hace visible que la transición del breaker es una operación atómica de comparar-y-cambiar; en Java el `set()` lo esconde. Es la misma corrección con distinta cantidad de verdad a la vista.
 
@@ -104,10 +105,12 @@ curl -s "localhost:8500/11/order-write"                  # el pool principal que
 
 ## 🏆 Dónde gana y dónde pierde en el laboratorio
 
-Agregado de los veredictos de las 18 comparativas que rankean: **1 primer puesto, media 3.3**.
+Agregado de los veredictos de las 19 comparativas que rankean: **1 primer puesto, media 3.3**.
 
 - 🥇 **Gana en 11** — junto con Java: cuando el problema es el pool, tener pool explícito es la herramienta exacta.
 - 🥈 **Segundo en 01 y 06** — `record` types con `with`-expressions modelan el rollback mejor que casi cualquier otro stack.
+- 🥈 **Segundo en 20** — los filtros `catch (e) when (...)` son la **única primitiva del laboratorio que decide antes de desenrollar la pila**: para un registro de DLQ, conservar el punto de falla original es la diferencia entre poder depurarlo y no.
+- 🥈 **Segundo en 20** — los filtros `catch (e) when (...)` son la **única primitiva del laboratorio que decide antes de desenrollar la pila**: para un registro de DLQ, conservar el punto de falla original es la diferencia entre poder depurarlo y no.
 - 🥉 **Tercero en 04, 07, 09, 14, 15, 17, 18 y 19** — en el 19 porque `Except` y `Join` expresan las tres caras de la deriva como consultas tipadas, la forma más legible del set (con la pereza de LINQ como trampa) — en el 18 porque es el único stack con la respuesta a su propio problema **en la caja**: `PublishReadyToRun`, `TieredPGO` y `PublishAot` son tres líneas del `.csproj`
 - **4º en 16** — `TryAdd` es correcto, pero convive con `GetOrAdd`, que parece equivalente y no lo es. — `CancellationToken` y `SemaphoreSlim` son claros y directos.
 - **5º en 13** — `GetOrAdd` no garantiza fábrica única y el envoltorio `Lazy` que sí lo hace no es obvio.
@@ -143,4 +146,4 @@ El detalle del procedimiento está en [docs/language-upgrade-protocol.md](../lan
 docker compose -f compose.dotnet.yml up -d --build
 ```
 
-Los 19 casos quedan servidos en `http://localhost:8500/NN/`. Cada caso trae además su propio `compose.yml` para correrlo aislado.
+Los 20 casos quedan servidos en `http://localhost:8500/NN/`. Cada caso trae además su propio `compose.yml` para correrlo aislado.

@@ -1,6 +1,6 @@
 # 🗺️ Mapa de problemas
 
-> Los 19 casos del laboratorio con su descripción técnica, síntomas y valor de negocio.
+> Los 20 casos del laboratorio con su descripción técnica, síntomas y valor de negocio.
 
 ---
 
@@ -27,6 +27,8 @@
 | 🧬 17 | Entrega | Un ALTER TABLE sobre una tabla caliente bloquea la aplicación entera | Cambiar el esquema sin ventana de mantenimiento ni 503 |
 | ❄️ 18 | Resiliencia | El autoescalador suma instancias y la tasa de error sube con cada una | Eliminar los 503 durante los escalados y escalar con confianza |
 | 🔎 19 | Observabilidad | La búsqueda responde 200 y lo que devuelve está mal | Eliminar «el producto existe pero no aparece» |
+| 🪦 20 | Resiliencia | El pipeline muestra cero errores mientras pierde el 14% de los mensajes | Eliminar la pérdida silenciosa de datos |
+| 🪦 20 | Resiliencia | El pipeline muestra cero errores mientras pierde el 14% de los mensajes | Eliminar la pérdida silenciosa de datos |
 
 ---
 
@@ -285,3 +287,31 @@
 - Un reindexado completo «lo arregla» durante unos días
 
 **Valor:** Elimina la categoría entera de «el producto existe pero no aparece», que en un catálogo son productos que no se pueden comprar.
+
+---
+
+### 🪦 20 — La dead letter queue olvidada
+
+**Problema:** El consumidor falla, manda el mensaje a la DLQ y sigue. Sin clasificar el error, sin reintentar, sin medir la profundidad, sin alerta. El pipeline se ve sano —throughput normal, latencia normal, **error rate en cero**— porque los errores se fueron a otro lado. Cierra el arco del caso 15, donde la DLQ nace.
+
+**Síntomas frecuentes:**
+- Nada. Es el síntoma principal y el problema entero
+- Un cliente reporta que su pedido «nunca llegó», y en la base efectivamente no está
+- Un reporte de fin de mes que no cuadra por un porcentaje pequeño y constante
+- Alguien abre la DLQ por curiosidad y encuentra cuatrocientos mil mensajes
+
+**Valor:** Elimina la pérdida silenciosa de datos. Drenar la DLQ del consumidor silencioso recupera el 71,39% de sus mensajes: trabajo que se había tirado y que se podía salvar con un reintento.
+
+---
+
+### 🪦 20 — La dead letter queue olvidada
+
+**Problema:** El consumidor falla, manda el mensaje a la DLQ y sigue. Sin clasificar el error, sin reintentar, sin medir la profundidad, sin alerta. El pipeline se ve sano —throughput normal, latencia normal, **error rate en cero**— porque los errores se fueron a otro lado. Cierra el arco del caso 15, donde la DLQ nace.
+
+**Síntomas frecuentes:**
+- Nada. Es el síntoma principal y el problema entero
+- Un cliente reporta que su pedido «nunca llegó», y en la base efectivamente no está
+- Un reporte de fin de mes que no cuadra por un porcentaje pequeño y constante
+- Alguien abre la DLQ por curiosidad y encuentra cuatrocientos mil mensajes
+
+**Valor:** Elimina la pérdida silenciosa de datos. Drenar la DLQ del consumidor silencioso recupera el 71,39% de sus mensajes: trabajo que se había tirado y que se podía salvar con un reintento.

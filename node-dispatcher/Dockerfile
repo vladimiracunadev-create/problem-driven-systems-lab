@@ -24,6 +24,7 @@ COPY cases/16-idempotency-and-duplicate-effects/node/app/server.js /cases/16/ser
 COPY cases/17-zero-downtime-schema-migration/node/app/server.js /cases/17/server.js
 COPY cases/18-cold-start-and-autoscale-lag/node/app/server.js /cases/18/server.js
 COPY cases/19-search-index-drift-and-broken-cdc/node/app/server.js /cases/19/server.js
+COPY cases/20-forgotten-dead-letter-queue/node/app/server.js /cases/20/server.js
 
 # Dispatcher
 COPY node-dispatcher/app/main.js /app/main.js

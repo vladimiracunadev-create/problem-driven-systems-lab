@@ -55,7 +55,8 @@ public class Dispatcher {
         new CaseInfo("16", 9416, "Idempotencia y efectos duplicados",  "/cases/16", null),
         new CaseInfo("17", 9417, "Migracion de esquema sin downtime",  "/cases/17", null),
         new CaseInfo("18", 9418, "Arranque en frio y retraso del autoescalado",  "/cases/18", null),
-        new CaseInfo("19", 9419, "Deriva del indice de busqueda y CDC roto",  "/cases/19", null)
+        new CaseInfo("19", 9419, "Deriva del indice de busqueda y CDC roto",  "/cases/19", null),
+        new CaseInfo("20", 9420, "La dead letter queue olvidada",  "/cases/20", null)
     );
 
     private static final int DISPATCH_PORT = Integer.parseInt(System.getenv().getOrDefault("PORT", "8400"));

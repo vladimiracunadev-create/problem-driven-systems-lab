@@ -32,12 +32,13 @@ COPY cases/16-idempotency-and-duplicate-effects/rust/app/                     /s
 COPY cases/17-zero-downtime-schema-migration/rust/app/                     /src/case17/
 COPY cases/18-cold-start-and-autoscale-lag/rust/app/                     /src/case18/
 COPY cases/19-search-index-drift-and-broken-cdc/rust/app/                     /src/case19/
+COPY cases/20-forgotten-dead-letter-queue/rust/app/                     /src/case20/
 COPY rust-dispatcher/app/                                                        /src/dispatcher/
 
 # Los manifests de cada caso declaran [profile.release] para poder compilarse
 # en aislamiento. Dentro de un workspace ese perfil se ignora y cargo lo avisa
 # en cada crate; se recorta para que el build salga limpio.
-RUN for d in case01 case02 case03 case04 case05 case06 case07 case08 case09 case10 case11 case12 case13 case14 case15 case16 case17 case18 case19 dispatcher; do \
+RUN for d in case01 case02 case03 case04 case05 case06 case07 case08 case09 case10 case11 case12 case13 case14 case15 case16 case17 case18 case19 case20 dispatcher; do \
       sed -i '/^\[profile\.release\]/,$d' /src/$d/Cargo.toml; \
     done \
  && cargo build --release
@@ -67,6 +68,7 @@ COPY --from=build /src/target/release/case16 /app/cases/16/case16
 COPY --from=build /src/target/release/case17 /app/cases/17/case17
 COPY --from=build /src/target/release/case18 /app/cases/18/case18
 COPY --from=build /src/target/release/case19 /app/cases/19/case19
+COPY --from=build /src/target/release/case20 /app/cases/20/case20
 
 EXPOSE 8700
 ENV PORT=8700

@@ -26,7 +26,7 @@ struct CaseInfo {
     binary: &'static str,
 }
 
-const CASES: [CaseInfo; 19] = [
+const CASES: [CaseInfo; 20] = [
     CaseInfo { id: "01", port: 9701, name: "API lenta bajo carga",               binary: "/app/cases/01/case01" },
     CaseInfo { id: "02", port: 9702, name: "N+1 y cuellos de botella DB",        binary: "/app/cases/02/case02" },
     CaseInfo { id: "03", port: 9703, name: "Observabilidad deficiente",          binary: "/app/cases/03/case03" },
@@ -46,6 +46,7 @@ const CASES: [CaseInfo; 19] = [
     CaseInfo { id: "17", port: 9717, name: "Migracion de esquema sin downtime",  binary: "/app/cases/17/case17" },
     CaseInfo { id: "18", port: 9718, name: "Arranque en frio y retraso del autoescalado",  binary: "/app/cases/18/case18" },
     CaseInfo { id: "19", port: 9719, name: "Deriva del indice de busqueda y CDC roto",  binary: "/app/cases/19/case19" },
+    CaseInfo { id: "20", port: 9720, name: "La dead letter queue olvidada",  binary: "/app/cases/20/case20" },
 ];
 
 fn stack() -> String {

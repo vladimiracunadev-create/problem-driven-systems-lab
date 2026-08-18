@@ -1,4 +1,4 @@
-# 📋 Resumen ejecutivo — los 19 casos en una pagina
+# 📋 Resumen ejecutivo — los 20 casos en una pagina
 
 > Vista de portafolio para evaluadores no tecnicos (reclutadores, lideres de producto, finanzas, CTO sin tiempo). Cada caso resume **problema → valor de negocio → evidencia reproducible → link al detalle tecnico**.
 >
@@ -8,9 +8,9 @@
 >
 > 🧭 **¿Sin base tecnica?** Empeza por [¿Que es esto? — explicacion en lenguaje simple](QUE-ES-ESTO.md).
 
-![Los 19 problemas agrupados por naturaleza](assets/case-map.svg)
+![Los 20 problemas agrupados por naturaleza](assets/case-map.svg)
 
-![Cobertura real de los 19 casos en los 7 stacks](assets/stack-matrix.svg)
+![Cobertura real de los 20 casos en los 7 stacks](assets/stack-matrix.svg)
 
 ## Mapa rapido
 
@@ -35,8 +35,10 @@
 | 17 | Migracion de esquema sin downtime | Entrega | Cambia el esquema de una tabla caliente sin ventana de mantenimiento. |
 | 18 | Arranque en frio y retraso del autoescalado | Resiliencia | Elimina los 503 durante los escalados y habilita autoescalado agresivo. |
 | 19 | Deriva del indice de busqueda y CDC roto | Observabilidad | Elimina la categoria de 'el producto existe pero no aparece'. |
+| 20 | La dead letter queue olvidada | Resiliencia | Elimina la perdida silenciosa de datos en pipelines de mensajes. |
+| 20 | La dead letter queue olvidada | Resiliencia | Elimina la perdida silenciosa de datos en pipelines de mensajes. |
 
-Los 19 casos estan **OPERATIVOS** en los 7 stacks: PHP/Python/Node.js/Java 21/.NET 8/Go 1.23/Rust 1.83. Detalle de paridad: [`docs/case-catalog.md`](case-catalog.md).
+Los 20 casos estan **OPERATIVOS** en los 7 stacks: PHP/Python/Node.js/Java 21/.NET 8/Go 1.23/Rust 1.83. Detalle de paridad: [`docs/case-catalog.md`](case-catalog.md).
 
 ---
 
@@ -344,14 +346,46 @@ Los 19 casos estan **OPERATIVOS** en los 7 stacks: PHP/Python/Node.js/Java 21/.N
 
 ---
 
+## Caso 20 — La dead letter queue olvidada
+
+**Categoria:** Resiliencia · **Stacks operativos:** PHP, Python, Node.js, Java 21, .NET 8, Go 1.23, Rust 1.83
+
+**Problema.** El consumidor falla, manda el mensaje a la DLQ y sigue: sin clasificar el error, sin reintentar, sin medir, sin alerta. El pipeline se ve sano —throughput normal, error rate en cero— porque los errores se fueron a otro lado. Cierra el arco del caso 15, donde la DLQ nace como politica de rechazo.
+
+**Valor.** Elimina la perdida silenciosa de datos. El consumidor que no clasifica esta haciendo exactamente lo que se le pidio —capturar el error, no morirse, seguir— y sin la otra mitad eso es perdida de datos con buenos modales.
+
+**Evidencia.** Con 3.000 mensajes, 12% transitorios y 4% venenosos: el consumidor silencioso manda a la DLQ el 13,87% sin clasificar y sin alertar; el observado manda el 3,97% —solo veneno— con desglose por clase, muestras de payload y alerta disparada. Y la medicion que cierra el caso: drenar la DLQ del silencioso recupera el 71,39%, que era trabajo que se podia salvar con un reintento.
+
+**Honestidad.** La DLQ es una lista en memoria, no SQS. Lo que define el caso no es el broker sino que un mensaje que falla necesita profundidad, antiguedad, clasificacion y una salida. El escenario es determinista, asi que los 7 stacks dan resultados identicos y lo unico comparable es que tan dificil hace cada lenguaje clasificar MAL.
+
+→ Detalle: [cases/20-forgotten-dead-letter-queue/README.md](../cases/20-forgotten-dead-letter-queue/README.md)
+
+---
+
+## Caso 20 — La dead letter queue olvidada
+
+**Categoria:** Resiliencia · **Stacks operativos:** PHP, Python, Node.js, Java 21, .NET 8, Go 1.23, Rust 1.83
+
+**Problema.** El consumidor falla, manda el mensaje a la DLQ y sigue: sin clasificar el error, sin reintentar, sin medir, sin alerta. El pipeline se ve sano —throughput normal, error rate en cero— porque los errores se fueron a otro lado. Cierra el arco del caso 15, donde la DLQ nace como politica de rechazo.
+
+**Valor.** Elimina la perdida silenciosa de datos. El consumidor que no clasifica esta haciendo exactamente lo que se le pidio —capturar el error, no morirse, seguir— y sin la otra mitad eso es perdida de datos con buenos modales.
+
+**Evidencia.** Con 3.000 mensajes, 12% transitorios y 4% venenosos: el consumidor silencioso manda a la DLQ el 13,87% sin clasificar y sin alertar; el observado manda el 3,97% —solo veneno— con desglose por clase, muestras de payload y alerta disparada. Y la medicion que cierra el caso: drenar la DLQ del silencioso recupera el 71,39%, que era trabajo que se podia salvar con un reintento.
+
+**Honestidad.** La DLQ es una lista en memoria, no SQS. Lo que define el caso no es el broker sino que un mensaje que falla necesita profundidad, antiguedad, clasificacion y una salida. El escenario es determinista, asi que los 7 stacks dan resultados identicos y lo unico comparable es que tan dificil hace cada lenguaje clasificar MAL.
+
+→ Detalle: [cases/20-forgotten-dead-letter-queue/README.md](../cases/20-forgotten-dead-letter-queue/README.md)
+
+---
+
 ## Que NO encontraras en este laboratorio
 
 Honestidad explicita para no vender lo que no es:
 
-- **No es un benchmark de lenguajes.** Los 7 stacks (PHP/Python/Node/Java/.NET/Go/Rust) resuelven los 19 problemas con primitivas nativas distintas; el contraste muestra criterio, no "cual es mas rapido". El caso 10 lo dice explicito: lo comparable es la forma de la curva dentro de cada stack, no los milisegundos entre stacks.
+- **No es un benchmark de lenguajes.** Los 7 stacks (PHP/Python/Node/Java/.NET/Go/Rust) resuelven los 20 problemas con primitivas nativas distintas; el contraste muestra criterio, no "cual es mas rapido". El caso 10 lo dice explicito: lo comparable es la forma de la curva dentro de cada stack, no los milisegundos entre stacks.
 - **No reemplaza plataformas reales.** Tracing distribuido, CI/CD enterprise, mallas de servicios y feature flags globales quedan fuera. Lo que si esta: reproduccion fiel de la **logica operativa** de cada problema.
 - **No es production-grade tal cual.** Modelo de amenaza: localhost / LAN confiable. Para Internet ver [SECURITY.md](../SECURITY.md) (auth, rate limit, TLS son responsabilidad de quien expone).
-- **Paridad multi-stack completa hoy.** PHP + Python + Node.js + Java + .NET cubren los 19 casos cada uno con primitivas idiomaticas distintas. Cualquier caso nuevo se incorpora siguiendo el mismo patron.
+- **Paridad multi-stack completa hoy.** PHP + Python + Node.js + Java + .NET cubren los 20 casos cada uno con primitivas idiomaticas distintas. Cualquier caso nuevo se incorpora siguiendo el mismo patron.
 
 ## Postmortems narrativos por caso
 
@@ -378,6 +412,8 @@ Cada caso tiene un `postmortem.md` en formato incidente real (severidad, timelin
 | 17 | [22 minutos de 503 por agregar una columna](../cases/17-zero-downtime-schema-migration/docs/postmortem.md) | SEV-1 |
 | 18 | [34 minutos de errores que subian con cada instancia agregada](../cases/18-cold-start-and-autoscale-lag/docs/postmortem.md) | SEV-1 |
 | 19 | [31.400 documentos derivados, el mas viejo de hace siete meses](../cases/19-search-index-drift-and-broken-cdc/docs/postmortem.md) | SEV-2 |
+| 20 | [412.000 mensajes en la DLQ, el mas viejo de hace catorce meses](../cases/20-forgotten-dead-letter-queue/docs/postmortem.md) | SEV-2 |
+| 20 | [412.000 mensajes en la DLQ, el mas viejo de hace catorce meses](../cases/20-forgotten-dead-letter-queue/docs/postmortem.md) | SEV-2 |
 
 ## Rutas rapidas
 

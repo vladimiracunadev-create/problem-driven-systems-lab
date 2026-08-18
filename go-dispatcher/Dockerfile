@@ -35,7 +35,8 @@ COPY cases/16-idempotency-and-duplicate-effects/go/app/                         
 COPY cases/17-zero-downtime-schema-migration/go/app/                           /src/case17/
 COPY cases/18-cold-start-and-autoscale-lag/go/app/                           /src/case18/
 COPY cases/19-search-index-drift-and-broken-cdc/go/app/                           /src/case19/
-RUN for n in 03 04 05 06 07 08 09 10 11 12 13 14 15 16 17 18 19; do \
+COPY cases/20-forgotten-dead-letter-queue/go/app/                           /src/case20/
+RUN for n in 03 04 05 06 07 08 09 10 11 12 13 14 15 16 17 18 19 20; do \
       cd /src/case$n && CGO_ENABLED=0 go build -trimpath -o /out/cases/$n/case$n . || exit 1; \
     done
 

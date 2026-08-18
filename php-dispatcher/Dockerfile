@@ -31,6 +31,7 @@ COPY cases/16-idempotency-and-duplicate-effects/php/app/                        
 COPY cases/17-zero-downtime-schema-migration/php/app/                            /cases/17/
 COPY cases/18-cold-start-and-autoscale-lag/php/app/                            /cases/18/
 COPY cases/19-search-index-drift-and-broken-cdc/php/app/                            /cases/19/
+COPY cases/20-forgotten-dead-letter-queue/php/app/                            /cases/20/
 
 # Dispatcher + entrypoint
 COPY php-dispatcher/app/entrypoint.sh /app/entrypoint.sh

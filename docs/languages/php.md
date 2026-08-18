@@ -1,6 +1,6 @@
 # 🐘 PHP
 
-> **Versión fijada:** `8.3` · **Imagen base:** `php:8.3-cli-alpine` (portal: `php:8.3-apache`) · **Hub:** `:8100` · **Casos operativos:** 19 / 19
+> **Versión fijada:** `8.3` · **Imagen base:** `php:8.3-cli-alpine` (portal: `php:8.3-apache`) · **Hub:** `:8100` · **Casos operativos:** 20 / 20
 
 [⬅️ Volver a los perfiles de lenguaje](README.md) · [🗺️ Mapa de stacks](../stack-map.md) · [🔄 Protocolo de actualización](../language-upgrade-protocol.md)
 
@@ -54,6 +54,7 @@ PHP 8 dejó atrás buena parte de su reputación: tipos de retorno, `readonly`, 
 | [17 · Migración sin downtime](../../cases/17-zero-downtime-schema-migration/php/README.md) | `flock` `LOCK_SH` / `LOCK_EX` | El **único read-write lock del lab que da el sistema operativo** — coordina procesos, no hilos |
 | [18 · Arranque en frío](../../cases/18-cold-start-and-autoscale-lag/php/README.md) | `opcache` + `pm.start_servers` | El único que arranca en frío **en cada petición**, por diseño; opcache comparte caché entre procesos |
 | [19 · Deriva del índice](../../cases/19-search-index-drift-and-broken-cdc/php/README.md) | `array_diff_key` + `flock` | El modelo share-nothing **obliga** al checkpoint durable; nada ayuda a no ignorar el error |
+| [20 · DLQ olvidada](../../cases/20-forgotten-dead-letter-queue/php/README.md) | `catch (A \| B)` + `Throwable` | El drenaje como comando de cron: se ejecuta a mano en un incidente, sin redesplegar |
 
 > 💡 **El patrón que solo se ve mirando la columna entera:** PHP resuelve con **infraestructura** lo que los otros stacks resuelven con **primitivas de lenguaje**. Donde Go usa un canal y Java un `Semaphore`, PHP usa un archivo, una tabla o el gestor de procesos. No es peor ni mejor: es el modelo de ejecución llevado hasta sus consecuencias.
 
@@ -108,10 +109,12 @@ Grafana queda disponible para ver la serie temporal del antes y el después — 
 
 ## 🏆 Dónde gana y dónde pierde en el laboratorio
 
-Agregado de los veredictos de las 18 comparativas que rankean: **0 primeros puestos, media 5.6** — el promedio más bajo del set.
+Agregado de los veredictos de las 19 comparativas que rankean: **0 primeros puestos, media 5.5** — el ultimo lugar del agregado.
 
 - 🥉 **Tercero en 02** — el único stack donde el N+1 cruza un socket real contra PostgreSQL. El sustrato le gana a la primitiva.
 - **4º en 01** — el mejor sustrato del laboratorio: motor real, worker separado, contención observable desde el motor.
+- **5º en 20** — union types en `catch`, `Throwable` avisando que capturar todo incluye los bugs propios, y el drenaje como comando de cron: una ventaja operativa real en un incidente. Ninguna ayuda del compilador.
+- **5º en 20** — union types en `catch`, `Throwable` avisando que capturar todo incluye los bugs propios, y el drenaje como comando de cron: una ventaja operativa real en un incidente. Ninguna ayuda del compilador.
 - **5º en 19** — su modelo share-nothing **obliga** al checkpoint durable, que es la decisión que los stacks con procesos largos suelen postergar; pierde puestos porque no ofrece ninguna ayuda contra ignorar el error.
 - **4º en 18** — sin curva de calentamiento que medir y con `opcache` activado de fábrica, pero arranca en frío estructuralmente en cada petición, y su pool tibio vive en `pm.start_servers` en vez de en el código.
 - 🥈 **Segundo en 17** — su `flock` es el único read-write lock del lab provisto por el sistema operativo, y el único que coordina procesos en vez de hilos
@@ -150,7 +153,7 @@ El detalle del procedimiento está en [docs/language-upgrade-protocol.md](../lan
 docker compose -f compose.root.yml up -d --build
 ```
 
-Levanta el portal, los 19 casos PHP en `http://localhost:8100/NN/`, PostgreSQL, Prometheus y Grafana. Es la entrada más completa del laboratorio y la recomendada para una primera evaluación.
+Levanta el portal, los 20 casos PHP en `http://localhost:8100/NN/`, PostgreSQL, Prometheus y Grafana. Es la entrada más completa del laboratorio y la recomendada para una primera evaluación.
 
 Para el portal solo, sin base ni observabilidad:
 

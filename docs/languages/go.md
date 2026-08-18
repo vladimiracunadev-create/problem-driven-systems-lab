@@ -1,6 +1,6 @@
 # 🐹 Go
 
-> **Versión fijada:** `1.23` · **Imagen base:** `golang:1.23-alpine` · **Hub:** `:8600` · **Casos operativos:** 19 / 19
+> **Versión fijada:** `1.23` · **Imagen base:** `golang:1.23-alpine` · **Hub:** `:8600` · **Casos operativos:** 20 / 20
 
 [⬅️ Volver a los perfiles de lenguaje](README.md) · [🗺️ Mapa de stacks](../stack-map.md) · [🔄 Protocolo de actualización](../language-upgrade-protocol.md)
 
@@ -57,6 +57,7 @@ Una tabla por caso, con la primitiva central y por qué se eligió. Es el materi
 | [17 · Migración sin downtime](../../cases/17-zero-downtime-schema-migration/go/README.md) | `sync.RWMutex` + goroutine para el deadline | Sin hambruna, pero la goroutine sobrevive al lector que se rindió |
 | [18 · Arranque en frío](../../cases/18-cold-start-and-autoscale-lag/go/README.md) | binario AOT + `sync.Once` | No gana por rápido: gana por **no tener nada que calentar** |
 | [19 · Deriva del índice](../../cases/19-search-index-drift-and-broken-cdc/go/README.md) | `_ =` auditable + `errcheck` | Descartar el error se ve en el diff — pero **sin tipo conjunto**, el diff se escribe a mano |
+| [20 · DLQ olvidada](../../cases/20-forgotten-dead-letter-queue/go/README.md) | `errors.Is` / `As` + `%w` | Contexto sin perder la causa, y sobrevive a los límites de paquete. Sin exhaustividad |
 
 > 💡 **El patrón que solo se ve mirando la columna entera:** los casos 04, 08, 09 y 11 resuelven cuatro problemas distintos —cancelación, bus de eventos, semáforo de cuota y limitador de concurrencia— con **canal + `select`**. En los otros seis stacks son cuatro APIs diferentes que hay que conocer por separado.
 
@@ -110,10 +111,12 @@ Lo que Go **no** resuelve, documentado con el mismo criterio que lo que sí:
 
 ## 🏆 Dónde gana y dónde pierde en el laboratorio
 
-Agregado de los veredictos de las 18 comparativas que rankean: **7 primeros puestos, media 2.0** — el mejor promedio del set.
+Agregado de los veredictos de las 19 comparativas que rankean: **7 primeros puestos, media 2.1** — segundo mejor promedio, detras de Rust.
 
 - 🥇 **Gana en 01, 04, 08, 09, 13 y 15** — todos los casos donde el problema es concurrencia, cancelación o coordinación. La economía conceptual del canal —y del `WaitGroup`— se paga sola.
 - 🥈 **Segundo en 02, 03, 05, 07, 11 y 12** — sólido en todo, sin picos.
+- **4º en 20** — `errors.Is`/`As` sobre cadenas `%w` acumulan contexto sin perder la causa y sobreviven a los límites de paquete, pero sin exhaustividad una clase de error nueva cae en el camino por defecto sin que nada avise.
+- **4º en 20** — `errors.Is`/`As` sobre cadenas `%w` acumulan contexto sin perder la causa y sobreviven a los límites de paquete, pero sin exhaustividad una clase de error nueva cae en el camino por defecto sin que nada avise.
 - 🥈 **Segundo en 19** — el `_ =` es una declaración de intención auditable y `errcheck` está en casi todos los CI; detrás de Rust porque la herramienta es externa y porque **Go no tiene tipo conjunto**, así que el diff de tres caras se escribe a mano.
 - 🥇 **Gana en 18** — su binario estático AOT no tiene curva de calentamiento que medir (1,0x), y `sync.Once` es la forma más legible del lab de decir «esto cuesta una sola vez».
 - 🥉 **Tercero en 16**
@@ -151,4 +154,4 @@ El detalle del procedimiento —qué archivos tocar y en qué orden— está en 
 docker compose -f compose.go.yml up -d --build
 ```
 
-Los 19 casos quedan servidos en `http://localhost:8600/NN/`. Para correr un caso aislado —útil cuando la medición necesita el runtime limpio— cada caso trae su propio `compose.yml` en `cases/NN-*/go/`.
+Los 20 casos quedan servidos en `http://localhost:8600/NN/`. Para correr un caso aislado —útil cuando la medición necesita el runtime limpio— cada caso trae su propio `compose.yml` en `cases/NN-*/go/`.

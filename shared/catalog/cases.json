@@ -5,7 +5,7 @@
     "hero_title": "Evalúa el laboratorio con evidencia real: elige una audiencia o un stack tecnológico",
     "audience_message": "Diseñado para especialistas en selección, líderes técnicos y equipos de ingeniería que buscan validar criterio técnico con escenarios reproducibles."
   },
-  "recommended_github_about": "🧪 Laboratorio de sistemas distribuido con 19 casos reales Docker-first para diagnosticar y resolver problemas criticos de rendimiento, observabilidad, resiliencia y arquitectura 🐳",
+  "recommended_github_about": "🧪 Laboratorio de sistemas distribuido con 20 casos reales Docker-first para diagnosticar y resolver problemas criticos de rendimiento, observabilidad, resiliencia y arquitectura 🐳",
   "recommended_github_topics": [
     "problem-driven",
     "docker",
@@ -1992,6 +1992,104 @@
           "root_path": "/19/",
           "isolated_compose": "cases/19-search-index-drift-and-broken-cdc/rust/compose.yml",
           "isolated_port": 8719
+        }
+      }
+    },
+    {
+      "id": "20",
+      "icon": "🪦",
+      "slug": "forgotten-dead-letter-queue",
+      "title": "La dead letter queue olvidada",
+      "category": "Resiliencia",
+      "status": "OPERATIVO",
+      "level_detail": "Cierra el arco del caso 15, donde la DLQ nace como politica de rechazo. Clasificacion transitorio vs venenoso con la primitiva de cada runtime: enum + match exhaustivo en Rust —una clase de error nueva NO COMPILA— y panic! como canal separado de Result, filtros catch(e) when(...) en .NET que deciden ANTES de desenrollar la pila, jerarquia sealed...permits en Java, errors.Is/errors.As sobre cadenas %w en Go, catch(A|B) con Throwable en PHP mas drenaje por cron, jerarquia de excepciones en Python con el peligro del except Exception, e instanceof fragil por diseño en Node. Mas DLQ observable (profundidad, antiguedad, desglose por clase, muestreo) y replay",
+      "summary": "El pipeline muestra throughput normal y cero errores mientras pierde el 14% de los mensajes: los errores se fueron a una cola que nadie mira.",
+      "case_readme_path": "cases/20-forgotten-dead-letter-queue/README.md",
+      "business_outcome": "Elimina la perdida silenciosa de datos y convierte 'se proceso' en una afirmacion sobre la que se puede construir: conciliaciones, garantias de entrega, SLA de procesamiento.",
+      "recruiter_pitch": "Muestra que un consumidor que captura el error, no se muere y sigue esta haciendo exactamente lo que se le pidio — y que sin la otra mitad eso es perdida de datos con buenos modales. El 71,39% de esa DLQ se recupera sin cambiar una linea de codigo.",
+      "proof_points": [
+        "Contrasta /consume-silent y /consume-observed: 13,87% de dead-letter contra 3,97%.",
+        "Drena la DLQ del consumidor silencioso y recupera el 71,39%: trabajo que nunca debio tirarse.",
+        "Expone by_error_class y dlq_oldest_msg_age_ms, que convierten un numero en un diagnostico."
+      ],
+      "look_for": [
+        "Si el error rate del servicio es cero mientras dead_letter_rate_pct esta en 13,87%.",
+        "Si by_error_class dice 'unclassified' en la variante silenciosa y desglosa cuatro clases en la otra.",
+        "Si el drenaje del silencioso recupera el 71,39% y el del observado recupera cero: ahi solo hay veneno."
+      ],
+      "honesty_note": "La DLQ es una lista en memoria (un archivo JSON bajo flock en PHP), no SQS ni RabbitMQ. Lo que define el caso no es el broker: es que un mensaje que falla tiene que ir a algun lado, y que ese lado necesita profundidad, antiguedad, clasificacion y una salida. La clase de error de cada mensaje es deterministica para que los 7 stacks den resultados identicos y lo unico comparable sea que tan dificil hace cada lenguaje clasificar MAL. dlq_oldest_msg_age_ms sale en milisegundos por la escala del laboratorio; en produccion se mide en semanas y meses.",
+      "operational_stacks": [
+        "php",
+        "python",
+        "node",
+        "java",
+        "dotnet",
+        "go",
+        "rust"
+      ],
+      "runtime_entries": {
+        "php": {
+          "port": 8100,
+          "compose_path": "compose.root.yml",
+          "readme_path": "cases/20-forgotten-dead-letter-queue/php/README.md",
+          "health_path": "/20/health",
+          "root_path": "/20/",
+          "isolated_compose": "cases/20-forgotten-dead-letter-queue/php/compose.yml",
+          "isolated_port": 8120
+        },
+        "python": {
+          "port": 8200,
+          "compose_path": "compose.python.yml",
+          "readme_path": "cases/20-forgotten-dead-letter-queue/python/README.md",
+          "health_path": "/20/health",
+          "root_path": "/20/",
+          "isolated_compose": "cases/20-forgotten-dead-letter-queue/python/compose.yml",
+          "isolated_port": 8320
+        },
+        "node": {
+          "port": 8300,
+          "compose_path": "compose.nodejs.yml",
+          "readme_path": "cases/20-forgotten-dead-letter-queue/node/README.md",
+          "health_path": "/20/health",
+          "root_path": "/20/",
+          "isolated_compose": "cases/20-forgotten-dead-letter-queue/node/compose.yml",
+          "isolated_port": 8220
+        },
+        "java": {
+          "port": 8400,
+          "compose_path": "compose.java.yml",
+          "readme_path": "cases/20-forgotten-dead-letter-queue/java/README.md",
+          "health_path": "/20/health",
+          "root_path": "/20/",
+          "isolated_compose": "cases/20-forgotten-dead-letter-queue/java/compose.yml",
+          "isolated_port": 8420
+        },
+        "dotnet": {
+          "port": 8500,
+          "compose_path": "compose.dotnet.yml",
+          "readme_path": "cases/20-forgotten-dead-letter-queue/dotnet/README.md",
+          "health_path": "/20/health",
+          "root_path": "/20/",
+          "isolated_compose": "cases/20-forgotten-dead-letter-queue/dotnet/compose.yml",
+          "isolated_port": 8520
+        },
+        "go": {
+          "port": 8600,
+          "compose_path": "compose.go.yml",
+          "readme_path": "cases/20-forgotten-dead-letter-queue/go/README.md",
+          "health_path": "/20/health",
+          "root_path": "/20/",
+          "isolated_compose": "cases/20-forgotten-dead-letter-queue/go/compose.yml",
+          "isolated_port": 8620
+        },
+        "rust": {
+          "port": 8700,
+          "compose_path": "compose.rust.yml",
+          "readme_path": "cases/20-forgotten-dead-letter-queue/rust/README.md",
+          "health_path": "/20/health",
+          "root_path": "/20/",
+          "isolated_compose": "cases/20-forgotten-dead-letter-queue/rust/compose.yml",
+          "isolated_port": 8720
         }
       }
     }

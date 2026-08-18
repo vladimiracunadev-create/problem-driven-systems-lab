@@ -1,6 +1,6 @@
 # 🦀 Rust
 
-> **Versión fijada:** `1.83` · **Imagen base:** `rust:1.83-alpine` · **Hub:** `:8700` · **Casos operativos:** 19 / 19
+> **Versión fijada:** `1.83` · **Imagen base:** `rust:1.83-alpine` · **Hub:** `:8700` · **Casos operativos:** 20 / 20
 
 [⬅️ Volver a los perfiles de lenguaje](README.md) · [🗺️ Mapa de stacks](../stack-map.md) · [🔄 Protocolo de actualización](../language-upgrade-protocol.md)
 
@@ -54,6 +54,7 @@ El laboratorio usa Rust **sin runtime asincrónico**: `std::thread` y un thread 
 | [17 · Migración sin downtime](../../cases/17-zero-downtime-schema-migration/rust/README.md) | `RwLock` con spin acotado | **El único caso del lab donde la respuesta de Rust es peor**; los guards salvan el unlock |
 | [18 · Arranque en frío](../../cases/18-cold-start-and-autoscale-lag/rust/README.md) | AOT sin runtime + `OnceLock<T>` | La curva más plana (1,00x), y el estado «no lista» **inalcanzable por tipos** |
 | [19 · Deriva del índice](../../cases/19-search-index-drift-and-broken-cdc/rust/README.md) | `#[must_use]` + `HashSet` | **El único con las dos piezas**: el bug no compila, y el diff no se escribe a mano |
+| [20 · DLQ olvidada](../../cases/20-forgotten-dead-letter-queue/rust/README.md) | `enum` + `match` exhaustivo | **Una clase de error nueva no compila**; y `panic!` no es un `Result` |
 
 > 💡 **El patrón que solo se ve mirando la columna entera:** en los casos 03, 06, 07, 08 y 12 la corrección no la impone la disciplina del programador sino el compilador. Son cinco categorías de bug que en los otros seis stacks se evitan *acordándose*.
 
@@ -105,13 +106,15 @@ curl -s localhost:8700/05/state          # dropped_total refleja exactamente lo 
 
 ## 🏆 Dónde gana y dónde pierde en el laboratorio
 
-Agregado de los veredictos de las 18 comparativas que rankean: **9 primeros puestos, media 2.1** — más oros que ningún otro stack.
+Agregado de los veredictos de las 19 comparativas que rankean: **10 primeros puestos, media 2.1** — mas oros y mejor promedio que ningun otro stack.
 
 - 🥇 **Gana en 02, 03, 05, 06, 07, 12, 14 y 16** — en el 14 por lo que el lenguaje **impide**: `impl Drop` hace que fugar una conexión no se pueda escribir por descuido — todos los casos donde el sistema de tipos o el `Drop` determinista convierten un error de runtime en un error de compilación.
 - 🥈 **Segundo en 08, 09 y 15** — pierde el primer puesto contra Go por expresividad, no por corrección.
 - 🥉 **Tercero en 01 y 11** — el thread-per-connection 1:1 le cuesta el podio.
 - **4º en 13** — hay que construir el single-flight entero con `Condvar`: el compilador protege del use-after-remove, pero no regala la primitiva.
 - **5º en 04** — la limitación de `recv_timeout`, documentada arriba.
+- 🥇 **Gana en 20** — el `enum` con `match` exhaustivo es la primitiva exacta de un caso que trata de clasificar: **una clase de error nueva no compila** hasta que alguien decida qué hacer con ella. Y `panic!` como canal separado de `Result` impide estructuralmente que un bug del consumidor termine en la DLQ disfrazado de dato malo.
+- 🥇 **Gana en 20** — el `enum` con `match` exhaustivo es la primitiva exacta de un caso que trata de clasificar: **una clase de error nueva no compila** hasta que alguien decida qué hacer con ella. Y `panic!` como canal separado de `Result` impide estructuralmente que un bug del consumidor termine en la DLQ disfrazado de dato malo.
 - 🥇 **Gana en 19** — el único stack con las dos piezas del caso: `#[must_use]` sobre `Result` hace que ignorar la escritura fallida **no compile** sin escribirlo a propósito, y `HashSet` da el diff de tres caras sin recorrer a mano. Y la defensa está en la biblioteca estándar, no en una herramienta externa.
 - 🥈 **Segundo en 18** — la curva más plana medida (1,00x) y la única garantía de tipo del lab contra servir desde una instancia no inicializada: con `OnceLock`, el estado «no lista» es inalcanzable. El reverso exacto del caso 17.
 - **6º en 17** — el único caso donde su respuesta es **peor que la de los otros seis**: la `std` no ofrece `RwLock` con deadline, así que la única opción es un spin que consume CPU.
@@ -146,4 +149,4 @@ El detalle del procedimiento está en [docs/language-upgrade-protocol.md](../lan
 docker compose -f compose.rust.yml up -d --build
 ```
 
-Los 19 casos quedan servidos en `http://localhost:8700/NN/`. La primera compilación es notablemente más lenta que la de los otros seis stacks — es esperable, no es un fallo del build.
+Los 20 casos quedan servidos en `http://localhost:8700/NN/`. La primera compilación es notablemente más lenta que la de los otros seis stacks — es esperable, no es un fallo del build.

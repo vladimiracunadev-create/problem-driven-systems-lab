@@ -2,6 +2,124 @@
 
 Todos los cambios notables de este laboratorio se registran aqui con foco en madurez tecnica y documental.
 
+## 2026-08-17 - Caso 20: la dead letter queue olvidada — el Eje 1 queda cerrado
+
+Octavo y ultimo caso del **Eje 1 del ROADMAP**. El lab llega a **20 casos x 7
+stacks = 140 endpoints**, y el eje se cierra: sus casos ya no son plan, son
+laboratorio.
+
+### Added — caso 20, la dead letter queue olvidada
+
+`cases/20-forgotten-dead-letter-queue/` con las **7 implementaciones**.
+
+Contrato uniforme: `/consume-silent` y `/consume-observed`, mas `/dlq/stats` con
+profundidad, antiguedad del mensaje mas viejo y desglose por clase de error, y
+`/dlq/drain` para el replay.
+
+### Cierra el arco del caso 15
+
+En el [caso 15] la dead letter queue **nace**: es la politica de rechazo que
+salva al productor de bloquearse cuando la cola se llena. Es la decision
+correcta. Aca se ve que pasa cuando nadie vuelve a mirarla.
+
+Los dos casos son el mismo mecanismo en dos momentos distintos — y el segundo
+demuestra que la decision del primero solo esta completa cuando incluye **quien
+la observa y como se sale de ella**.
+
+### La distincion que ordena el caso
+
+    transitorio  — el mismo mensaje funciona en el proximo intento
+    venenoso     — el mismo mensaje NUNCA va a funcionar
+
+Reintentar lo venenoso es quemar CPU. Mandar lo transitorio a la DLQ es tirar
+trabajo que se podia salvar. **El consumidor que no distingue hace las dos cosas
+mal a la vez**, y el costo se mide.
+
+### El numero que cierra el caso
+
+Con 3.000 mensajes, 12% transitorios y 4% venenosos, identico en los 7 stacks:
+
+```text
+  silencioso:  ok=2584  reintentos=0    a la DLQ=416  (13,87%)
+               by_error_class = { unclassified: 416 }   alertas=0  muestras=0
+
+  observado:   ok=2881  reintentos=297  a la DLQ=119  (3,97%)
+               by_error_class = { schema_mismatch: 29, unknown_field: 31,
+                                  null_required: 31, invalid_encoding: 28 }
+               alertas=1  muestras=20
+```
+
+Y drenar la DLQ del consumidor **silencioso**:
+
+```text
+  recuperados = 297 de 416  →  71,39%      ← nunca debieron estar ahi
+  siguen fallando = 119                     ← veneno de verdad
+```
+
+**El 71,39% de esa cola era trabajo que se podia salvar con un reintento**, y
+estaba ahi porque el consumidor no miro que error era. Drenar la del consumidor
+observado recupera 0%: ahi solo hay veneno, que es lo que una DLQ deberia tener.
+
+### El caso ordena por que tan dificil hace cada lenguaje clasificar MAL
+
+| Stack | Contra clasificar mal | Contra tragarse los bugs propios |
+|---|---|---|
+| 🦀 Rust | `enum` + `match` exhaustivo: **una variante nueva no compila** | **`panic!` no es un `Result`** |
+| 🔵 .NET | `catch (e) when (...)`: filtra **sin desenrollar** la pila | Nada |
+| ☕ Java | Jerarquia `sealed ... permits` | Nada, y `Error` queda fuera de `Exception` |
+| 🐹 Go | `errors.Is` / `errors.As` sobre cadenas `%w` | Los `panic` son canal aparte |
+| 🐘 PHP | `catch (A\|B $e)` — sin exhaustividad | Nada, y `Throwable` lo hace explicito |
+| 🐍 Python | Jerarquia de excepciones — sin exhaustividad | Nada |
+| 🟢 Node | `instanceof`, **fragil entre paquetes y workers** | Nada |
+
+**Rust gana** con su decimo oro: el `enum` es la primitiva exacta de un caso que
+trata de clasificar, y `panic!` como canal separado hace estructuralmente
+imposible que un bug del consumidor termine en la DLQ disfrazado de dato malo.
+
+**.NET segundo** por los filtros de excepcion: la unica primitiva del laboratorio
+que decide **antes de desenrollar la pila**. Para un registro de DLQ, conservar
+el punto de falla original es la diferencia entre poder depurarlo y no.
+
+**Node septimo**, como en el 19: su herramienta de clasificacion es fragil por
+diseño, y el caso entero depende de clasificar bien.
+
+### Changed — el Eje 1 del ROADMAP queda cerrado
+
+Los ocho casos (13-20) estan entregados y operativos en los 7 stacks. Las
+especificaciones pendientes se retiraron del ROADMAP —ya no son plan— y en su
+lugar quedo el registro de que se construyo y que se aprendio.
+
+Tres cosas que el eje dejo claras:
+
+1. **El ranking se cruza, y eso es el punto.** Java gana el 17 y queda septimo
+   en el 18; Rust queda sexto en el 17 y segundo en el 18; PHP, ultimo del
+   agregado, sube al segundo puesto en el 17. Un caso que siempre ordena igual a
+   los siete stacks no esta midiendo nada.
+2. **La ausencia de una primitiva enseña tanto como su presencia.** Python sin
+   read-write lock (17), Go sin tipo conjunto (19): la ausencia se paga en el
+   mismo lugar — codigo propio donde deberia haber biblioteca.
+3. **Los peores modos de falla no rompen nada.** Healthcheck en verde durante
+   veinte minutos de 503 (17), un pipeline sano que rechaza el 40% del trafico
+   (18), una busqueda con 98,95% de recall (19), un error rate de cero mientras
+   se pierde el 14% de los mensajes (20). Los cuatro se ven bien desde el
+   dashboard.
+
+### Changed — integracion
+
+- **Dispatchers**: registro del caso 20 y puerto interno en los siete
+  (`:9020` PHP/Python/Node, `:9420` Java, `:9520` .NET, `:9620` Go, `:9720` Rust).
+- **`ci.yml`**: matriz `compose-config` de 141 a **148 archivos**; `hub-probe`
+  valida 20 casos por stack; `compose-smoke` suma `case20-php` y `case20-java`.
+- **`shared/catalog/cases.json`** + `docs/case-catalog.md` + los cinco SVG.
+- **Perfiles de lenguaje**: agregado final sobre 19 comparativas que rankean.
+  **Rust cierra con 10 oros y el mejor promedio (2,1); Go con 7 oros.**
+
+### Verificado
+
+Los 7 stacks levantados con Docker, con resultados identicos hasta el ultimo
+digito. El drenaje de la DLQ del consumidor silencioso recupera 297 de 416
+mensajes (71,39%) en los siete.
+
 ## 2026-08-17 - Caso 19: deriva del indice de busqueda y CDC roto en los 7 stacks
 
 Septimo caso del **Eje 1 del ROADMAP**. El lab pasa a **19 casos x 7 stacks = 133
