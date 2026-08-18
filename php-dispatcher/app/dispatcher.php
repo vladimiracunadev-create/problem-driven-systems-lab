@@ -1,6 +1,6 @@
 <?php
 /**
- * PHP Lab Dispatcher — un solo contenedor, un solo puerto para los 15 casos.
+ * PHP Lab Dispatcher — un solo contenedor, un solo puerto para los 16 casos.
  *
  * Cada caso corre como subproceso interno en un puerto local (9001-9012).
  * El dispatcher escucha en :8100 y enruta por prefijo de path:
@@ -36,6 +36,7 @@ const CASES = [
     '13' => ['port' => 9013, 'name' => 'Cache stampede y thundering herd'],
     '14' => ['port' => 9014, 'name' => 'Agotamiento del pool de conexiones'],
     '15' => ['port' => 9015, 'name' => 'Backpressure en colas de mensajes'],
+    '16' => ['port' => 9016, 'name' => 'Idempotencia y efectos duplicados'],
 ];
 
 function send_index(): void
@@ -52,7 +53,7 @@ function send_index(): void
     echo json_encode([
         'lab'   => 'Problem-Driven Systems Lab',
         'stack' => 'PHP 8.3',
-        'info'  => 'Dispatcher PHP — un contenedor, un puerto, 15 casos.',
+        'info'  => 'Dispatcher PHP — un contenedor, un puerto, 16 casos.',
         'usage' => 'GET /{caso}/{ruta}  ->  e.g. /01/health, /05/batch-legacy',
         'cases' => $cases,
     ], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);

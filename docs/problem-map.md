@@ -1,6 +1,6 @@
 # 🗺️ Mapa de problemas
 
-> Los 15 casos del laboratorio con su descripción técnica, síntomas y valor de negocio.
+> Los 16 casos del laboratorio con su descripción técnica, síntomas y valor de negocio.
 
 ---
 
@@ -23,6 +23,7 @@
 | 🌩️ 13 | Rendimiento | La clave caliente de cache expira y los N llamadores golpean el origen a la vez | Evitar caídas autoinfligidas y reducir capacidad reservada del origen |
 | 🚰 14 | Rendimiento | El pool se achica en silencio hasta que no queda ninguna conexión | Eliminar el reinicio preventivo del runbook y dimensionar con una fórmula |
 | 🌊 15 | Resiliencia | El productor va más rápido que el consumidor y la cola crece sin techo | Evitar caídas por memoria y decidir explícitamente qué se sacrifica |
+| 🔁 16 | Resiliencia | Un reintento por timeout se convierte en un segundo cobro | Eliminar cobros y avisos duplicados, y el costo de devolverlos |
 
 ---
 
@@ -225,3 +226,17 @@
 - Reiniciar «arregla» la memoria y pierde todo lo que había en cola
 
 **Valor:** Evita caídas por memoria y pérdidas silenciosas, y convierte el sacrificio en una decisión explícita y documentada en vez de un accidente.
+
+---
+
+### 🔁 16 — Idempotencia y efectos duplicados
+
+**Problema:** El cliente reintenta porque el primer intento dio timeout. Pero el primer intento sí llegó — lo que se perdió fue la respuesta. Sin una forma de distinguir el reintento del pedido nuevo, el servidor cobra otra vez.
+
+**Síntomas frecuentes:**
+- Cobros duplicados reportados por clientes, con el log mostrando dos pedidos
+- Emails de confirmación enviados dos o tres veces
+- El duplicado aparece más cuando el sistema está lento: más timeouts, más reintentos
+- Después de escalar de uno a dos pods empiezan a aparecer duplicados que antes no había
+
+**Valor:** Elimina cobros y notificaciones duplicadas, y el costo de soporte y devolución que cada uno genera.

@@ -5,7 +5,7 @@
     "hero_title": "Evalúa el laboratorio con evidencia real: elige una audiencia o un stack tecnológico",
     "audience_message": "Diseñado para especialistas en selección, líderes técnicos y equipos de ingeniería que buscan validar criterio técnico con escenarios reproducibles."
   },
-  "recommended_github_about": "🧪 Laboratorio de sistemas distribuido con 15 casos reales Docker-first para diagnosticar y resolver problemas criticos de rendimiento, observabilidad, resiliencia y arquitectura 🐳",
+  "recommended_github_about": "🧪 Laboratorio de sistemas distribuido con 16 casos reales Docker-first para diagnosticar y resolver problemas criticos de rendimiento, observabilidad, resiliencia y arquitectura 🐳",
   "recommended_github_topics": [
     "problem-driven",
     "docker",
@@ -1600,6 +1600,104 @@
           "root_path": "/15/",
           "isolated_compose": "cases/15-message-queue-backpressure/rust/compose.yml",
           "isolated_port": 8715
+        }
+      }
+    },
+    {
+      "id": "16",
+      "icon": "🔁",
+      "slug": "idempotency-and-duplicate-effects",
+      "title": "Idempotencia y efectos duplicados",
+      "category": "Resiliencia",
+      "status": "OPERATIVO",
+      "level_detail": "Reserva atomica de la Idempotency-Key con la primitiva de cada runtime: INSERT ... ON CONFLICT DO NOTHING modelado con flock en PHP, dict.setdefault bajo Lock en Python, Map con has+set atomico por el modelo de un solo hilo en Node, ConcurrentHashMap.putIfAbsent en Java, ConcurrentDictionary.TryAdd en .NET, sync.Map.LoadOrStore en Go, y HashMap::entry con match exhaustivo en Rust — el unico donde ignorar el resultado no compila. Mas outbox pattern en los siete",
+      "summary": "Un reintento por timeout se convierte en un segundo cobro salvo que el servidor pueda distinguir 'es la primera vez que veo esto' de 'ya procese esto'.",
+      "case_readme_path": "cases/16-idempotency-and-duplicate-effects/README.md",
+      "business_outcome": "Elimina cobros y notificaciones duplicadas por reintentos del cliente, y evita el costo de soporte y devolucion que cada uno genera.",
+      "recruiter_pitch": "Muestra que el cliente hace lo correcto al reintentar y que distinguir el reintento es responsabilidad del servidor — y que seis de las siete implementaciones dejan de ser correctas al escalar a dos replicas.",
+      "proof_points": [
+        "Contrasta /charge-unsafe y /charge-idempotent sobre los mismos N reintentos de una misma clave.",
+        "Hace visible overcharged_cents: la plata que el negocio tendria que devolver, en la unidad en que se discute.",
+        "Expone /outbox con pendientes y entregados, para ver que el efecto que cruza el boundary no se desincroniza del cargo."
+      ],
+      "look_for": [
+        "Si charges_applied es igual a attempts sin clave y exactamente 1 con ella.",
+        "Si duplicates_prevented da attempts - 1: la prueba de que los reintentos se reconocieron como tales.",
+        "Si side_effects_emitted baja de N a 1 y el transporte pasa de directo a outbox."
+      ],
+      "honesty_note": "El ledger, la tabla de idempotencia y el outbox son estructuras en memoria (un archivo con flock en PHP), no una base con UNIQUE real. Y hay una asimetria que el caso documenta en vez de esconder: seis de las siete versiones resuelven la carrera dentro de su proceso, asi que con dos replicas dejan de ser correctas. Solo la de PHP, que pone la clave en almacenamiento compartido, sobrevive a eso.",
+      "operational_stacks": [
+        "php",
+        "python",
+        "node",
+        "java",
+        "dotnet",
+        "go",
+        "rust"
+      ],
+      "runtime_entries": {
+        "php": {
+          "port": 8100,
+          "compose_path": "compose.root.yml",
+          "readme_path": "cases/16-idempotency-and-duplicate-effects/php/README.md",
+          "health_path": "/16/health",
+          "root_path": "/16/",
+          "isolated_compose": "cases/16-idempotency-and-duplicate-effects/php/compose.yml",
+          "isolated_port": 8116
+        },
+        "python": {
+          "port": 8200,
+          "compose_path": "compose.python.yml",
+          "readme_path": "cases/16-idempotency-and-duplicate-effects/python/README.md",
+          "health_path": "/16/health",
+          "root_path": "/16/",
+          "isolated_compose": "cases/16-idempotency-and-duplicate-effects/python/compose.yml",
+          "isolated_port": 8316
+        },
+        "node": {
+          "port": 8300,
+          "compose_path": "compose.nodejs.yml",
+          "readme_path": "cases/16-idempotency-and-duplicate-effects/node/README.md",
+          "health_path": "/16/health",
+          "root_path": "/16/",
+          "isolated_compose": "cases/16-idempotency-and-duplicate-effects/node/compose.yml",
+          "isolated_port": 8216
+        },
+        "java": {
+          "port": 8400,
+          "compose_path": "compose.java.yml",
+          "readme_path": "cases/16-idempotency-and-duplicate-effects/java/README.md",
+          "health_path": "/16/health",
+          "root_path": "/16/",
+          "isolated_compose": "cases/16-idempotency-and-duplicate-effects/java/compose.yml",
+          "isolated_port": 8416
+        },
+        "dotnet": {
+          "port": 8500,
+          "compose_path": "compose.dotnet.yml",
+          "readme_path": "cases/16-idempotency-and-duplicate-effects/dotnet/README.md",
+          "health_path": "/16/health",
+          "root_path": "/16/",
+          "isolated_compose": "cases/16-idempotency-and-duplicate-effects/dotnet/compose.yml",
+          "isolated_port": 8516
+        },
+        "go": {
+          "port": 8600,
+          "compose_path": "compose.go.yml",
+          "readme_path": "cases/16-idempotency-and-duplicate-effects/go/README.md",
+          "health_path": "/16/health",
+          "root_path": "/16/",
+          "isolated_compose": "cases/16-idempotency-and-duplicate-effects/go/compose.yml",
+          "isolated_port": 8616
+        },
+        "rust": {
+          "port": 8700,
+          "compose_path": "compose.rust.yml",
+          "readme_path": "cases/16-idempotency-and-duplicate-effects/rust/README.md",
+          "health_path": "/16/health",
+          "root_path": "/16/",
+          "isolated_compose": "cases/16-idempotency-and-duplicate-effects/rust/compose.yml",
+          "isolated_port": 8716
         }
       }
     }

@@ -27,6 +27,7 @@ COPY cases/12-single-point-of-knowledge-and-operational-risk/php/app/           
 COPY cases/13-cache-stampede-and-thundering-herd/php/app/                            /cases/13/
 COPY cases/14-connection-pool-exhaustion/php/app/                            /cases/14/
 COPY cases/15-message-queue-backpressure/php/app/                            /cases/15/
+COPY cases/16-idempotency-and-duplicate-effects/php/app/                            /cases/16/
 
 # Dispatcher + entrypoint
 COPY php-dispatcher/app/entrypoint.sh /app/entrypoint.sh

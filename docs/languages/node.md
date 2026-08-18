@@ -1,6 +1,6 @@
 # 🟢 Node.js
 
-> **Versión fijada:** `22` (LTS) · **Imagen base:** `node:22-alpine` · **Hub:** `:8300` · **Casos operativos:** 15 / 15
+> **Versión fijada:** `22` (LTS) · **Imagen base:** `node:22-alpine` · **Hub:** `:8300` · **Casos operativos:** 16 / 16
 
 [⬅️ Volver a los perfiles de lenguaje](README.md) · [🗺️ Mapa de stacks](../stack-map.md) · [🔄 Protocolo de actualización](../language-upgrade-protocol.md)
 
@@ -48,6 +48,7 @@ Node.js es un runtime de JavaScript construido sobre V8 (el motor de Chrome) con
 | [13 · Cache stampede](../../cases/13-cache-stampede-and-thundering-herd/node/README.md) | `Map<key, Promise>` | La Promise ya es el single-flight. Tres líneas — y el orden del `set` es toda la garantía |
 | [14 · Pool de conexiones](../../cases/14-connection-pool-exhaustion/node/README.md) | `AbortSignal.timeout` + `finally` | Sin deadline, el que espera es una Promise invisible que no responde nunca |
 | [15 · Backpressure](../../cases/15-message-queue-backpressure/node/README.md) | `Writable` con `highWaterMark` | El backpressure es parte del protocolo del runtime — e ignorarlo compila |
+| [16 · Idempotencia](../../cases/16-idempotency-and-duplicate-effects/node/README.md) | `Map.has()` + `set()` | Atómico por el modelo de un hilo — y por eso deja de ser correcto con dos procesos |
 
 > 💡 **El patrón que solo se ve mirando la columna entera:** Node es el stack donde más soluciones dependen de la disciplina y menos del lenguaje. `AsyncLocalStorage` funciona pero nada impide filtrarlo; `?.` propaga `undefined` sin avisar; el bus de eventos notifica en línea. A cambio, tiene la mejor primitiva de cancelación del set.
 
@@ -98,11 +99,11 @@ curl -s localhost:8300/01/metrics                          # db_hits constante, 
 
 ## 🏆 Dónde gana y dónde pierde en el laboratorio
 
-Agregado de los veredictos de las 14 comparativas que rankean: **0 primeros puestos, media 4.6**.
+Agregado de los veredictos de las 15 comparativas que rankean: **0 primeros puestos, media 4.7**.
 
 - 🥈 **Segundo en 04** — `AbortController` es la mejor primitiva de cancelación del set después de `context.Context`, y la única que se pasa igual a `fetch` que a una promesa propia.
 - 🥉 **Tercero en 08 y 13** — `EventEmitter` + `Proxy` para el bus de eventos; `Map<key, Promise>` como el single-flight más corto del lab.
-- **6º en 01, 03, 09, 14 y 15** — en el 15 con un matiz: es el único stack donde el backpressure es parte del protocolo del runtime, y también el único donde ignorarlo compila y pasa los tests. — el modelo de un solo hilo y la falta de respaldo del lenguaje le cuestan tres casos.
+- **6º en 01, 03, 09, 14, 15 y 16** — en el 16 con el matiz más incómodo del lab: el código correcto es el más corto de los siete y deja de ser correcto al escalar a dos procesos, sin ningún aviso. — en el 15 con un matiz: es el único stack donde el backpressure es parte del protocolo del runtime, y también el único donde ignorarlo compila y pasa los tests. — el modelo de un solo hilo y la falta de respaldo del lenguaje le cuestan tres casos.
 
 **Lectura honesta:** Node no gana ningún caso, y el laboratorio no lo maquilla. Lo que sí hace es ganar el argumento del caso 01 *por el lado contrario*: es el peor stack posible para un N+1 síncrono, y precisamente por eso es donde el problema se ve con más claridad. Un stack puede ser valioso para enseñar sin ser el que mejor resuelve.
 
@@ -134,4 +135,4 @@ El detalle del procedimiento está en [docs/language-upgrade-protocol.md](../lan
 docker compose -f compose.nodejs.yml up -d --build
 ```
 
-Los 15 casos quedan servidos en `http://localhost:8300/NN/`. Cada caso trae además su propio `compose.yml` para correrlo aislado — útil en los casos 01 y 11, donde la medición del event loop necesita el runtime sin ruido de los otros once casos.
+Los 16 casos quedan servidos en `http://localhost:8300/NN/`. Cada caso trae además su propio `compose.yml` para correrlo aislado — útil en los casos 01 y 11, donde la medición del event loop necesita el runtime sin ruido de los otros once casos.

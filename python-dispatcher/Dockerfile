@@ -18,6 +18,7 @@ COPY cases/12-single-point-of-knowledge-and-operational-risk/python/app/server.p
 COPY cases/13-cache-stampede-and-thundering-herd/python/app/server.py /cases/13/server.py
 COPY cases/14-connection-pool-exhaustion/python/app/server.py /cases/14/server.py
 COPY cases/15-message-queue-backpressure/python/app/server.py /cases/15/server.py
+COPY cases/16-idempotency-and-duplicate-effects/python/app/server.py /cases/16/server.py
 
 # Dispatcher
 COPY python-dispatcher/app/main.py /app/main.py

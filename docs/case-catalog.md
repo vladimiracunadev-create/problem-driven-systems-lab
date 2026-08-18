@@ -1,6 +1,6 @@
 # 🗂️ Catalogo de casos
 
-> Lista completa de los 15 casos del laboratorio generada desde `shared/catalog/cases.json`.
+> Lista completa de los 16 casos del laboratorio generada desde `shared/catalog/cases.json`.
 
 ## 📊 Estado actual
 
@@ -21,6 +21,7 @@
 | 🌧️ | [13 - Cache stampede y thundering herd](../cases/13-cache-stampede-and-thundering-herd/README.md) | Rendimiento | [👉 Senior Analysis](../cases/13-cache-stampede-and-thundering-herd/php/README.md) | `OPERATIVO` | `php`, `python`, `node`, `java`, `dotnet`, `go`, `rust` | Evita caidas autoinfligidas en el momento de mayor fragilidad del sistema y reduce la capacidad reservada del origen. |
 | 🚰 | [14 - Agotamiento del pool de conexiones](../cases/14-connection-pool-exhaustion/README.md) | Rendimiento | [👉 Senior Analysis](../cases/14-connection-pool-exhaustion/php/README.md) | `OPERATIVO` | `php`, `python`, `node`, `java`, `dotnet`, `go`, `rust` | Evita indisponibilidades progresivas que tienen al reinicio como unico remedio, y dimensiona el pool con una formula en vez de con intuicion. |
 | 🌊 | [15 - Backpressure en colas de mensajes](../cases/15-message-queue-backpressure/README.md) | Resiliencia | [👉 Senior Analysis](../cases/15-message-queue-backpressure/php/README.md) | `OPERATIVO` | `php`, `python`, `node`, `java`, `dotnet`, `go`, `rust` | Evita caidas por memoria y perdidas silenciosas de mensajes, y obliga a decidir explicitamente que se sacrifica cuando el consumidor no da abasto. |
+| 🔁 | [16 - Idempotencia y efectos duplicados](../cases/16-idempotency-and-duplicate-effects/README.md) | Resiliencia | [👉 Senior Analysis](../cases/16-idempotency-and-duplicate-effects/php/README.md) | `OPERATIVO` | `php`, `python`, `node`, `java`, `dotnet`, `go`, `rust` | Elimina cobros y notificaciones duplicadas por reintentos del cliente, y evita el costo de soporte y devolucion que cada uno genera. |
 
 ## ✅ Casos operativos hoy
 
@@ -113,6 +114,12 @@
 - Stacks operativos: `php`, `python`, `node`, `java`, `dotnet`, `go`, `rust`
 - Impacto de negocio: Evita caidas por memoria y perdidas silenciosas de mensajes, y obliga a decidir explicitamente que se sacrifica cuando el consumidor no da abasto.
 - Que demuestra: Contrasta /produce-unbounded y /produce-bounded con las tres politicas sobre la misma carga.
+
+### 🔁 [16 - Idempotencia y efectos duplicados](../cases/16-idempotency-and-duplicate-effects/README.md)
+
+- Stacks operativos: `php`, `python`, `node`, `java`, `dotnet`, `go`, `rust`
+- Impacto de negocio: Elimina cobros y notificaciones duplicadas por reintentos del cliente, y evita el costo de soporte y devolucion que cada uno genera.
+- Que demuestra: Contrasta /charge-unsafe y /charge-idempotent sobre los mismos N reintentos de una misma clave.
 
 ## 🧭 Rutas de evaluacion
 

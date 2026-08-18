@@ -2,6 +2,89 @@
 
 Todos los cambios notables de este laboratorio se registran aqui con foco en madurez tecnica y documental.
 
+## 2026-08-17 - Caso 16: idempotencia y efectos duplicados en los 7 stacks
+
+Cuarto caso del **Eje 1 del ROADMAP**. El lab pasa a **16 casos x 7 stacks = 112
+endpoints**. Mitad del eje entregada.
+
+### Added — caso 16, idempotencia y efectos duplicados
+
+`cases/16-idempotency-and-duplicate-effects/` con las **7 implementaciones**.
+
+Contrato uniforme: `/charge-unsafe` y `/charge-idempotent` sobre los mismos N
+reintentos de una misma `Idempotency-Key`, mas `/idempotency/state` y `/outbox`.
+Metrica central: `charges_applied` — y **`overcharged_cents`**, que traduce el
+bug a la unidad en que el negocio lo discute.
+
+El caso tiene dos mitades:
+
+1. **La reserva atomica de la clave.** `if (!existe) { crear }` son dos
+   operaciones con una ventana en el medio; con cinco reintentos concurrentes
+   esa ventana produce cinco cobros. La version correcta es una sola operacion:
+   `putIfAbsent`, `TryAdd`, `LoadOrStore`, `entry()`, `INSERT ... ON CONFLICT`.
+2. **El outbox pattern.** El cargo va a la base y el email a una cola, sin
+   transaccion que los abarque. El outbox escribe el efecto en la misma
+   escritura que el cargo y deja que un worker lo entregue — at-least-once, y es
+   deliberado: duplicar un email es visible y corregible, perderlo no.
+
+### El hallazgo del caso: el ranking y la realidad operativa no coinciden
+
+Es el primer caso del lab donde **la conclusion del veredicto y la decision de
+despliegue apuntan a stacks distintos**, y quedo documentado en vez de escondido.
+
+Seis de las siete implementaciones resuelven la carrera **dentro de su proceso**:
+`putIfAbsent` (Java), `TryAdd` (.NET), `LoadOrStore` (Go), `entry()` (Rust),
+`setdefault` (Python) y el `Map` de Node. Todas correctas con una replica, todas
+**incorrectas con dos** — cada pod tiene su tabla, ninguno ve las claves del
+otro, y el mismo pago se cobra una vez por pod.
+
+La septima es la de PHP. Sin heap compartido entre requests, esta obligada a
+poner la clave en almacenamiento con una operacion atomica del motor
+(`ON CONFLICT DO NOTHING`, modelado con `flock`). Es la que peor puntua en fit de
+primitivas — septimo puesto — y **la unica que se podria desplegar con tres
+replicas**.
+
+El ranking mide expresividad. La pregunta operativa es otra. Las dos respuestas
+conviven en el `comparison.md` sin que una tape a la otra.
+
+### Lo que distingue a cada stack
+
+- **Rust primero**: el unico donde **ignorar el resultado de la reserva no
+  compila**. El `match` sobre `Occupied`/`Vacant` es exhaustivo, y el `Entry`
+  presta el mapa mientras existe — asi que la ventana check-then-act no es
+  dificil de escribir, es *inexpresable*. En Java, .NET y Go, `putIfAbsent(k, v);`
+  con el retorno descartado compila sin queja, y ese descarte es el bug.
+- **.NET cuarto** por una razon interna al propio lab: `TryAdd` **si** es
+  atomico, a diferencia de `GetOrAdd` con fabrica, que en el caso 13 hubo que
+  envolver en `Lazy<T>`. Dos APIs en la misma clase con garantias distintas.
+- **Go tercero** y con un contraste util contra el caso 13: alli `sync.Map` era
+  la eleccion equivocada porque cada entrada se creaba y se borraba en cada
+  expiracion; aca es la documentada, porque las claves se escriben una vez y se
+  leen muchas. Mismo lab, dos casos, dos respuestas opuestas.
+- **Python quinto**: `setdefault` expresa bien la operacion, pero su atomicidad
+  viene del **GIL y no del contrato del lenguaje**. Por eso el codigo toma igual
+  un `Lock` explicito: apoyarse en un detalle de CPython para decir "esto es
+  indivisible" es escribir codigo que depende de algo que puede cambiar.
+- **Node sexto** con el matiz mas incomodo: `has()` + `set()` es atomico porque
+  no hay otro hilo, asi que el codigo correcto es el mas corto de los siete —
+  y **deja de ser correcto al escalar a dos procesos, sin ningun aviso**.
+
+### Changed — integracion
+
+- **Dispatchers**: registro del caso 16 y puerto interno en los siete
+  (`:9016` PHP/Python/Node, `:9416` Java, `:9516` .NET, `:9616` Go, `:9716` Rust).
+- **`ci.yml`**: matriz `compose-config` de 113 a **120 archivos**; `hub-probe`
+  valida 16 casos por stack; `compose-smoke` suma `case16-php` y `case16-rust`.
+- **`shared/catalog/cases.json`** + `docs/case-catalog.md` + los cinco SVG.
+- **Perfiles de lenguaje**: agregado recalculado. **Rust pasa a 8 oros**, y su
+  media baja a 1.9 — empata con Go por primera vez.
+
+### Verificado
+
+Los 7 stacks levantados con Docker. Con 5 reintentos de un pago de $25: sin clave
+**5 cargos, $100 cobrados de mas y 5 emails**; con clave **1 cargo, 4 duplicados
+evitados y 1 email por outbox**. Identico en los siete.
+
 ## 2026-08-17 - Caso 15: backpressure en colas de mensajes en los 7 stacks
 
 Tercer caso del **Eje 1 del ROADMAP**. El lab pasa a **15 casos x 7 stacks = 105

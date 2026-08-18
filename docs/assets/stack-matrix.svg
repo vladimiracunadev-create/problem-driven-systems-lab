@@ -1,12 +1,12 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1076 824" width="1076" height="824" role="img" aria-label="Matriz de cobertura de casos por stack">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1076 864" width="1076" height="864" role="img" aria-label="Matriz de cobertura de casos por stack">
   <title>Matriz de cobertura de casos por stack</title>
   <defs>
     <marker id="arrowhead" markerWidth="9" markerHeight="7" refX="8" refY="3.5" orient="auto">
       <polygon points="0 0, 9 3.5, 0 7" fill="#2563eb"/>
     </marker>
   </defs>
-  <rect x="0" y="0" width="1076" height="824" rx="0" ry="0" fill="#ffffff" stroke="none" stroke-width="1"/>
-  <text x="34" y="42" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="19" fill="#0f172a" text-anchor="start" font-weight="600">Cobertura real: 15 casos x 7 stacks</text>
+  <rect x="0" y="0" width="1076" height="864" rx="0" ry="0" fill="#ffffff" stroke="none" stroke-width="1"/>
+  <text x="34" y="42" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="19" fill="#0f172a" text-anchor="start" font-weight="600">Cobertura real: 16 casos x 7 stacks</text>
 <text x="34" y="63" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="12.5" fill="#64748b" text-anchor="start" font-weight="400">Cada celda marcada es codigo que levanta con Docker y resuelve el caso con la primitiva idiomatica del runtime.</text>
   <rect x="375" y="82" width="86" height="38" rx="7" ry="7" fill="#6f7fb5" stroke="none" stroke-width="1"/>
   <text x="418.0" y="100" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="12.5" fill="#ffffff" text-anchor="middle" font-weight="600">PHP</text>
@@ -307,7 +307,25 @@
   <path d="M 893.8 708.0 l 3 3.2 l 5.4 -6" stroke="#ffffff" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
   <circle cx="994.0" cy="708.0" r="9" fill="#a8453a"/>
   <path d="M 989.8 708.0 l 3 3.2 l 5.4 -6" stroke="#ffffff" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-  <rect x="34" y="758" width="1008" height="44" rx="8" ry="8" fill="#f1f5f9" stroke="none" stroke-width="1"/>
-  <text x="50" y="778" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="12.5" fill="#0f172a" text-anchor="start" font-weight="600">105 de 105 implementaciones operativas (100%).</text>
-  <text x="50" y="793" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="11" fill="#64748b" text-anchor="start" font-weight="400">Paridad funcional, no sintactica: el mismo problema resuelto con la herramienta que cada runtime considera correcta.</text>
+  <rect x="40" y="737" width="4" height="22" rx="2" ry="2" fill="#d97706" stroke="none" stroke-width="1"/>
+  <text x="54" y="748" font-family="SFMono-Regular, Consolas, Liberation Mono, monospace" font-size="12" fill="#64748b" text-anchor="start" font-weight="600">16</text>
+  <text x="80" y="748" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="12.5" fill="#0f172a" text-anchor="start" font-weight="400">Idempotencia y efectos duplicados</text>
+  <text x="80" y="761" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="10.5" fill="#d97706" text-anchor="start" font-weight="600">Resiliencia</text>
+  <circle cx="418.0" cy="748.0" r="9" fill="#6f7fb5"/>
+  <path d="M 413.8 748.0 l 3 3.2 l 5.4 -6" stroke="#ffffff" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="514.0" cy="748.0" r="9" fill="#3b7cb8"/>
+  <path d="M 509.8 748.0 l 3 3.2 l 5.4 -6" stroke="#ffffff" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="610.0" cy="748.0" r="9" fill="#4b9c46"/>
+  <path d="M 605.8 748.0 l 3 3.2 l 5.4 -6" stroke="#ffffff" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="706.0" cy="748.0" r="9" fill="#c4622d"/>
+  <path d="M 701.8 748.0 l 3 3.2 l 5.4 -6" stroke="#ffffff" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="802.0" cy="748.0" r="9" fill="#6c4bb6"/>
+  <path d="M 797.8 748.0 l 3 3.2 l 5.4 -6" stroke="#ffffff" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="898.0" cy="748.0" r="9" fill="#2a9bb5"/>
+  <path d="M 893.8 748.0 l 3 3.2 l 5.4 -6" stroke="#ffffff" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="994.0" cy="748.0" r="9" fill="#a8453a"/>
+  <path d="M 989.8 748.0 l 3 3.2 l 5.4 -6" stroke="#ffffff" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="34" y="798" width="1008" height="44" rx="8" ry="8" fill="#f1f5f9" stroke="none" stroke-width="1"/>
+  <text x="50" y="818" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="12.5" fill="#0f172a" text-anchor="start" font-weight="600">112 de 112 implementaciones operativas (100%).</text>
+  <text x="50" y="833" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="11" fill="#64748b" text-anchor="start" font-weight="400">Paridad funcional, no sintactica: el mismo problema resuelto con la herramienta que cada runtime considera correcta.</text>
 </svg>

@@ -1,6 +1,6 @@
 # 🦀 Rust
 
-> **Versión fijada:** `1.83` · **Imagen base:** `rust:1.83-alpine` · **Hub:** `:8700` · **Casos operativos:** 15 / 15
+> **Versión fijada:** `1.83` · **Imagen base:** `rust:1.83-alpine` · **Hub:** `:8700` · **Casos operativos:** 16 / 16
 
 [⬅️ Volver a los perfiles de lenguaje](README.md) · [🗺️ Mapa de stacks](../stack-map.md) · [🔄 Protocolo de actualización](../language-upgrade-protocol.md)
 
@@ -50,6 +50,7 @@ El laboratorio usa Rust **sin runtime asincrónico**: `std::thread` y un thread 
 | [13 · Cache stampede](../../cases/13-cache-stampede-and-thundering-herd/rust/README.md) | `Arc<Flight>` con `Mutex` + `Condvar` | La `std` no trae `Future` ejecutable; el `Arc` obliga a que el vuelo sobreviva al mapa |
 | [14 · Pool de conexiones](../../cases/14-connection-pool-exhaustion/rust/README.md) | `impl Drop` sobre `Lease` | No hay línea que olvidar; fugar exige llamar a `mem::forget` por su nombre |
 | [15 · Backpressure](../../cases/15-message-queue-backpressure/rust/README.md) | `mpsc::sync_channel(N)` | El límite está en el tipo, y `TrySendError::Full(T)` devuelve el mensaje rechazado |
+| [16 · Idempotencia](../../cases/16-idempotency-and-duplicate-effects/rust/README.md) | `HashMap::entry` + `match` exhaustivo | El único donde ignorar el resultado de la reserva **no compila** |
 
 > 💡 **El patrón que solo se ve mirando la columna entera:** en los casos 03, 06, 07, 08 y 12 la corrección no la impone la disciplina del programador sino el compilador. Son cinco categorías de bug que en los otros seis stacks se evitan *acordándose*.
 
@@ -101,9 +102,9 @@ curl -s localhost:8700/05/state          # dropped_total refleja exactamente lo 
 
 ## 🏆 Dónde gana y dónde pierde en el laboratorio
 
-Agregado de los veredictos de las 14 comparativas que rankean: **7 primeros puestos, media 2.0** — más oros que ningún otro stack.
+Agregado de los veredictos de las 15 comparativas que rankean: **8 primeros puestos, media 1.9** — más oros que ningún otro stack.
 
-- 🥇 **Gana en 02, 03, 05, 06, 07, 12 y 14** — en el 14 por lo que el lenguaje **impide**: `impl Drop` hace que fugar una conexión no se pueda escribir por descuido — todos los casos donde el sistema de tipos o el `Drop` determinista convierten un error de runtime en un error de compilación.
+- 🥇 **Gana en 02, 03, 05, 06, 07, 12, 14 y 16** — en el 14 por lo que el lenguaje **impide**: `impl Drop` hace que fugar una conexión no se pueda escribir por descuido — todos los casos donde el sistema de tipos o el `Drop` determinista convierten un error de runtime en un error de compilación.
 - 🥈 **Segundo en 08, 09 y 15** — pierde el primer puesto contra Go por expresividad, no por corrección.
 - 🥉 **Tercero en 01 y 11** — el thread-per-connection 1:1 le cuesta el podio.
 - **4º en 13** — hay que construir el single-flight entero con `Condvar`: el compilador protege del use-after-remove, pero no regala la primitiva.
@@ -139,4 +140,4 @@ El detalle del procedimiento está en [docs/language-upgrade-protocol.md](../lan
 docker compose -f compose.rust.yml up -d --build
 ```
 
-Los 15 casos quedan servidos en `http://localhost:8700/NN/`. La primera compilación es notablemente más lenta que la de los otros seis stacks — es esperable, no es un fallo del build.
+Los 16 casos quedan servidos en `http://localhost:8700/NN/`. La primera compilación es notablemente más lenta que la de los otros seis stacks — es esperable, no es un fallo del build.

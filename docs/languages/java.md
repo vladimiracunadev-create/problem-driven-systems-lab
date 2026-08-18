@@ -1,6 +1,6 @@
 # ☕ Java
 
-> **Versión fijada:** `21` (LTS) · **Imagen base:** `eclipse-temurin:21-jdk-alpine` · **Hub:** `:8400` · **Casos operativos:** 15 / 15
+> **Versión fijada:** `21` (LTS) · **Imagen base:** `eclipse-temurin:21-jdk-alpine` · **Hub:** `:8400` · **Casos operativos:** 16 / 16
 
 [⬅️ Volver a los perfiles de lenguaje](README.md) · [🗺️ Mapa de stacks](../stack-map.md) · [🔄 Protocolo de actualización](../language-upgrade-protocol.md)
 
@@ -50,6 +50,7 @@ Java es un lenguaje de tipado estático que compila a bytecode y corre sobre la 
 | [13 · Cache stampede](../../cases/13-cache-stampede-and-thundering-herd/java/README.md) | `ConcurrentHashMap.computeIfAbsent` | **Atómico por clave**: mirar si existe y crearlo son una sola operación indivisible |
 | [14 · Pool de conexiones](../../cases/14-connection-pool-exhaustion/java/README.md) | try-with-resources sobre `ArrayBlockingQueue` | El compilador **genera** el `finally`; fugar exige no usarlo |
 | [15 · Backpressure](../../cases/15-message-queue-backpressure/java/README.md) | `ArrayBlockingQueue` + `put`/`offer` | Un nombre para cada rechazo; `ConcurrentLinkedQueue` comparte interfaz y no tiene tope |
+| [16 · Idempotencia](../../cases/16-idempotency-and-duplicate-effects/java/README.md) | `ConcurrentHashMap.putIfAbsent` | Resuelve la carrera **y** dice quién ganó, en una sola llamada |
 
 > 💡 **El patrón que solo se ve mirando la columna entera:** Java tiene una clase distinta para cada problema de concurrencia — `Semaphore`, `CompletableFuture`, `ConcurrentHashMap`, `CopyOnWriteArrayList`, `ThreadPoolExecutor`, `AtomicReference`, `LongAdder`. Es lo opuesto a Go, donde canal + `select` cubre casi todo. Más superficie que aprender; también más precisión cuando se conoce.
 
@@ -100,10 +101,10 @@ curl -s "localhost:8400/11/order-write"                # el pool principal quedo
 
 ## 🏆 Dónde gana y dónde pierde en el laboratorio
 
-Agregado de los veredictos de las 14 comparativas que rankean: **1 primer puesto, media 3.2**.
+Agregado de los veredictos de las 15 comparativas que rankean: **1 primer puesto, media 3.1**.
 
 - 🥇 **Gana en 11** — cuando el problema *es* el pool de threads, tener pool explícito y observable es la herramienta exacta.
-- 🥈 **Segundo en 01, 06, 13 y 14** — paralelismo real, `record` types inmutables el `computeIfAbsent` atómico que elimina la ventana check-then-act, y try-with-resources, que hace que el compilador escriba el `finally`.
+- 🥈 **Segundo en 01, 06, 13, 14 y 16** — paralelismo real, `record` types inmutables el `computeIfAbsent` atómico que elimina la ventana check-then-act, y try-with-resources, que hace que el compilador escriba el `finally`.
 - 🥉 **Tercero en 05, 07, 09 y 12**
 - **5º en 15** — le puso nombre a cada forma de rechazar, pero `ConcurrentLinkedQueue` comparte interfaz con `ArrayBlockingQueue` y sacar el freno es una línea que compila. — sólido, con las limitaciones documentadas arriba.
 - **6º en 02** — no por la API (JDBC es correcto), sino porque es uno de los dos ecosistemas donde el N+1 **nace solo**.
@@ -138,4 +139,4 @@ El detalle del procedimiento está en [docs/language-upgrade-protocol.md](../lan
 docker compose -f compose.java.yml up -d --build
 ```
 
-Los 15 casos quedan servidos en `http://localhost:8400/NN/`. Cada caso trae además su propio `compose.yml` para correrlo aislado.
+Los 16 casos quedan servidos en `http://localhost:8400/NN/`. Cada caso trae además su propio `compose.yml` para correrlo aislado.

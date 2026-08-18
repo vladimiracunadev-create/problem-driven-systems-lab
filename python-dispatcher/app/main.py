@@ -43,6 +43,7 @@ CASES = {
     "13": {"port": 9013, "name": "Cache stampede y thundering herd",     "server": "/cases/13/server.py"},
     "14": {"port": 9014, "name": "Agotamiento del pool de conexiones",     "server": "/cases/14/server.py"},
     "15": {"port": 9015, "name": "Backpressure en colas de mensajes",     "server": "/cases/15/server.py"},
+    "16": {"port": 9016, "name": "Idempotencia y efectos duplicados",     "server": "/cases/16/server.py"},
 }
 
 DISPATCH_PORT = int(os.environ.get("PORT", "8200"))

@@ -1,4 +1,4 @@
-# 📋 Resumen ejecutivo — los 15 casos en una pagina
+# 📋 Resumen ejecutivo — los 16 casos en una pagina
 
 > Vista de portafolio para evaluadores no tecnicos (reclutadores, lideres de producto, finanzas, CTO sin tiempo). Cada caso resume **problema → valor de negocio → evidencia reproducible → link al detalle tecnico**.
 >
@@ -8,9 +8,9 @@
 >
 > 🧭 **¿Sin base tecnica?** Empeza por [¿Que es esto? — explicacion en lenguaje simple](QUE-ES-ESTO.md).
 
-![Los 15 problemas agrupados por naturaleza](assets/case-map.svg)
+![Los 16 problemas agrupados por naturaleza](assets/case-map.svg)
 
-![Cobertura real de los 15 casos en los 7 stacks](assets/stack-matrix.svg)
+![Cobertura real de los 16 casos en los 7 stacks](assets/stack-matrix.svg)
 
 ## Mapa rapido
 
@@ -31,8 +31,9 @@
 | 13 | Cache stampede y thundering herd | Rendimiento | Evita caidas autoinfligidas cuando la cache deja de proteger al origen. |
 | 14 | Agotamiento del pool de conexiones | Rendimiento | Elimina el reinicio preventivo del runbook y dimensiona el pool con una formula. |
 | 15 | Backpressure en colas de mensajes | Resiliencia | Evita caidas por memoria y convierte el sacrificio en una decision explicita. |
+| 16 | Idempotencia y efectos duplicados | Resiliencia | Elimina cobros y avisos duplicados por reintentos, y el costo de devolverlos. |
 
-Los 15 casos estan **OPERATIVOS** en los 7 stacks: PHP/Python/Node.js/Java 21/.NET 8/Go 1.23/Rust 1.83. Detalle de paridad: [`docs/case-catalog.md`](case-catalog.md).
+Los 16 casos estan **OPERATIVOS** en los 7 stacks: PHP/Python/Node.js/Java 21/.NET 8/Go 1.23/Rust 1.83. Detalle de paridad: [`docs/case-catalog.md`](case-catalog.md).
 
 ---
 
@@ -276,14 +277,30 @@ Los 15 casos estan **OPERATIVOS** en los 7 stacks: PHP/Python/Node.js/Java 21/.N
 
 ---
 
+## Caso 16 — Idempotencia y efectos duplicados
+
+**Categoria:** Resiliencia · **Stacks operativos:** PHP, Python, Node.js, Java 21, .NET 8, Go 1.23, Rust 1.83
+
+**Problema.** El cliente reintenta porque el primer intento dio timeout. Pero el primer intento SI llego — lo que se perdio fue la respuesta. El cliente no puede distinguir 'no llego' de 'llego y no me entere', y sin una Idempotency-Key el servidor tampoco.
+
+**Valor.** Elimina cobros y notificaciones duplicadas, y el costo de soporte y devolucion que cada uno genera. overcharged_cents es plata real, en la unidad en que el negocio discute.
+
+**Evidencia.** `/charge-unsafe` vs `/charge-idempotent` sobre los mismos 5 reintentos: 5 cargos y 100 pesos de mas contra 1 cargo y 4 duplicados evitados. `/outbox` muestra que el efecto que cruza el boundary sale una sola vez y en la misma escritura que el cargo.
+
+**Honestidad.** Las estructuras son en memoria, no una base con UNIQUE real. Y el caso documenta una asimetria en vez de esconderla: seis de las siete versiones resuelven la carrera dentro de su proceso, asi que con dos replicas dejan de ser correctas. Solo la de PHP sobrevive a eso.
+
+→ Detalle: [cases/16-idempotency-and-duplicate-effects/README.md](../cases/16-idempotency-and-duplicate-effects/README.md)
+
+---
+
 ## Que NO encontraras en este laboratorio
 
 Honestidad explicita para no vender lo que no es:
 
-- **No es un benchmark de lenguajes.** Los 7 stacks (PHP/Python/Node/Java/.NET/Go/Rust) resuelven los 15 problemas con primitivas nativas distintas; el contraste muestra criterio, no "cual es mas rapido". El caso 10 lo dice explicito: lo comparable es la forma de la curva dentro de cada stack, no los milisegundos entre stacks.
+- **No es un benchmark de lenguajes.** Los 7 stacks (PHP/Python/Node/Java/.NET/Go/Rust) resuelven los 16 problemas con primitivas nativas distintas; el contraste muestra criterio, no "cual es mas rapido". El caso 10 lo dice explicito: lo comparable es la forma de la curva dentro de cada stack, no los milisegundos entre stacks.
 - **No reemplaza plataformas reales.** Tracing distribuido, CI/CD enterprise, mallas de servicios y feature flags globales quedan fuera. Lo que si esta: reproduccion fiel de la **logica operativa** de cada problema.
 - **No es production-grade tal cual.** Modelo de amenaza: localhost / LAN confiable. Para Internet ver [SECURITY.md](../SECURITY.md) (auth, rate limit, TLS son responsabilidad de quien expone).
-- **Paridad multi-stack completa hoy.** PHP + Python + Node.js + Java + .NET cubren los 15 casos cada uno con primitivas idiomaticas distintas. Cualquier caso nuevo se incorpora siguiendo el mismo patron.
+- **Paridad multi-stack completa hoy.** PHP + Python + Node.js + Java + .NET cubren los 16 casos cada uno con primitivas idiomaticas distintas. Cualquier caso nuevo se incorpora siguiendo el mismo patron.
 
 ## Postmortems narrativos por caso
 
@@ -306,6 +323,7 @@ Cada caso tiene un `postmortem.md` en formato incidente real (severidad, timelin
 | 13 | [La base cae 94 segundos a las 03:00 sin que suba el trafico](../cases/13-cache-stampede-and-thundering-herd/docs/postmortem.md) | SEV-1 |
 | 14 | [Seis semanas reiniciando pods porque el reinicio funcionaba](../cases/14-connection-pool-exhaustion/docs/postmortem.md) | SEV-2 |
 | 15 | [Cuatro meses subiendo el limite de memoria porque funcionaba](../cases/15-message-queue-backpressure/docs/postmortem.md) | SEV-2 |
+| 16 | [1.847 cobros duplicados en once minutos](../cases/16-idempotency-and-duplicate-effects/docs/postmortem.md) | SEV-1 |
 
 ## Rutas rapidas
 

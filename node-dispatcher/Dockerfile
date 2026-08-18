@@ -20,6 +20,7 @@ COPY cases/12-single-point-of-knowledge-and-operational-risk/node/app/server.js 
 COPY cases/13-cache-stampede-and-thundering-herd/node/app/server.js /cases/13/server.js
 COPY cases/14-connection-pool-exhaustion/node/app/server.js /cases/14/server.js
 COPY cases/15-message-queue-backpressure/node/app/server.js /cases/15/server.js
+COPY cases/16-idempotency-and-duplicate-effects/node/app/server.js /cases/16/server.js
 
 # Dispatcher
 COPY node-dispatcher/app/main.js /app/main.js

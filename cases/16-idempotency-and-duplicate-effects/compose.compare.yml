@@ -1,0 +1,56 @@
+services:
+  php:
+    build:
+      context: ./php
+      dockerfile: Dockerfile
+    container_name: pdsl-16-php
+    ports:
+      - "8116:8080"
+
+  node:
+    build:
+      context: ./node
+      dockerfile: Dockerfile
+    container_name: pdsl-16-node
+    ports:
+      - "8216:8080"
+
+  python:
+    build:
+      context: ./python
+      dockerfile: Dockerfile
+    container_name: pdsl-16-python
+    ports:
+      - "8316:8080"
+
+  java:
+    build:
+      context: ./java
+      dockerfile: Dockerfile
+    container_name: pdsl-16-java
+    ports:
+      - "8416:8080"
+
+  dotnet:
+    build:
+      context: ./dotnet
+      dockerfile: Dockerfile
+    container_name: pdsl-16-dotnet
+    ports:
+      - "8516:8080"
+
+  go:
+    build:
+      context: ./go
+      dockerfile: Dockerfile
+    container_name: pdsl-16-go
+    ports:
+      - "8616:8080"
+
+  rust:
+    build:
+      context: ./rust
+      dockerfile: Dockerfile
+    container_name: pdsl-16-rust
+    ports:
+      - "8716:8080"

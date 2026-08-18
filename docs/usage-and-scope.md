@@ -15,7 +15,7 @@
 
 | Area | Estado actual |
 | --- | --- |
-| 15 casos definidos y documentados | si |
+| 16 casos definidos y documentados | si |
 | Casos `01` al `12` operativos en PHP | si |
 | Casos `01` al `12` operativos en Python | si |
 | Casos `01` al `12` operativos en Node.js | si |
@@ -24,7 +24,7 @@
 | Docker por caso y por stack como ruta oficial | si |
 | Portal raiz para navegar el laboratorio | si |
 | Familia documental profesional en la raiz | si |
-| Paridad funcional completa entre todos los lenguajes | si — los 7 stacks (PHP/Python/Node/Java/.NET/Go/Rust) cubren los 15 casos cada uno con primitivas idiomaticas distintas |
+| Paridad funcional completa entre todos los lenguajes | si — los 7 stacks (PHP/Python/Node/Java/.NET/Go/Rust) cubren los 16 casos cada uno con primitivas idiomaticas distintas |
 
 ## 🚫 Limites conscientes
 

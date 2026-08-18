@@ -1,6 +1,6 @@
 # 🐹 Go
 
-> **Versión fijada:** `1.23` · **Imagen base:** `golang:1.23-alpine` · **Hub:** `:8600` · **Casos operativos:** 15 / 15
+> **Versión fijada:** `1.23` · **Imagen base:** `golang:1.23-alpine` · **Hub:** `:8600` · **Casos operativos:** 16 / 16
 
 [⬅️ Volver a los perfiles de lenguaje](README.md) · [🗺️ Mapa de stacks](../stack-map.md) · [🔄 Protocolo de actualización](../language-upgrade-protocol.md)
 
@@ -53,6 +53,7 @@ Una tabla por caso, con la primitiva central y por qué se eligió. Es el materi
 | [13 · Cache stampede](../../cases/13-cache-stampede-and-thundering-herd/go/README.md) | `sync.WaitGroup` como contador con espera | `singleflight` sin dependencias: el líder hace `Add(1)`, los seguidores `Wait()` |
 | [14 · Pool de conexiones](../../cases/14-connection-pool-exhaustion/go/README.md) | canal bufferizado + `select` + `defer` | El canal **es** el pool. El límite honesto: `defer` hay que acordarse de escribirlo |
 | [15 · Backpressure](../../cases/15-message-queue-backpressure/go/README.md) | `chan` bufferizado + `select` | No existe el canal con buffer infinito: la versión sin tope hay que escribirla a mano |
+| [16 · Idempotencia](../../cases/16-idempotency-and-duplicate-effects/go/README.md) | `sync.Map.LoadOrStore` | El caso donde `sync.Map` **sí** corresponde: escribir una vez, leer muchas |
 
 > 💡 **El patrón que solo se ve mirando la columna entera:** los casos 04, 08, 09 y 11 resuelven cuatro problemas distintos —cancelación, bus de eventos, semáforo de cuota y limitador de concurrencia— con **canal + `select`**. En los otros seis stacks son cuatro APIs diferentes que hay que conocer por separado.
 
@@ -106,10 +107,11 @@ Lo que Go **no** resuelve, documentado con el mismo criterio que lo que sí:
 
 ## 🏆 Dónde gana y dónde pierde en el laboratorio
 
-Agregado de los veredictos de las 14 comparativas que rankean: **6 primeros puestos, media 1.9** — el mejor promedio del set.
+Agregado de los veredictos de las 15 comparativas que rankean: **6 primeros puestos, media 1.9** — el mejor promedio del set.
 
 - 🥇 **Gana en 01, 04, 08, 09, 13 y 15** — todos los casos donde el problema es concurrencia, cancelación o coordinación. La economía conceptual del canal —y del `WaitGroup`— se paga sola.
 - 🥈 **Segundo en 02, 03, 05, 07, 11 y 12** — sólido en todo, sin picos.
+- 🥉 **Tercero en 16** — `sync.Map.LoadOrStore` con el contrato comma-ok de siempre, y el caso donde `sync.Map` sí corresponde.
 - **5º en 14** — el canal como pool es la expresión más económica del set, pero `defer` es una línea que hay que acordarse de escribir, y olvidarla compila.
 - 🥉 **Tercero en 06** — el único caso donde la falta de exhaustividad de tipos le cuesta el podio.
 
@@ -143,4 +145,4 @@ El detalle del procedimiento —qué archivos tocar y en qué orden— está en 
 docker compose -f compose.go.yml up -d --build
 ```
 
-Los 15 casos quedan servidos en `http://localhost:8600/NN/`. Para correr un caso aislado —útil cuando la medición necesita el runtime limpio— cada caso trae su propio `compose.yml` en `cases/NN-*/go/`.
+Los 16 casos quedan servidos en `http://localhost:8600/NN/`. Para correr un caso aislado —útil cuando la medición necesita el runtime limpio— cada caso trae su propio `compose.yml` en `cases/NN-*/go/`.
