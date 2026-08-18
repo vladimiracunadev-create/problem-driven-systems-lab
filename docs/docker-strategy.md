@@ -17,11 +17,11 @@ El laboratorio no se levanta como un unico sistema enorme. Se trabaja por capas:
 
 | Patron | Uso |
 | --- | --- |
-| `compose.root.yml` | Portal + 17 casos PHP en una sola entrada |
-| `compose.python.yml` | Hub Python con los 17 casos en un solo contenedor |
-| `compose.nodejs.yml` | Hub Node.js con los 17 casos en un solo contenedor |
-| `compose.java.yml` | Hub Java 21 con los 17 casos en un solo contenedor |
-| `compose.dotnet.yml` | Hub .NET 8 con los 17 casos en un solo contenedor |
+| `compose.root.yml` | Portal + 18 casos PHP en una sola entrada |
+| `compose.python.yml` | Hub Python con los 18 casos en un solo contenedor |
+| `compose.nodejs.yml` | Hub Node.js con los 18 casos en un solo contenedor |
+| `compose.java.yml` | Hub Java 21 con los 18 casos en un solo contenedor |
+| `compose.dotnet.yml` | Hub .NET 8 con los 18 casos en un solo contenedor |
 | `compose.portal.yml` | Portal liviano solamente |
 | `cases/<caso>/<stack>/compose.yml` | Un escenario concreto y aislado |
 | `cases/<caso>/compose.compare.yml` | Comparacion entre stacks del mismo caso |
@@ -89,7 +89,7 @@ Antes (commit historico): **~20 contenedores Docker**. Despues del dispatcher PH
 
 | Antes (legacy) | Despues (actual) |
 | --- | --- |
-| `nginx-hub` (path routing) | `php-lab` (dispatcher hace el routing **y** ejecuta los 17 casos) |
+| `nginx-hub` (path routing) | `php-lab` (dispatcher hace el routing **y** ejecuta los 18 casos) |
 | `case01-app` ... `case12-app` (12 contenedores PHP separados) | 12 subprocesos internos de `php-lab` |
 | `case01-worker` (separate) | `case01-worker` (sigue separado — es un CLI worker, no HTTP) |
 | `case01-db`, `case02-db` (PostgreSQL) | sin cambio |
@@ -133,16 +133,16 @@ Esta simetria se preserva al migrar a AWS — ver [`AWS_MIGRATION.md`](../AWS_MI
 ## 🛠️ Regla practica actual
 
 - `compose.root.yml` debe dejar visible el laboratorio PHP completo desde `localhost:8080`.
-- `compose.python.yml` y `compose.nodejs.yml` deben dejar visibles los 17 casos del stack respectivo desde `localhost:8200` y `localhost:8300`.
-- `compose.java.yml` debe dejar visibles los 17 casos desde `localhost:8400`.
-- `compose.dotnet.yml` debe dejar visibles los 17 casos desde `localhost:8500`.
-- `compose.go.yml` debe dejar visibles los 17 casos desde `localhost:8600`.
-- `compose.rust.yml` debe dejar visibles los 17 casos desde `localhost:8700`.
+- `compose.python.yml` y `compose.nodejs.yml` deben dejar visibles los 18 casos del stack respectivo desde `localhost:8200` y `localhost:8300`.
+- `compose.java.yml` debe dejar visibles los 18 casos desde `localhost:8400`.
+- `compose.dotnet.yml` debe dejar visibles los 18 casos desde `localhost:8500`.
+- `compose.go.yml` debe dejar visibles los 18 casos desde `localhost:8600`.
+- `compose.rust.yml` debe dejar visibles los 18 casos desde `localhost:8700`.
 - Los casos `01` al `12` deben poder levantarse con Docker de forma limpia tambien por separado (modo aislado).
 - Cada `compose.yml` debe incluir solo la infraestructura que el problema realmente necesita.
 - La presencia de `compose.compare.yml` no implica que todos los stacks tengan la misma profundidad funcional.
 
-Ademas, **los siete stacks comparten un modelo simetrico** — cada lenguaje sirve sus 17 casos como subprocesos dentro de un solo contenedor (hub). PHP suma servicios extras solo porque los casos `01` y `02` estudian PostgreSQL/worker/observabilidad reales, no porque la app PHP requiera N contenedores. Ver seccion **"Modelo de containerización (simétrico para los stacks operativos)"** arriba para el porque y los trade-offs explicitos.
+Ademas, **los siete stacks comparten un modelo simetrico** — cada lenguaje sirve sus 18 casos como subprocesos dentro de un solo contenedor (hub). PHP suma servicios extras solo porque los casos `01` y `02` estudian PostgreSQL/worker/observabilidad reales, no porque la app PHP requiera N contenedores. Ver seccion **"Modelo de containerización (simétrico para los stacks operativos)"** arriba para el porque y los trade-offs explicitos.
 
 La familia PHP comparte un runtime comun en `docker/php/Dockerfile`. La familia Python usa `python:3.12-alpine` directo. La familia Node usa `node:22-alpine` directo (Node 22 habilita `node:sqlite` built-in usado en caso 02). La familia Java usa `eclipse-temurin:21`. La familia .NET usa `mcr.microsoft.com/dotnet/sdk:8.0`. Cada lenguaje futuro seguira el patron `compose.{lang}.yml` con su bloque de puertos propio en la raiz.
 

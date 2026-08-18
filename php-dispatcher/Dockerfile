@@ -29,6 +29,7 @@ COPY cases/14-connection-pool-exhaustion/php/app/                            /ca
 COPY cases/15-message-queue-backpressure/php/app/                            /cases/15/
 COPY cases/16-idempotency-and-duplicate-effects/php/app/                            /cases/16/
 COPY cases/17-zero-downtime-schema-migration/php/app/                            /cases/17/
+COPY cases/18-cold-start-and-autoscale-lag/php/app/                            /cases/18/
 
 # Dispatcher + entrypoint
 COPY php-dispatcher/app/entrypoint.sh /app/entrypoint.sh

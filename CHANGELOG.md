@@ -2,6 +2,101 @@
 
 Todos los cambios notables de este laboratorio se registran aqui con foco en madurez tecnica y documental.
 
+## 2026-08-17 - Caso 18: arranque en frio y retraso del autoescalado en los 7 stacks
+
+Sexto caso del **Eje 1 del ROADMAP**. El lab pasa a **18 casos x 7 stacks = 126
+endpoints**.
+
+### Added — caso 18, arranque en frio y retraso del autoescalado
+
+`cases/18-cold-start-and-autoscale-lag/` con las **7 implementaciones**.
+
+Contrato uniforme: `/boot-cold` y `/boot-warmed` con clientes concurrentes que
+miden `availability_pct` **durante** el escalado, mas `/health` y `/ready`
+separados de verdad y `/warmup` para construir el pool tibio antes del trafico.
+
+Metrica central: **`health_vs_ready_gap_ms`** — la ventana exacta en la que el
+sistema afirma estar disponible sin estarlo. No es cuanto tarda un servicio en
+arrancar: es cuanto tiempo miente mientras arranca.
+
+### Es el unico caso del lab que MIDE el runtime en vez de simularlo
+
+En los diecisiete casos anteriores, el fenomeno se modela. Aca no.
+
+El trabajo por peticion es **el mismo lazo entero puro en los siete stacks**,
+sin un solo `sleep`, sin I/O, sin asignacion. `warmup_speedup_x` es el cociente
+entre el p99 de las primeras 100 peticiones y el de las que siguen a la 1000:
+**que hace ese runtime con el mismo codigo repetido mil veces**.
+
+| Stack | `warmup_speedup_x` | Que lo explica |
+|---|---|---|
+| ☕ Java 21 | **51,9x** | interpretado → C1 (~200 llamados) → C2 (~10.000, con perfil) |
+| 🔵 .NET 8 | **2,3x** | Tier 0 → Tier 1 a los ~30 llamados, con OSR |
+| 🐍 Python 3.12 | 1,8x | **no es JIT**: es contencion con los hilos que inicializan |
+| 🟢 Node.js 22 | 1,1x | V8 llega a TurboFan enseguida en un lazo asi de simple |
+| 🐘 PHP 8.3 | 1,1x | el JIT existe desde 8.0 y viene apagado |
+| 🐹 Go 1.23 | 1,0x | binario AOT: la peticion 1 corre el mismo codigo que la 100.000 |
+| 🦀 Rust 1.83 | **1,00x** | igual, y sin runtime ni GC que inicializar |
+
+Lo que si esta modelado, y queda escrito en cada README: la parte de I/O de la
+inicializacion —abrir el pool, DNS, TLS— es un `sleep` de `io_ms`, porque
+esperar a la red no quema CPU y fijarla es lo que vuelve comparables a los
+siete. Y en la variante fria, `p99_first_100_ms` **mezcla** el calentamiento del
+runtime con la contencion de las instancias que estan inicializando: los dos
+efectos ocurren de verdad en produccion, pero es una mezcla. El 1,8x de Python
+es contencion pura. El 51,9x de Java no.
+
+### El hallazgo que no estaba en la especificacion: el sistema se realimenta
+
+Del postmortem del caso: las instancias frias de Java atienden lento **despues**
+de declararse listas. Esa lentitud mantiene la CPU alta. La CPU alta vuelve a
+disparar al autoescalador. El autoescalador produce mas instancias frias.
+
+Ninguna de las dos partes esta rota. Un sistema que escala por una metrica que
+su propio arranque empeora se realimenta, y eso no aparece en ningun dashboard
+porque no hay nada en rojo.
+
+### Changed — el ranking se cruza en un caso
+
+- **Go toma su septimo oro.** No gana por rapido: gana por **no tener nada que
+  calentar**, y porque `sync.Once` es la forma mas legible del lab de decir
+  "esto cuesta una sola vez". Que tambien es la trampa: una `sync.Once` en el
+  camino de la peticion convierte a la primera peticion de cada proceso en la
+  mas lenta de todas.
+- **Rust segundo**, un caso despues de quedar sexto. `OnceLock` es el
+  equivalente de `sync.Once` y de `Lazy<T>` con algo que ninguno de los dos
+  tiene: **el tipo garantiza que el valor no se puede leer antes de estar
+  inicializado**. Olvidar el chequeo de readiness deja de ser un bug de runtime
+  y pasa a ser un error de compilacion.
+- **.NET tercero** por una razon que no es tecnica sino de friccion: tiene la
+  curva, y tiene la respuesta **en la caja**. `PublishReadyToRun`, `TieredPGO` y
+  `PublishAot` son tres lineas del `.csproj`.
+- **Java septimo**, un caso despues de ganar el 17. Tiene las herramientas mas
+  potentes contra su propio problema —AppCDS, `TieredStopAtLevel`, GraalVM
+  `native-image`— y ninguna viene activada. La diferencia con .NET no esta en
+  tener herramientas: esta en que las de .NET vienen puestas.
+
+Ese cruce —Java 🥇 en el 17 y 7º en el 18; Rust 6º en el 17 y 🥈 en el 18— es el
+punto del laboratorio. **Un caso que siempre ordena igual a los siete stacks no
+esta midiendo nada.**
+
+### Changed — integracion
+
+- **Dispatchers**: registro del caso 18 y puerto interno en los siete
+  (`:9018` PHP/Python/Node, `:9418` Java, `:9518` .NET, `:9618` Go, `:9718` Rust).
+- **`ci.yml`**: matriz `compose-config` de 127 a **134 archivos**; `hub-probe`
+  valida 18 casos por stack; `compose-smoke` suma `case18-dotnet` y `case18-rust`.
+- **`shared/catalog/cases.json`** + `docs/case-catalog.md` + los cinco SVG.
+- **Perfiles de lenguaje**: agregado recalculado. **Go pasa a 7 oros.**
+
+### Verificado
+
+Los 7 stacks levantados con Docker. Con 2.400 peticiones, 3 instancias y 8
+clientes: la variante fria rechaza entre el 12% y el 42% del trafico segun el
+throughput de cada runtime, con el proceso vivo y `/health` en 200 todo el
+tiempo; la variante con pool tibio y enrutado por readiness rechaza **cero, con
+100% de disponibilidad**. Identico en los siete.
+
 ## 2026-08-17 - Caso 17: migracion de esquema sin downtime en los 7 stacks
 
 Quinto caso del **Eje 1 del ROADMAP**. El lab pasa a **17 casos x 7 stacks = 119

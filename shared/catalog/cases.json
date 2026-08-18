@@ -5,7 +5,7 @@
     "hero_title": "Evalúa el laboratorio con evidencia real: elige una audiencia o un stack tecnológico",
     "audience_message": "Diseñado para especialistas en selección, líderes técnicos y equipos de ingeniería que buscan validar criterio técnico con escenarios reproducibles."
   },
-  "recommended_github_about": "🧪 Laboratorio de sistemas distribuido con 17 casos reales Docker-first para diagnosticar y resolver problemas criticos de rendimiento, observabilidad, resiliencia y arquitectura 🐳",
+  "recommended_github_about": "🧪 Laboratorio de sistemas distribuido con 18 casos reales Docker-first para diagnosticar y resolver problemas criticos de rendimiento, observabilidad, resiliencia y arquitectura 🐳",
   "recommended_github_topics": [
     "problem-driven",
     "docker",
@@ -1796,6 +1796,104 @@
           "root_path": "/17/",
           "isolated_compose": "cases/17-zero-downtime-schema-migration/rust/compose.yml",
           "isolated_port": 8717
+        }
+      }
+    },
+    {
+      "id": "18",
+      "icon": "❄️",
+      "slug": "cold-start-and-autoscale-lag",
+      "title": "Arranque en frio y retraso del autoescalado",
+      "category": "Resiliencia",
+      "status": "OPERATIVO",
+      "level_detail": "Unico caso del lab que MIDE una propiedad del runtime en vez de simularla: el mismo lazo entero puro corre en los 7 stacks y warmup_speedup_x sale de comparar p99 de las primeras 100 peticiones contra p99 despues de 1000. Java 51,9x por compilacion en capas interp/C1/C2, .NET 2,3x por Tier 0/Tier 1 con OSR, Node 1,1x porque V8 llega a TurboFan enseguida, Python 1,8x que es contencion y no JIT, PHP 1,1x con el JIT apagado de fabrica, Go 1,0x y Rust 1,00x por compilar AOT. Mas la separacion liveness/readiness y el pool tibio con sync.Once, Lazy<T> y OnceLock",
+      "summary": "El autoescalador suma instancias y la tasa de error sube con cada una: el proceso esta vivo y el healthcheck en verde mucho antes de que la instancia pueda servir.",
+      "case_readme_path": "cases/18-cold-start-and-autoscale-lag/README.md",
+      "business_outcome": "Elimina los 503 durante los escalados y habilita autoescalado agresivo con confianza, que es la forma de que el autoescalado ahorre dinero en vez de mover el problema.",
+      "recruiter_pitch": "Es el unico caso que mide una propiedad del runtime en vez de simularla — la curva de calentamiento de cada uno, con el mismo codigo — y muestra que el indicador honesto no es cuanto tarda un servicio en arrancar sino cuanto tiempo afirma estar disponible sin estarlo.",
+      "proof_points": [
+        "Contrasta /boot-cold y /boot-warmed con availability_pct medida DURANTE el escalado.",
+        "Mide warmup_speedup_x con el mismo lazo entero en los 7 runtimes: Java 51,9x contra Rust 1,00x.",
+        "Separa /health de /ready y expone health_vs_ready_gap_ms, la ventana exacta de la mentira."
+      ],
+      "look_for": [
+        "Si rejected_cold_start es mayor que cero en la variante fria y exactamente cero en la corregida.",
+        "Si health_vs_ready_gap_ms coincide con la ventana en que el proceso decia estar vivo sin poder servir.",
+        "Si warmup_speedup_x separa a los runtimes con JIT de los compilados AOT con el mismo codigo."
+      ],
+      "honesty_note": "La curva de calentamiento se mide de verdad: el trabajo por peticion es un lazo entero puro sin sleep, identico en los 7. Lo modelado es la parte de I/O de la inicializacion (abrir pool, DNS, TLS), que va como sleep de io_ms porque esperar a la red no quema CPU y fijarla es lo que hace comparables a los 7. En la variante fria, p99_first_100_ms mezcla el calentamiento del runtime con la contencion de las instancias que estan inicializando — los dos efectos ocurren de verdad en produccion, pero es una mezcla. En PHP el solapamiento entre arranque y trafico tambien se modela, porque el servidor embebido es de un solo proceso.",
+      "operational_stacks": [
+        "php",
+        "python",
+        "node",
+        "java",
+        "dotnet",
+        "go",
+        "rust"
+      ],
+      "runtime_entries": {
+        "php": {
+          "port": 8100,
+          "compose_path": "compose.root.yml",
+          "readme_path": "cases/18-cold-start-and-autoscale-lag/php/README.md",
+          "health_path": "/18/health",
+          "root_path": "/18/",
+          "isolated_compose": "cases/18-cold-start-and-autoscale-lag/php/compose.yml",
+          "isolated_port": 8118
+        },
+        "python": {
+          "port": 8200,
+          "compose_path": "compose.python.yml",
+          "readme_path": "cases/18-cold-start-and-autoscale-lag/python/README.md",
+          "health_path": "/18/health",
+          "root_path": "/18/",
+          "isolated_compose": "cases/18-cold-start-and-autoscale-lag/python/compose.yml",
+          "isolated_port": 8318
+        },
+        "node": {
+          "port": 8300,
+          "compose_path": "compose.nodejs.yml",
+          "readme_path": "cases/18-cold-start-and-autoscale-lag/node/README.md",
+          "health_path": "/18/health",
+          "root_path": "/18/",
+          "isolated_compose": "cases/18-cold-start-and-autoscale-lag/node/compose.yml",
+          "isolated_port": 8218
+        },
+        "java": {
+          "port": 8400,
+          "compose_path": "compose.java.yml",
+          "readme_path": "cases/18-cold-start-and-autoscale-lag/java/README.md",
+          "health_path": "/18/health",
+          "root_path": "/18/",
+          "isolated_compose": "cases/18-cold-start-and-autoscale-lag/java/compose.yml",
+          "isolated_port": 8418
+        },
+        "dotnet": {
+          "port": 8500,
+          "compose_path": "compose.dotnet.yml",
+          "readme_path": "cases/18-cold-start-and-autoscale-lag/dotnet/README.md",
+          "health_path": "/18/health",
+          "root_path": "/18/",
+          "isolated_compose": "cases/18-cold-start-and-autoscale-lag/dotnet/compose.yml",
+          "isolated_port": 8518
+        },
+        "go": {
+          "port": 8600,
+          "compose_path": "compose.go.yml",
+          "readme_path": "cases/18-cold-start-and-autoscale-lag/go/README.md",
+          "health_path": "/18/health",
+          "root_path": "/18/",
+          "isolated_compose": "cases/18-cold-start-and-autoscale-lag/go/compose.yml",
+          "isolated_port": 8618
+        },
+        "rust": {
+          "port": 8700,
+          "compose_path": "compose.rust.yml",
+          "readme_path": "cases/18-cold-start-and-autoscale-lag/rust/README.md",
+          "health_path": "/18/health",
+          "root_path": "/18/",
+          "isolated_compose": "cases/18-cold-start-and-autoscale-lag/rust/compose.yml",
+          "isolated_port": 8718
         }
       }
     }

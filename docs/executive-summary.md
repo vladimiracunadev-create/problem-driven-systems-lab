@@ -1,4 +1,4 @@
-# 📋 Resumen ejecutivo — los 17 casos en una pagina
+# 📋 Resumen ejecutivo — los 18 casos en una pagina
 
 > Vista de portafolio para evaluadores no tecnicos (reclutadores, lideres de producto, finanzas, CTO sin tiempo). Cada caso resume **problema → valor de negocio → evidencia reproducible → link al detalle tecnico**.
 >
@@ -8,9 +8,9 @@
 >
 > 🧭 **¿Sin base tecnica?** Empeza por [¿Que es esto? — explicacion en lenguaje simple](QUE-ES-ESTO.md).
 
-![Los 17 problemas agrupados por naturaleza](assets/case-map.svg)
+![Los 18 problemas agrupados por naturaleza](assets/case-map.svg)
 
-![Cobertura real de los 17 casos en los 7 stacks](assets/stack-matrix.svg)
+![Cobertura real de los 18 casos en los 7 stacks](assets/stack-matrix.svg)
 
 ## Mapa rapido
 
@@ -33,8 +33,9 @@
 | 15 | Backpressure en colas de mensajes | Resiliencia | Evita caidas por memoria y convierte el sacrificio en una decision explicita. |
 | 16 | Idempotencia y efectos duplicados | Resiliencia | Elimina cobros y avisos duplicados por reintentos, y el costo de devolverlos. |
 | 17 | Migracion de esquema sin downtime | Entrega | Cambia el esquema de una tabla caliente sin ventana de mantenimiento. |
+| 18 | Arranque en frio y retraso del autoescalado | Resiliencia | Elimina los 503 durante los escalados y habilita autoescalado agresivo. |
 
-Los 17 casos estan **OPERATIVOS** en los 7 stacks: PHP/Python/Node.js/Java 21/.NET 8/Go 1.23/Rust 1.83. Detalle de paridad: [`docs/case-catalog.md`](case-catalog.md).
+Los 18 casos estan **OPERATIVOS** en los 7 stacks: PHP/Python/Node.js/Java 21/.NET 8/Go 1.23/Rust 1.83. Detalle de paridad: [`docs/case-catalog.md`](case-catalog.md).
 
 ---
 
@@ -310,14 +311,30 @@ Los 17 casos estan **OPERATIVOS** en los 7 stacks: PHP/Python/Node.js/Java 21/.N
 
 ---
 
+## Caso 18 — Arranque en frio y retraso del autoescalado
+
+**Categoria:** Resiliencia · **Stacks operativos:** PHP, Python, Node.js, Java 21, .NET 8, Go 1.23, Rust 1.83
+
+**Problema.** El autoescalador suma instancias y la tasa de error sube con cada una. El proceso esta vivo desde el milisegundo cero y el healthcheck lo confirma, pero la instancia no puede servir hasta terminar de inicializar — y el balanceador que enruta por liveness manda trafico a ese hueco.
+
+**Valor.** Elimina los 503 durante los escalados y habilita autoescalado agresivo con confianza. El indicador honesto no es cuanto tarda un servicio en arrancar sino cuanto tiempo afirma estar disponible sin estarlo.
+
+**Evidencia.** Es el unico caso del lab que MIDE una propiedad del runtime en vez de simularla: el mismo lazo entero puro corre en los 7 stacks y warmup_speedup_x compara el p99 de las primeras 100 peticiones contra el p99 despues de 1000. Java sale 51,9x, .NET 2,3x, Rust 1,00x. Con 2.400 peticiones y 3 instancias, la variante fria rechaza entre el 12% y el 42% del trafico; la templada rechaza cero, con 100% de disponibilidad.
+
+**Honestidad.** La curva de calentamiento se mide de verdad, sin sleep. Lo modelado es la parte de I/O de la inicializacion (abrir pool, DNS, TLS). En la variante fria, p99_first_100_ms mezcla el calentamiento del runtime con la contencion de las instancias que estan inicializando — los dos efectos son reales en produccion, pero es una mezcla.
+
+→ Detalle: [cases/18-cold-start-and-autoscale-lag/README.md](../cases/18-cold-start-and-autoscale-lag/README.md)
+
+---
+
 ## Que NO encontraras en este laboratorio
 
 Honestidad explicita para no vender lo que no es:
 
-- **No es un benchmark de lenguajes.** Los 7 stacks (PHP/Python/Node/Java/.NET/Go/Rust) resuelven los 17 problemas con primitivas nativas distintas; el contraste muestra criterio, no "cual es mas rapido". El caso 10 lo dice explicito: lo comparable es la forma de la curva dentro de cada stack, no los milisegundos entre stacks.
+- **No es un benchmark de lenguajes.** Los 7 stacks (PHP/Python/Node/Java/.NET/Go/Rust) resuelven los 18 problemas con primitivas nativas distintas; el contraste muestra criterio, no "cual es mas rapido". El caso 10 lo dice explicito: lo comparable es la forma de la curva dentro de cada stack, no los milisegundos entre stacks.
 - **No reemplaza plataformas reales.** Tracing distribuido, CI/CD enterprise, mallas de servicios y feature flags globales quedan fuera. Lo que si esta: reproduccion fiel de la **logica operativa** de cada problema.
 - **No es production-grade tal cual.** Modelo de amenaza: localhost / LAN confiable. Para Internet ver [SECURITY.md](../SECURITY.md) (auth, rate limit, TLS son responsabilidad de quien expone).
-- **Paridad multi-stack completa hoy.** PHP + Python + Node.js + Java + .NET cubren los 17 casos cada uno con primitivas idiomaticas distintas. Cualquier caso nuevo se incorpora siguiendo el mismo patron.
+- **Paridad multi-stack completa hoy.** PHP + Python + Node.js + Java + .NET cubren los 18 casos cada uno con primitivas idiomaticas distintas. Cualquier caso nuevo se incorpora siguiendo el mismo patron.
 
 ## Postmortems narrativos por caso
 
@@ -342,6 +359,7 @@ Cada caso tiene un `postmortem.md` en formato incidente real (severidad, timelin
 | 15 | [Cuatro meses subiendo el limite de memoria porque funcionaba](../cases/15-message-queue-backpressure/docs/postmortem.md) | SEV-2 |
 | 16 | [1.847 cobros duplicados en once minutos](../cases/16-idempotency-and-duplicate-effects/docs/postmortem.md) | SEV-1 |
 | 17 | [22 minutos de 503 por agregar una columna](../cases/17-zero-downtime-schema-migration/docs/postmortem.md) | SEV-1 |
+| 18 | [34 minutos de errores que subian con cada instancia agregada](../cases/18-cold-start-and-autoscale-lag/docs/postmortem.md) | SEV-1 |
 
 ## Rutas rapidas
 

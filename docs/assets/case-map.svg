@@ -6,7 +6,7 @@
     </marker>
   </defs>
   <rect x="0" y="0" width="800" height="1240" rx="0" ry="0" fill="#ffffff" stroke="none" stroke-width="1"/>
-  <text x="34" y="42" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="19" fill="#0f172a" text-anchor="start" font-weight="600">Los 17 problemas, agrupados por naturaleza</text>
+  <text x="34" y="42" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="19" fill="#0f172a" text-anchor="start" font-weight="600">Los 18 problemas, agrupados por naturaleza</text>
 <text x="34" y="63" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="12.5" fill="#64748b" text-anchor="start" font-weight="400">El laboratorio se organiza por problema, no por tecnologia. La tecnologia es la variable, el problema es la constante.</text>
   <rect x="34" y="104" width="6" height="22" rx="3" ry="3" fill="#2563eb" stroke="none" stroke-width="1"/>
   <text x="50" y="121" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="12.5" fill="#2563eb" text-anchor="start" font-weight="700" letter-spacing="0.6">RENDIMIENTO</text>
@@ -42,7 +42,7 @@
   <text x="298" y="319" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="10.5" fill="#64748b" text-anchor="start" font-weight="400">7 stacks operativos</text>
   <rect x="34" y="360" width="6" height="22" rx="3" ry="3" fill="#d97706" stroke="none" stroke-width="1"/>
   <text x="50" y="377" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="12.5" fill="#d97706" text-anchor="start" font-weight="700" letter-spacing="0.6">RESILIENCIA</text>
-  <text x="158.6" y="377" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="11.5" fill="#64748b" text-anchor="start" font-weight="400">4 casos</text>
+  <text x="158.6" y="377" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="11.5" fill="#64748b" text-anchor="start" font-weight="400">5 casos</text>
   <rect x="34" y="392" width="236" height="92" rx="9" ry="9" fill="#f1f5f9" stroke="none" stroke-width="1"/>
   <rect x="34" y="392" width="4" height="92" rx="2" ry="2" fill="#d97706" stroke="none" stroke-width="1"/>
   <text x="50" y="414" font-family="SFMono-Regular, Consolas, Liberation Mono, monospace" font-size="11" fill="#d97706" text-anchor="start" font-weight="700">Caso 04</text>
@@ -66,6 +66,12 @@
   <text x="50" y="537" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="12.5" fill="#0f172a" text-anchor="start" font-weight="600">Idempotencia y efectos</text>
   <text x="50" y="553" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="12.5" fill="#0f172a" text-anchor="start" font-weight="600">duplicados</text>
   <text x="50" y="575" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="10.5" fill="#64748b" text-anchor="start" font-weight="400">7 stacks operativos</text>
+  <rect x="282" y="496" width="236" height="92" rx="9" ry="9" fill="#f1f5f9" stroke="none" stroke-width="1"/>
+  <rect x="282" y="496" width="4" height="92" rx="2" ry="2" fill="#d97706" stroke="none" stroke-width="1"/>
+  <text x="298" y="518" font-family="SFMono-Regular, Consolas, Liberation Mono, monospace" font-size="11" fill="#d97706" text-anchor="start" font-weight="700">Caso 18</text>
+  <text x="298" y="537" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="12.5" fill="#0f172a" text-anchor="start" font-weight="600">Arranque en frio y retraso del</text>
+  <text x="298" y="553" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="12.5" fill="#0f172a" text-anchor="start" font-weight="600">autoescalado</text>
+  <text x="298" y="575" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="10.5" fill="#64748b" text-anchor="start" font-weight="400">7 stacks operativos</text>
   <rect x="34" y="616" width="6" height="22" rx="3" ry="3" fill="#7c3aed" stroke="none" stroke-width="1"/>
   <text x="50" y="633" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="12.5" fill="#7c3aed" text-anchor="start" font-weight="700" letter-spacing="0.6">OBSERVABILIDAD</text>
   <text x="184.39999999999998" y="633" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="11.5" fill="#64748b" text-anchor="start" font-weight="400">1 caso</text>

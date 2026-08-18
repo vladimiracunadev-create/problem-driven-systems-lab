@@ -4,18 +4,18 @@
 
 ## Estado actual (2026-08-17)
 
-- **17 casos × 7 stacks operativos = 119 endpoints** detras de 7 hubs simetricos (`compose.root.yml` PHP `:8100`, `compose.python.yml` Python `:8200`, `compose.nodejs.yml` Node `:8300`, `compose.java.yml` Java `:8400`, `compose.dotnet.yml` .NET `:8500`, `compose.go.yml` Go `:8600`, `compose.rust.yml` Rust `:8700`).
+- **18 casos × 7 stacks operativos = 126 endpoints** detras de 7 hubs simetricos (`compose.root.yml` PHP `:8100`, `compose.python.yml` Python `:8200`, `compose.nodejs.yml` Node `:8300`, `compose.java.yml` Java `:8400`, `compose.dotnet.yml` .NET `:8500`, `compose.go.yml` Go `:8600`, `compose.rust.yml` Rust `:8700`).
 - **Casos 01 y 02 con fidelidad universal:** los 7 stacks ejecutan SQL real sobre un motor — PostgreSQL en PHP, SQLite stdlib en Python, `node:sqlite` built-in en Node, `sqlite-jdbc` en Java, `Microsoft.Data.Sqlite` en .NET, `modernc.org/sqlite` (Go puro, sin cgo) en Go, `rusqlite` feature `bundled` en Rust. `db_hits` / `db_queries_in_request` cuentan ejecuciones reales contra motor en los siete runtimes.
 - **Caso 01 con el filtro no sargable verificado por el planner:** `EXPLAIN QUERY PLAN` devuelve `SCAN orders` para `WHERE LOWER(region) LIKE 'n%'` y `SEARCH orders USING INDEX idx_orders_region` para el mismo predicado reescrito como rango. Java y .NET usan `journal_mode=WAL` para que el worker que refresca el resumen no bloquee a los lectores — el equivalente embebido del MVCC de PostgreSQL.
 - **Asimetria que queda, por diseño:** solo PHP cruza un socket TCP contra un motor externo con pool FPM finito. Los otros seis embeben el motor. Node y Python conservan un round-trip artificial explicito que modela el hop de red ausente. Documentado en cada `comparison.md` y `README.md` de stack, no escondido.
 - Documentacion editorial completa (`README.md`, `RECRUITER.md`, `ARCHITECTURE.md`, `RUNBOOK.md`, `SECURITY.md`, `AWS_MIGRATION.md`, `CONTRIBUTING.md`, `CHANGELOG.md`).
 - Catalogo unificado en `shared/catalog/cases.json` como fuente de verdad del portal, `docs/case-catalog.md` y la narrativa operativa.
 - Portal local con `index.html` + `catalog.php` + `probe.php` server-side para health en vivo.
-- CI con validacion estructural + `compose-config` sobre 127 archivos + `portal-probe` PHP + `hub-probe` Python/Node/Java/.NET/Go/Rust sobre los 17 casos por stack en un solo boot.
+- CI con validacion estructural + `compose-config` sobre 134 archivos + `portal-probe` PHP + `hub-probe` Python/Node/Java/.NET/Go/Rust sobre los 18 casos por stack en un solo boot.
 
 ## Eje 1 — Nuevos casos de la vida real (13-20)
 
-> **Progreso: 5 de 8 entregados.** Los casos 13 a 17 estan operativos en los 7 stacks. Los casos 18-20 siguen en especificacion.
+> **Progreso: 6 de 8 entregados.** Los casos 13 a 18 estan operativos en los 7 stacks. Los casos 19 y 20 siguen en especificacion.
 
 Ocho casos adicionales que extienden el lab con problemas que se ven en sistemas productivos reales. Cada uno mantiene el formato problem-driven: sintoma observable → causa raiz tecnica → solucion idiomatica por stack → evidencia medible.
 
@@ -193,7 +193,36 @@ El ranking mide expresividad; la pregunta operativa es otra. Las dos respuestas 
 
 ---
 
-### Caso 18 — Cold start y autoscale lag
+### Caso 18 — Cold start y autoscale lag — ✅ ENTREGADO (2026-08-17)
+
+**Estado:** operativo en los **7 stacks**. Ver [`cases/18-cold-start-and-autoscale-lag/`](cases/18-cold-start-and-autoscale-lag/README.md).
+
+**Lo que se construyo, contra lo que se habia planeado:**
+
+| Planeado | Entregado |
+|---|---|
+| Java + .NET + Node, "donde el JIT es mas dramatico" | Los 7 — porque los cuatro que **no** tienen JIT son la mitad del hallazgo: sin ellos no hay contra que comparar. |
+| Warm pool, `/warmup`, `/health` y `/ready` separados, `cold_start_count` | Todo eso, mas `health_vs_ready_gap_ms` — la ventana exacta en la que el sistema afirma estar disponible sin estarlo. |
+| "latencia de primeras 100 requests vs requests 1000+" | Exactamente eso, y **medido en vez de simulado**: el mismo lazo entero puro en los 7 stacks, sin un solo `sleep`. |
+
+**Lo que salio del camino y vale registrar:** este es **el unico caso del laboratorio que mide una propiedad del runtime en vez de modelarla**. El trabajo por peticion es codigo identico en los siete; `warmup_speedup_x` es el cociente entre el p99 de las primeras 100 peticiones y el de las que siguen a la 1000. El numero no lo eligio nadie:
+
+| Stack | Medido | Que lo explica |
+|---|---|---|
+| ☕ Java | **51,9x** | interpretado → C1 (~200 llamados) → C2 (~10.000, con perfil) |
+| 🔵 .NET | **2,3x** | Tier 0 → Tier 1 a los ~30 llamados, con OSR |
+| 🐍 Python | 1,8x | **no es JIT**: es contencion con los hilos que inicializan bajo el GIL |
+| 🟢 Node | 1,1x | V8 llega a TurboFan enseguida en un lazo asi de simple |
+| 🐘 PHP | 1,1x | el JIT existe desde 8.0 y viene apagado |
+| 🐹 Go | 1,0x | binario AOT: la peticion 1 corre el mismo codigo que la 100.000 |
+| 🦀 Rust | **1,00x** | igual, y sin runtime ni GC que inicializar |
+
+Y el hallazgo del postmortem, que no estaba en la especificacion: **el sistema se realimenta**. Las instancias frias de Java atienden lento, esa lentitud mantiene la CPU alta, la CPU alta vuelve a disparar al autoescalador, y el autoescalador produce mas instancias frias. Ninguna de las dos partes esta rota.
+
+**Movimientos en el ranking:** Go toma su septimo oro y Java queda **septimo**, un caso despues de ganar el 17. Rust queda segundo, un caso despues de quedar sexto. Ese cruce es el punto del laboratorio: un caso que siempre ordena igual a los siete stacks no esta midiendo nada.
+
+<details>
+<summary>Especificacion original del caso</summary>
 
 **Sintoma:** un autoscale event tarda 90 segundos en agregar capacidad real. Durante esos 90s, las instancias existentes saturan y p99 explota. Los healthchecks reportan green porque responden a `/health`, pero los handlers reales estan colgados.
 
@@ -204,6 +233,8 @@ El ranking mide expresividad; la pregunta operativa es otra. Las dos respuestas 
 **Stacks objetivo iniciales:** Java (JIT warm-up es el mas dramatico) + .NET (similar) + Node (cold start mas chico pero observable).
 
 **Que medir:** tiempo de primer response despues de boot, latencia de primeras 100 requests vs requests 1000+, `cold_start_count`.
+
+</details>
 
 ---
 
@@ -266,7 +297,7 @@ Dos decisiones que salieron del camino y vale la pena registrar:
 - Agregar dashboards Grafana por stack (latencia p50/p95/p99, `db_hits`, `event_loop_lag_ms` Node, `ThreadPool.GetAvailableWorkerThreads` .NET, `ThreadPoolExecutor.getActiveCount()` Java).
 - Centralizar via un solo Prometheus que scrappea los 7 hubs.
 
-**Estimado:** ~200 lineas por stack en el dispatcher para exponer un agregado de los 17 casos del stack. Dashboards Grafana JSON commiteados en `cases/01-api-latency-under-load/shared/observability/`.
+**Estimado:** ~200 lineas por stack en el dispatcher para exponer un agregado de los 18 casos del stack. Dashboards Grafana JSON commiteados en `cases/01-api-latency-under-load/shared/observability/`.
 
 ---
 
@@ -314,7 +345,7 @@ Compromisos editoriales transversales para que el lab no venda fidelidad que no 
 
 **Estado:** pendiente.
 
-**Plan:** seccion nueva en el `README.md` raiz que liste los 17 casos con una columna por stack indicando si el substrato es real (DB / kernel / network) o simulado (sleep / memoria / setTimeout). Vista de un vistazo, sin tener que abrir cada `comparison.md`.
+**Plan:** seccion nueva en el `README.md` raiz que liste los 18 casos con una columna por stack indicando si el substrato es real (DB / kernel / network) o simulado (sleep / memoria / setTimeout). Vista de un vistazo, sin tener que abrir cada `comparison.md`.
 
 ---
 
@@ -330,8 +361,8 @@ Compromisos editoriales transversales para que el lab no venda fidelidad que no 
 
 Las fases anteriores quedan registradas para referencia historica:
 
-- **Fase 1 — Base estructural** (completada): nombre y posicionamiento, portal liviano, estructura problem-driven con 17 casos, documentacion base.
+- **Fase 1 — Base estructural** (completada): nombre y posicionamiento, portal liviano, estructura problem-driven con 18 casos, documentacion base.
 - **Fase 1.5 — Profesionalizacion documental** (completada): familia documental completa en raiz, alineacion editorial con el ecosistema publico de Vladimir Acuna.
-- **Fase 2 — Profundizacion tecnica** (completada): los 17 casos × 7 stacks (PHP/Python/Node/Java/.NET/Go/Rust) operativos con primitivas idiomaticas distintivas por caso y por lenguaje.
-- **Fase 3 — Valor de portafolio** (completada): `docs/executive-summary.md` cubierto, diagramas en `ARCHITECTURE.md` cubierto, postmortems cubiertos (`docs/postmortem.md` en los 17 casos).
+- **Fase 2 — Profundizacion tecnica** (completada): los 18 casos × 7 stacks (PHP/Python/Node/Java/.NET/Go/Rust) operativos con primitivas idiomaticas distintivas por caso y por lenguaje.
+- **Fase 3 — Valor de portafolio** (completada): `docs/executive-summary.md` cubierto, diagramas en `ARCHITECTURE.md` cubierto, postmortems cubiertos (`docs/postmortem.md` en los 18 casos).
 - **Fase 4 — Laboratorio expandido** (en progreso, abierta por este ROADMAP): los 8 casos nuevos (13-20) y las mejoras de plataforma listadas arriba son la continuacion natural.

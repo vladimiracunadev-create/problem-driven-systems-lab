@@ -1,6 +1,6 @@
 # 🗺️ Mapa de problemas
 
-> Los 17 casos del laboratorio con su descripción técnica, síntomas y valor de negocio.
+> Los 18 casos del laboratorio con su descripción técnica, síntomas y valor de negocio.
 
 ---
 
@@ -25,6 +25,7 @@
 | 🌊 15 | Resiliencia | El productor va más rápido que el consumidor y la cola crece sin techo | Evitar caídas por memoria y decidir explícitamente qué se sacrifica |
 | 🔁 16 | Resiliencia | Un reintento por timeout se convierte en un segundo cobro | Eliminar cobros y avisos duplicados, y el costo de devolverlos |
 | 🧬 17 | Entrega | Un ALTER TABLE sobre una tabla caliente bloquea la aplicación entera | Cambiar el esquema sin ventana de mantenimiento ni 503 |
+| ❄️ 18 | Resiliencia | El autoescalador suma instancias y la tasa de error sube con cada una | Eliminar los 503 durante los escalados y escalar con confianza |
 
 ---
 
@@ -255,3 +256,17 @@
 - Un `ALTER TABLE` que en staging tardó 200 ms tarda veinte minutos en producción
 
 **Valor:** Permite cambiar el esquema de una tabla caliente sin ventana de mantenimiento, y elimina el despliegue nocturno como forma de convivir con el problema.
+
+---
+
+### ❄️ 18 — Arranque en frío y retraso del autoescalado
+
+**Problema:** El proceso está vivo en el milisegundo cero y `/health` responde 200, pero la instancia no puede servir hasta terminar de inicializar. El balanceador que enruta por *liveness* manda tráfico a ese hueco, y los 503 salen de una instancia que ninguna alerta considera caída.
+
+**Síntomas frecuentes:**
+- 503 justo después de escalar, y solo por unos segundos
+- El healthcheck en verde durante todo el incidente
+- Latencia p99 que empeora al agregar instancias, en vez de mejorar
+- El autoescalador rebota: suma instancias, la latencia sube, suma más
+
+**Valor:** Elimina los 503 durante los escalados y habilita autoescalado agresivo con confianza — que es la forma de que el autoescalado ahorre dinero en vez de mover el problema.

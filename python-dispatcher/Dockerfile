@@ -20,6 +20,7 @@ COPY cases/14-connection-pool-exhaustion/python/app/server.py /cases/14/server.p
 COPY cases/15-message-queue-backpressure/python/app/server.py /cases/15/server.py
 COPY cases/16-idempotency-and-duplicate-effects/python/app/server.py /cases/16/server.py
 COPY cases/17-zero-downtime-schema-migration/python/app/server.py /cases/17/server.py
+COPY cases/18-cold-start-and-autoscale-lag/python/app/server.py /cases/18/server.py
 
 # Dispatcher
 COPY python-dispatcher/app/main.py /app/main.py

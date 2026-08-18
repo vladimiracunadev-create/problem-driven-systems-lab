@@ -33,7 +33,8 @@ COPY cases/14-connection-pool-exhaustion/go/app/                           /src/
 COPY cases/15-message-queue-backpressure/go/app/                           /src/case15/
 COPY cases/16-idempotency-and-duplicate-effects/go/app/                           /src/case16/
 COPY cases/17-zero-downtime-schema-migration/go/app/                           /src/case17/
-RUN for n in 03 04 05 06 07 08 09 10 11 12 13 14 15 16 17; do \
+COPY cases/18-cold-start-and-autoscale-lag/go/app/                           /src/case18/
+RUN for n in 03 04 05 06 07 08 09 10 11 12 13 14 15 16 17 18; do \
       cd /src/case$n && CGO_ENABLED=0 go build -trimpath -o /out/cases/$n/case$n . || exit 1; \
     done
 

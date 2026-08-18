@@ -27,7 +27,7 @@ cd problem-driven-systems-lab
 
 ## 🧭 Convención: un compose por lenguaje
 
-Cada lenguaje tiene su propio archivo compose en la raíz. Un solo comando levanta los 17 casos de ese lenguaje. Los stacks son independientes y pueden correr en paralelo.
+Cada lenguaje tiene su propio archivo compose en la raíz. Un solo comando levanta los 18 casos de ese lenguaje. Los stacks son independientes y pueden correr en paralelo.
 
 | Archivo | Lenguaje | Puertos | Estado |
 | --- | --- | --- | --- |
@@ -283,9 +283,9 @@ docker compose -f compose.portal.yml down
 ## ⚖️ Alcance honesto de la instalacion
 
 - La ruta oficialmente soportada es Docker para los casos implementados.
-- PHP, Python y Node.js levantan los 17 casos cada uno con un solo compose en la raiz.
-- Java levanta los 17 casos con `compose.java.yml` (puerto `8400`).
-- .NET levanta los 17 casos con `compose.dotnet.yml` (puerto `8500`).
-- Go levanta los 17 casos con `compose.go.yml` (puerto `8600`).
-- Rust levanta los 17 casos con `compose.rust.yml` (puerto `8700`).
+- PHP, Python y Node.js levantan los 18 casos cada uno con un solo compose en la raiz.
+- Java levanta los 18 casos con `compose.java.yml` (puerto `8400`).
+- .NET levanta los 18 casos con `compose.dotnet.yml` (puerto `8500`).
+- Go levanta los 18 casos con `compose.go.yml` (puerto `8600`).
+- Rust levanta los 18 casos con `compose.rust.yml` (puerto `8700`).
 - Levantar un caso aislado sigue siendo la mejor ruta cuando quieres diagnostico fino o menos consumo de recursos.

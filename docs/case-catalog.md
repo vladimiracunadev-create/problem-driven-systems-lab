@@ -1,6 +1,6 @@
 # 🗂️ Catalogo de casos
 
-> Lista completa de los 17 casos del laboratorio generada desde `shared/catalog/cases.json`.
+> Lista completa de los 18 casos del laboratorio generada desde `shared/catalog/cases.json`.
 
 ## 📊 Estado actual
 
@@ -23,6 +23,7 @@
 | 🌊 | [15 - Backpressure en colas de mensajes](../cases/15-message-queue-backpressure/README.md) | Resiliencia | [👉 Senior Analysis](../cases/15-message-queue-backpressure/php/README.md) | `OPERATIVO` | `php`, `python`, `node`, `java`, `dotnet`, `go`, `rust` | Evita caidas por memoria y perdidas silenciosas de mensajes, y obliga a decidir explicitamente que se sacrifica cuando el consumidor no da abasto. |
 | 🔁 | [16 - Idempotencia y efectos duplicados](../cases/16-idempotency-and-duplicate-effects/README.md) | Resiliencia | [👉 Senior Analysis](../cases/16-idempotency-and-duplicate-effects/php/README.md) | `OPERATIVO` | `php`, `python`, `node`, `java`, `dotnet`, `go`, `rust` | Elimina cobros y notificaciones duplicadas por reintentos del cliente, y evita el costo de soporte y devolucion que cada uno genera. |
 | 🧬 | [17 - Migracion de esquema sin downtime](../cases/17-zero-downtime-schema-migration/README.md) | Entrega | [👉 Senior Analysis](../cases/17-zero-downtime-schema-migration/php/README.md) | `OPERATIVO` | `php`, `python`, `node`, `java`, `dotnet`, `go`, `rust` | Permite cambiar el esquema de una tabla caliente sin ventana de mantenimiento ni 503 para el usuario final. |
+| ❄️ | [18 - Arranque en frio y retraso del autoescalado](../cases/18-cold-start-and-autoscale-lag/README.md) | Resiliencia | [👉 Senior Analysis](../cases/18-cold-start-and-autoscale-lag/php/README.md) | `OPERATIVO` | `php`, `python`, `node`, `java`, `dotnet`, `go`, `rust` | Elimina los 503 durante los escalados y habilita autoescalado agresivo con confianza, que es la forma de que el autoescalado ahorre dinero en vez de mover el problema. |
 
 ## ✅ Casos operativos hoy
 
@@ -127,6 +128,12 @@
 - Stacks operativos: `php`, `python`, `node`, `java`, `dotnet`, `go`, `rust`
 - Impacto de negocio: Permite cambiar el esquema de una tabla caliente sin ventana de mantenimiento ni 503 para el usuario final.
 - Que demuestra: Contrasta /migrate-blocking y /migrate-expand-contract con availability_pct medida DURANTE la migracion.
+
+### ❄️ [18 - Arranque en frio y retraso del autoescalado](../cases/18-cold-start-and-autoscale-lag/README.md)
+
+- Stacks operativos: `php`, `python`, `node`, `java`, `dotnet`, `go`, `rust`
+- Impacto de negocio: Elimina los 503 durante los escalados y habilita autoescalado agresivo con confianza, que es la forma de que el autoescalado ahorre dinero en vez de mover el problema.
+- Que demuestra: Contrasta /boot-cold y /boot-warmed con availability_pct medida DURANTE el escalado.
 
 ## 🧭 Rutas de evaluacion
 

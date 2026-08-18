@@ -27,6 +27,7 @@ COPY cases/14-connection-pool-exhaustion/java/app/Main.java             /cases/1
 COPY cases/15-message-queue-backpressure/java/app/Main.java             /cases/15/Main.java
 COPY cases/16-idempotency-and-duplicate-effects/java/app/Main.java             /cases/16/Main.java
 COPY cases/17-zero-downtime-schema-migration/java/app/Main.java             /cases/17/Main.java
+COPY cases/18-cold-start-and-autoscale-lag/java/app/Main.java             /cases/18/Main.java
 
 # Dispatcher
 COPY java-dispatcher/app/Dispatcher.java /app/Dispatcher.java
@@ -52,6 +53,7 @@ RUN javac -cp /opt/sqlite-jdbc.jar /cases/01/Main.java \
  && javac /cases/15/Main.java \
  && javac /cases/16/Main.java \
  && javac /cases/17/Main.java \
+ && javac /cases/18/Main.java \
  && javac /app/Dispatcher.java
 
 EXPOSE 8400

@@ -52,6 +52,7 @@ var cases = []caseInfo{
 	{"15", 9615, "Backpressure en colas de mensajes", "/app/cases/15/case15"},
 	{"16", 9616, "Idempotencia y efectos duplicados", "/app/cases/16/case16"},
 	{"17", 9617, "Migracion de esquema sin downtime", "/app/cases/17/case17"},
+	{"18", 9618, "Arranque en frio y retraso del autoescalado", "/app/cases/18/case18"},
 }
 
 var (
