@@ -1,6 +1,6 @@
 # ☕ Java
 
-> **Versión fijada:** `21` (LTS) · **Imagen base:** `eclipse-temurin:21-jdk-alpine` · **Hub:** `:8400` · **Casos operativos:** 18 / 18
+> **Versión fijada:** `21` (LTS) · **Imagen base:** `eclipse-temurin:21-jdk-alpine` · **Hub:** `:8400` · **Casos operativos:** 19 / 19
 
 [⬅️ Volver a los perfiles de lenguaje](README.md) · [🗺️ Mapa de stacks](../stack-map.md) · [🔄 Protocolo de actualización](../language-upgrade-protocol.md)
 
@@ -53,6 +53,7 @@ Java es un lenguaje de tipado estático que compila a bytecode y corre sobre la 
 | [16 · Idempotencia](../../cases/16-idempotency-and-duplicate-effects/java/README.md) | `ConcurrentHashMap.putIfAbsent` | Resuelve la carrera **y** dice quién ganó, en una sola llamada |
 | [17 · Migración sin downtime](../../cases/17-zero-downtime-schema-migration/java/README.md) | `ReentrantReadWriteLock(true)` + `tryLock(timeout)` | El único con **deadline y equidad de fábrica** |
 | [18 · Arranque en frío](../../cases/18-cold-start-and-autoscale-lag/java/README.md) | compilación en capas (C1/C2) | **51,9x medidos**: el arranque en frío canónico, y el único que realimenta al autoescalador |
+| [19 · Deriva del índice](../../cases/19-search-index-drift-and-broken-cdc/java/README.md) | `ConcurrentSkipListMap.tailMap` | La mejor expresión del outbox — y `@Transactional`, que engaña sobre su alcance |
 
 > 💡 **El patrón que solo se ve mirando la columna entera:** Java tiene una clase distinta para cada problema de concurrencia — `Semaphore`, `CompletableFuture`, `ConcurrentHashMap`, `CopyOnWriteArrayList`, `ThreadPoolExecutor`, `AtomicReference`, `LongAdder`. Es lo opuesto a Go, donde canal + `select` cubre casi todo. Más superficie que aprender; también más precisión cuando se conoce.
 
@@ -103,8 +104,9 @@ curl -s "localhost:8400/11/order-write"                # el pool principal quedo
 
 ## 🏆 Dónde gana y dónde pierde en el laboratorio
 
-Agregado de los veredictos de las 17 comparativas que rankean: **2 primeros puestos, media 3.2**.
+Agregado de los veredictos de las 18 comparativas que rankean: **2 primeros puestos, media 3.4**.
 
+- **6º en 19** — `ConcurrentSkipListMap.tailMap` es la mejor expresión del outbox del set, y `@Transactional` el único elemento del lab que **activamente sugiere** una garantía que no da: un framework que engaña pesa más que una primitiva que ayuda.
 - **7º en 18** — **51,9x medidos** de curva de calentamiento: el arranque en frío canónico, y el único stack donde la lentitud posterior a estar «listo» realimenta al autoescalador. Tiene las herramientas más potentes contra su propio problema (AppCDS, GraalVM) y ninguna viene activada.
 - 🥇 **Gana en 11 y 17** — en el 17 por ser el único stack con deadline y equidad de fábrica en el mismo lock — cuando el problema *es* el pool de threads, tener pool explícito y observable es la herramienta exacta.
 - 🥈 **Segundo en 01, 06, 13, 14 y 16** — paralelismo real, `record` types inmutables el `computeIfAbsent` atómico que elimina la ventana check-then-act, y try-with-resources, que hace que el compilador escriba el `finally`.
@@ -142,4 +144,4 @@ El detalle del procedimiento está en [docs/language-upgrade-protocol.md](../lan
 docker compose -f compose.java.yml up -d --build
 ```
 
-Los 18 casos quedan servidos en `http://localhost:8400/NN/`. Cada caso trae además su propio `compose.yml` para correrlo aislado.
+Los 19 casos quedan servidos en `http://localhost:8400/NN/`. Cada caso trae además su propio `compose.yml` para correrlo aislado.

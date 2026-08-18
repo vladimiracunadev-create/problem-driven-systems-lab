@@ -13,7 +13,7 @@ El laboratorio se organiza hoy como un sistema de cuatro capas:
 
 La fuente de verdad ya no está repartida entre varios archivos manuales: [`shared/catalog/cases.json`](shared/catalog/cases.json) concentra narrativa de producto, documentos, audiencias, stacks y casos operativos.
 
-**Estado a la fecha:** 7 stacks operativos × 18 casos = **126 endpoints** detrás de 7 hubs simétricos.
+**Estado a la fecha:** 7 stacks operativos × 19 casos = **133 endpoints** detrás de 7 hubs simétricos.
 
 ---
 
@@ -88,17 +88,17 @@ graph TB
 
 ### 3. Portal local y stacks por lenguaje
 
-Cada lenguaje operativo tiene su compose raíz — un comando levanta los 18 casos de ese lenguaje:
+Cada lenguaje operativo tiene su compose raíz — un comando levanta los 19 casos de ese lenguaje:
 
 | Archivo | Lenguaje | Puerto hub | Observaciones |
 |---|---|---|---|
 | `compose.root.yml` | PHP 8.3 | `:8100` | + portal `:8080`, Prometheus `:9091`, Grafana `:3001`, RDS × 2 internos |
-| `compose.python.yml` | Python 3.12 | `:8200` | 18 casos en un solo contenedor dispatcher, stdlib pura |
-| `compose.nodejs.yml` | Node.js 20 | `:8300` | 18 casos en un solo contenedor, stdlib pura |
-| `compose.java.yml` | Java 21 | `:8400` | 18 casos en un solo contenedor, JDK built-in (`HttpServer`, `HttpClient`) |
-| `compose.dotnet.yml` | .NET 8 | `:8500` | 18 casos en un solo contenedor, BCL built-in (`HttpListener`, `System.Text.Json`) |
-| `compose.go.yml` | Go 1.23 | `:8600` | 18 casos en un solo contenedor, stdlib (`net/http`, `encoding/json`, `httputil.ReverseProxy`) |
-| `compose.rust.yml` | Rust 1.83 | `:8700` | 18 casos en un solo contenedor; `std` **no** trae HTTP ni JSON — capa propia sobre `TcpListener` |
+| `compose.python.yml` | Python 3.12 | `:8200` | 19 casos en un solo contenedor dispatcher, stdlib pura |
+| `compose.nodejs.yml` | Node.js 20 | `:8300` | 19 casos en un solo contenedor, stdlib pura |
+| `compose.java.yml` | Java 21 | `:8400` | 19 casos en un solo contenedor, JDK built-in (`HttpServer`, `HttpClient`) |
+| `compose.dotnet.yml` | .NET 8 | `:8500` | 19 casos en un solo contenedor, BCL built-in (`HttpListener`, `System.Text.Json`) |
+| `compose.go.yml` | Go 1.23 | `:8600` | 19 casos en un solo contenedor, stdlib (`net/http`, `encoding/json`, `httputil.ReverseProxy`) |
+| `compose.rust.yml` | Rust 1.83 | `:8700` | 19 casos en un solo contenedor; `std` **no** trae HTTP ni JSON — capa propia sobre `TcpListener` |
 | `compose.portal.yml` | — | `:8080` | portal liviano solamente |
 
 Los siete stacks pueden correr en paralelo sin colisión de puertos — comparten el mismo patrón hub.
@@ -112,7 +112,7 @@ Cada carpeta en `cases/` representa un problema real. **La unidad principal del 
 Cada caso contiene subcarpetas `php`, `python`, `node`, `java`, `dotnet` con Docker aislado y `comparison.md` explicando cómo cada stack resuelve el mismo problema con primitivas idiomáticas distintas.
 
 **Interfaz Visual Inyectada (Native UI):**
-Los 18 casos operativos en PHP detectan `Accept: text/html` y devuelven un **dashboard nativo construido en Vanilla JS/CSS** (`ui.php`), sin frameworks. Esto permite que recruiters y líderes *vean* el problema sin tener que hacer `curl`.
+Los 19 casos operativos en PHP detectan `Accept: text/html` y devuelven un **dashboard nativo construido en Vanilla JS/CSS** (`ui.php`), sin frameworks. Esto permite que recruiters y líderes *vean* el problema sin tener que hacer `curl`.
 
 **Alta fidelidad técnica (Fail-by-Design):**
 El laboratorio implementa fallos reales — bloqueos de disco con `flock`, saturación de CPU por serialización recursiva, presión real de memoria con LRU/`Process.WorkingSet64`, jerarquías de excepciones nativas — no simulaciones matemáticas.
@@ -121,7 +121,7 @@ El laboratorio implementa fallos reales — bloqueos de disco con `flock`, satur
 
 ## 🐳 Modelo de containerización (simétrico para los 7 stacks)
 
-Los siete hubs siguen el **mismo patrón**: un contenedor por lenguaje ejecuta sus 18 casos como subprocesos internos en puertos no expuestos.
+Los siete hubs siguen el **mismo patrón**: un contenedor por lenguaje ejecuta sus 19 casos como subprocesos internos en puertos no expuestos.
 
 ```mermaid
 graph TB
@@ -233,7 +233,7 @@ graph LR
     end
 
     subgraph C03_12[03-12 patrones idiomáticos]
-        OTHER[18 casos x 7 stacks operativos]
+        OTHER[19 casos x 7 stacks operativos]
     end
 ```
 
@@ -304,7 +304,7 @@ graph TB
 
 ### 2. Hubs simétricos por lenguaje
 
-**Decisión:** un compose raíz por lenguaje (`compose.<lang>.yml`) que levanta los 18 casos de ese lenguaje en un solo contenedor con subprocesos internos.
+**Decisión:** un compose raíz por lenguaje (`compose.<lang>.yml`) que levanta los 19 casos de ese lenguaje en un solo contenedor con subprocesos internos.
 
 **Por qué:** un solo comando = una sola superficie evaluable. Los 7 stacks pueden correr en paralelo sin colisión de puertos. Si querés evaluar solo Python, no levantes los otros 6. Trade-off consciente: failure domain por hub, no por caso — para casos que necesitan aislamiento estricto existe `cases/0X/<stack>/compose.yml`.
 
@@ -330,7 +330,7 @@ graph TB
 
 **Decisión:** `portal/app/probe.php` ejecuta health checks server-side y devuelve `status code`, `latency_ms`, `last_checked` al cliente.
 
-**Por qué:** el portal no es un índice de docs muerto — es una **demo verificable en vivo**. Un recruiter abre `localhost:8080`, ve verde en los 18 casos del stack que eligió, y sabe que **el repo está vivo en este momento**.
+**Por qué:** el portal no es un índice de docs muerto — es una **demo verificable en vivo**. Un recruiter abre `localhost:8080`, ve verde en los 19 casos del stack que eligió, y sabe que **el repo está vivo en este momento**.
 
 ### 7. Catálogo único como fuente de verdad
 
@@ -346,7 +346,7 @@ Cada decisión arquitectónica tiene un costo. Estos son los trade-offs que el l
 
 ### Trade-off 1 — Failure domain por hub vs por caso
 
-**Decisión:** los 18 casos de un stack viven en el mismo contenedor (subprocesos del dispatcher).
+**Decisión:** los 19 casos de un stack viven en el mismo contenedor (subprocesos del dispatcher).
 
 **Beneficio:** RAM cae de ~2.5 GB a ~1 GB; arranque del stack en <30s; un solo `docker compose up` por stack.
 
@@ -406,12 +406,12 @@ La arquitectura actual queda sostenida por seis mecanismos:
 | Pieza | Rol |
 |---|---|
 | `compose.root.yml` | PHP: portal (`:8080`) + hub (`:8100`) + DB × 2 + worker + Prometheus (`:9091`) + Grafana (`:3001`) |
-| `compose.python.yml` | Python: dispatcher único con 18 casos internos (`:8200`) |
-| `compose.nodejs.yml` | Node: dispatcher único con 18 casos internos (`:8300`) |
-| `compose.java.yml` | Java 21: dispatcher único con 18 casos internos (`:8400`) |
-| `compose.dotnet.yml` | .NET 8: dispatcher único con 18 casos internos (`:8500`) |
-| `compose.go.yml` | Go 1.23: dispatcher único con 18 casos internos (`:8600`) |
-| `compose.rust.yml` | Rust 1.83: dispatcher único con 18 casos internos (`:8700`) |
+| `compose.python.yml` | Python: dispatcher único con 19 casos internos (`:8200`) |
+| `compose.nodejs.yml` | Node: dispatcher único con 19 casos internos (`:8300`) |
+| `compose.java.yml` | Java 21: dispatcher único con 19 casos internos (`:8400`) |
+| `compose.dotnet.yml` | .NET 8: dispatcher único con 19 casos internos (`:8500`) |
+| `compose.go.yml` | Go 1.23: dispatcher único con 19 casos internos (`:8600`) |
+| `compose.rust.yml` | Rust 1.83: dispatcher único con 19 casos internos (`:8700`) |
 | `compose.portal.yml` | Portal liviano solamente (`:8080`) |
 | `cases/<caso>/<stack>/compose.yml` | Escenario concreto y aislado (estudio individual) |
 | `cases/<caso>/compose.compare.yml` | Comparación entre stacks del mismo caso |

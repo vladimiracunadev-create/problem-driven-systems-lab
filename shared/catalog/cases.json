@@ -5,7 +5,7 @@
     "hero_title": "Evalúa el laboratorio con evidencia real: elige una audiencia o un stack tecnológico",
     "audience_message": "Diseñado para especialistas en selección, líderes técnicos y equipos de ingeniería que buscan validar criterio técnico con escenarios reproducibles."
   },
-  "recommended_github_about": "🧪 Laboratorio de sistemas distribuido con 18 casos reales Docker-first para diagnosticar y resolver problemas criticos de rendimiento, observabilidad, resiliencia y arquitectura 🐳",
+  "recommended_github_about": "🧪 Laboratorio de sistemas distribuido con 19 casos reales Docker-first para diagnosticar y resolver problemas criticos de rendimiento, observabilidad, resiliencia y arquitectura 🐳",
   "recommended_github_topics": [
     "problem-driven",
     "docker",
@@ -1894,6 +1894,104 @@
           "root_path": "/18/",
           "isolated_compose": "cases/18-cold-start-and-autoscale-lag/rust/compose.yml",
           "isolated_port": 8718
+        }
+      }
+    },
+    {
+      "id": "19",
+      "icon": "🔎",
+      "slug": "search-index-drift-and-broken-cdc",
+      "title": "Deriva del indice de busqueda y CDC roto",
+      "category": "Observabilidad",
+      "status": "OPERATIVO",
+      "level_detail": "Dual-write sin transaccion comun contra outbox + checkpoint durable + barrido de reconciliacion, con las tres caras de la deriva separadas (missing, stale, orphan). El caso ordena por una dimension que ningun otro usa: que hace el lenguaje cuando el programador no mira. Rust con #[must_use] y deny(unused_must_use) — el bug original NO compila —, Go con el `_ =` auditable y errcheck, .NET con Except/Join tipados y la pereza de LINQ como trampa, Python con el algebra de conjuntos mas corta del lab y el except desnudo mas corto tambien, PHP con checkpoint durable por obligacion del modelo share-nothing, Java con ConcurrentSkipListMap.tailMap y @Transactional que sugiere una atomicidad que no alcanza al indice, y Node donde el bug se produce por NO escribir await",
+      "summary": "La busqueda responde 200 y lo que devuelve esta mal: el indice se desincroniza de a un documento por vez y nada dispara una alerta.",
+      "case_readme_path": "cases/19-search-index-drift-and-broken-cdc/README.md",
+      "business_outcome": "Elimina la categoria entera de 'el producto existe pero no aparece', que en un catalogo son productos que no se pueden comprar.",
+      "recruiter_pitch": "Muestra un modo de falla que no rompe nada: 98,95% de recall no se ve como un incidente, se ve como una busqueda que anda. Y ordena a los siete stacks por que hace cada lenguaje cuando el programador no mira el resultado de una escritura.",
+      "proof_points": [
+        "Contrasta /search-drifted y /search-reconciled con recall y precision medidos con consultas reales.",
+        "Separa las tres caras de la deriva: missing no se encuentra, stale se encuentra mal, orphan es fantasma.",
+        "Expone drift_age_ms, la metrica que dice si algo va a reparar la deriva solo."
+      ],
+      "look_for": [
+        "Si drift_count es mayor que cero en el dual-write y exactamente cero con outbox mas barrido.",
+        "Si recall y precision bajan lo suficiente para doler y poco para que nadie mire (98,95% y 98,02%).",
+        "Si el checkpoint se frena en el cambio que no entra en vez de saltearlo."
+      ],
+      "honesty_note": "El indice de busqueda es un diccionario en memoria (un archivo JSON bajo flock en PHP), no Elasticsearch. Lo que define el caso no es el motor: es que la base y el indice son dos sistemas sin transaccion comun, y eso es igual de cierto con un dict. La falla de escritura es deterministica —multiplicador primo sobre el indice— para que los 7 stacks den resultados identicos y lo unico comparable sea como se escribe. drift_age_ms sale en milisegundos por la escala del laboratorio; en produccion se mide en minutos y horas.",
+      "operational_stacks": [
+        "php",
+        "python",
+        "node",
+        "java",
+        "dotnet",
+        "go",
+        "rust"
+      ],
+      "runtime_entries": {
+        "php": {
+          "port": 8100,
+          "compose_path": "compose.root.yml",
+          "readme_path": "cases/19-search-index-drift-and-broken-cdc/php/README.md",
+          "health_path": "/19/health",
+          "root_path": "/19/",
+          "isolated_compose": "cases/19-search-index-drift-and-broken-cdc/php/compose.yml",
+          "isolated_port": 8119
+        },
+        "python": {
+          "port": 8200,
+          "compose_path": "compose.python.yml",
+          "readme_path": "cases/19-search-index-drift-and-broken-cdc/python/README.md",
+          "health_path": "/19/health",
+          "root_path": "/19/",
+          "isolated_compose": "cases/19-search-index-drift-and-broken-cdc/python/compose.yml",
+          "isolated_port": 8319
+        },
+        "node": {
+          "port": 8300,
+          "compose_path": "compose.nodejs.yml",
+          "readme_path": "cases/19-search-index-drift-and-broken-cdc/node/README.md",
+          "health_path": "/19/health",
+          "root_path": "/19/",
+          "isolated_compose": "cases/19-search-index-drift-and-broken-cdc/node/compose.yml",
+          "isolated_port": 8219
+        },
+        "java": {
+          "port": 8400,
+          "compose_path": "compose.java.yml",
+          "readme_path": "cases/19-search-index-drift-and-broken-cdc/java/README.md",
+          "health_path": "/19/health",
+          "root_path": "/19/",
+          "isolated_compose": "cases/19-search-index-drift-and-broken-cdc/java/compose.yml",
+          "isolated_port": 8419
+        },
+        "dotnet": {
+          "port": 8500,
+          "compose_path": "compose.dotnet.yml",
+          "readme_path": "cases/19-search-index-drift-and-broken-cdc/dotnet/README.md",
+          "health_path": "/19/health",
+          "root_path": "/19/",
+          "isolated_compose": "cases/19-search-index-drift-and-broken-cdc/dotnet/compose.yml",
+          "isolated_port": 8519
+        },
+        "go": {
+          "port": 8600,
+          "compose_path": "compose.go.yml",
+          "readme_path": "cases/19-search-index-drift-and-broken-cdc/go/README.md",
+          "health_path": "/19/health",
+          "root_path": "/19/",
+          "isolated_compose": "cases/19-search-index-drift-and-broken-cdc/go/compose.yml",
+          "isolated_port": 8619
+        },
+        "rust": {
+          "port": 8700,
+          "compose_path": "compose.rust.yml",
+          "readme_path": "cases/19-search-index-drift-and-broken-cdc/rust/README.md",
+          "health_path": "/19/health",
+          "root_path": "/19/",
+          "isolated_compose": "cases/19-search-index-drift-and-broken-cdc/rust/compose.yml",
+          "isolated_port": 8719
         }
       }
     }

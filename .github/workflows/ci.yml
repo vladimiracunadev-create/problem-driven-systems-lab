@@ -87,6 +87,7 @@ jobs:
           - cases/16-idempotency-and-duplicate-effects/php/compose.yml
           - cases/17-zero-downtime-schema-migration/php/compose.yml
           - cases/18-cold-start-and-autoscale-lag/php/compose.yml
+          - cases/19-search-index-drift-and-broken-cdc/php/compose.yml
           - cases/01-api-latency-under-load/node/compose.yml
           - cases/02-n-plus-one-and-db-bottlenecks/node/compose.yml
           - cases/03-poor-observability-and-useless-logs/node/compose.yml
@@ -105,6 +106,7 @@ jobs:
           - cases/16-idempotency-and-duplicate-effects/node/compose.yml
           - cases/17-zero-downtime-schema-migration/node/compose.yml
           - cases/18-cold-start-and-autoscale-lag/node/compose.yml
+          - cases/19-search-index-drift-and-broken-cdc/node/compose.yml
           - cases/01-api-latency-under-load/python/compose.yml
           - cases/02-n-plus-one-and-db-bottlenecks/python/compose.yml
           - cases/03-poor-observability-and-useless-logs/python/compose.yml
@@ -123,6 +125,7 @@ jobs:
           - cases/16-idempotency-and-duplicate-effects/python/compose.yml
           - cases/17-zero-downtime-schema-migration/python/compose.yml
           - cases/18-cold-start-and-autoscale-lag/python/compose.yml
+          - cases/19-search-index-drift-and-broken-cdc/python/compose.yml
           - cases/01-api-latency-under-load/java/compose.yml
           - cases/02-n-plus-one-and-db-bottlenecks/java/compose.yml
           - cases/03-poor-observability-and-useless-logs/java/compose.yml
@@ -141,6 +144,7 @@ jobs:
           - cases/16-idempotency-and-duplicate-effects/java/compose.yml
           - cases/17-zero-downtime-schema-migration/java/compose.yml
           - cases/18-cold-start-and-autoscale-lag/java/compose.yml
+          - cases/19-search-index-drift-and-broken-cdc/java/compose.yml
           - cases/01-api-latency-under-load/dotnet/compose.yml
           - cases/02-n-plus-one-and-db-bottlenecks/dotnet/compose.yml
           - cases/03-poor-observability-and-useless-logs/dotnet/compose.yml
@@ -159,6 +163,7 @@ jobs:
           - cases/16-idempotency-and-duplicate-effects/dotnet/compose.yml
           - cases/17-zero-downtime-schema-migration/dotnet/compose.yml
           - cases/18-cold-start-and-autoscale-lag/dotnet/compose.yml
+          - cases/19-search-index-drift-and-broken-cdc/dotnet/compose.yml
           - cases/01-api-latency-under-load/go/compose.yml
           - cases/02-n-plus-one-and-db-bottlenecks/go/compose.yml
           - cases/03-poor-observability-and-useless-logs/go/compose.yml
@@ -177,6 +182,7 @@ jobs:
           - cases/16-idempotency-and-duplicate-effects/go/compose.yml
           - cases/17-zero-downtime-schema-migration/go/compose.yml
           - cases/18-cold-start-and-autoscale-lag/go/compose.yml
+          - cases/19-search-index-drift-and-broken-cdc/go/compose.yml
           - cases/01-api-latency-under-load/rust/compose.yml
           - cases/02-n-plus-one-and-db-bottlenecks/rust/compose.yml
           - cases/03-poor-observability-and-useless-logs/rust/compose.yml
@@ -195,6 +201,7 @@ jobs:
           - cases/16-idempotency-and-duplicate-effects/rust/compose.yml
           - cases/17-zero-downtime-schema-migration/rust/compose.yml
           - cases/18-cold-start-and-autoscale-lag/rust/compose.yml
+          - cases/19-search-index-drift-and-broken-cdc/rust/compose.yml
     steps:
       - name: Checkout
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4
@@ -293,6 +300,12 @@ jobs:
           - name: case18-rust
             compose_file: cases/18-cold-start-and-autoscale-lag/rust/compose.yml
             probe_url: http://127.0.0.1:8718/health
+          - name: case19-python
+            compose_file: cases/19-search-index-drift-and-broken-cdc/python/compose.yml
+            probe_url: http://127.0.0.1:8319/health
+          - name: case19-node
+            compose_file: cases/19-search-index-drift-and-broken-cdc/node/compose.yml
+            probe_url: http://127.0.0.1:8219/health
     steps:
       - name: Checkout
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4
@@ -362,27 +375,27 @@ jobs:
           - name: python-hub
             compose_file: compose.python.yml
             hub_port: 8200
-            cases: "01 02 03 04 05 06 07 08 09 10 11 12 13 14 15 16 17 18"
+            cases: "01 02 03 04 05 06 07 08 09 10 11 12 13 14 15 16 17 18 19"
           - name: node-hub
             compose_file: compose.nodejs.yml
             hub_port: 8300
-            cases: "01 02 03 04 05 06 07 08 09 10 11 12 13 14 15 16 17 18"
+            cases: "01 02 03 04 05 06 07 08 09 10 11 12 13 14 15 16 17 18 19"
           - name: java-hub
             compose_file: compose.java.yml
             hub_port: 8400
-            cases: "01 02 03 04 05 06 07 08 09 10 11 12 13 14 15 16 17 18"
+            cases: "01 02 03 04 05 06 07 08 09 10 11 12 13 14 15 16 17 18 19"
           - name: dotnet-hub
             compose_file: compose.dotnet.yml
             hub_port: 8500
-            cases: "01 02 03 04 05 06 07 08 09 10 11 12 13 14 15 16 17 18"
+            cases: "01 02 03 04 05 06 07 08 09 10 11 12 13 14 15 16 17 18 19"
           - name: go-hub
             compose_file: compose.go.yml
             hub_port: 8600
-            cases: "01 02 03 04 05 06 07 08 09 10 11 12 13 14 15 16 17 18"
+            cases: "01 02 03 04 05 06 07 08 09 10 11 12 13 14 15 16 17 18 19"
           - name: rust-hub
             compose_file: compose.rust.yml
             hub_port: 8700
-            cases: "01 02 03 04 05 06 07 08 09 10 11 12 13 14 15 16 17 18"
+            cases: "01 02 03 04 05 06 07 08 09 10 11 12 13 14 15 16 17 18 19"
     steps:
       - name: Checkout
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4

@@ -27,7 +27,7 @@ Este repo se alinea con una historia tecnica mas amplia centrada en:
 
 | Capacidad | Evidencia |
 | --- | --- |
-| Modelado de problemas reales | Los 18 casos parten desde sintomas y valor de negocio |
+| Modelado de problemas reales | Los 19 casos parten desde sintomas y valor de negocio |
 | Resolucion aplicada | Casos `01` al `12` operativos en PHP, Python y Node.js (paridad multi-stack completa) |
 | Diseno reproducible | Cada caso implementado tiene `compose.yml` propio |
 | Criterio documental | Existe documentacion por audiencia y runbook operativo |

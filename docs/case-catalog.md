@@ -1,6 +1,6 @@
 # 🗂️ Catalogo de casos
 
-> Lista completa de los 18 casos del laboratorio generada desde `shared/catalog/cases.json`.
+> Lista completa de los 19 casos del laboratorio generada desde `shared/catalog/cases.json`.
 
 ## 📊 Estado actual
 
@@ -24,6 +24,7 @@
 | 🔁 | [16 - Idempotencia y efectos duplicados](../cases/16-idempotency-and-duplicate-effects/README.md) | Resiliencia | [👉 Senior Analysis](../cases/16-idempotency-and-duplicate-effects/php/README.md) | `OPERATIVO` | `php`, `python`, `node`, `java`, `dotnet`, `go`, `rust` | Elimina cobros y notificaciones duplicadas por reintentos del cliente, y evita el costo de soporte y devolucion que cada uno genera. |
 | 🧬 | [17 - Migracion de esquema sin downtime](../cases/17-zero-downtime-schema-migration/README.md) | Entrega | [👉 Senior Analysis](../cases/17-zero-downtime-schema-migration/php/README.md) | `OPERATIVO` | `php`, `python`, `node`, `java`, `dotnet`, `go`, `rust` | Permite cambiar el esquema de una tabla caliente sin ventana de mantenimiento ni 503 para el usuario final. |
 | ❄️ | [18 - Arranque en frio y retraso del autoescalado](../cases/18-cold-start-and-autoscale-lag/README.md) | Resiliencia | [👉 Senior Analysis](../cases/18-cold-start-and-autoscale-lag/php/README.md) | `OPERATIVO` | `php`, `python`, `node`, `java`, `dotnet`, `go`, `rust` | Elimina los 503 durante los escalados y habilita autoescalado agresivo con confianza, que es la forma de que el autoescalado ahorre dinero en vez de mover el problema. |
+| 🔎 | [19 - Deriva del indice de busqueda y CDC roto](../cases/19-search-index-drift-and-broken-cdc/README.md) | Observabilidad | [👉 Senior Analysis](../cases/19-search-index-drift-and-broken-cdc/php/README.md) | `OPERATIVO` | `php`, `python`, `node`, `java`, `dotnet`, `go`, `rust` | Elimina la categoria entera de 'el producto existe pero no aparece', que en un catalogo son productos que no se pueden comprar. |
 
 ## ✅ Casos operativos hoy
 
@@ -134,6 +135,12 @@
 - Stacks operativos: `php`, `python`, `node`, `java`, `dotnet`, `go`, `rust`
 - Impacto de negocio: Elimina los 503 durante los escalados y habilita autoescalado agresivo con confianza, que es la forma de que el autoescalado ahorre dinero en vez de mover el problema.
 - Que demuestra: Contrasta /boot-cold y /boot-warmed con availability_pct medida DURANTE el escalado.
+
+### 🔎 [19 - Deriva del indice de busqueda y CDC roto](../cases/19-search-index-drift-and-broken-cdc/README.md)
+
+- Stacks operativos: `php`, `python`, `node`, `java`, `dotnet`, `go`, `rust`
+- Impacto de negocio: Elimina la categoria entera de 'el producto existe pero no aparece', que en un catalogo son productos que no se pueden comprar.
+- Que demuestra: Contrasta /search-drifted y /search-reconciled con recall y precision medidos con consultas reales.
 
 ## 🧭 Rutas de evaluacion
 

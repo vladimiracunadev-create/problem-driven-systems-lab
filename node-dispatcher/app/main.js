@@ -42,6 +42,7 @@ const CASES = {
   '16': { port: 9016, name: 'Idempotencia y efectos duplicados',  server: '/cases/16/server.js' },
   '17': { port: 9017, name: 'Migracion de esquema sin downtime',  server: '/cases/17/server.js' },
   '18': { port: 9018, name: 'Arranque en frio y retraso del autoescalado',  server: '/cases/18/server.js' },
+  '19': { port: 9019, name: 'Deriva del indice de busqueda y CDC roto',  server: '/cases/19/server.js' },
 };
 
 const DISPATCH_PORT = Number.parseInt(process.env.PORT || '8300', 10);

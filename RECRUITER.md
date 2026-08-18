@@ -8,7 +8,7 @@
 
 ## TL;DR (30 segundos)
 
-- 5+ años de experiencia traducidos en **evidencia operativa**: 18 problemas reales × 7 stacks de producción = **126 endpoints verificables**.
+- 5+ años de experiencia traducidos en **evidencia operativa**: 19 problemas reales × 7 stacks de producción = **133 endpoints verificables**.
 - **No es un repo de "hola mundo" en 5 lenguajes.** Cada caso reproduce un fallo de producción (N+1 real con SQLite embebido, breaker con CAS, leak de memoria con LRU, retry storm con `AbortController`, etc.) y la solución idiomática del stack.
 - **Honestidad técnica explícita:** lo que es DB real, lo que está simulado, lo que falta — todo documentado, nada vendido.
 - **`docker compose up` y verificás vos mismo.** No tenés que confiar en mi palabra.
@@ -32,7 +32,7 @@
 
 ### 1 — Lee el [README.md](README.md) raíz (2 min)
 
-Vas a ver: tabla de estado actual (7 stacks operativos, 126 endpoints), catálogo de los 18 casos con links, tabla de honestidad de fidelidad, los 7 hubs disponibles.
+Vas a ver: tabla de estado actual (7 stacks operativos, 133 endpoints), catálogo de los 19 casos con links, tabla de honestidad de fidelidad, los 7 hubs disponibles.
 
 ### 2 — Levantá un hub (1 min)
 
@@ -212,7 +212,7 @@ Los stacks no-PHP usan exclusivamente librería estándar — `HttpServer` JDK, 
 - **Frontend complejo / UX / diseño visual.** Mi foco está en backend y operación. La UI nativa de PHP es funcional, no premiada.
 - **Conocimiento profundo de un framework específico de moda.** La idea es justamente lo opuesto: BCL/stdlib donde se puede. Si tu posición es "expertise en Next.js + tRPC + Prisma + Tailwind", este no es el repo que te va a convencer.
 - **Liderazgo de equipos de 50+ personas.** Mi experiencia de liderazgo es a nivel squad técnico, no organizacional.
-- **Paridad sintáctica universal de los 18 casos en los 7 stacks.** Es paridad **funcional con criterio idiomático por runtime** — no traducción literal. El caso 11 es el ejemplo explícito: Go y Rust no tienen pool de threads que agotar, así que el aislamiento se modela con un semáforo de concurrencia, no con un `ExecutorService` traducido.
+- **Paridad sintáctica universal de los 19 casos en los 7 stacks.** Es paridad **funcional con criterio idiomático por runtime** — no traducción literal. El caso 11 es el ejemplo explícito: Go y Rust no tienen pool de threads que agotar, así que el aislamiento se modela con un semáforo de concurrencia, no con un `ExecutorService` traducido.
 - **Benchmarks absolutos entre lenguajes.** Las métricas reportadas son operativas (`db_hits`, `latency_ms`), no comparativas marketing.
 
 ---
@@ -222,7 +222,7 @@ Los stacks no-PHP usan exclusivamente librería estándar — `HttpServer` JDK, 
 | Documento | Motivo |
 |---|---|
 | [README.md](README.md) | Historia general del laboratorio y catálogo completo |
-| [docs/executive-summary.md](docs/executive-summary.md) | Los 18 casos en una página + postmortems narrativos |
+| [docs/executive-summary.md](docs/executive-summary.md) | Los 19 casos en una página + postmortems narrativos |
 | [ARCHITECTURE.md](ARCHITECTURE.md) | Diagramas Mermaid + decisiones de diseño con su porqué |
 | [AWS_MIGRATION.md](AWS_MIGRATION.md) | Plan de despliegue cloud con 3 rutas y mapping SECURITY → AWS |
 | [SECURITY.md](SECURITY.md) | Modelo de amenaza por escenario de despliegue |

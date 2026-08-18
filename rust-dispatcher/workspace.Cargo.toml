@@ -15,6 +15,7 @@ members = [
     "case16",
     "case17",
     "case18",
+    "case19",
     "dispatcher",
 ]
 

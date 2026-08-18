@@ -2,6 +2,105 @@
 
 Todos los cambios notables de este laboratorio se registran aqui con foco en madurez tecnica y documental.
 
+## 2026-08-17 - Caso 19: deriva del indice de busqueda y CDC roto en los 7 stacks
+
+Septimo caso del **Eje 1 del ROADMAP**. El lab pasa a **19 casos x 7 stacks = 133
+endpoints**.
+
+### Added — caso 19, deriva del indice de busqueda y CDC roto
+
+`cases/19-search-index-drift-and-broken-cdc/` con las **7 implementaciones**.
+
+Contrato uniforme: `/search-drifted` y `/search-reconciled` con recall y
+precision **medidos con consultas reales** contra los dos lados, mas
+`/index/state` con las tres caras de la deriva y `/reconcile` para el barrido
+suelto.
+
+Este caso no rompe nada, y esa es toda su dificultad. Un servicio caido dispara
+alertas. Un indice que devuelve el 98,9% de lo que deberia **no dispara nada**:
+responde rapido, responde 200, y sus resultados se ven razonables.
+
+### La deriva no es una cosa, son tres — y se arreglan distinto
+
+| Cara | Que es | Que ve el usuario |
+|---|---|---|
+| `missing` | Esta en la base, no en el indice | **No lo encuentra** |
+| `stale` | Esta en los dos, con version vieja | **Lo encuentra mal** |
+| `orphan` | Esta en el indice, borrado en la base | **Fantasmas** — clic que da 404 |
+
+Un reindexado que no borra arregla las dos primeras y deja la tercera intacta.
+Y sin numero de version en el documento, `stale` es directamente
+**indetectable**: la unica comparacion posible es «esta o no esta».
+
+La correccion son tres mecanismos y hacen falta los tres: **outbox** (el cambio
+se escribe en la misma transaccion que el dato), **checkpoint** (avanza solo con
+la confirmacion, y se frena en vez de saltear) y **barrido de reconciliacion**
+(la red de seguridad para lo que los dos primeros no cubren — un indice
+restaurado de un backup viejo, una reindexacion parcial, un borrado manual).
+
+El outbox garantiza que ningun cambio **nuevo** se pierda. No arregla los que ya
+se perdieron. Por eso el barrido no es opcional.
+
+### El caso ordena por una dimension que ninguno de los otros dieciocho usa
+
+El bug entero es **una escritura que fallo y que nadie miro**. Ahi los siete
+stacks son radicalmente distintos:
+
+| Stack | Contra ignorar el error | Para el diff de tres caras |
+|---|---|---|
+| 🦀 Rust | `#[must_use]` en la `std` + `deny(unused_must_use)` → **no compila** | `HashSet::difference` |
+| 🐹 Go | `_ =` visible en el diff + `errcheck` en CI | **Sin tipo conjunto**: a mano |
+| 🔵 .NET | Nada (`_ = IndexarAsync()` es aun mas silencioso) | `Except` / `Join` tipados |
+| 🐍 Python | Nada (`except:` lo tapa) | `-` y `&` sobre `set`: el mas corto |
+| 🐘 PHP | Nada (`@` o `catch` vacio) | `array_diff_key` |
+| ☕ Java | Nada, y `@Transactional` **sugiere** atomicidad que no da | `removeAll` / `retainAll` |
+| 🟢 Node | Nada, y el bug es **no escribir `await`** | `Map` / `Set` a mano |
+
+**Rust gana** por ser el unico con las dos piezas: el bug original no compila sin
+escribirlo a proposito, y el diff no se escribe a mano. Y la defensa esta en la
+biblioteca estandar, no en una herramienta que hay que instalar.
+
+**Java queda sexto no por lo que le falta sino por lo que promete de mas.**
+`@Transactional` hace que el dual-write parezca atomico —el metodo se lee como
+una unidad, y el indice no participa de la transaccion— y nada en el codigo
+marca donde termina su alcance. Un framework que engaña pesa mas que una
+primitiva que ayuda.
+
+**Node queda septimo** por ser el unico stack donde el bug se produce **por no
+escribir algo**: `indice.escribir(doc)` sin `await` compila, parece correcto en
+una revision rapida, y manda el error a un rechazo sin dueño.
+
+**PHP sube por su restriccion**: en un runtime share-nothing no hay proceso de
+larga vida donde vivir un consumidor de CDC, asi que el consumidor **es un
+comando de cron** y el checkpoint tiene que ser durable desde el primer dia. Lo
+que en los stacks con procesos largos es una decision que se posterga, en PHP no
+tiene alternativa.
+
+### Changed — integracion
+
+- **Dispatchers**: registro del caso 19 y puerto interno en los siete
+  (`:9019` PHP/Python/Node, `:9419` Java, `:9519` .NET, `:9619` Go, `:9719` Rust).
+- **`ci.yml`**: matriz `compose-config` de 134 a **141 archivos**; `hub-probe`
+  valida 19 casos por stack; `compose-smoke` suma `case19-python` y `case19-node`.
+- **`shared/catalog/cases.json`** + `docs/case-catalog.md` + los cinco SVG.
+- **Perfiles de lenguaje**: agregado recalculado. **Rust pasa a 9 oros.**
+
+### Verificado
+
+Los 7 stacks levantados con Docker. Con 2.000 escrituras y 8% de fallo del
+indice, los siete producen **resultados identicos hasta el ultimo digito**:
+
+```text
+  dual-write:     missing=10  stale=50  orphan=19  drift=79
+                  recall 98,95%   precision 98,02%   silent_failures=158
+
+  outbox+barrido: missing=0   stale=0   orphan=0   drift=0
+                  recall 100%     precision 100%     retries=157   checkpoint=2000
+```
+
+El escenario es determinista a proposito: cuando el numero es el mismo en los
+siete, lo unico que queda para comparar es **como se escribe**.
+
 ## 2026-08-17 - Caso 18: arranque en frio y retraso del autoescalado en los 7 stacks
 
 Sexto caso del **Eje 1 del ROADMAP**. El lab pasa a **18 casos x 7 stacks = 126

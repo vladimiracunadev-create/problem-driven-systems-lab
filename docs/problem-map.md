@@ -1,6 +1,6 @@
 # 🗺️ Mapa de problemas
 
-> Los 18 casos del laboratorio con su descripción técnica, síntomas y valor de negocio.
+> Los 19 casos del laboratorio con su descripción técnica, síntomas y valor de negocio.
 
 ---
 
@@ -26,6 +26,7 @@
 | 🔁 16 | Resiliencia | Un reintento por timeout se convierte en un segundo cobro | Eliminar cobros y avisos duplicados, y el costo de devolverlos |
 | 🧬 17 | Entrega | Un ALTER TABLE sobre una tabla caliente bloquea la aplicación entera | Cambiar el esquema sin ventana de mantenimiento ni 503 |
 | ❄️ 18 | Resiliencia | El autoescalador suma instancias y la tasa de error sube con cada una | Eliminar los 503 durante los escalados y escalar con confianza |
+| 🔎 19 | Observabilidad | La búsqueda responde 200 y lo que devuelve está mal | Eliminar «el producto existe pero no aparece» |
 
 ---
 
@@ -270,3 +271,17 @@
 - El autoescalador rebota: suma instancias, la latencia sube, suma más
 
 **Valor:** Elimina los 503 durante los escalados y habilita autoescalado agresivo con confianza — que es la forma de que el autoescalado ahorre dinero en vez de mover el problema.
+
+---
+
+### 🔎 19 — Deriva del índice de búsqueda y CDC roto
+
+**Problema:** La aplicación escribe en la base y después en el índice de búsqueda. Son dos sistemas sin transacción común: cuando la segunda escritura falla, nadie se entera. La búsqueda sigue respondiendo 200 y lo que devuelve está mal.
+
+**Síntomas frecuentes:**
+- Un cliente llama porque su producto no aparece; existe en la base
+- Un resultado de búsqueda que lleva a un 404
+- Precios o títulos viejos en los resultados, correctos al abrir el detalle
+- Un reindexado completo «lo arregla» durante unos días
+
+**Valor:** Elimina la categoría entera de «el producto existe pero no aparece», que en un catálogo son productos que no se pueden comprar.

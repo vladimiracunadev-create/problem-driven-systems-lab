@@ -44,6 +44,7 @@ internal static class Program
         new CaseInfo("16", 9516, "Idempotencia y efectos duplicados",       "/app/cases/16"),
         new CaseInfo("17", 9517, "Migracion de esquema sin downtime",       "/app/cases/17"),
         new CaseInfo("18", 9518, "Arranque en frio y retraso del autoescalado",       "/app/cases/18"),
+        new CaseInfo("19", 9519, "Deriva del indice de busqueda y CDC roto",       "/app/cases/19"),
     };
 
     private static readonly int DispatchPort =

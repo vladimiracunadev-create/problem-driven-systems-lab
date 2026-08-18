@@ -1,4 +1,4 @@
-# 📋 Resumen ejecutivo — los 18 casos en una pagina
+# 📋 Resumen ejecutivo — los 19 casos en una pagina
 
 > Vista de portafolio para evaluadores no tecnicos (reclutadores, lideres de producto, finanzas, CTO sin tiempo). Cada caso resume **problema → valor de negocio → evidencia reproducible → link al detalle tecnico**.
 >
@@ -8,9 +8,9 @@
 >
 > 🧭 **¿Sin base tecnica?** Empeza por [¿Que es esto? — explicacion en lenguaje simple](QUE-ES-ESTO.md).
 
-![Los 18 problemas agrupados por naturaleza](assets/case-map.svg)
+![Los 19 problemas agrupados por naturaleza](assets/case-map.svg)
 
-![Cobertura real de los 18 casos en los 7 stacks](assets/stack-matrix.svg)
+![Cobertura real de los 19 casos en los 7 stacks](assets/stack-matrix.svg)
 
 ## Mapa rapido
 
@@ -34,8 +34,9 @@
 | 16 | Idempotencia y efectos duplicados | Resiliencia | Elimina cobros y avisos duplicados por reintentos, y el costo de devolverlos. |
 | 17 | Migracion de esquema sin downtime | Entrega | Cambia el esquema de una tabla caliente sin ventana de mantenimiento. |
 | 18 | Arranque en frio y retraso del autoescalado | Resiliencia | Elimina los 503 durante los escalados y habilita autoescalado agresivo. |
+| 19 | Deriva del indice de busqueda y CDC roto | Observabilidad | Elimina la categoria de 'el producto existe pero no aparece'. |
 
-Los 18 casos estan **OPERATIVOS** en los 7 stacks: PHP/Python/Node.js/Java 21/.NET 8/Go 1.23/Rust 1.83. Detalle de paridad: [`docs/case-catalog.md`](case-catalog.md).
+Los 19 casos estan **OPERATIVOS** en los 7 stacks: PHP/Python/Node.js/Java 21/.NET 8/Go 1.23/Rust 1.83. Detalle de paridad: [`docs/case-catalog.md`](case-catalog.md).
 
 ---
 
@@ -327,14 +328,30 @@ Los 18 casos estan **OPERATIVOS** en los 7 stacks: PHP/Python/Node.js/Java 21/.N
 
 ---
 
+## Caso 19 — Deriva del indice de busqueda y CDC roto
+
+**Categoria:** Observabilidad · **Stacks operativos:** PHP, Python, Node.js, Java 21, .NET 8, Go 1.23, Rust 1.83
+
+**Problema.** La aplicacion escribe en la base y despues en el indice de busqueda. Dos sistemas, ninguna transaccion que los ate: cuando la segunda escritura falla, el codigo sigue. La busqueda no rompe — devuelve mal.
+
+**Valor.** Elimina la categoria entera de 'el producto existe pero no aparece'. Se subestima porque no se ve como un incidente: el costo aparece con otro nombre —conversion que baja, tickets sobre un producto que no se encuentra— y ninguno se rastrea hasta un indice desincronizado.
+
+**Evidencia.** Con 2.000 escrituras y 8% de fallo del indice, el dual-write deja 79 documentos derivados sobre 951: recall 98,95%, precision 98,02%. Con outbox + checkpoint + barrido: cero, con recall y precision en 100%. Las tres caras de la deriva van separadas, porque se arreglan distinto: missing no se encuentra, stale se encuentra mal, orphan es un fantasma.
+
+**Honestidad.** El indice es un diccionario en memoria, no Elasticsearch — lo que define el caso no es el motor sino que la base y el indice son dos sistemas sin transaccion comun. La falla de escritura es deterministica, asi que los 7 stacks dan resultados identicos y lo unico comparable es como se escribe.
+
+→ Detalle: [cases/19-search-index-drift-and-broken-cdc/README.md](../cases/19-search-index-drift-and-broken-cdc/README.md)
+
+---
+
 ## Que NO encontraras en este laboratorio
 
 Honestidad explicita para no vender lo que no es:
 
-- **No es un benchmark de lenguajes.** Los 7 stacks (PHP/Python/Node/Java/.NET/Go/Rust) resuelven los 18 problemas con primitivas nativas distintas; el contraste muestra criterio, no "cual es mas rapido". El caso 10 lo dice explicito: lo comparable es la forma de la curva dentro de cada stack, no los milisegundos entre stacks.
+- **No es un benchmark de lenguajes.** Los 7 stacks (PHP/Python/Node/Java/.NET/Go/Rust) resuelven los 19 problemas con primitivas nativas distintas; el contraste muestra criterio, no "cual es mas rapido". El caso 10 lo dice explicito: lo comparable es la forma de la curva dentro de cada stack, no los milisegundos entre stacks.
 - **No reemplaza plataformas reales.** Tracing distribuido, CI/CD enterprise, mallas de servicios y feature flags globales quedan fuera. Lo que si esta: reproduccion fiel de la **logica operativa** de cada problema.
 - **No es production-grade tal cual.** Modelo de amenaza: localhost / LAN confiable. Para Internet ver [SECURITY.md](../SECURITY.md) (auth, rate limit, TLS son responsabilidad de quien expone).
-- **Paridad multi-stack completa hoy.** PHP + Python + Node.js + Java + .NET cubren los 18 casos cada uno con primitivas idiomaticas distintas. Cualquier caso nuevo se incorpora siguiendo el mismo patron.
+- **Paridad multi-stack completa hoy.** PHP + Python + Node.js + Java + .NET cubren los 19 casos cada uno con primitivas idiomaticas distintas. Cualquier caso nuevo se incorpora siguiendo el mismo patron.
 
 ## Postmortems narrativos por caso
 
@@ -360,6 +377,7 @@ Cada caso tiene un `postmortem.md` en formato incidente real (severidad, timelin
 | 16 | [1.847 cobros duplicados en once minutos](../cases/16-idempotency-and-duplicate-effects/docs/postmortem.md) | SEV-1 |
 | 17 | [22 minutos de 503 por agregar una columna](../cases/17-zero-downtime-schema-migration/docs/postmortem.md) | SEV-1 |
 | 18 | [34 minutos de errores que subian con cada instancia agregada](../cases/18-cold-start-and-autoscale-lag/docs/postmortem.md) | SEV-1 |
+| 19 | [31.400 documentos derivados, el mas viejo de hace siete meses](../cases/19-search-index-drift-and-broken-cdc/docs/postmortem.md) | SEV-2 |
 
 ## Rutas rapidas
 

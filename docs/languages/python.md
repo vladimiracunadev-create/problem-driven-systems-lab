@@ -1,6 +1,6 @@
 # 🐍 Python
 
-> **Versión fijada:** `3.12` · **Imagen base:** `python:3.12-alpine` · **Hub:** `:8200` · **Casos operativos:** 18 / 18
+> **Versión fijada:** `3.12` · **Imagen base:** `python:3.12-alpine` · **Hub:** `:8200` · **Casos operativos:** 19 / 19
 
 [⬅️ Volver a los perfiles de lenguaje](README.md) · [🗺️ Mapa de stacks](../stack-map.md) · [🔄 Protocolo de actualización](../language-upgrade-protocol.md)
 
@@ -53,6 +53,7 @@ El *Global Interpreter Lock* permite que solo un thread ejecute bytecode de Pyth
 | [16 · Idempotencia](../../cases/16-idempotency-and-duplicate-effects/python/README.md) | `dict.setdefault` bajo `Lock` | Una operación en vez de dos; el `Lock` está porque la atomicidad del GIL no es contrato |
 | [17 · Migración sin downtime](../../cases/17-zero-downtime-schema-migration/python/README.md) | RWLock construido sobre `Condition` | La stdlib no lo trae; la bandera de escritor esperando evita la hambruna |
 | [18 · Arranque en frío](../../cases/18-cold-start-and-autoscale-lag/python/README.md) | sin JIT · imports diferidos | Curva plana porque no hay nada que calentar, y **sin ningún artefacto compilado al que escapar** |
+| [19 · Deriva del índice](../../cases/19-search-index-drift-and-broken-cdc/python/README.md) | álgebra de conjuntos (`-`, `&`) | **El diagnóstico más corto de los siete** — y `except: pass`, el bug más corto |
 
 > 💡 **El patrón que solo se ve mirando la columna entera:** ninguno de los doce casos necesita instalar nada. `sqlite3`, `logging`, `threading`, `gc` y `re` alcanzan. Es el argumento más fuerte de Python en este laboratorio y no tiene que ver con rendimiento: tiene que ver con cuánto código de terceros hay que auditar para llegar a producción.
 
@@ -102,10 +103,11 @@ curl -s localhost:8200/11/diagnostics/summary
 
 ## 🏆 Dónde gana y dónde pierde en el laboratorio
 
-Agregado de los veredictos de las 17 comparativas que rankean: **0 primeros puestos, media 5.0**.
+Agregado de los veredictos de las 18 comparativas que rankean: **0 primeros puestos, media 4.9**.
 
 - 🥉 **Tercero en 03** — `LoggerAdapter` + `JsonFormatter`: la API más difícil de violar por accidente del set completo. Es el mejor resultado de Python en el laboratorio y no tiene nada que ver con rendimiento.
 - **4º en 02, 06, 09, 14 y 15**
+- **4º en 19** — el álgebra de conjuntos da el diagnóstico más corto de los siete, y `except: pass` el bug más corto: Python hace fácil el diagnóstico y también el error.
 - **6º en 18** — no hay curva porque no hay JIT, pero tiene el arranque más lento de los siete y es **el único stack sin ninguna salida compilada**: la única palanca es rediseñar los imports.
 - **5º en 16 y 17** — en el 17 la stdlib directamente no trae read-write lock, con la ventaja didáctica de tener que entenderlo por dentro. — `setdefault` expresa bien la reserva, pero su atomicidad viene del GIL y no del contrato del lenguaje. — `sqlite3` y `threading.Semaphore` de stdlib, correctos y directos.
 - **6º en 04, 05, 07, 08, 12 y 13** — los casos donde el lenguaje no respalda la corrección con nada. En el 13 se suma el GIL: sin una barrera explícita, la estampida ni siquiera se deja observar.
@@ -140,4 +142,4 @@ El detalle del procedimiento está en [docs/language-upgrade-protocol.md](../lan
 docker compose -f compose.python.yml up -d --build
 ```
 
-Los 18 casos quedan servidos en `http://localhost:8200/NN/`. Cada caso trae además su propio `compose.yml` para correrlo aislado.
+Los 19 casos quedan servidos en `http://localhost:8200/NN/`. Cada caso trae además su propio `compose.yml` para correrlo aislado.

@@ -4,18 +4,18 @@
 
 ## Estado actual (2026-08-17)
 
-- **18 casos × 7 stacks operativos = 126 endpoints** detras de 7 hubs simetricos (`compose.root.yml` PHP `:8100`, `compose.python.yml` Python `:8200`, `compose.nodejs.yml` Node `:8300`, `compose.java.yml` Java `:8400`, `compose.dotnet.yml` .NET `:8500`, `compose.go.yml` Go `:8600`, `compose.rust.yml` Rust `:8700`).
+- **19 casos × 7 stacks operativos = 133 endpoints** detras de 7 hubs simetricos (`compose.root.yml` PHP `:8100`, `compose.python.yml` Python `:8200`, `compose.nodejs.yml` Node `:8300`, `compose.java.yml` Java `:8400`, `compose.dotnet.yml` .NET `:8500`, `compose.go.yml` Go `:8600`, `compose.rust.yml` Rust `:8700`).
 - **Casos 01 y 02 con fidelidad universal:** los 7 stacks ejecutan SQL real sobre un motor — PostgreSQL en PHP, SQLite stdlib en Python, `node:sqlite` built-in en Node, `sqlite-jdbc` en Java, `Microsoft.Data.Sqlite` en .NET, `modernc.org/sqlite` (Go puro, sin cgo) en Go, `rusqlite` feature `bundled` en Rust. `db_hits` / `db_queries_in_request` cuentan ejecuciones reales contra motor en los siete runtimes.
 - **Caso 01 con el filtro no sargable verificado por el planner:** `EXPLAIN QUERY PLAN` devuelve `SCAN orders` para `WHERE LOWER(region) LIKE 'n%'` y `SEARCH orders USING INDEX idx_orders_region` para el mismo predicado reescrito como rango. Java y .NET usan `journal_mode=WAL` para que el worker que refresca el resumen no bloquee a los lectores — el equivalente embebido del MVCC de PostgreSQL.
 - **Asimetria que queda, por diseño:** solo PHP cruza un socket TCP contra un motor externo con pool FPM finito. Los otros seis embeben el motor. Node y Python conservan un round-trip artificial explicito que modela el hop de red ausente. Documentado en cada `comparison.md` y `README.md` de stack, no escondido.
 - Documentacion editorial completa (`README.md`, `RECRUITER.md`, `ARCHITECTURE.md`, `RUNBOOK.md`, `SECURITY.md`, `AWS_MIGRATION.md`, `CONTRIBUTING.md`, `CHANGELOG.md`).
 - Catalogo unificado en `shared/catalog/cases.json` como fuente de verdad del portal, `docs/case-catalog.md` y la narrativa operativa.
 - Portal local con `index.html` + `catalog.php` + `probe.php` server-side para health en vivo.
-- CI con validacion estructural + `compose-config` sobre 134 archivos + `portal-probe` PHP + `hub-probe` Python/Node/Java/.NET/Go/Rust sobre los 18 casos por stack en un solo boot.
+- CI con validacion estructural + `compose-config` sobre 141 archivos + `portal-probe` PHP + `hub-probe` Python/Node/Java/.NET/Go/Rust sobre los 19 casos por stack en un solo boot.
 
 ## Eje 1 — Nuevos casos de la vida real (13-20)
 
-> **Progreso: 6 de 8 entregados.** Los casos 13 a 18 estan operativos en los 7 stacks. Los casos 19 y 20 siguen en especificacion.
+> **Progreso: 7 de 8 entregados.** Los casos 13 a 19 estan operativos en los 7 stacks. Solo el caso 20 sigue en especificacion.
 
 Ocho casos adicionales que extienden el lab con problemas que se ven en sistemas productivos reales. Cada uno mantiene el formato problem-driven: sintoma observable → causa raiz tecnica → solucion idiomatica por stack → evidencia medible.
 
@@ -238,7 +238,43 @@ Y el hallazgo del postmortem, que no estaba en la especificacion: **el sistema s
 
 ---
 
-### Caso 19 — Search index drift (CDC roto)
+### Caso 19 — Search index drift (CDC roto) — ✅ ENTREGADO (2026-08-17)
+
+**Estado:** operativo en los **7 stacks**. Ver [`cases/19-search-index-drift-and-broken-cdc/`](cases/19-search-index-drift-and-broken-cdc/README.md).
+
+**Lo que se construyo, contra lo que se habia planeado:**
+
+| Planeado | Entregado |
+|---|---|
+| Python + PHP, "worker async" y "cron-style" | Los 7 — y el escenario resulto **determinista**, asi que los siete dan resultados identicos hasta el ultimo digito. Cuando el numero es el mismo, lo unico comparable es **como se escribe**. |
+| Reconciliacion periodica, `index_drift_count`, replay desde checkpoint, alerta por umbral | Todo eso, mas la separacion de la deriva en **tres caras** que se arreglan distinto, y recall/precision medidos con consultas reales. |
+| `drift_count`, `drift_age_ms`, tiempo de reconciliacion | Los tres, mas `silent_failures`: las escrituras al indice que fallaron y que nadie miro. |
+
+**Lo que salio del camino y vale registrar:**
+
+**1. La deriva no es una cosa, son tres.** El plan hablaba de `drift_count` como un numero. Al implementarlo quedo claro que hay que separarlo, porque se arreglan distinto:
+
+- `missing` — esta en la base, no en el indice → la busqueda **no lo encuentra**
+- `stale` — esta en los dos, con version vieja → la busqueda **lo encuentra mal**
+- `orphan` — esta en el indice, borrado en la base → la busqueda **devuelve fantasmas**
+
+Un reindexado que no borra arregla las dos primeras y deja la tercera intacta. Y sin numero de version en el documento, `stale` es directamente **indetectable**.
+
+**2. El caso ordena por una dimension que ninguno de los otros dieciocho usa: que hace el lenguaje cuando el programador no mira.** El bug entero es una escritura que fallo y que nadie reviso, y ahi los siete stacks son radicalmente distintos:
+
+| Stack | Contra ignorar el error |
+|---|---|
+| 🦀 Rust | `#[must_use]` en la `std` + `deny(unused_must_use)` → **no compila** |
+| 🐹 Go | `_ =` visible en el diff + `errcheck` en CI |
+| 🐍 Python, ☕ Java, 🔵 .NET, 🐘 PHP | **Nada** |
+| 🟢 Node | Nada, **y el bug se produce por NO escribir `await`** |
+
+**3. Java queda sexto no por lo que le falta sino por lo que promete de mas.** `@Transactional` hace que el dual-write **parezca** atomico —el metodo se lee como una unidad y el indice no participa de la transaccion— y nada en el codigo marca donde termina su alcance. Un framework que engaña pesa mas que una primitiva que ayuda.
+
+**4. PHP sube por su restriccion.** En un runtime share-nothing no hay proceso de larga vida donde vivir un consumidor de CDC: el consumidor **es un comando de cron**, y eso obliga a que el checkpoint sea durable desde el primer dia. Lo que en los stacks con procesos largos es una decision que se posterga, en PHP no tiene alternativa.
+
+<details>
+<summary>Especificacion original del caso</summary>
 
 **Sintoma:** los usuarios reportan "la busqueda no encuentra productos que claramente existen". El equipo verifica la DB — el producto esta ahi. Verifica el indice (Elasticsearch / OpenSearch) — no esta. El CDC (change data capture) que sincroniza DB → indice se "salto" un evento hace tres dias.
 
@@ -249,6 +285,8 @@ Y el hallazgo del postmortem, que no estaba en la especificacion: **el sistema s
 **Stacks objetivo iniciales:** Python (worker async que compara los dos) + PHP (cron-style).
 
 **Que medir:** `drift_count`, `drift_age_ms` (cuanto tiempo lleva la diferencia sin detectarse), tiempo de reconciliacion.
+
+</details>
 
 ---
 
@@ -297,7 +335,7 @@ Dos decisiones que salieron del camino y vale la pena registrar:
 - Agregar dashboards Grafana por stack (latencia p50/p95/p99, `db_hits`, `event_loop_lag_ms` Node, `ThreadPool.GetAvailableWorkerThreads` .NET, `ThreadPoolExecutor.getActiveCount()` Java).
 - Centralizar via un solo Prometheus que scrappea los 7 hubs.
 
-**Estimado:** ~200 lineas por stack en el dispatcher para exponer un agregado de los 18 casos del stack. Dashboards Grafana JSON commiteados en `cases/01-api-latency-under-load/shared/observability/`.
+**Estimado:** ~200 lineas por stack en el dispatcher para exponer un agregado de los 19 casos del stack. Dashboards Grafana JSON commiteados en `cases/01-api-latency-under-load/shared/observability/`.
 
 ---
 
@@ -345,7 +383,7 @@ Compromisos editoriales transversales para que el lab no venda fidelidad que no 
 
 **Estado:** pendiente.
 
-**Plan:** seccion nueva en el `README.md` raiz que liste los 18 casos con una columna por stack indicando si el substrato es real (DB / kernel / network) o simulado (sleep / memoria / setTimeout). Vista de un vistazo, sin tener que abrir cada `comparison.md`.
+**Plan:** seccion nueva en el `README.md` raiz que liste los 19 casos con una columna por stack indicando si el substrato es real (DB / kernel / network) o simulado (sleep / memoria / setTimeout). Vista de un vistazo, sin tener que abrir cada `comparison.md`.
 
 ---
 
@@ -361,8 +399,8 @@ Compromisos editoriales transversales para que el lab no venda fidelidad que no 
 
 Las fases anteriores quedan registradas para referencia historica:
 
-- **Fase 1 — Base estructural** (completada): nombre y posicionamiento, portal liviano, estructura problem-driven con 18 casos, documentacion base.
+- **Fase 1 — Base estructural** (completada): nombre y posicionamiento, portal liviano, estructura problem-driven con 19 casos, documentacion base.
 - **Fase 1.5 — Profesionalizacion documental** (completada): familia documental completa en raiz, alineacion editorial con el ecosistema publico de Vladimir Acuna.
-- **Fase 2 — Profundizacion tecnica** (completada): los 18 casos × 7 stacks (PHP/Python/Node/Java/.NET/Go/Rust) operativos con primitivas idiomaticas distintivas por caso y por lenguaje.
-- **Fase 3 — Valor de portafolio** (completada): `docs/executive-summary.md` cubierto, diagramas en `ARCHITECTURE.md` cubierto, postmortems cubiertos (`docs/postmortem.md` en los 18 casos).
+- **Fase 2 — Profundizacion tecnica** (completada): los 19 casos × 7 stacks (PHP/Python/Node/Java/.NET/Go/Rust) operativos con primitivas idiomaticas distintivas por caso y por lenguaje.
+- **Fase 3 — Valor de portafolio** (completada): `docs/executive-summary.md` cubierto, diagramas en `ARCHITECTURE.md` cubierto, postmortems cubiertos (`docs/postmortem.md` en los 19 casos).
 - **Fase 4 — Laboratorio expandido** (en progreso, abierta por este ROADMAP): los 8 casos nuevos (13-20) y las mejoras de plataforma listadas arriba son la continuacion natural.

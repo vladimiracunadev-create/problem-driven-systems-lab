@@ -53,6 +53,7 @@ var cases = []caseInfo{
 	{"16", 9616, "Idempotencia y efectos duplicados", "/app/cases/16/case16"},
 	{"17", 9617, "Migracion de esquema sin downtime", "/app/cases/17/case17"},
 	{"18", 9618, "Arranque en frio y retraso del autoescalado", "/app/cases/18/case18"},
+	{"19", 9619, "Deriva del indice de busqueda y CDC roto", "/app/cases/19/case19"},
 }
 
 var (
