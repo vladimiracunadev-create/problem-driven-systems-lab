@@ -24,6 +24,7 @@ COPY cases/13-cache-stampede-and-thundering-herd/dotnet/app/Case13.csproj       
 COPY cases/14-connection-pool-exhaustion/dotnet/app/Case14.csproj        /src/case14/Case14.csproj
 COPY cases/15-message-queue-backpressure/dotnet/app/Case15.csproj        /src/case15/Case15.csproj
 COPY cases/16-idempotency-and-duplicate-effects/dotnet/app/Case16.csproj        /src/case16/Case16.csproj
+COPY cases/17-zero-downtime-schema-migration/dotnet/app/Case17.csproj        /src/case17/Case17.csproj
 
 # Copiar fuentes
 COPY dotnet-dispatcher/app/Program.cs                                                     /src/dispatcher/Program.cs
@@ -43,6 +44,7 @@ COPY cases/13-cache-stampede-and-thundering-herd/dotnet/app/Program.cs          
 COPY cases/14-connection-pool-exhaustion/dotnet/app/Program.cs           /src/case14/Program.cs
 COPY cases/15-message-queue-backpressure/dotnet/app/Program.cs           /src/case15/Program.cs
 COPY cases/16-idempotency-and-duplicate-effects/dotnet/app/Program.cs           /src/case16/Program.cs
+COPY cases/17-zero-downtime-schema-migration/dotnet/app/Program.cs           /src/case17/Program.cs
 
 RUN dotnet publish /src/dispatcher/Dispatcher.csproj -c Release --no-self-contained -o /publish/dispatcher \
  && dotnet publish /src/case01/Case01.csproj         -c Release --no-self-contained -o /publish/case01 \
@@ -60,7 +62,8 @@ RUN dotnet publish /src/dispatcher/Dispatcher.csproj -c Release --no-self-contai
  && dotnet publish /src/case13/Case13.csproj         -c Release --no-self-contained -o /publish/case13 \
  && dotnet publish /src/case14/Case14.csproj         -c Release --no-self-contained -o /publish/case14 \
  && dotnet publish /src/case15/Case15.csproj         -c Release --no-self-contained -o /publish/case15 \
- && dotnet publish /src/case16/Case16.csproj         -c Release --no-self-contained -o /publish/case16
+ && dotnet publish /src/case16/Case16.csproj         -c Release --no-self-contained -o /publish/case16 \
+ && dotnet publish /src/case17/Case17.csproj         -c Release --no-self-contained -o /publish/case17
 
 FROM mcr.microsoft.com/dotnet/aspnet:8.0
 WORKDIR /app
@@ -86,6 +89,7 @@ COPY --from=build /publish/case13     /app/cases/13
 COPY --from=build /publish/case14     /app/cases/14
 COPY --from=build /publish/case15     /app/cases/15
 COPY --from=build /publish/case16     /app/cases/16
+COPY --from=build /publish/case17     /app/cases/17
 
 EXPOSE 8500
 ENV PORT=8500

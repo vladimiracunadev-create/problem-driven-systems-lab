@@ -40,9 +40,9 @@ Este repositorio es ese taller. Las "marcas de auto" son siete lenguajes de prog
 
 ---
 
-## 🧩 Los 16 problemas, en palabras de todos los días
+## 🧩 Los 17 problemas, en palabras de todos los días
 
-![Los 16 problemas agrupados por naturaleza](assets/case-map.svg)
+![Los 17 problemas agrupados por naturaleza](assets/case-map.svg)
 
 | # | El nombre técnico | Qué significa en la vida real |
 |---|---|---|
@@ -62,6 +62,7 @@ Este repositorio es ese taller. Las "marcas de auto" son siete lenguajes de prog
 | **14** | Agotamiento del pool de conexiones | El sistema tiene un número fijo de líneas para hablar con la base de datos. Cada vez que una llamada falla, esa línea queda descolgada para siempre. Un día no queda ninguna libre |
 | **15** | Backpressure en colas de mensajes | Llegan pedidos más rápido de lo que se pueden atender. La fila de espera crece sin límite hasta que la memoria se acaba — y decidir qué hacer cuando la fila se llena siempre cuesta algo |
 | **16** | Idempotencia y efectos duplicados | Pagás, la app se queda pensando y volvés a apretar. El primer pago sí había llegado: lo que se perdió fue el aviso. Si el sistema no distingue «es el mismo pago» de «es un pago nuevo», te cobra dos veces |
+| **17** | Migración de esquema sin downtime | Hay que agregarle una columna a una tabla enorme. Si se hace de una vez, el sistema queda cerrado veinte minutos. Si se hace de a poco, nadie se entera — y el trabajo total es el mismo |
 
 Ninguno de estos problemas es inventado. Todos son cosas que pasan todas las semanas en empresas reales.
 
@@ -124,7 +125,7 @@ Lo importante de ese cuadro: **ninguna fila es toda verde**. Cada lenguaje gana 
 
 No hace falta ejecutar nada para sacar conclusiones. Se puede leer, en este orden:
 
-1. **[El resumen ejecutivo](executive-summary.md)** — los 16 casos en una página, con el valor de negocio de cada uno.
+1. **[El resumen ejecutivo](executive-summary.md)** — los 17 casos en una página, con el valor de negocio de cada uno.
 2. **Un caso cualquiera** — por ejemplo [el 02](../cases/02-n-plus-one-and-db-bottlenecks/README.md), que es el más fácil de entender sin saber programar. Está la explicación del problema antes que cualquier código.
 3. **Una comparativa** — el archivo `comparison.md` de ese mismo caso, que muestra los siete lenguajes lado a lado y termina con un veredicto razonado.
 4. **[La guía para reclutadores](recruiter-guide.md)** — qué señales mirar y, sobre todo, **qué no** conviene concluir.
@@ -167,7 +168,7 @@ Los pasos detallados están en [INSTALL.md](../INSTALL.md). Si algo no arranca, 
 | Documento | Para qué |
 |---|---|
 | [BEGINNERS_GUIDE.md](BEGINNERS_GUIDE.md) | Ruta para quien está empezando a programar |
-| [executive-summary.md](executive-summary.md) | Los 16 casos en una página |
+| [executive-summary.md](executive-summary.md) | Los 17 casos en una página |
 | [recruiter-guide.md](recruiter-guide.md) | Qué mirar si tu trabajo es evaluar perfiles técnicos |
 | [languages/](languages/README.md) | Qué es cada lenguaje y para qué sirve, uno por uno |
 | [../README.md](../README.md) | La puerta de entrada técnica completa |

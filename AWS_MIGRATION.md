@@ -5,7 +5,7 @@
 [![Cost-aware](https://img.shields.io/badge/Cost--aware-yes-success)](#-comparación-rápida-de-rutas)
 [![Status](https://img.shields.io/badge/Estado-Plan-blue)](#)
 
-> Plan operativo y honesto para mover el laboratorio (7 stacks operativos · 16 casos cada uno · 112 endpoints) desde Docker Compose local hacia AWS. Tres rutas alternativas, costos con rango realista, diagramas navegables y un mapping explícito de **cómo AWS cierra cada hallazgo del [SECURITY.md](SECURITY.md) sin tocar código del lab**.
+> Plan operativo y honesto para mover el laboratorio (7 stacks operativos · 17 casos cada uno · 119 endpoints) desde Docker Compose local hacia AWS. Tres rutas alternativas, costos con rango realista, diagramas navegables y un mapping explícito de **cómo AWS cierra cada hallazgo del [SECURITY.md](SECURITY.md) sin tocar código del lab**.
 
 ---
 
@@ -15,7 +15,7 @@
 - **Costo mensual estimado:** USD 35 (Lambda spiky) — USD 180 (ECS prod-grade con WAF + Cognito) — USD 420 (EKS standalone con HA).
 - Cierra los 4 hallazgos abiertos del SECURITY.md con servicios managed: **auth (Cognito), rate limit (WAF), atomicidad (DynamoDB tx), TLS (ACM)**.
 - Mantiene el patrón "1 hub por lenguaje" usando ALB con path routing → un target group por stack. La asimetría documentada en el repo (PHP con DB real para casos 01-02, los demás con SQLite embebido para caso 02 y memoria/timer para caso 01) **se preserva** — no se inventa fidelidad que no existe en main.
-- Estado real del repo a la fecha de este plan: **7 stacks operativos** (PHP, Python, Node, Java, .NET, Go, Rust), **112 endpoints** detrás de 7 hubs simétricos (`:8100`, `:8200`, `:8300`, `:8400`, `:8500`, `:8600`, `:8700`), portal en `:8080` y observabilidad PHP-only en `:9091` / `:3001`.
+- Estado real del repo a la fecha de este plan: **7 stacks operativos** (PHP, Python, Node, Java, .NET, Go, Rust), **119 endpoints** detrás de 7 hubs simétricos (`:8100`, `:8200`, `:8300`, `:8400`, `:8500`, `:8600`, `:8700`), portal en `:8080` y observabilidad PHP-only en `:9091` / `:3001`.
 
 ---
 
@@ -167,7 +167,7 @@ graph LR
 
 ### Diferencias clave vs ECS
 
-- **Cada caso 0X se vuelve una función Lambda independiente.** 112 funciones totales (16 × 7 stacks). Go y Rust son los dos runtimes con mejor cold start del set — binarios estáticos sin JIT ni intérprete que inicializar, lo que los vuelve los candidatos naturales para esta ruta. El dispatcher desaparece — API Gateway hace el routing.
+- **Cada caso 0X se vuelve una función Lambda independiente.** 119 funciones totales (17 × 7 stacks). Go y Rust son los dos runtimes con mejor cold start del set — binarios estáticos sin JIT ni intérprete que inicializar, lo que los vuelve los candidatos naturales para esta ruta. El dispatcher desaparece — API Gateway hace el routing.
 - **Cold start es significativo para Java y .NET** (300 – 2000 ms primer hit sin SnapStart / ReadyToRun); bajo para Node, Python y PHP (50 – 800 ms).
 - **Empacado:** Node/Python/PHP (con custom runtime) usan zip; Java/.NET usan container image.
 - **Costo mínimo real:** USD 5/mes para tráfico de demo. Si nadie visita el portfolio, casi USD 0.
@@ -457,11 +457,11 @@ psql "postgres://problemlab:***@case01.xxxxx.us-east-1.rds.amazonaws.com:5432/pr
 | Path rule | Target group | Notas |
 |---|---|---|
 | `/`, `/static/*` | `tg-portal` | Portal HTML (PHP + Apache) |
-| `/php/*` | `tg-php-lab` | Dispatcher PHP (16 casos internos); casos 01/02 conectan a RDS pg-01/pg-02 |
-| `/py/*` | `tg-python-lab` | Dispatcher Python con 16 casos internos |
-| `/node/*` | `tg-node-lab` | Dispatcher Node con 16 casos internos |
-| `/java/*` | `tg-java-lab` | Dispatcher Java con 16 casos internos |
-| `/dotnet/*` | `tg-dotnet-lab` | Dispatcher .NET con 16 casos internos |
+| `/php/*` | `tg-php-lab` | Dispatcher PHP (17 casos internos); casos 01/02 conectan a RDS pg-01/pg-02 |
+| `/py/*` | `tg-python-lab` | Dispatcher Python con 17 casos internos |
+| `/node/*` | `tg-node-lab` | Dispatcher Node con 17 casos internos |
+| `/java/*` | `tg-java-lab` | Dispatcher Java con 17 casos internos |
+| `/dotnet/*` | `tg-dotnet-lab` | Dispatcher .NET con 17 casos internos |
 
 ### Fase 5 — Edge (Día 4)
 

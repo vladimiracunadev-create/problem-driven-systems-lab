@@ -2,6 +2,95 @@
 
 Todos los cambios notables de este laboratorio se registran aqui con foco en madurez tecnica y documental.
 
+## 2026-08-17 - Caso 17: migracion de esquema sin downtime en los 7 stacks
+
+Quinto caso del **Eje 1 del ROADMAP**. El lab pasa a **17 casos x 7 stacks = 119
+endpoints**.
+
+### Added — caso 17, migracion de esquema sin downtime
+
+`cases/17-zero-downtime-schema-migration/` con las **7 implementaciones**.
+
+Contrato uniforme: `/migrate-blocking` y `/migrate-expand-contract` con lectores
+concurrentes que miden `availability_pct` **durante** la migracion, mas
+`/migration/state` y `/backfill`. Metrica central: **`longest_single_lock_ms`**,
+que resulto ser la que decide si la app se cae — distinta del tiempo total.
+
+Expand-contract en cuatro fases, con el orden documentado:
+
+1. **Expand** — columna nullable. Es metadata: instantaneo.
+2. **Backfill** — por lotes, soltando el lock entre cada uno.
+3. **Switch** — feature flag que cambia lecturas y escrituras.
+4. **Contract** — recien ahora, en un despliegue posterior, se borra la vieja.
+
+El switch va antes del contract porque **el flag es lo unico reversible en un
+segundo**. Si se borra la columna vieja primero, volver atras requiere otra
+migracion — y a esa altura ya no hay a donde volver.
+
+### La premisa del ROADMAP resulto equivocada, y eso cambio el caso
+
+El ROADMAP planeaba este caso solo para **PHP + PostgreSQL**, con el argumento
+de que "los stacks de SQLite embebido lo modelan mas como ejercicio".
+
+Al implementarlo en los siete quedo claro que el caso **no necesita un motor:
+necesita un read-write lock**. Y ahi cada runtime tiene algo distinto que decir,
+incluido el que no tiene la primitiva.
+
+| Stack | Read-write lock | Deadline del lector |
+|---|---|---|
+| PHP | `flock` **del sistema operativo, entre procesos** | `LOCK_NB` de fabrica |
+| Python | **no existe** — se construye sobre `Condition` | `Condition.wait(timeout)` |
+| Node | **no existe** — el lock es el event loop | **imposible** |
+| Java | `ReentrantReadWriteLock` | `tryLock(timeout, unit)` |
+| .NET | `ReaderWriterLockSlim` (`IDisposable`) | `TryEnterReadLock(ms)` |
+| Go | `sync.RWMutex` | armado con goroutine + `select` |
+| Rust | `std::sync::RwLock` | **solo spin acotado** |
+
+### Tres movimientos en el ranking que no habian pasado antes
+
+- **PHP sube al segundo puesto** — primera vez en el Eje 1 que sale del ultimo
+  lugar. Su `flock` con `LOCK_SH`/`LOCK_EX` es el unico read-write lock del
+  laboratorio provisto por el **sistema operativo**, y el unico que coordina
+  **procesos** en vez de hilos: exactamente lo que hace un motor de base de datos.
+- **Rust cae al sexto**, y es **el primer caso del lab donde su respuesta es peor
+  que la de los otros seis**. La `std` no ofrece `RwLock` con deadline de ninguna
+  clase — ni `try_read_for`, ni nada equivalente — asi que la unica opcion sin
+  crates externas es un spin que consume CPU en vez de dormir en el kernel.
+  Quedo escrito con el mismo enfasis con el que se documentan sus ventajas en los
+  casos 12, 14 y 16: un laboratorio que solo muestra donde gana un lenguaje no es
+  un laboratorio, es publicidad.
+- **Node septimo** con el modo de falla mas severo del caso: el lock exclusivo
+  **es el event loop entero**, asi que ni siquiera el timeout del lector puede
+  dispararse. En los otros seis un lector con `tryLock(120ms)` al menos falla
+  rapido y devuelve 503; aca no falla — no responde.
+
+**Java primero** por ser el unico stack con **deadline y equidad de fabrica**:
+`tryLock(timeout, unit)` y el flag de justicia en el constructor. Sin ese flag,
+el trafico de lectura constante puede impedir que el escritor entre nunca — la
+migracion no arranca y la aplicacion funciona perfecto, que es el peor modo de
+fallar porque nada se ve roto.
+
+### Changed — integracion
+
+- **Dispatchers**: registro del caso 17 y puerto interno en los siete
+  (`:9017` PHP/Python/Node, `:9417` Java, `:9517` .NET, `:9617` Go, `:9717` Rust).
+- **`ci.yml`**: matriz `compose-config` de 120 a **127 archivos**; `hub-probe`
+  valida 17 casos por stack; `compose-smoke` suma `case17-java` y `case17-go`.
+- **`shared/catalog/cases.json`** + `docs/case-catalog.md` + los cinco SVG.
+- **Perfiles de lenguaje**: agregado recalculado. **Java pasa a 2 oros**.
+
+### Verificado
+
+Los 7 stacks levantados con Docker. Con 20.000 filas y 8 lectores concurrentes:
+la variante bloqueante mantiene el lock ~400 ms de corrido y rechaza lectores
+(24 en la mayoria de los stacks, 8 en PHP y Node por su modelo de ejecucion);
+expand-contract hace el mismo trabajo en 10 lotes, baja el lock mas largo a
+~40 ms y deja **0 lectores rechazados con 100% de disponibilidad**. Identico en
+los siete.
+
+`lock_held_ms` total es casi el mismo en las dos variantes: **el trabajo no
+desaparece, se reparte**.
+
 ## 2026-08-17 - Caso 16: idempotencia y efectos duplicados en los 7 stacks
 
 Cuarto caso del **Eje 1 del ROADMAP**. El lab pasa a **16 casos x 7 stacks = 112

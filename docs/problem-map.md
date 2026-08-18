@@ -1,6 +1,6 @@
 # 🗺️ Mapa de problemas
 
-> Los 16 casos del laboratorio con su descripción técnica, síntomas y valor de negocio.
+> Los 17 casos del laboratorio con su descripción técnica, síntomas y valor de negocio.
 
 ---
 
@@ -24,6 +24,7 @@
 | 🚰 14 | Rendimiento | El pool se achica en silencio hasta que no queda ninguna conexión | Eliminar el reinicio preventivo del runbook y dimensionar con una fórmula |
 | 🌊 15 | Resiliencia | El productor va más rápido que el consumidor y la cola crece sin techo | Evitar caídas por memoria y decidir explícitamente qué se sacrifica |
 | 🔁 16 | Resiliencia | Un reintento por timeout se convierte en un segundo cobro | Eliminar cobros y avisos duplicados, y el costo de devolverlos |
+| 🧬 17 | Entrega | Un ALTER TABLE sobre una tabla caliente bloquea la aplicación entera | Cambiar el esquema sin ventana de mantenimiento ni 503 |
 
 ---
 
@@ -240,3 +241,17 @@
 - Después de escalar de uno a dos pods empiezan a aparecer duplicados que antes no había
 
 **Valor:** Elimina cobros y notificaciones duplicadas, y el costo de soporte y devolución que cada uno genera.
+
+---
+
+### 🧬 17 — Migración de esquema sin downtime
+
+**Problema:** Un `ALTER TABLE` sobre una tabla caliente toma el lock exclusivo y no lo suelta hasta terminar. El trabajo total no cambia; lo que cambia es si se cobra todo junto con la aplicación caída o repartido en lotes.
+
+**Síntomas frecuentes:**
+- 503 durante toda la ventana de despliegue, y vuelve solo al terminar
+- El healthcheck en verde: el proceso está vivo, lo que falla son las peticiones
+- El pool de conexiones agotado porque todas esperan el mismo lock
+- Un `ALTER TABLE` que en staging tardó 200 ms tarda veinte minutos en producción
+
+**Valor:** Permite cambiar el esquema de una tabla caliente sin ventana de mantenimiento, y elimina el despliegue nocturno como forma de convivir con el problema.

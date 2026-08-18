@@ -40,6 +40,7 @@ const CASES = {
   '14': { port: 9014, name: 'Agotamiento del pool de conexiones',  server: '/cases/14/server.js' },
   '15': { port: 9015, name: 'Backpressure en colas de mensajes',  server: '/cases/15/server.js' },
   '16': { port: 9016, name: 'Idempotencia y efectos duplicados',  server: '/cases/16/server.js' },
+  '17': { port: 9017, name: 'Migracion de esquema sin downtime',  server: '/cases/17/server.js' },
 };
 
 const DISPATCH_PORT = Number.parseInt(process.env.PORT || '8300', 10);

@@ -5,7 +5,7 @@
     "hero_title": "Evalúa el laboratorio con evidencia real: elige una audiencia o un stack tecnológico",
     "audience_message": "Diseñado para especialistas en selección, líderes técnicos y equipos de ingeniería que buscan validar criterio técnico con escenarios reproducibles."
   },
-  "recommended_github_about": "🧪 Laboratorio de sistemas distribuido con 16 casos reales Docker-first para diagnosticar y resolver problemas criticos de rendimiento, observabilidad, resiliencia y arquitectura 🐳",
+  "recommended_github_about": "🧪 Laboratorio de sistemas distribuido con 17 casos reales Docker-first para diagnosticar y resolver problemas criticos de rendimiento, observabilidad, resiliencia y arquitectura 🐳",
   "recommended_github_topics": [
     "problem-driven",
     "docker",
@@ -1698,6 +1698,104 @@
           "root_path": "/16/",
           "isolated_compose": "cases/16-idempotency-and-duplicate-effects/rust/compose.yml",
           "isolated_port": 8716
+        }
+      }
+    },
+    {
+      "id": "17",
+      "icon": "🧬",
+      "slug": "zero-downtime-schema-migration",
+      "title": "Migracion de esquema sin downtime",
+      "category": "Entrega",
+      "status": "OPERATIVO",
+      "level_detail": "Expand-contract en cuatro fases con el read-write lock de cada runtime: flock LOCK_SH/LOCK_EX del sistema operativo en PHP — el unico que coordina procesos y no hilos —, RWLock construido a mano sobre Condition en Python porque la stdlib no lo trae, el event loop COMO lock en Node, ReentrantReadWriteLock en modo justo con tryLock(timeout) en Java, ReaderWriterLockSlim con TryEnterReadLock(ms) en .NET, sync.RWMutex con deadline armado por goroutine en Go, y RwLock con spin acotado en Rust — el unico caso del lab donde su respuesta es peor que la de los otros seis",
+      "summary": "Un ALTER TABLE sobre una tabla caliente bloquea la aplicacion entera; expand-contract reparte el mismo trabajo en lotes que nadie nota.",
+      "case_readme_path": "cases/17-zero-downtime-schema-migration/README.md",
+      "business_outcome": "Permite cambiar el esquema de una tabla caliente sin ventana de mantenimiento ni 503 para el usuario final.",
+      "recruiter_pitch": "Muestra que el trabajo total de una migracion no cambia — lo que cambia es si se cobra junto con la app caida o repartido — y que el healthcheck en verde puede tapar 22 minutos de indisponibilidad.",
+      "proof_points": [
+        "Contrasta /migrate-blocking y /migrate-expand-contract con availability_pct medida DURANTE la migracion.",
+        "Hace visible longest_single_lock_ms: la metrica que decide si la app se cae, distinta del tiempo total.",
+        "Expone /migration/state con la fase actual, el progreso del backfill y el estado del feature flag."
+      ],
+      "look_for": [
+        "Si readers_failed es mayor que cero en la variante bloqueante y exactamente cero en la corregida.",
+        "Si longest_single_lock_ms baja de la duracion entera de la migracion a la de un solo lote.",
+        "Si lock_held_ms total es parecido en las dos: el trabajo no desaparece, se reparte."
+      ],
+      "honesty_note": "No hay PostgreSQL detras: el lock de la tabla se modela con el read-write lock de cada runtime, que es honesto porque el mecanismo es el mismo — un escritor excluye a todos los lectores. La excepcion es PHP, donde flock SI es un lock del sistema operativo entre procesos. En PHP los lectores se recorren en secuencia porque el servidor embebido es de un solo proceso.",
+      "operational_stacks": [
+        "php",
+        "python",
+        "node",
+        "java",
+        "dotnet",
+        "go",
+        "rust"
+      ],
+      "runtime_entries": {
+        "php": {
+          "port": 8100,
+          "compose_path": "compose.root.yml",
+          "readme_path": "cases/17-zero-downtime-schema-migration/php/README.md",
+          "health_path": "/17/health",
+          "root_path": "/17/",
+          "isolated_compose": "cases/17-zero-downtime-schema-migration/php/compose.yml",
+          "isolated_port": 8117
+        },
+        "python": {
+          "port": 8200,
+          "compose_path": "compose.python.yml",
+          "readme_path": "cases/17-zero-downtime-schema-migration/python/README.md",
+          "health_path": "/17/health",
+          "root_path": "/17/",
+          "isolated_compose": "cases/17-zero-downtime-schema-migration/python/compose.yml",
+          "isolated_port": 8317
+        },
+        "node": {
+          "port": 8300,
+          "compose_path": "compose.nodejs.yml",
+          "readme_path": "cases/17-zero-downtime-schema-migration/node/README.md",
+          "health_path": "/17/health",
+          "root_path": "/17/",
+          "isolated_compose": "cases/17-zero-downtime-schema-migration/node/compose.yml",
+          "isolated_port": 8217
+        },
+        "java": {
+          "port": 8400,
+          "compose_path": "compose.java.yml",
+          "readme_path": "cases/17-zero-downtime-schema-migration/java/README.md",
+          "health_path": "/17/health",
+          "root_path": "/17/",
+          "isolated_compose": "cases/17-zero-downtime-schema-migration/java/compose.yml",
+          "isolated_port": 8417
+        },
+        "dotnet": {
+          "port": 8500,
+          "compose_path": "compose.dotnet.yml",
+          "readme_path": "cases/17-zero-downtime-schema-migration/dotnet/README.md",
+          "health_path": "/17/health",
+          "root_path": "/17/",
+          "isolated_compose": "cases/17-zero-downtime-schema-migration/dotnet/compose.yml",
+          "isolated_port": 8517
+        },
+        "go": {
+          "port": 8600,
+          "compose_path": "compose.go.yml",
+          "readme_path": "cases/17-zero-downtime-schema-migration/go/README.md",
+          "health_path": "/17/health",
+          "root_path": "/17/",
+          "isolated_compose": "cases/17-zero-downtime-schema-migration/go/compose.yml",
+          "isolated_port": 8617
+        },
+        "rust": {
+          "port": 8700,
+          "compose_path": "compose.rust.yml",
+          "readme_path": "cases/17-zero-downtime-schema-migration/rust/README.md",
+          "health_path": "/17/health",
+          "root_path": "/17/",
+          "isolated_compose": "cases/17-zero-downtime-schema-migration/rust/compose.yml",
+          "isolated_port": 8717
         }
       }
     }

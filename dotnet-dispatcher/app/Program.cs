@@ -42,6 +42,7 @@ internal static class Program
         new CaseInfo("14", 9514, "Agotamiento del pool de conexiones",       "/app/cases/14"),
         new CaseInfo("15", 9515, "Backpressure en colas de mensajes",       "/app/cases/15"),
         new CaseInfo("16", 9516, "Idempotencia y efectos duplicados",       "/app/cases/16"),
+        new CaseInfo("17", 9517, "Migracion de esquema sin downtime",       "/app/cases/17"),
     };
 
     private static readonly int DispatchPort =

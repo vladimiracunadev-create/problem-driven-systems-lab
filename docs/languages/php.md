@@ -1,6 +1,6 @@
 # 🐘 PHP
 
-> **Versión fijada:** `8.3` · **Imagen base:** `php:8.3-cli-alpine` (portal: `php:8.3-apache`) · **Hub:** `:8100` · **Casos operativos:** 16 / 16
+> **Versión fijada:** `8.3` · **Imagen base:** `php:8.3-cli-alpine` (portal: `php:8.3-apache`) · **Hub:** `:8100` · **Casos operativos:** 17 / 17
 
 [⬅️ Volver a los perfiles de lenguaje](README.md) · [🗺️ Mapa de stacks](../stack-map.md) · [🔄 Protocolo de actualización](../language-upgrade-protocol.md)
 
@@ -51,6 +51,7 @@ PHP 8 dejó atrás buena parte de su reputación: tipos de retorno, `readonly`, 
 | [14 · Pool de conexiones](../../cases/14-connection-pool-exhaustion/php/README.md) | `finally` | Cubre también el `continue` del `catch`. El proceso por request tapa el bug; las persistentes de FPM lo destapan |
 | [15 · Backpressure](../../cases/15-message-queue-backpressure/php/README.md) | `listen.backlog` de FPM | No hay cola en proceso: el freno vive en el transporte, no en el lenguaje |
 | [16 · Idempotencia](../../cases/16-idempotency-and-duplicate-effects/php/README.md) | `flock` sobre almacenamiento (modela `ON CONFLICT`) | Sin heap compartido, la clave vive en el motor — **la única versión que escala a varias réplicas** |
+| [17 · Migración sin downtime](../../cases/17-zero-downtime-schema-migration/php/README.md) | `flock` `LOCK_SH` / `LOCK_EX` | El **único read-write lock del lab que da el sistema operativo** — coordina procesos, no hilos |
 
 > 💡 **El patrón que solo se ve mirando la columna entera:** PHP resuelve con **infraestructura** lo que los otros stacks resuelven con **primitivas de lenguaje**. Donde Go usa un canal y Java un `Semaphore`, PHP usa un archivo, una tabla o el gestor de procesos. No es peor ni mejor: es el modelo de ejecución llevado hasta sus consecuencias.
 
@@ -105,10 +106,11 @@ Grafana queda disponible para ver la serie temporal del antes y el después — 
 
 ## 🏆 Dónde gana y dónde pierde en el laboratorio
 
-Agregado de los veredictos de las 15 comparativas que rankean: **0 primeros puestos, media 5.9** — el promedio más bajo del set.
+Agregado de los veredictos de las 16 comparativas que rankean: **0 primeros puestos, media 5.7** — el promedio más bajo del set.
 
 - 🥉 **Tercero en 02** — el único stack donde el N+1 cruza un socket real contra PostgreSQL. El sustrato le gana a la primitiva.
 - **4º en 01** — el mejor sustrato del laboratorio: motor real, worker separado, contención observable desde el motor.
+- 🥈 **Segundo en 17** — su `flock` es el único read-write lock del lab provisto por el sistema operativo, y el único que coordina procesos en vez de hilos
 - **6º en otros nueve casos y 7º en el 13, el 14, el 15 y el 16** — el 16 es el ejemplo más claro de que este promedio mide expresividad y no idoneidad: es el último en fit de primitivas y la única de las siete implementaciones que sigue siendo correcta con veinte réplicas. — en el 15 el último puesto viene con premio: al no tener cola en proceso, es el stack que mejor enseña que el freno vive en el sistema entero, no en la cola. — el modelo de proceso por request deja al lenguaje sin nada que aportar a problemas de concurrencia, cancelación o tipos. En el 13 el último puesto viene con premio: es el único stack que no puede esconder el double check dentro del lock.
 
 **Lectura honesta:** el promedio de PHP mide *fit de primitivas con el problema*, y en eso queda último con claridad. No mide calidad del lenguaje, ni idoneidad para la web, ni la calidad de la evidencia que produce — donde es el mejor del repositorio. Un lector que se quede solo con el promedio se pierde la mitad de la historia.
@@ -144,7 +146,7 @@ El detalle del procedimiento está en [docs/language-upgrade-protocol.md](../lan
 docker compose -f compose.root.yml up -d --build
 ```
 
-Levanta el portal, los 16 casos PHP en `http://localhost:8100/NN/`, PostgreSQL, Prometheus y Grafana. Es la entrada más completa del laboratorio y la recomendada para una primera evaluación.
+Levanta el portal, los 17 casos PHP en `http://localhost:8100/NN/`, PostgreSQL, Prometheus y Grafana. Es la entrada más completa del laboratorio y la recomendada para una primera evaluación.
 
 Para el portal solo, sin base ni observabilidad:
 

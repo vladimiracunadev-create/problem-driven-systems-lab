@@ -51,6 +51,7 @@ var cases = []caseInfo{
 	{"14", 9614, "Agotamiento del pool de conexiones", "/app/cases/14/case14"},
 	{"15", 9615, "Backpressure en colas de mensajes", "/app/cases/15/case15"},
 	{"16", 9616, "Idempotencia y efectos duplicados", "/app/cases/16/case16"},
+	{"17", 9617, "Migracion de esquema sin downtime", "/app/cases/17/case17"},
 }
 
 var (

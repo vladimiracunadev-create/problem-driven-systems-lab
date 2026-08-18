@@ -52,7 +52,8 @@ public class Dispatcher {
         new CaseInfo("13", 9413, "Cache stampede y thundering herd",  "/cases/13", null),
         new CaseInfo("14", 9414, "Agotamiento del pool de conexiones",  "/cases/14", null),
         new CaseInfo("15", 9415, "Backpressure en colas de mensajes",  "/cases/15", null),
-        new CaseInfo("16", 9416, "Idempotencia y efectos duplicados",  "/cases/16", null)
+        new CaseInfo("16", 9416, "Idempotencia y efectos duplicados",  "/cases/16", null),
+        new CaseInfo("17", 9417, "Migracion de esquema sin downtime",  "/cases/17", null)
     );
 
     private static final int DISPATCH_PORT = Integer.parseInt(System.getenv().getOrDefault("PORT", "8400"));

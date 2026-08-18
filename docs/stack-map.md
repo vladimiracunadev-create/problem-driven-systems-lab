@@ -25,7 +25,7 @@ El objetivo es mostrar cómo **el mismo problema se manifiesta y se resuelve de 
 
 ---
 
-> 🧬 **Cada stack tiene su perfil completo en [docs/languages/](languages/README.md)**: para qué sirve el lenguaje, primitivas que usa en los 16 casos, qué mide el laboratorio y cómo reproducirlo, límites documentados y qué revisar cuando publique una versión nueva.
+> 🧬 **Cada stack tiene su perfil completo en [docs/languages/](languages/README.md)**: para qué sirve el lenguaje, primitivas que usa en los 17 casos, qué mide el laboratorio y cómo reproducirlo, límites documentados y qué revisar cuando publique una versión nueva.
 
 ---
 

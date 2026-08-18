@@ -1,6 +1,6 @@
 # 🔵 .NET
 
-> **Versión fijada:** `8.0` (LTS) · **Imagen base:** `mcr.microsoft.com/dotnet/sdk:8.0` · **Hub:** `:8500` · **Casos operativos:** 16 / 16
+> **Versión fijada:** `8.0` (LTS) · **Imagen base:** `mcr.microsoft.com/dotnet/sdk:8.0` · **Hub:** `:8500` · **Casos operativos:** 17 / 17
 
 [⬅️ Volver a los perfiles de lenguaje](README.md) · [🗺️ Mapa de stacks](../stack-map.md) · [🔄 Protocolo de actualización](../language-upgrade-protocol.md)
 
@@ -51,6 +51,7 @@
 | [14 · Pool de conexiones](../../cases/14-connection-pool-exhaustion/dotnet/README.md) | `SemaphoreSlim.WaitAsync` + `using var` | El timeout es un valor de retorno, no una excepción; y lo correcto ocupa menos líneas |
 | [15 · Backpressure](../../cases/15-message-queue-backpressure/dotnet/README.md) | `BoundedChannelFullMode` | Único stack donde la política es un enum del constructor, no una elección por envío |
 | [16 · Idempotencia](../../cases/16-idempotency-and-duplicate-effects/dotnet/README.md) | `ConcurrentDictionary.TryAdd` | Sí es atómico, a diferencia de `GetOrAdd` con fábrica del caso 13 |
+| [17 · Migración sin downtime](../../cases/17-zero-downtime-schema-migration/dotnet/README.md) | `ReaderWriterLockSlim` + `TryEnterReadLock(ms)` | Deadline como valor de retorno; `IDisposable` y sin modo justo |
 
 > 💡 **El patrón que solo se ve mirando la columna entera:** .NET usa `Interlocked.CompareExchange` donde Java usa `AtomicReference`. El CAS explícito hace visible que la transición del breaker es una operación atómica de comparar-y-cambiar; en Java el `set()` lo esconde. Es la misma corrección con distinta cantidad de verdad a la vista.
 
@@ -101,11 +102,11 @@ curl -s "localhost:8500/11/order-write"                  # el pool principal que
 
 ## 🏆 Dónde gana y dónde pierde en el laboratorio
 
-Agregado de los veredictos de las 15 comparativas que rankean: **1 primer puesto, media 3.4**.
+Agregado de los veredictos de las 16 comparativas que rankean: **1 primer puesto, media 3.4**.
 
 - 🥇 **Gana en 11** — junto con Java: cuando el problema es el pool, tener pool explícito es la herramienta exacta.
 - 🥈 **Segundo en 01 y 06** — `record` types con `with`-expressions modelan el rollback mejor que casi cualquier otro stack.
-- 🥉 **Tercero en 04, 07, 09, 14 y 15**
+- 🥉 **Tercero en 04, 07, 09, 14, 15 y 17**
 - **4º en 16** — `TryAdd` es correcto, pero convive con `GetOrAdd`, que parece equivalente y no lo es. — `CancellationToken` y `SemaphoreSlim` son claros y directos.
 - **5º en 13** — `GetOrAdd` no garantiza fábrica única y el envoltorio `Lazy` que sí lo hace no es obvio.
 - **6º en 02** — mismo motivo que Java: el ORM del ecosistema fabrica el bug.
@@ -140,4 +141,4 @@ El detalle del procedimiento está en [docs/language-upgrade-protocol.md](../lan
 docker compose -f compose.dotnet.yml up -d --build
 ```
 
-Los 16 casos quedan servidos en `http://localhost:8500/NN/`. Cada caso trae además su propio `compose.yml` para correrlo aislado.
+Los 17 casos quedan servidos en `http://localhost:8500/NN/`. Cada caso trae además su propio `compose.yml` para correrlo aislado.

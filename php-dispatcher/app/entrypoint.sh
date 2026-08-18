@@ -1,8 +1,8 @@
 #!/bin/sh
 # entrypoint.sh — supervisor del PHP lab
 #
-# Spawnea los 16 servidores PHP de los casos como subprocesos internos en
-# 127.0.0.1:9001-9016 (no expuestos al host) y luego corre el dispatcher
+# Spawnea los 17 servidores PHP de los casos como subprocesos internos en
+# 127.0.0.1:9001-9017 (no expuestos al host) y luego corre el dispatcher
 # como proceso foreground en :8100.
 #
 # Senales: tini (PID 1, ENTRYPOINT) propaga SIGTERM/SIGINT a este shell;
@@ -64,7 +64,7 @@ spawn_case() {
     echo "  case $case_id -> :$port (pid $pid)"
 }
 
-echo "[entrypoint] Spawning 16 case servers..."
+echo "[entrypoint] Spawning 17 case servers..."
 spawn_case 01 9001
 spawn_case 02 9002
 spawn_case 03 9003
@@ -81,13 +81,14 @@ spawn_case 13 9013
 spawn_case 14 9014
 spawn_case 15 9015
 spawn_case 16 9016
+spawn_case 17 9017
 
 # Espera breve para que los servidores se levanten antes del dispatcher
 echo "[entrypoint] Waiting 2s for case servers to come up..."
 sleep 2
 
 echo "[entrypoint] Dispatcher listening on :8100"
-echo "[entrypoint] Routes: /01/.../16/  -> casos internos :9001...:9016"
+echo "[entrypoint] Routes: /01/.../17/  -> casos internos :9001...:9017"
 
 # Dispatcher en foreground. NO usar exec — necesitamos que el trap siga vivo.
 php -S 0.0.0.0:8100 /app/dispatcher.php &

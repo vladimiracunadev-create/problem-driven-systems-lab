@@ -1,4 +1,4 @@
-# 📋 Resumen ejecutivo — los 16 casos en una pagina
+# 📋 Resumen ejecutivo — los 17 casos en una pagina
 
 > Vista de portafolio para evaluadores no tecnicos (reclutadores, lideres de producto, finanzas, CTO sin tiempo). Cada caso resume **problema → valor de negocio → evidencia reproducible → link al detalle tecnico**.
 >
@@ -8,9 +8,9 @@
 >
 > 🧭 **¿Sin base tecnica?** Empeza por [¿Que es esto? — explicacion en lenguaje simple](QUE-ES-ESTO.md).
 
-![Los 16 problemas agrupados por naturaleza](assets/case-map.svg)
+![Los 17 problemas agrupados por naturaleza](assets/case-map.svg)
 
-![Cobertura real de los 16 casos en los 7 stacks](assets/stack-matrix.svg)
+![Cobertura real de los 17 casos en los 7 stacks](assets/stack-matrix.svg)
 
 ## Mapa rapido
 
@@ -32,8 +32,9 @@
 | 14 | Agotamiento del pool de conexiones | Rendimiento | Elimina el reinicio preventivo del runbook y dimensiona el pool con una formula. |
 | 15 | Backpressure en colas de mensajes | Resiliencia | Evita caidas por memoria y convierte el sacrificio en una decision explicita. |
 | 16 | Idempotencia y efectos duplicados | Resiliencia | Elimina cobros y avisos duplicados por reintentos, y el costo de devolverlos. |
+| 17 | Migracion de esquema sin downtime | Entrega | Cambia el esquema de una tabla caliente sin ventana de mantenimiento. |
 
-Los 16 casos estan **OPERATIVOS** en los 7 stacks: PHP/Python/Node.js/Java 21/.NET 8/Go 1.23/Rust 1.83. Detalle de paridad: [`docs/case-catalog.md`](case-catalog.md).
+Los 17 casos estan **OPERATIVOS** en los 7 stacks: PHP/Python/Node.js/Java 21/.NET 8/Go 1.23/Rust 1.83. Detalle de paridad: [`docs/case-catalog.md`](case-catalog.md).
 
 ---
 
@@ -293,14 +294,30 @@ Los 16 casos estan **OPERATIVOS** en los 7 stacks: PHP/Python/Node.js/Java 21/.N
 
 ---
 
+## Caso 17 — Migracion de esquema sin downtime
+
+**Categoria:** Entrega · **Stacks operativos:** PHP, Python, Node.js, Java 21, .NET 8, Go 1.23, Rust 1.83
+
+**Problema.** Un ALTER TABLE sobre una tabla caliente toma el lock exclusivo y no lo suelta hasta terminar. Veinte minutos de 503 por agregar una columna — con el proceso vivo y el healthcheck en verde todo el tiempo.
+
+**Valor.** Permite cambiar el esquema sin ventana de mantenimiento, y elimina el despliegue nocturno como forma de convivir con el problema. El indicador honesto no es cuanto tarda la migracion sino cuanto dura su lock mas largo.
+
+**Evidencia.** `/migrate-blocking` vs `/migrate-expand-contract` con lectores concurrentes midiendo disponibilidad DURANTE la migracion. Con 20.000 filas y 8 lectores: 400 ms de lock de corrido y lectores rechazados, contra 10 lotes de 40 ms y cero rechazados. `lock_held_ms` total es casi identico: el trabajo no desaparece, se reparte.
+
+**Honestidad.** No hay PostgreSQL detras: el lock se modela con el read-write lock de cada runtime. La excepcion es PHP, donde flock SI es un lock del sistema operativo entre procesos.
+
+→ Detalle: [cases/17-zero-downtime-schema-migration/README.md](../cases/17-zero-downtime-schema-migration/README.md)
+
+---
+
 ## Que NO encontraras en este laboratorio
 
 Honestidad explicita para no vender lo que no es:
 
-- **No es un benchmark de lenguajes.** Los 7 stacks (PHP/Python/Node/Java/.NET/Go/Rust) resuelven los 16 problemas con primitivas nativas distintas; el contraste muestra criterio, no "cual es mas rapido". El caso 10 lo dice explicito: lo comparable es la forma de la curva dentro de cada stack, no los milisegundos entre stacks.
+- **No es un benchmark de lenguajes.** Los 7 stacks (PHP/Python/Node/Java/.NET/Go/Rust) resuelven los 17 problemas con primitivas nativas distintas; el contraste muestra criterio, no "cual es mas rapido". El caso 10 lo dice explicito: lo comparable es la forma de la curva dentro de cada stack, no los milisegundos entre stacks.
 - **No reemplaza plataformas reales.** Tracing distribuido, CI/CD enterprise, mallas de servicios y feature flags globales quedan fuera. Lo que si esta: reproduccion fiel de la **logica operativa** de cada problema.
 - **No es production-grade tal cual.** Modelo de amenaza: localhost / LAN confiable. Para Internet ver [SECURITY.md](../SECURITY.md) (auth, rate limit, TLS son responsabilidad de quien expone).
-- **Paridad multi-stack completa hoy.** PHP + Python + Node.js + Java + .NET cubren los 16 casos cada uno con primitivas idiomaticas distintas. Cualquier caso nuevo se incorpora siguiendo el mismo patron.
+- **Paridad multi-stack completa hoy.** PHP + Python + Node.js + Java + .NET cubren los 17 casos cada uno con primitivas idiomaticas distintas. Cualquier caso nuevo se incorpora siguiendo el mismo patron.
 
 ## Postmortems narrativos por caso
 
@@ -324,6 +341,7 @@ Cada caso tiene un `postmortem.md` en formato incidente real (severidad, timelin
 | 14 | [Seis semanas reiniciando pods porque el reinicio funcionaba](../cases/14-connection-pool-exhaustion/docs/postmortem.md) | SEV-2 |
 | 15 | [Cuatro meses subiendo el limite de memoria porque funcionaba](../cases/15-message-queue-backpressure/docs/postmortem.md) | SEV-2 |
 | 16 | [1.847 cobros duplicados en once minutos](../cases/16-idempotency-and-duplicate-effects/docs/postmortem.md) | SEV-1 |
+| 17 | [22 minutos de 503 por agregar una columna](../cases/17-zero-downtime-schema-migration/docs/postmortem.md) | SEV-1 |
 
 ## Rutas rapidas
 

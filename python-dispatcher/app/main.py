@@ -44,6 +44,7 @@ CASES = {
     "14": {"port": 9014, "name": "Agotamiento del pool de conexiones",     "server": "/cases/14/server.py"},
     "15": {"port": 9015, "name": "Backpressure en colas de mensajes",     "server": "/cases/15/server.py"},
     "16": {"port": 9016, "name": "Idempotencia y efectos duplicados",     "server": "/cases/16/server.py"},
+    "17": {"port": 9017, "name": "Migracion de esquema sin downtime",     "server": "/cases/17/server.py"},
 }
 
 DISPATCH_PORT = int(os.environ.get("PORT", "8200"))
