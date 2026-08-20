@@ -260,6 +260,7 @@ class SiteBuilder:
         body: str,
         active: str = "",
         wide: bool = True,
+        extra_head: str = "",
     ) -> str:
         root = rel_to_root(page)
         nav_items = []
@@ -293,7 +294,7 @@ class SiteBuilder:
 <meta name="twitter:card" content="summary">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>&#129514;</text></svg>">
 <link rel="stylesheet" href="{esc(root)}assets/site.css">
-</head>
+{extra_head}</head>
 <body>
 <header class="topbar">
   <div class="topbar-inner">
@@ -1101,6 +1102,9 @@ curl -s http://localhost:{esc(lang['hub_port'])}/01/health</code></pre></div>
     <a class="btn btn-ghost" href="/problem-driven-systems-lab/documentacion.html">Indice de documentacion</a>
   </div>
 </section>"""
+        # GitHub Pages sirve esta pagina sin cambiar la URL, asi que un 404 en
+        # `/cases/01-x/loquesea.html` resolveria los enlaces relativos contra esa
+        # carpeta inexistente. `<base>` los ancla a la raiz del sitio.
         self.write(
             "404.html",
             self.shell(
@@ -1108,6 +1112,7 @@ curl -s http://localhost:{esc(lang['hub_port'])}/01/health</code></pre></div>
                 title="Pagina no encontrada",
                 description="La pagina solicitada no existe en el sitio del laboratorio.",
                 body=body,
+                extra_head='<base href="/problem-driven-systems-lab/">\n',
             ),
         )
         self.pages.remove("404.html")  # no entra al sitemap ni al chequeo de enlaces
