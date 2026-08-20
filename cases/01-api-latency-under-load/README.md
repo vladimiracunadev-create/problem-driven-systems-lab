@@ -4,7 +4,7 @@
 [![Stacks](https://img.shields.io/badge/Stacks-7%20operativos%20%C2%B7%20PHP%20%C2%B7%20Python%20%C2%B7%20Node%20%C2%B7%20Java%20%C2%B7%20.NET%20%C2%B7%20Go%20%C2%B7%20Rust-blue)](../../docs/languages/README.md)
 [![Stack principal](https://img.shields.io/badge/Stack%20principal-PHP%208%20%2B%20PostgreSQL-777BB4?logo=php)](php/)
 [![Observabilidad](https://img.shields.io/badge/Observabilidad-Prometheus%20%2B%20Grafana-orange?logo=grafana)](php/compose.yml)
-[![Categoría](https://img.shields.io/badge/Categoría-Rendimiento-red)](../README.md)
+[![Categoría](https://img.shields.io/badge/Categoría-Rendimiento-red)](../../README.md)
 
 > [!IMPORTANT]
 > **📖 [Ver Análisis Técnico Senior de esta solución (PHP)](php/README.md)**

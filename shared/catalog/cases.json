@@ -117,7 +117,7 @@
       "profile_path": "docs/languages/php.md",
       "execution_model": "Proceso por peticion, sin estado compartido entre requests",
       "headline": "Stack principal hoy para profundidad funcional y comparacion before/after.",
-      "note": "Muestra los doce casos operativos mas maduros del laboratorio en su stack principal."
+      "note": "Muestra los 20 casos con la mayor profundidad funcional del laboratorio: UI nativa, PostgreSQL real, Prometheus y Grafana."
     },
     {
       "key": "python",
@@ -130,7 +130,7 @@
       "hub_port": 8200,
       "profile_path": "docs/languages/python.md",
       "execution_model": "Threads reales con GIL: paralelismo de I/O, no de CPU",
-      "headline": "Stack operativo real sobre los doce casos con primitivas de stdlib.",
+      "headline": "Stack operativo real sobre los 20 casos con primitivas de stdlib.",
       "note": "Permite contrastar rendimiento, N+1 y observabilidad en otro runtime sin abandonar la narrativa problem-first."
     },
     {
@@ -159,7 +159,7 @@
       "profile_path": "docs/languages/java.md",
       "execution_model": "Threads del SO con paralelismo real; JVM con JIT y GC generacional",
       "headline": "Stack operativo real con primitivas concurrentes de `java.util.concurrent`.",
-      "note": "Java 21 sirve los doce casos detras del hub `:8400`; el tipado fuerte y el pool explicito hacen visible la capacidad que otros runtimes esconden."
+      "note": "Java 21 sirve los 20 casos detras del hub `:8400`; el tipado fuerte y el pool explicito hacen visible la capacidad que otros runtimes esconden."
     },
     {
       "key": "dotnet",
@@ -173,7 +173,7 @@
       "profile_path": "docs/languages/dotnet.md",
       "execution_model": "ThreadPool con `async/await` que libera el hilo durante la espera",
       "headline": "Stack operativo real con primitivas BCL distintivas por caso.",
-      "note": ".NET 8 sirve los 12 casos detras del hub `:8500` con paridad funcional 1:1 frente a Java."
+      "note": ".NET 8 sirve los 20 casos detras del hub `:8500` con paridad funcional 1:1 frente a Java."
     },
     {
       "key": "go",

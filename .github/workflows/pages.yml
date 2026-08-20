@@ -1,0 +1,102 @@
+name: Pages
+
+# Publica el sitio del laboratorio en GitHub Pages.
+#
+# El sitio no se versiona: se genera en cada despliegue desde el propio
+# repositorio (`shared/catalog/cases.json` + los 400+ documentos Markdown). Un
+# HTML versionado permitiria que la web afirmara algo distinto de lo que dice el
+# repo, que es el modo de fallo tipico de una landing mantenida aparte.
+#
+# El orden importa: se verifica ANTES de subir el artefacto. GitHub Pages
+# despliega un 404 con el mismo exito que una pagina buena, asi que un enlace
+# roto solo lo descubriria la persona a la que se le mando el enlace.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      # Todo lo que el generador lee. Si algo de esto cambia y no se vuelve a
+      # publicar, el sitio queda contando una version del repositorio que ya no
+      # existe.
+      - "**/*.md"
+      - "shared/catalog/cases.json"
+      - "docs/assets/**"
+      - "dist/**"
+      - "site-src/**"
+      - "scripts/build_site.py"
+      - "scripts/site_markdown.py"
+      - "scripts/check_site_links.py"
+      - "LICENSE"
+      - ".github/workflows/pages.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# Un solo despliegue a la vez, sin cancelar el que este en curso.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Generar y verificar el sitio
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Setup Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with:
+          python-version: "3.12"
+
+      - name: Generar el sitio
+        run: python scripts/build_site.py
+
+      # Enlaces rotos, anchors inexistentes, destinos `.md` y recursos externos.
+      - name: Verificar enlaces y destinos
+        run: python scripts/check_site_links.py
+
+      - name: Resumen
+        shell: bash
+        run: |
+          set -euo pipefail
+          {
+            echo "### 🌐 Sitio generado"
+            echo ""
+            echo "| Dato | Valor |"
+            echo "|---|---|"
+            echo "| Paginas HTML | **$(find site -name '*.html' | wc -l)** |"
+            echo "| Casos en la portada | **$(grep -c 'class="case-card"' site/index.html)** |"
+            echo "| Portada | **$(wc -c < site/index.html) bytes** |"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Configurar Pages
+        uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d  # v6.0.0
+
+      - name: Subir artefacto
+        uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9  # v5.0.0
+        with:
+          path: site
+
+  deploy:
+    name: Publicar
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Desplegar en GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@cd2ce8fcbc39b97be8ca5fce6e763baed58fa128  # v5.0.0

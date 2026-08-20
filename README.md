@@ -10,8 +10,12 @@
 [![Go](https://img.shields.io/badge/Go-1.23-00ADD8?logo=go&logoColor=white)](cases/)
 [![Rust](https://img.shields.io/badge/Rust-1.83-000000?logo=rust&logoColor=white)](cases/)
 [![Status](https://img.shields.io/badge/Estado-Activo-blue)](ROADMAP.md)
+[![Sitio](https://img.shields.io/badge/Sitio-GitHub%20Pages-c7562a?logo=github&logoColor=white)](https://vladimiracunadev-create.github.io/problem-driven-systems-lab/)
 
 Portafolio técnico orientado a problemas reales de software: rendimiento, observabilidad, resiliencia, arquitectura y continuidad operacional. Este repositorio forma parte del ecosistema público de Vladimir Acuña y traduce esa narrativa en escenarios ejecutables, documentados y honestos sobre su madurez real.
+
+> 🌐 **[Explora el laboratorio en la web](https://vladimiracunadev-create.github.io/problem-driven-systems-lab/)** — los 20 casos, los 7 stacks y toda la documentación del
+> repositorio publicados como HTML navegable. Nada que descargar, ningún enlace a `.md`.
 
 ## 🎯 Executive Summary
 

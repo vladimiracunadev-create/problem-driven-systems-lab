@@ -36,3 +36,6 @@ Thumbs.db
 .idea/
 .claude/settings.local.json
 .claude/worktrees/
+
+# Sitio generado (se construye en CI con scripts/build_site.py)
+site/
