@@ -59,7 +59,7 @@ var cases = []caseInfo{
 
 var (
 	dispatchPort = envOr("PORT", "8600")
-	appStack     = envOr("APP_STACK", "Go 1.23")
+	appStack     = envOr("APP_STACK", "Go 1.27")
 	proxies      = map[string]*httputil.ReverseProxy{}
 )
 

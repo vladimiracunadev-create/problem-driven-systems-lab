@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-// Caso 07 — Modernizacion incremental de monolito (strangler) — stack .NET 8.
+// Caso 07 — Modernizacion incremental de monolito (strangler) — stack .NET 10.
 //
 // Espejo del Main.java equivalente.
 // Primitivas .NET distintivas:
@@ -17,7 +17,7 @@ using System.Threading.Tasks;
 internal static class Program
 {
     private const string CaseName = "07 - Modernizacion incremental de monolito";
-    private static readonly string Stack = Environment.GetEnvironmentVariable("APP_STACK") ?? ".NET 8";
+    private static readonly string Stack = Environment.GetEnvironmentVariable("APP_STACK") ?? ".NET 10";
 
     private sealed record Request(string Consumer, string Op, Dictionary<string, string> Payload);
     private sealed record Response(string Result, string RoutedTo, int BlastRadiusScore, int RiskScore);

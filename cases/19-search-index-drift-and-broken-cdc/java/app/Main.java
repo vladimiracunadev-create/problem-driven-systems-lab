@@ -1,4 +1,4 @@
-// Caso 19 — Deriva del indice de busqueda y CDC roto — stack Java 21.
+// Caso 19 — Deriva del indice de busqueda y CDC roto — stack Java 25.
 //
 // Dual-write: la aplicacion escribe en la base y despues en el indice. Cuando la
 // segunda escritura falla —y falla, porque son dos sistemas sin transaccion
@@ -58,7 +58,7 @@ import java.util.concurrent.Executors;
 
 public class Main {
 
-    static final String APP_STACK = System.getenv().getOrDefault("APP_STACK", "Java 21");
+    static final String APP_STACK = System.getenv().getOrDefault("APP_STACK", "Java 25");
     static final String CASE_NAME = "19 - Deriva del indice de busqueda y CDC roto";
     static final String[] TERMS = {"alfa", "beta", "gamma", "delta", "epsilon", "zeta", "eta", "theta"};
 

@@ -12,7 +12,7 @@
 #      o en aislamiento — y la documentacion decia "Node.js 22" para todos.
 #
 #   2. La version que declara la documentacion coincide con la que fija el
-#      Dockerfile. Una tabla que dice "Go 1.23" sobre un `FROM golang:1.22`
+#      Dockerfile. Una tabla que dice "Go 1.27" sobre un `FROM golang:1.22`
 #      es exactamente el tipo de drift que este repositorio se propone no tener.
 #
 # No consulta la red: es determinista y corre en cada PR. La deteccion de
@@ -69,10 +69,10 @@ echo
 CLAIMS=(
   "node|Node.js 22|node:22"
   "python|Python 3.12|python:3.12"
-  "java|Java 21|eclipse-temurin:21"
-  "dotnet|.NET 8|mcr.microsoft.com/dotnet/sdk:8.0"
-  "go|Go 1.23|golang:1.23"
-  "rust|Rust 1.83|rust:1.83"
+  "java|Java 25|eclipse-temurin:25"
+  "dotnet|.NET 10|mcr.microsoft.com/dotnet/sdk:10.0"
+  "go|Go 1.27|golang:1.27"
+  "rust|Rust 1.99|rust:1.99"
 )
 
 echo "[2/2] La documentacion declara la version que el Dockerfile fija"

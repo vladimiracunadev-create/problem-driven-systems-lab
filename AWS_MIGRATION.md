@@ -47,8 +47,8 @@ Mapa de lo que vive hoy en los 5 composes raíz:
 | `pdsl-php-lab` (`:8100`) — dispatcher PHP con 12 procesos `php -S` internos | PHP 8.3 + tini | ECS Fargate Service · Lambda Container |
 | `pdsl-python-lab` (`:8200`) — dispatcher con 12 subprocesos `subprocess.Popen` | Python 3.12 | ECS Fargate Service · Lambda zip |
 | `pdsl-node-lab` (`:8300`) — dispatcher con 12 subprocesos `child_process.spawn` | Node.js 20 | ECS Fargate Service · Lambda zip |
-| `pdsl-java-lab` (`:8400`) — dispatcher con 12 `ProcessBuilder` (`java Main`) | Java 21 (eclipse-temurin) | ECS Fargate Service · Lambda Container |
-| `pdsl-dotnet-lab` (`:8500`) — dispatcher con 12 subprocesos `dotnet` | .NET 8 | ECS Fargate Service · Lambda Container |
+| `pdsl-java-lab` (`:8400`) — dispatcher con 12 `ProcessBuilder` (`java Main`) | Java 25 (eclipse-temurin) | ECS Fargate Service · Lambda Container |
+| `pdsl-dotnet-lab` (`:8500`) — dispatcher con 12 subprocesos `dotnet` | .NET 10 | ECS Fargate Service · Lambda Container |
 | `case01-db`, `case02-db` | postgres:16-alpine | **RDS PostgreSQL** (db.t4g.micro) · Aurora Serverless v2 |
 | `case01-worker` | PHP CLI loop | ECS Fargate Service long-running · EventBridge + Lambda |
 | `case01-prometheus` (`:9091`) | prom/prometheus | **AMP** (Amazon Managed Prometheus) |

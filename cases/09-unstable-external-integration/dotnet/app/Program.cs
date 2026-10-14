@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-// Caso 09 — Integracion externa inestable — stack .NET 8.
+// Caso 09 — Integracion externa inestable — stack .NET 10.
 //
 // Primitivas .NET distintivas:
 //   - SemaphoreSlim como budget de cuota (espejo del Semaphore Java).
@@ -17,7 +17,7 @@ using System.Threading.Tasks;
 internal static class Program
 {
     private const string CaseName = "09 - Integracion externa inestable";
-    private static readonly string Stack = Environment.GetEnvironmentVariable("APP_STACK") ?? ".NET 8";
+    private static readonly string Stack = Environment.GetEnvironmentVariable("APP_STACK") ?? ".NET 10";
     private const int BudgetPerWindow = 5;
 
     private static readonly ConcurrentDictionary<string, string> SnapshotCache = new();

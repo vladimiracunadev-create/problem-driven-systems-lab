@@ -1,4 +1,4 @@
-# rust-dispatcher — un solo contenedor con dispatcher + los casos del lab (Rust 1.83).
+# rust-dispatcher — un solo contenedor con dispatcher + los casos del lab (Rust 1.99).
 #
 # Espejo del patron java-dispatcher / dotnet-dispatcher / go-dispatcher: el
 # stage de build compila los casos y el runtime los junta en /app/cases/NN/.
@@ -7,7 +7,7 @@
 # crates por separado haria que rusqlite (casos 01 y 02) se compile dos veces —
 # ~80 s cada una. Con workspace, las dependencias compartidas se compilan una
 # sola vez y todos los binarios salen a un target/ comun.
-FROM rust:1.83-alpine AS build
+FROM rust:1.99-alpine AS build
 RUN apk add --no-cache musl-dev
 WORKDIR /src
 
@@ -72,6 +72,6 @@ COPY --from=build /src/target/release/case20 /app/cases/20/case20
 
 EXPOSE 8700
 ENV PORT=8700
-ENV APP_STACK="Rust 1.83"
+ENV APP_STACK="Rust 1.99"
 
 ENTRYPOINT ["/app/dispatcher"]

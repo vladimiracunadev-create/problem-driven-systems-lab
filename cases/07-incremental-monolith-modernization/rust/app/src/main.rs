@@ -1,4 +1,4 @@
-// Caso 07 — Modernizacion incremental de monolito (strangler) — stack Rust 1.83.
+// Caso 07 — Modernizacion incremental de monolito (strangler) — stack Rust 1.99.
 //
 // Legacy: el cambio toca el shared_schema acoplado, blast radius alto.
 // Strangler: una tabla de routing por consumer decide si la operacion va al
@@ -71,7 +71,7 @@ static MIGRATION_PROGRESS: LazyLock<Vec<(&'static str, i32)>> = LazyLock::new(||
 });
 
 fn stack() -> String {
-    std::env::var("APP_STACK").unwrap_or_else(|_| "Rust 1.83".to_string())
+    std::env::var("APP_STACK").unwrap_or_else(|_| "Rust 1.99".to_string())
 }
 
 fn main() {

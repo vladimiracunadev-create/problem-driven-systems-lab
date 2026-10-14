@@ -1,4 +1,4 @@
-// Caso 05 — Presion de memoria y fugas de recursos (stack Rust 1.83).
+// Caso 05 — Presion de memoria y fugas de recursos (stack Rust 1.99).
 //
 // Legacy: Vec global que crece sin limite por request → fuga real.
 // Optimized: cache LRU acotada con VecDeque + HashMap → memoria estable.
@@ -90,7 +90,7 @@ static OPTIMIZED_CACHE: LazyLock<Mutex<Lru>> = LazyLock::new(|| {
 });
 
 fn stack() -> String {
-    std::env::var("APP_STACK").unwrap_or_else(|_| "Rust 1.83".to_string())
+    std::env::var("APP_STACK").unwrap_or_else(|_| "Rust 1.99".to_string())
 }
 
 fn main() {

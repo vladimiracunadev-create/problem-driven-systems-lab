@@ -119,19 +119,19 @@ El diagnóstico más corto de los siete —tres líneas de álgebra de conjuntos
 
 El **único stack donde el bug se produce por no escribir algo**: el `await` que falta. A favor, su modelo de un solo hilo hace atómicos base y outbox sin ningún lock. Ver [`node/README.md`](node/README.md). Modo aislado: `8219`. Hub: `http://localhost:8300/19/`.
 
-### ☕ Java 21
+### ☕ Java 25
 
 `@Transactional` hace que el dual-write **parezca** atómico, y nada en el código marca dónde termina su alcance. A favor, `ConcurrentSkipListMap.tailMap` es la mejor expresión del outbox del set. Ver [`java/README.md`](java/README.md). Modo aislado: `8419`. Hub: `http://localhost:8400/19/`.
 
-### 🔵 .NET 8
+### 🔵 .NET 10
 
 `Except` y `Join` expresan las tres caras como consultas tipadas. La trampa: **LINQ es perezoso**, y los `.ToList()` son lo que fija el resultado antes de mutar. Ver [`dotnet/README.md`](dotnet/README.md). Modo aislado: `8519`. Hub: `http://localhost:8500/19/`.
 
-### 🐹 Go 1.23
+### 🐹 Go 1.27
 
 El `_ =` es una declaración de intención auditable, y `errcheck` está en casi todos los CI. En contra: **sin tipo conjunto**, el diagnóstico se escribe a mano. Ver [`go/README.md`](go/README.md). Modo aislado: `8619`. Hub: `http://localhost:8600/19/`.
 
-### 🦀 Rust 1.83
+### 🦀 Rust 1.99
 
 El **único con las dos piezas**: `#[must_use]` hace que ignorar la escritura fallida no compile sin escribirlo a propósito, y `HashSet` da el diff de tres caras sin recorrer a mano. Ver [`rust/README.md`](rust/README.md). Modo aislado: `8719`. Hub: `http://localhost:8700/19/`.
 
@@ -164,10 +164,10 @@ El indicador honesto no es el error rate del índice —ya es cero, porque el er
 | 🐘 PHP 8.3 | `OPERATIVO` (`array_diff_key` + checkpoint durable por obligación) |
 | 🐍 Python 3.12 | `OPERATIVO` (álgebra de conjuntos: el diff más corto de los siete) |
 | 🟢 Node.js 22 | `OPERATIVO` (`Map`/`Set`; el bug es el `await` que falta) |
-| ☕ Java 21 | `OPERATIVO` (`ConcurrentSkipListMap.tailMap` + `removeAll`/`retainAll`) |
-| 🔵 .NET 8 | `OPERATIVO` (`Except`/`Join` tipados; la pereza como trampa) |
-| 🐹 Go 1.23 | `OPERATIVO` (`_ =` auditable + `errcheck`; sin tipo conjunto) |
-| 🦀 Rust 1.83 | `OPERATIVO` (`#[must_use]` + `HashSet`: el único con las dos piezas) |
+| ☕ Java 25 | `OPERATIVO` (`ConcurrentSkipListMap.tailMap` + `removeAll`/`retainAll`) |
+| 🔵 .NET 10 | `OPERATIVO` (`Except`/`Join` tipados; la pereza como trampa) |
+| 🐹 Go 1.27 | `OPERATIVO` (`_ =` auditable + `errcheck`; sin tipo conjunto) |
+| 🦀 Rust 1.99 | `OPERATIVO` (`#[must_use]` + `HashSet`: el único con las dos piezas) |
 
 ---
 

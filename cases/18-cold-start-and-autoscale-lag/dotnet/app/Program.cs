@@ -11,7 +11,7 @@ using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
 
-// Caso 18 — Arranque en frio y retraso del autoescalado — stack .NET 8.
+// Caso 18 — Arranque en frio y retraso del autoescalado — stack .NET 10.
 //
 // Frio: el autoescalador levanta instancias cuando el trafico ya subio. El
 // proceso queda vivo al instante y /health responde 200 — pero la instancia no
@@ -56,7 +56,7 @@ using System.Threading.Tasks;
 internal static class Program
 {
     private const string CaseName = "18 - Arranque en frio y retraso del autoescalado";
-    private static readonly string Stack = Environment.GetEnvironmentVariable("APP_STACK") ?? ".NET 8";
+    private static readonly string Stack = Environment.GetEnvironmentVariable("APP_STACK") ?? ".NET 10";
 
     private const int WorkIters = 250_000;        // calibrado para ~0.3 ms caliente
     private const int InitTableRows = 2_000_000;  // parte de CPU de la init: trabajo real

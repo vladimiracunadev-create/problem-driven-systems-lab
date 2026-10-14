@@ -1,7 +1,7 @@
 # Caso 17 en Go — binario estatico, imagen final minima.
 #
 # Solo stdlib: no hay go.sum que resolver ni modulos que descargar.
-FROM golang:1.23-alpine AS build
+FROM golang:1.27-alpine AS build
 WORKDIR /src
 
 COPY app/go.mod ./

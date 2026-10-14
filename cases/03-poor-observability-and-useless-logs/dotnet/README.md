@@ -1,4 +1,4 @@
-# 🔵 Caso 03 — .NET 8
+# 🔵 Caso 03 — .NET 10
 
 <!-- nav-stack -->
 [⬅️ Caso 03](../README.md) · [⚖️ Comparativa de los 7 stacks](../comparison.md) · [🔵 Perfil de .NET](../../../docs/languages/dotnet.md) · [🧬 Todos los perfiles](../../../docs/languages/README.md)
@@ -10,7 +10,7 @@ Stack .NET operativo del caso 03. Contraste entre logs opacos (`Console.WriteLin
 
 | Primitiva | Rol |
 |---|---|
-| `AsyncLocal<RequestContext>` | Contexto de correlation ID que fluye por `await` sin propagar manualmente. Equivalente moderno del `ThreadLocal` Java en codigo async. |
+| `AsyncLocal<RequestContext>` | Contexto de correlation ID que fluye por `await` sin propagar manualmente. Contraste asincronico con `ScopedValue` de Java 25. |
 | `Guid.NewGuid()` | Generacion de `correlation_id` por request. |
 | `System.Text.Json` (BCL) | Logs estructurados serializados sin libreria externa. |
 | `record RequestContext` | Snapshot inmutable del contexto. |
@@ -65,4 +65,4 @@ curl http://127.0.0.1:853/health
 
 ## Por que `AsyncLocal<T>` y no `ThreadLocal<T>`
 
-`ThreadLocal<T>` no sobrevive a un `await` que retoma en otro thread del `ThreadPool`. `AsyncLocal<T>` es la primitiva que el CLR sigue por `ExecutionContext` a traves de cada `await`. Es exactamente el equivalente del `ScopedValue` JDK21 o de `contextvars` en Python — codifica "el contexto sigue al flujo logico, no al thread fisico". Para un pipeline HTTP async es la unica opcion correcta.
+`ThreadLocal<T>` no sobrevive a un `await` que retoma en otro thread del `ThreadPool`. `AsyncLocal<T>` es la primitiva que el CLR sigue por `ExecutionContext` a traves de cada `await`. Resuelve el mismo problema que `ScopedValue` en Java 25 o `contextvars` en Python, pero con semantica mutable y orientada al flujo asincronico. Para este pipeline HTTP async es la opcion correcta.

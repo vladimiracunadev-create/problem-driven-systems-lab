@@ -1,9 +1,9 @@
-# dotnet-dispatcher — un solo contenedor con dispatcher + los casos del lab (.NET 8).
+# dotnet-dispatcher — un solo contenedor con dispatcher + los casos del lab (.NET 10).
 #
 # Espejo del patron java-dispatcher: stage build compila dispatcher y cada
 # CaseNN.csproj por separado, stage runtime los junta en /app/{dispatcher,cases/NN}.
 
-FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /src
 
 # Copiar cada csproj primero para aprovechar cache de restore
@@ -74,7 +74,7 @@ RUN dotnet publish /src/dispatcher/Dispatcher.csproj -c Release --no-self-contai
  && dotnet publish /src/case19/Case19.csproj         -c Release --no-self-contained -o /publish/case19 \
  && dotnet publish /src/case20/Case20.csproj         -c Release --no-self-contained -o /publish/case20
 
-FROM mcr.microsoft.com/dotnet/aspnet:8.0
+FROM mcr.microsoft.com/dotnet/aspnet:10.0
 WORKDIR /app
 
 # wget para healthcheck del compose
@@ -105,6 +105,6 @@ COPY --from=build /publish/case20     /app/cases/20
 
 EXPOSE 8500
 ENV PORT=8500
-ENV APP_STACK=".NET 8"
+ENV APP_STACK=".NET 10"
 
 ENTRYPOINT ["dotnet", "/app/dispatcher/Dispatcher.dll"]

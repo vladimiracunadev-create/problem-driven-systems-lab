@@ -38,8 +38,8 @@ Vas a ver: tabla de estado actual (7 stacks operativos, 140 endpoints), catálog
 
 ```bash
 # Elegí cualquiera de los 5
-docker compose -f compose.dotnet.yml up -d --build   # .NET 8
-docker compose -f compose.java.yml   up -d --build   # Java 21
+docker compose -f compose.dotnet.yml up -d --build   # .NET 10
+docker compose -f compose.java.yml   up -d --build   # Java 25
 docker compose -f compose.nodejs.yml up -d --build   # Node 20
 docker compose -f compose.python.yml up -d --build   # Python 3.12
 docker compose -f compose.root.yml   up -d --build   # PHP 8.3 + portal + Prometheus + Grafana
@@ -109,7 +109,7 @@ Los stacks no-PHP usan exclusivamente librería estándar — `HttpServer` JDK, 
 |---|---|---|
 | 01 | API lenta bajo carga | Patrón worker concurrente + cache + readers no bloqueados. PHP corre contra PostgreSQL real con contención observable; los otros 4 stacks aplican el mismo patrón con substrato simulado (asimetría declarada). |
 | 02 | N+1 y bottlenecks DB | **Los 7 stacks ejecutan N+1 real contra SQL embebido.** `db_hits` mide ejecuciones reales en el motor. Caso con fidelidad universal. |
-| 03 | Observabilidad deficiente | `correlation_id` propagado en pipeline async. `ThreadLocal<RequestContext>` en Java, `AsyncLocal<RequestContext>` en .NET. |
+| 03 | Observabilidad deficiente | `correlation_id` propagado en pipeline async. `ScopedValue<RequestContext>` en Java, `AsyncLocal<RequestContext>` en .NET. |
 | 04 | Timeout chain y retry storms | Circuit breaker con CAS atómico, `AbortController` cooperativo, `CompletableFuture.orTimeout`, `CancellationTokenSource` + `Interlocked.CompareExchange`. |
 | 05 | Memory pressure y leaks | LRU manual con `LinkedHashMap.removeEldestEntry` (Java), `Dictionary + LinkedList` (.NET), heap V8 + RSS (Node), `tracemalloc` (Python). |
 | 06 | Pipeline roto y delivery frágil | Preflight + rollback con state machine. `record` types + `with`-expressions en .NET. |
@@ -166,7 +166,7 @@ Los stacks no-PHP usan exclusivamente librería estándar — `HttpServer` JDK, 
 
 ### Observabilidad real (caso 03)
 
-- `correlation_id` propagado en pipeline async sin ensuciar la firma de los métodos: `ThreadLocal<RequestContext>` en Java, `AsyncLocal<RequestContext>` en .NET, contexto explícito en Node/Python/PHP.
+- `correlation_id` propagado en pipeline async sin ensuciar la firma de los métodos: `ScopedValue<RequestContext>` en Java, `AsyncLocal<RequestContext>` en .NET, contexto explícito en Node/Python/PHP.
 - Logs estructurados con shape consistente entre stacks (`{timestamp, correlation_id, level, msg, ...attrs}`).
 - Stack PHP además exporta Prometheus + Grafana real (casos 01 y 02).
 

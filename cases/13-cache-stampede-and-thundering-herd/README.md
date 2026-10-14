@@ -103,19 +103,19 @@ Dict de vuelos en curso protegido por `Lock`, con un `threading.Event` por clave
 
 `Map<key, Promise>`: la Promise **es** el single-flight. Tres líneas, y el orden entre el `Map.set` y el primer `await` es toda la garantía. Ver [`node/README.md`](node/README.md). Modo aislado: `8213`. Hub: `http://localhost:8300/13/`.
 
-### ☕ Java 21
+### ☕ Java 25
 
 `ConcurrentHashMap.computeIfAbsent` es atómico por clave: no hay ventana check-then-act que ordenar a mano. El trabajo caro corre en otro executor para no dejar el bin tomado. Ver [`java/README.md`](java/README.md). Modo aislado: `8413`. Hub: `http://localhost:8400/13/`.
 
-### 🔵 .NET 8
+### 🔵 .NET 10
 
 `GetOrAdd` **no** garantiza fábrica única — la garantía la aporta `Lazy<Task<T>>` con `ExecutionAndPublication`. Es el contraste directo con Java. Ver [`dotnet/README.md`](dotnet/README.md). Modo aislado: `8513`. Hub: `http://localhost:8500/13/`.
 
-### 🐹 Go 1.23
+### 🐹 Go 1.27
 
 `singleflight` escrito a mano en 25 líneas de stdlib: `sync.WaitGroup` usado al revés — el líder hace `Add(1)`, los seguidores `Wait()`. Ver [`go/README.md`](go/README.md). Modo aislado: `8613`. Hub: `http://localhost:8600/13/`.
 
-### 🦀 Rust 1.83
+### 🦀 Rust 1.99
 
 Sin `Future` ejecutable en la `std`, el patrón se construye con `Mutex` + `Condvar` + `wait_while`. El `Arc<Flight>` obligatorio impide el use-after-remove que en los otros seis es responsabilidad del programador. Ver [`rust/README.md`](rust/README.md). Modo aislado: `8713`. Hub: `http://localhost:8700/13/`.
 
@@ -143,10 +143,10 @@ Convierte una caída nocturna recurrente e inexplicable en un número que se pue
 | 🐘 PHP 8.3 | `OPERATIVO` (`flock` + double-checked locking) |
 | 🐍 Python 3.12 | `OPERATIVO` (dict de vuelos + `threading.Event`) |
 | 🟢 Node.js 22 | `OPERATIVO` (`Map<key, Promise>`) |
-| ☕ Java 21 | `OPERATIVO` (`computeIfAbsent` atómico + `CompletableFuture`) |
-| 🔵 .NET 8 | `OPERATIVO` (`Lazy<Task<T>>` con `ExecutionAndPublication`) |
-| 🐹 Go 1.23 | `OPERATIVO` (`singleflight` a mano con `sync.WaitGroup`) |
-| 🦀 Rust 1.83 | `OPERATIVO` (`Arc<Flight>` con `Mutex` + `Condvar`) |
+| ☕ Java 25 | `OPERATIVO` (`computeIfAbsent` atómico + `CompletableFuture`) |
+| 🔵 .NET 10 | `OPERATIVO` (`Lazy<Task<T>>` con `ExecutionAndPublication`) |
+| 🐹 Go 1.27 | `OPERATIVO` (`singleflight` a mano con `sync.WaitGroup`) |
+| 🦀 Rust 1.99 | `OPERATIVO` (`Arc<Flight>` con `Mutex` + `Condvar`) |
 
 ---
 

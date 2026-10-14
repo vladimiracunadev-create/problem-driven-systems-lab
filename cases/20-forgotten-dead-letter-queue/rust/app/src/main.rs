@@ -1,4 +1,4 @@
-//! Caso 20 — La dead letter queue olvidada — stack Rust 1.83.
+//! Caso 20 — La dead letter queue olvidada — stack Rust 1.99.
 //!
 //! Cierra el arco que abrio el caso 15: alli la DLQ **nace**, como la politica de
 //! rechazo que salva al productor de bloquearse. Aca se ve que pasa cuando nadie
@@ -590,7 +590,7 @@ fn handle(mut stream: TcpStream, stack: &str) {
 
 fn main() {
     let _ = start();
-    let stack = std::env::var("APP_STACK").unwrap_or_else(|_| "Rust 1.83".to_string());
+    let stack = std::env::var("APP_STACK").unwrap_or_else(|_| "Rust 1.99".to_string());
     let port = std::env::var("PORT").unwrap_or_else(|_| "8080".to_string());
     let listener = TcpListener::bind(format!("0.0.0.0:{}", port)).expect("bind");
     println!("Servidor Rust escuchando en {}", port);

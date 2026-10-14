@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-// Caso 12 — Punto unico de conocimiento y riesgo operacional — stack .NET 8.
+// Caso 12 — Punto unico de conocimiento y riesgo operacional — stack .NET 10.
 //
 // Primitivas .NET distintivas:
 //   - Null-conditional ?. + null-coalescing ?? como runbook codificado
@@ -17,7 +17,7 @@ using System.Threading.Tasks;
 internal static class Program
 {
     private const string CaseName = "12 - Punto unico de conocimiento";
-    private static readonly string Stack = Environment.GetEnvironmentVariable("APP_STACK") ?? ".NET 8";
+    private static readonly string Stack = Environment.GetEnvironmentVariable("APP_STACK") ?? ".NET 10";
     private const int MaxIncidents = 30;
 
     private sealed record Owner(string Name, bool Available, Dictionary<string, string> Runbook);

@@ -1,4 +1,4 @@
-// Caso 05 — Presion de memoria y fugas de recursos (stack Go 1.23).
+// Caso 05 — Presion de memoria y fugas de recursos (stack Go 1.27).
 //
 // Legacy: slice global que crece sin limite por request → fuga real
 // cross-request. Optimized: cache LRU acotada → memoria estable.
@@ -40,7 +40,7 @@ const (
 	optimizedCap = 1000
 )
 
-var stack = envOr("APP_STACK", "Go 1.23")
+var stack = envOr("APP_STACK", "Go 1.27")
 
 var (
 	legacyRequests     int64

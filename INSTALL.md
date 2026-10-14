@@ -34,10 +34,10 @@ Cada lenguaje tiene su propio archivo compose en la raíz. Un solo comando levan
 | [`compose.root.yml`](compose.root.yml) | PHP 8.3 | `8080` portal · `8100` PHP hub · `9091` Prometheus · `3001` Grafana | `OPERATIVO` |
 | [`compose.python.yml`](compose.python.yml) | Python 3.12 | `8200` Python hub | `OPERATIVO` |
 | [`compose.nodejs.yml`](compose.nodejs.yml) | Node.js 22 | `8300` Node hub | `OPERATIVO` |
-| [`compose.java.yml`](compose.java.yml) | Java 21 | `8400` Java hub | `OPERATIVO` |
-| [`compose.dotnet.yml`](compose.dotnet.yml) | .NET 8 | `8500` .NET hub | `OPERATIVO` |
-| [`compose.go.yml`](compose.go.yml) | Go 1.23 | `8600` Go hub | `OPERATIVO` |
-| [`compose.rust.yml`](compose.rust.yml) | Rust 1.83 | `8700` Rust hub | `OPERATIVO` |
+| [`compose.java.yml`](compose.java.yml) | Java 25 | `8400` Java hub | `OPERATIVO` |
+| [`compose.dotnet.yml`](compose.dotnet.yml) | .NET 10 | `8500` .NET hub | `OPERATIVO` |
+| [`compose.go.yml`](compose.go.yml) | Go 1.27 | `8600` Go hub | `OPERATIVO` |
+| [`compose.rust.yml`](compose.rust.yml) | Rust 1.99 | `8700` Rust hub | `OPERATIVO` |
 
 ### Topologia de puertos (que levanta cada compose)
 

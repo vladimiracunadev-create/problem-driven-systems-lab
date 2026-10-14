@@ -58,9 +58,8 @@ const spawnedProcs = [];
 const startCaseServers = () => {
   for (const [caseId, info] of Object.entries(CASES)) {
     const env = { ...process.env, PORT: String(info.port), APP_STACK };
-    // `--experimental-sqlite` habilita el built-in `node:sqlite` (caso 02).
-    // Para los otros 11 casos es un no-op inofensivo en Node 22.x.
-    const proc = spawn(process.execPath, ['--experimental-sqlite', info.server], {
+    // `node:sqlite` esta habilitado por defecto desde Node 22.13.
+    const proc = spawn(process.execPath, [info.server], {
       env,
       stdio: ['ignore', 'ignore', 'ignore'],
     });

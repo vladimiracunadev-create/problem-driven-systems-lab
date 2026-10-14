@@ -8,7 +8,7 @@ using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
 
-// Caso 15 — Backpressure en colas de mensajes — stack .NET 8.
+// Caso 15 — Backpressure en colas de mensajes — stack .NET 10.
 //
 // Unbounded: `Channel.CreateUnbounded<T>()`. El productor nunca se entera de que
 // el consumidor no da abasto.
@@ -40,7 +40,7 @@ using System.Threading.Tasks;
 internal static class Program
 {
     private const string CaseName = "15 - Backpressure en colas de mensajes";
-    private static readonly string Stack = Environment.GetEnvironmentVariable("APP_STACK") ?? ".NET 8";
+    private static readonly string Stack = Environment.GetEnvironmentVariable("APP_STACK") ?? ".NET 10";
 
     private const int MsgBytes = 2048;
     private static readonly string[] Policies = { "block", "drop_oldest", "dead_letter" };

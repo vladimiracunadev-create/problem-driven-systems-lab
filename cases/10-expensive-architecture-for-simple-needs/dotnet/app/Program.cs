@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-// Caso 10 — Arquitectura cara para algo simple — stack .NET 8.
+// Caso 10 — Arquitectura cara para algo simple — stack .NET 10.
 //
 // Primitivas .NET distintivas:
 //   - Stopwatch para medir elapsed real por request.
@@ -16,7 +16,7 @@ using System.Threading.Tasks;
 internal static class Program
 {
     private const string CaseName = "10 - Arquitectura cara para algo simple";
-    private static readonly string Stack = Environment.GetEnvironmentVariable("APP_STACK") ?? ".NET 8";
+    private static readonly string Stack = Environment.GetEnvironmentVariable("APP_STACK") ?? ".NET 10";
 
     private static readonly Dictionary<string, long> DirectStore = new();
     private static readonly List<string> Decisions = new();

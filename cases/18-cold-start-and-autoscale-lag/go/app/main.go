@@ -1,4 +1,4 @@
-// Caso 18 — Arranque en frio y retraso del autoescalado — stack Go 1.23.
+// Caso 18 — Arranque en frio y retraso del autoescalado — stack Go 1.27.
 //
 // Frio: el autoescalador levanta instancias cuando el trafico ya subio. El
 // proceso queda vivo al instante y /health responde 200 — pero la instancia no
@@ -53,7 +53,7 @@ const (
 )
 
 var (
-	appStack = envOr("APP_STACK", "Go 1.23")
+	appStack = envOr("APP_STACK", "Go 1.27")
 	caseName = "18 - Arranque en frio y retraso del autoescalado"
 	start    = time.Now()
 )

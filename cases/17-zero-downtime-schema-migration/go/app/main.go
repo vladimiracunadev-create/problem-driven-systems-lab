@@ -1,4 +1,4 @@
-// Caso 17 — Migracion de esquema sin downtime — stack Go 1.23.
+// Caso 17 — Migracion de esquema sin downtime — stack Go 1.27.
 //
 // Blocking: un `ALTER TABLE` toma el lock exclusivo durante toda la migracion.
 // Expand-contract: cuatro fases, y el lock se toma y se suelta en cada lote.
@@ -45,7 +45,7 @@ const (
 	readTimeoutMs  = 120
 )
 
-var stack = envOr("APP_STACK", "Go 1.23")
+var stack = envOr("APP_STACK", "Go 1.27")
 
 var (
 	rw sync.RWMutex

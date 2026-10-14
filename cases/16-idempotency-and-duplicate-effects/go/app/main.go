@@ -1,4 +1,4 @@
-// Caso 16 — Idempotencia y efectos duplicados — stack Go 1.23.
+// Caso 16 — Idempotencia y efectos duplicados — stack Go 1.27.
 //
 // Unsafe: N reintentos del mismo pago aplican N cargos.
 // Idempotent: `Idempotency-Key` persistida + outbox pattern.
@@ -43,7 +43,7 @@ const (
 	maxRows         = 200
 )
 
-var stack = envOr("APP_STACK", "Go 1.23")
+var stack = envOr("APP_STACK", "Go 1.27")
 
 type entry struct {
 	mu       sync.Mutex

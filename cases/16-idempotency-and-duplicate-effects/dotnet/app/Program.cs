@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-// Caso 16 — Idempotencia y efectos duplicados — stack .NET 8.
+// Caso 16 — Idempotencia y efectos duplicados — stack .NET 10.
 //
 // Unsafe: N reintentos del mismo pago aplican N cargos.
 // Idempotent: `Idempotency-Key` persistida + outbox pattern.
@@ -36,7 +36,7 @@ using System.Threading.Tasks;
 internal static class Program
 {
     private const string CaseName = "16 - Idempotencia y efectos duplicados";
-    private static readonly string Stack = Environment.GetEnvironmentVariable("APP_STACK") ?? ".NET 8";
+    private static readonly string Stack = Environment.GetEnvironmentVariable("APP_STACK") ?? ".NET 10";
 
     private const long DedupeWindowMs = 24L * 60 * 60 * 1000;
 

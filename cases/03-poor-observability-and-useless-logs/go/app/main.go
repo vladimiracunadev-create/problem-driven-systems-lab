@@ -1,4 +1,4 @@
-// Caso 03 — Observabilidad deficiente y logs inutiles (stack Go 1.23).
+// Caso 03 — Observabilidad deficiente y logs inutiles (stack Go 1.27).
 //
 // Legacy: log.Printf sin correlation, sin contexto. Errores opacos.
 // Observable: log estructurado JSON con correlation_id propagado, mas /logs
@@ -7,7 +7,7 @@
 // Primitivas Go distintivas, y el contraste que este caso hace visible:
 //
 //   - context.Context es LA via idiomatica de Go para propagar valores con
-//     alcance de request. No es un ThreadLocal (Java) ni un AsyncLocal (.NET):
+//     alcance de request. No es un ScopedValue (Java) ni un AsyncLocal (.NET):
 //     el contexto viaja como PARAMETRO EXPLICITO. Eso tiene una consecuencia
 //     concreta — una funcion que no recibe ctx no puede leer el correlation_id
 //     por accidente, y el compilador lo hace evidente. En Java/.NET el contexto
@@ -39,7 +39,7 @@ const (
 	maxLogEntries = 200
 )
 
-var stack = envOr("APP_STACK", "Go 1.23")
+var stack = envOr("APP_STACK", "Go 1.27")
 
 var (
 	legacyRequests     int64

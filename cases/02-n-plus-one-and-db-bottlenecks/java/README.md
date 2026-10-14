@@ -1,4 +1,4 @@
-# ☕ Caso 02 — Java 21 + SQLite (sqlite-jdbc)
+# ☕ Caso 02 — Java 25 + SQLite (sqlite-jdbc)
 
 <!-- nav-stack -->
 [⬅️ Caso 02](../README.md) · [⚖️ Comparativa de los 7 stacks](../comparison.md) · [☕ Perfil de Java](../../../docs/languages/java.md) · [🧬 Todos los perfiles](../../../docs/languages/README.md)

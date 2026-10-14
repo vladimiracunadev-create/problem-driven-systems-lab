@@ -1,4 +1,4 @@
-// Caso 10 — Arquitectura cara para un problema simple — stack Go 1.23.
+// Caso 10 — Arquitectura cara para un problema simple — stack Go 1.27.
 //
 // Complex: N hops simulados con serializacion costosa en cada uno, alto CPU.
 // Right-sized: lookup directo en un map, O(1), CPU minimo.
@@ -32,7 +32,7 @@ import (
 
 const caseName = "10 - Arquitectura cara para algo simple"
 
-var stack = envOr("APP_STACK", "Go 1.23")
+var stack = envOr("APP_STACK", "Go 1.27")
 
 var (
 	complexCalls    int64

@@ -127,19 +127,19 @@ Clasifica en cuatro líneas y encadena causas desde la 3.0. El peligro está a u
 
 El más débil del set justo donde el caso pega: **`instanceof` es frágil por diseño** —se rompe entre copias de paquete, workers y bibliotecas nativas— y la alternativa práctica es comparar strings. Ver [`node/README.md`](node/README.md). Modo aislado: `8220`. Hub: `http://localhost:8300/20/`.
 
-### ☕ Java 21
+### ☕ Java 25
 
 La jerarquía **`sealed`** es la clasificación más expresiva del set. Lo que pierde: clasificar obliga a capturar, y capturar acorta la pila que la DLQ necesita. Ver [`java/README.md`](java/README.md). Modo aislado: `8420`. Hub: `http://localhost:8400/20/`.
 
-### 🔵 .NET 8
+### 🔵 .NET 10
 
 Los filtros **`catch (Ex e) when (...)`** son la única primitiva del laboratorio que decide **antes de desenrollar la pila**: el registro de DLQ conserva el punto de falla original. Ver [`dotnet/README.md`](dotnet/README.md). Modo aislado: `8520`. Hub: `http://localhost:8500/20/`.
 
-### 🐹 Go 1.23
+### 🐹 Go 1.27
 
 `errors.Is`/`As` sobre cadenas `%w`: el contexto se acumula sin borrar la causa y sobrevive a los límites de paquete. Sin exhaustividad, una clase nueva cae en el camino por defecto. Ver [`go/README.md`](go/README.md). Modo aislado: `8620`. Hub: `http://localhost:8600/20/`.
 
-### 🦀 Rust 1.83
+### 🦀 Rust 1.99
 
 El **`enum` con `match` exhaustivo**: una clase de error nueva no compila hasta que alguien decida qué hacer con ella. Y `panic!` como canal separado de `Result` impide estructuralmente que un bug del consumidor termine en la DLQ. Ver [`rust/README.md`](rust/README.md). Modo aislado: `8720`. Hub: `http://localhost:8700/20/`.
 
@@ -172,10 +172,10 @@ El indicador honesto no es `dlq_depth` sino **`dlq_oldest_msg_age_ms`**: mil men
 | 🐘 PHP 8.3 | `OPERATIVO` (`catch (A\|B)` + `Throwable` + drenaje por cron) |
 | 🐍 Python 3.12 | `OPERATIVO` (jerarquía de excepciones + `raise ... from`) |
 | 🟢 Node.js 22 | `OPERATIVO` (`instanceof` frágil + `error.cause` de ES2022) |
-| ☕ Java 21 | `OPERATIVO` (jerarquía `sealed ... permits` + multi-catch) |
-| 🔵 .NET 8 | `OPERATIVO` (filtros `when (...)`: decide sin desenrollar) |
-| 🐹 Go 1.23 | `OPERATIVO` (`errors.Is` / `errors.As` sobre cadenas `%w`) |
-| 🦀 Rust 1.83 | `OPERATIVO` (`enum` + `match` exhaustivo; `panic!` ≠ `Result`) |
+| ☕ Java 25 | `OPERATIVO` (jerarquía `sealed ... permits` + multi-catch) |
+| 🔵 .NET 10 | `OPERATIVO` (filtros `when (...)`: decide sin desenrollar) |
+| 🐹 Go 1.27 | `OPERATIVO` (`errors.Is` / `errors.As` sobre cadenas `%w`) |
+| 🦀 Rust 1.99 | `OPERATIVO` (`enum` + `match` exhaustivo; `panic!` ≠ `Result`) |
 
 ---
 

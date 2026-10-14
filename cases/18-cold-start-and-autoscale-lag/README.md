@@ -118,19 +118,19 @@ Sin JIT: la curva es plana porque no hay nada que calentar. Y **el único stack 
 
 V8 optimiza en capas de verdad, pero el cold start de Node no está ahí: está en el **grafo de `require`**, que este caso no alcanza. El número es honesto e incompleto, y por eso se dice. Ver [`node/README.md`](node/README.md). Modo aislado: `8218`. Hub: `http://localhost:8300/18/`.
 
-### ☕ Java 21
+### ☕ Java 25
 
 **51,9x medidos.** El arranque en frío canónico, y el único donde la lentitud posterior a estar «listo» realimenta al autoescalador. La caja de herramientas más profunda, y ninguna activada por defecto. Ver [`java/README.md`](java/README.md). Modo aislado: `8418`. Hub: `http://localhost:8400/18/`.
 
-### 🔵 .NET 8
+### 🔵 .NET 10
 
 El mismo problema que Java con la respuesta **en la caja**: `PublishReadyToRun`, `TieredPGO`, `PublishAot`. Tres líneas del `.csproj`. Ver [`dotnet/README.md`](dotnet/README.md). Modo aislado: `8518`. Hub: `http://localhost:8500/18/`.
 
-### 🐹 Go 1.23
+### 🐹 Go 1.27
 
 No gana por rápido: gana por **no tener nada que calentar**. Y `sync.Once` es a la vez la primitiva correcta y la trampa, si se dispara con tráfico en vez de con el arranque. Ver [`go/README.md`](go/README.md). Modo aislado: `8618`. Hub: `http://localhost:8600/18/`.
 
-### 🦀 Rust 1.83
+### 🦀 Rust 1.99
 
 La curva más plana, y `OnceLock` haciendo que el estado «todavía no lista» sea **inalcanzable por tipos**, no solo improbable. El reverso exacto del [caso 17](../17-zero-downtime-schema-migration/README.md). Ver [`rust/README.md`](rust/README.md). Modo aislado: `8718`. Hub: `http://localhost:8700/18/`.
 
@@ -161,10 +161,10 @@ El indicador honesto no es cuánto tarda en arrancar, sino **`health_vs_ready_ga
 | 🐘 PHP 8.3 | `OPERATIVO` (`opcache` + `pm.start_servers`; cold start en cada petición) |
 | 🐍 Python 3.12 | `OPERATIVO` (sin JIT; imports diferidos como única palanca) |
 | 🟢 Node.js 22 | `OPERATIVO` (V8 en capas; el costo real está en `require`) |
-| ☕ Java 21 | `OPERATIVO` (compilación en capas — **51,9x medidos**) |
-| 🔵 .NET 8 | `OPERATIVO` (`PublishReadyToRun` / `TieredPGO` / `PublishAot`) |
-| 🐹 Go 1.23 | `OPERATIVO` (binario AOT + `sync.Once`) |
-| 🦀 Rust 1.83 | `OPERATIVO` (AOT sin runtime + `OnceLock` con garantía de tipo) |
+| ☕ Java 25 | `OPERATIVO` (compilación en capas — **51,9x medidos**) |
+| 🔵 .NET 10 | `OPERATIVO` (`PublishReadyToRun` / `TieredPGO` / `PublishAot`) |
+| 🐹 Go 1.27 | `OPERATIVO` (binario AOT + `sync.Once`) |
+| 🦀 Rust 1.99 | `OPERATIVO` (AOT sin runtime + `OnceLock` con garantía de tipo) |
 
 ---
 

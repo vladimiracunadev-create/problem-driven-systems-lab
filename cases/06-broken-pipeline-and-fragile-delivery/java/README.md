@@ -1,4 +1,4 @@
-# ☕ Caso 06 — Java 21
+# ☕ Caso 06 — Java 25
 
 <!-- nav-stack -->
 [⬅️ Caso 06](../README.md) · [⚖️ Comparativa de los 7 stacks](../comparison.md) · [☕ Perfil de Java](../../../docs/languages/java.md) · [🧬 Todos los perfiles](../../../docs/languages/README.md)

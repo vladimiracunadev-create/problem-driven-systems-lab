@@ -1,4 +1,4 @@
-// Caso 14 — Agotamiento del pool de conexiones — stack Rust 1.83.
+// Caso 14 — Agotamiento del pool de conexiones — stack Rust 1.99.
 //
 // Leaky: sin deadline de adquisicion y con la devolucion solo en el camino
 // feliz. Managed: deadline explicito y devolucion garantizada por RAII.
@@ -411,7 +411,7 @@ fn diagnostics() -> String {
 }
 
 fn stack() -> String {
-    std::env::var("APP_STACK").unwrap_or_else(|_| "Rust 1.83".to_string())
+    std::env::var("APP_STACK").unwrap_or_else(|_| "Rust 1.99".to_string())
 }
 
 fn route(path: &str, params: &HashMap<String, String>) -> (u16, String) {

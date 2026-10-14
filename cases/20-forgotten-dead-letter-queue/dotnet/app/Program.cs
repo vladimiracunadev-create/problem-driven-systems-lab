@@ -9,7 +9,7 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Threading.Tasks;
 
-// Caso 20 — La dead letter queue olvidada — stack .NET 8.
+// Caso 20 — La dead letter queue olvidada — stack .NET 10.
 //
 // Cierra el arco que abrio el caso 15: alli la DLQ nace, como la politica de
 // rechazo que salva al productor de bloquearse. Aca se ve que pasa cuando nadie
@@ -56,7 +56,7 @@ using System.Threading.Tasks;
 internal static class Program
 {
     private const string CaseName = "20 - La dead letter queue olvidada";
-    private static readonly string Stack = Environment.GetEnvironmentVariable("APP_STACK") ?? ".NET 8";
+    private static readonly string Stack = Environment.GetEnvironmentVariable("APP_STACK") ?? ".NET 10";
     private static readonly string[] PoisonClasses =
         { "schema_mismatch", "unknown_field", "null_required", "invalid_encoding" };
 

@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-// Caso 05 — Presion de memoria y fugas de recursos (stack .NET 8).
+// Caso 05 — Presion de memoria y fugas de recursos (stack .NET 10).
 // Espejo funcional del Main.java equivalente.
 // Primitivas distintivas:
 //   - GC.GetTotalMemory + Process.WorkingSet64 para medir presion real.
@@ -16,7 +16,7 @@ using System.Threading.Tasks;
 internal static class Program
 {
     private const string CaseName = "05 - Presion de memoria y fugas de recursos";
-    private static readonly string Stack = Environment.GetEnvironmentVariable("APP_STACK") ?? ".NET 8";
+    private static readonly string Stack = Environment.GetEnvironmentVariable("APP_STACK") ?? ".NET 10";
     private const int OptimizedCap = 1000;
 
     // Leak real: lista estatica que crece para siempre.

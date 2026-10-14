@@ -19,16 +19,16 @@
   <text x="610.0" y="114" font-family="SFMono-Regular, Consolas, Liberation Mono, monospace" font-size="10.5" fill="#ffffff" text-anchor="middle" font-weight="400">22</text>
   <rect x="663" y="82" width="86" height="38" rx="7" ry="7" fill="#c4622d" stroke="none" stroke-width="1"/>
   <text x="706.0" y="100" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="12.5" fill="#ffffff" text-anchor="middle" font-weight="600">Java</text>
-  <text x="706.0" y="114" font-family="SFMono-Regular, Consolas, Liberation Mono, monospace" font-size="10.5" fill="#ffffff" text-anchor="middle" font-weight="400">21</text>
+  <text x="706.0" y="114" font-family="SFMono-Regular, Consolas, Liberation Mono, monospace" font-size="10.5" fill="#ffffff" text-anchor="middle" font-weight="400">25</text>
   <rect x="759" y="82" width="86" height="38" rx="7" ry="7" fill="#6c4bb6" stroke="none" stroke-width="1"/>
   <text x="802.0" y="100" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="12.5" fill="#ffffff" text-anchor="middle" font-weight="600">.NET</text>
-  <text x="802.0" y="114" font-family="SFMono-Regular, Consolas, Liberation Mono, monospace" font-size="10.5" fill="#ffffff" text-anchor="middle" font-weight="400">8.0</text>
+  <text x="802.0" y="114" font-family="SFMono-Regular, Consolas, Liberation Mono, monospace" font-size="10.5" fill="#ffffff" text-anchor="middle" font-weight="400">10.0</text>
   <rect x="855" y="82" width="86" height="38" rx="7" ry="7" fill="#2a9bb5" stroke="none" stroke-width="1"/>
   <text x="898.0" y="100" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="12.5" fill="#ffffff" text-anchor="middle" font-weight="600">Go</text>
-  <text x="898.0" y="114" font-family="SFMono-Regular, Consolas, Liberation Mono, monospace" font-size="10.5" fill="#ffffff" text-anchor="middle" font-weight="400">1.23</text>
+  <text x="898.0" y="114" font-family="SFMono-Regular, Consolas, Liberation Mono, monospace" font-size="10.5" fill="#ffffff" text-anchor="middle" font-weight="400">1.27</text>
   <rect x="951" y="82" width="86" height="38" rx="7" ry="7" fill="#a8453a" stroke="none" stroke-width="1"/>
   <text x="994.0" y="100" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="12.5" fill="#ffffff" text-anchor="middle" font-weight="600">Rust</text>
-  <text x="994.0" y="114" font-family="SFMono-Regular, Consolas, Liberation Mono, monospace" font-size="10.5" fill="#ffffff" text-anchor="middle" font-weight="400">1.83</text>
+  <text x="994.0" y="114" font-family="SFMono-Regular, Consolas, Liberation Mono, monospace" font-size="10.5" fill="#ffffff" text-anchor="middle" font-weight="400">1.99</text>
   <rect x="34" y="128" width="1008" height="40" rx="5" ry="5" fill="#f1f5f9" stroke="none" stroke-width="1"/>
   <rect x="40" y="137" width="4" height="22" rx="2" ry="2" fill="#2563eb" stroke="none" stroke-width="1"/>
   <text x="54" y="148" font-family="SFMono-Regular, Consolas, Liberation Mono, monospace" font-size="12" fill="#64748b" text-anchor="start" font-weight="600">01</text>

@@ -1,4 +1,4 @@
-// Caso 04 — Timeout chain y retry storms (stack Go 1.23).
+// Caso 04 — Timeout chain y retry storms (stack Go 1.27).
 //
 // Legacy: 5 reintentos secuenciales sin backoff, sin timeout, sin breaker.
 // Resilient: deadline cooperativo + circuit breaker + fallback cacheado.
@@ -45,7 +45,7 @@ const (
 	legacyMaxAttempts    = 5
 )
 
-var stack = envOr("APP_STACK", "Go 1.23")
+var stack = envOr("APP_STACK", "Go 1.27")
 
 var (
 	legacyRetries          int64

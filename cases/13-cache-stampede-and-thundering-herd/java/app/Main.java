@@ -22,7 +22,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.LongAdder;
 
 /**
- * Caso 13 — Cache stampede (thundering herd) — stack Java 21.
+ * Caso 13 — Cache stampede (thundering herd) — stack Java 25.
  *
  * Naive: la clave expira y los N llamadores concurrentes recalculan el origen.
  * `origin_computations == concurrency`.
@@ -48,7 +48,7 @@ import java.util.concurrent.atomic.LongAdder;
 public class Main {
 
     private static final String CASE_NAME = "13 - Cache stampede y thundering herd";
-    private static final String STACK = System.getenv().getOrDefault("APP_STACK", "Java 21");
+    private static final String STACK = System.getenv().getOrDefault("APP_STACK", "Java 25");
     private static final int PORT = Integer.parseInt(System.getenv().getOrDefault("PORT", "8080"));
 
     private static final long TTL_BASE_MS = 4000;

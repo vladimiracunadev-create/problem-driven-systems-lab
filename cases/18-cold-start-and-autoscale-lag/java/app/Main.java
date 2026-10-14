@@ -1,4 +1,4 @@
-// Caso 18 — Arranque en frio y retraso del autoescalado — stack Java 21.
+// Caso 18 — Arranque en frio y retraso del autoescalado — stack Java 25.
 //
 // Frio: el autoescalador levanta instancias cuando el trafico ya subio. El
 // proceso queda vivo al instante y /health responde 200 — pero la instancia no
@@ -59,7 +59,7 @@ import java.util.concurrent.atomic.AtomicLong;
 
 public class Main {
 
-    static final String APP_STACK = System.getenv().getOrDefault("APP_STACK", "Java 21");
+    static final String APP_STACK = System.getenv().getOrDefault("APP_STACK", "Java 25");
     static final String CASE_NAME = "18 - Arranque en frio y retraso del autoescalado";
 
     static final int WORK_ITERS = 250_000;      // calibrado para ~0.3 ms caliente

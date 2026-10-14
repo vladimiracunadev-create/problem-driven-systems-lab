@@ -103,11 +103,11 @@ Misma lógica con `dict[str, Callable]` como routing table. Ver [`python/README.
 
 `Map<string, handler>` **mutable en runtime** — agregar un consumer migrado es `routingTable.set(...)` sin reload del proceso. ACL como closure que filtra contrato. Ver [`node/README.md`](node/README.md). Modo aislado: puerto `827`. Hub: `http://localhost:8300/07/`.
 
-### Java 21
+### Java 25
 
 `ConcurrentHashMap<String, Function<Request, Response>>` como routing table — reads paralelos sin lock, writes atómicos por bucket. `Function<T,R>` como ACL closure: la firma del handler **es** el contrato; agregar consumer = registrar lambda. Ver [`java/README.md`](java/README.md). Modo aislado: puerto `847`. Hub: `http://localhost:8400/07/`.
 
-### .NET 8
+### .NET 10
 
 `ConcurrentDictionary<string, Func<Request, Response>>` como routing table — reads paralelos sin lock, writes atomicos por bucket. `Func<Request, Response>` delegate como ACL closure: la firma del delegate **es** el contrato; agregar consumer = `routingTable[key] = lambda`. `record Request/Response` inmutables. Ver [`dotnet/README.md`](dotnet/README.md). Modo aislado: puerto `857`. Hub: `http://localhost:8500/07/`.
 
@@ -134,8 +134,8 @@ Permite **renovar plataformas reales sin detener operación** ni asumir una rees
 | 🐘 PHP 8 | `OPERATIVO` (tabla de routing persistente + migration/state) |
 | 🐍 Python 3.12 | `OPERATIVO` (`dict[str, Callable]` routing + stdlib pura) |
 | 🟢 Node.js 22 | `OPERATIVO` (`Map<consumer, handler>` mutable en runtime + ACL como closure) |
-| ☕ Java 21 | `OPERATIVO` (`ConcurrentHashMap<String, Function>` routing + `Function` ACL) |
-| 🔵 .NET 8 | `OPERATIVO` (`ConcurrentDictionary<string, Func<Request,Response>>` routing + `record` types) |
+| ☕ Java 25 | `OPERATIVO` (`ConcurrentHashMap<String, Function>` routing + `Function` ACL) |
+| 🔵 .NET 10 | `OPERATIVO` (`ConcurrentDictionary<string, Func<Request,Response>>` routing + `record` types) |
 
 ---
 

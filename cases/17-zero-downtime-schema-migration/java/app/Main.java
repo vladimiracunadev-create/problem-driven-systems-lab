@@ -22,7 +22,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
- * Caso 17 — Migracion de esquema sin downtime — stack Java 21.
+ * Caso 17 — Migracion de esquema sin downtime — stack Java 25.
  *
  * Blocking: un `ALTER TABLE` toma el lock exclusivo durante toda la migracion.
  * Los lectores esperan, y los que tienen timeout fallan.
@@ -53,7 +53,7 @@ import java.util.concurrent.atomic.AtomicLong;
 public class Main {
 
     private static final String CASE_NAME = "17 - Migracion de esquema sin downtime";
-    private static final String STACK = System.getenv().getOrDefault("APP_STACK", "Java 21");
+    private static final String STACK = System.getenv().getOrDefault("APP_STACK", "Java 25");
     private static final int PORT = Integer.parseInt(System.getenv().getOrDefault("PORT", "8080"));
 
     private static final long READ_TIMEOUT_MS = 120;

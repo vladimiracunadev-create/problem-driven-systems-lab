@@ -30,7 +30,7 @@ import java.util.concurrent.atomic.LongAdder;
 public class Main {
 
     private static final String CASE_NAME = "05 - Presion de memoria y fugas de recursos";
-    private static final String STACK = "Java 21";
+    private static final String STACK = "Java 25";
     private static final int PORT = Integer.parseInt(System.getenv().getOrDefault("PORT", "8080"));
     private static final int OPTIMIZED_CAP = 1000;
 

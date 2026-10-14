@@ -1,4 +1,4 @@
-// Caso 08 — Extraccion critica de modulo (cutover) — stack Go 1.23.
+// Caso 08 — Extraccion critica de modulo (cutover) — stack Go 1.27.
 //
 // Big-bang: el cambio de contrato rompe consumers sensibles (checkout, partners).
 // Compatible: un proxy traduce el contrato viejo ↔ nuevo en vuelo, y un bus de
@@ -39,7 +39,7 @@ const (
 	maxEvents = 50
 )
 
-var stack = envOr("APP_STACK", "Go 1.23")
+var stack = envOr("APP_STACK", "Go 1.27")
 
 var (
 	bigbangCalls        int64

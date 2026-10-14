@@ -3,7 +3,7 @@
 > **TL;DR** — el mismo fallo pasa de `[ERROR] checkout failed` a un evento JSON con `correlation_id`, `reason` y `limit`. Lo que cambia entre stacks es **quien garantiza que el contexto no se pierda**: nadie, el revisor, o el compilador.
 
 <!-- nav -->
-`🐘 PHP` · `🐍 Python` · `🟢 Node.js` · `☕ Java 21` · `🔵 .NET 8` · `🐹 Go 1.23` · `🦀 Rust 1.83`
+`🐘 PHP` · `🐍 Python` · `🟢 Node.js` · `☕ Java 25` · `🔵 .NET 10` · `🐹 Go 1.27` · `🦀 Rust 1.99`
 
 **Estructura:** 🎯 el problema → una seccion por stack → ⚖️ tabla de decision → 📊 primitiva por stack → 🏁 veredicto y ranking
 <!-- /nav -->
@@ -200,9 +200,9 @@ Misma filosofia que PHP/Python. Node soporta clases ES6 nativamente y el `extend
 
 ---
 
-## ☕ Java 21: `ThreadLocal<RequestContext>` para correlation, log estructurado JSON inline, `/logs` endpoint
+## ☕ Java 25: `ScopedValue<RequestContext>` para correlation, log estructurado JSON inline, `/logs` endpoint
 
-**Runtime:** JVM con thread pool. Cada request entra a un thread propio; `ThreadLocal` propaga el contexto durante toda la cadena de llamadas dentro del handler sin pasarlo por parametros.
+**Runtime:** JVM con thread pool. Cada request vincula un `ScopedValue` inmutable durante el alcance del handler; cualquier metodo llamado dentro de ese alcance puede leerlo sin pasarlo por parametros.
 
 **Motor de logs:** Sin libreria (Log4j/SLF4J quedan fuera para no agregar deps). `StringBuilder` manual produce JSON estructurado escrito a un `Deque<String>` sincronizado con cap=200. `/logs` devuelve los ultimos 200 al estilo Loki/journald compacto.
 
@@ -217,25 +217,24 @@ Stdout sin contexto. Bajo carga concurrente con N threads, los `println` se inte
 
 **La correccion en Java:**
 ```java
-CTX.set(new RequestContext(corrId, "checkout-observable", Instant.now().toString()));
-try {
+RequestContext ctx = new RequestContext(corrId, "checkout-observable", Instant.now().toString());
+return ScopedValue.where(CTX, ctx).call(() -> {
     structuredLog("error", "checkout_failed", Map.of(
         "total", String.valueOf(total),
         "reason", "exceeds_limit",
         "limit", "500"));
-} finally {
-    CTX.remove();   // critico: evita leak del contexto al proximo handler en este thread
-}
+    return response;
+});
 ```
-`structuredLog()` lee `ThreadLocal<RequestContext>` y agrega `correlation_id` y `route` al JSON. `CTX.remove()` en `finally` es la disciplina necesaria — sin esto el thread retiene contexto del request anterior y los logs proximos quedan mal taggeados.
+`structuredLog()` lee el `ScopedValue<RequestContext>` y agrega `correlation_id` y `route` al JSON. El binding se revierte automaticamente al salir del `call`, incluso con excepcion: no existe un `remove()` que olvidar ni contexto mutable que pueda pasar al siguiente request.
 
-**ScopedValue (JDK 21):** la API moderna para esto es `ScopedValue.where(CTX, value).run(handler)`. Aqui usamos `ThreadLocal` porque requiere menos flags de compilacion. La migracion es ~10 lineas. `ScopedValue` es especialmente util con virtual threads (Loom): millones de virtual threads × `ThreadLocal` consume mucha memoria, `ScopedValue` no.
+**Por que ahora:** `ScopedValue` fue preview en JDK 21 y quedo final en JDK 25. Esa transicion es exactamente el tipo de drift que vigila este repositorio: `ThreadLocal` sigue funcionando, pero ya no es la primitiva idiomatica para compartir contexto inmutable y acotado.
 
 ---
 
-## 🔵 .NET 8: AsyncLocal<T> que fluye por await, System.Text.Json para logs estructurados
+## 🔵 .NET 10: AsyncLocal<T> que fluye por await, System.Text.Json para logs estructurados
 
-**Runtime:** .NET 8 sobre `HttpListener`. El CLR ejecuta handlers async sobre el `ThreadPool`. Un `await` puede retomar en otro thread — un `ThreadLocal<T>` no sobreviviria.
+**Runtime:** .NET 10 sobre `HttpListener`. El CLR ejecuta handlers async sobre el `ThreadPool`. Un `await` puede retomar en otro thread — un `ThreadLocal<T>` no sobreviviria.
 
 **El fallo legacy en C#:**
 ```csharp
@@ -261,7 +260,7 @@ StructuredLog("error", "checkout_failed", new Dictionary<string,string> {
 `AsyncLocal<T>` esta amarrado al `ExecutionContext`, que el CLR captura y restaura en cada `await`. El correlation_id sobrevive thread hops sin disciplina manual.
 
 **Notas idiomaticas vs los otros stacks:**
-- `AsyncLocal<T>` es el equivalente exacto del `ScopedValue` Java (JDK 21) y de `contextvars` Python. Resuelve el mismo problema que `ThreadLocal` no resuelve en codigo async.
+- `AsyncLocal<T>` es el equivalente de flujo asincronico del `ScopedValue` Java 25 y de `contextvars` Python. Resuelve el mismo problema que `ThreadLocal` no resuelve en codigo async.
 - `Guid.NewGuid()` reemplaza `crypto.randomBytes` Node, `secrets.token_hex` Python o `random_bytes` PHP.
 - `System.Text.Json.JsonSerializer.Serialize(dict)` reemplaza `JSON.stringify` Node o `json_encode` PHP, sin librerias externas.
 - C# tiene un sistema de excepciones tipadas tan rico como Java; `class WorkflowFailure : Exception` es 1:1 con el equivalente Java.
@@ -270,7 +269,7 @@ StructuredLog("error", "checkout_failed", new Dictionary<string,string> {
 
 ---
 
-## 🐹 Go 1.23: `context.Context` como parametro explicito + `log/slog` de la stdlib
+## 🐹 Go 1.27: `context.Context` como parametro explicito + `log/slog` de la stdlib
 
 **La primitiva:** el correlation ID viaja en un `context.Context` que se pasa **como parametro**, no en almacenamiento ambiente. La clave del contexto es un tipo privado (`type ctxKey struct{}`) para que nadie de afuera pueda colisionar con ella.
 
@@ -286,7 +285,7 @@ La firma obliga a tener contexto para loguear. Y la variante legacy **no recibe 
 
 ---
 
-## 🦀 Rust 1.83: `&RequestCtx` prestado, con lifetime acotado al request
+## 🦀 Rust 1.99: `&RequestCtx` prestado, con lifetime acotado al request
 
 **La primitiva:** el contexto se presta por referencia, y el borrow checker impide que esa referencia sobreviva al handler. Guardarla en una estructura de vida mas larga **no compila**.
 
@@ -294,7 +293,7 @@ La firma obliga a tener contexto para loguear. Y la variante legacy **no recibe 
 fn structured_log(ctx: &RequestCtx, level: &str, event: &str, fields: &[(&str, &str)])
 ```
 
-**La categoria de bug que esto cierra:** en los modelos ambiente (`ThreadLocal`, `AsyncLocal`, `AsyncLocalStorage`), un contexto que sobrevive a su request —porque el thread se reutiliza y nadie limpio el slot— hace que los logs del usuario siguiente lleven el `correlation_id` del anterior. Es silencioso y desagradable de auditar. Aca no se puede escribir.
+**La categoria de bug que esto cierra:** una referencia Rust no puede sobrevivir a su request. Java 25 obtiene una garantia operacional parecida mediante el alcance de `ScopedValue`; `AsyncLocal` y `AsyncLocalStorage` siguen siendo contexto ambiente que puede capturarse donde no corresponde.
 
 **Aqui esta la garantia que Go no da:** Go hace visible la dependencia; Rust la hace verificable. Es el unico de los siete stacks donde el compilador impide que el contexto se filtre fuera de su request.
 
@@ -306,10 +305,10 @@ fn structured_log(ctx: &RequestCtx, level: &str, event: &str, fields: &[(&str, &
 
 | Aspecto | PHP | Python | Node.js | Java | .NET | Go | Rust | Razon |
 |---|---|---|---|---|---|---|---|---|
-| Propagacion del contexto | manual por parametro | `LoggerAdapter` | `AsyncLocalStorage` | `ThreadLocal` | `AsyncLocal` | **`context.Context` como parametro** | **`&RequestCtx` prestado** | Los cuatro del medio son contexto *ambiente*: se lee algo que otro dejo en el hilo. |
-| ¿Se puede perder en silencio? | si | si | si (al saltar de contexto async) | si (thread reutilizado) | si | si — `go func(){}()` sin `ctx` compila | **no — la referencia no puede sobrevivir al request** | Rust es el unico con garantia del compilador; Go solo lo hace visible en la firma. |
+| Propagacion del contexto | manual por parametro | `LoggerAdapter` | `AsyncLocalStorage` | `ScopedValue` | `AsyncLocal` | **`context.Context` como parametro** | **`&RequestCtx` prestado** | Java, .NET y Node usan contexto ambiente; Go y Rust lo hacen visible en la firma. |
+| ¿Se puede perder en silencio? | si | si | si (al saltar de contexto async) | no dentro del alcance; fuera falla al leer | si | si — `go func(){}()` sin `ctx` compila | **no — la referencia no puede sobrevivir al request** | Rust lo impone por lifetime; Java acota el binding lexicalmente. |
 | Logger estructurado | manual / monolog | `JsonFormatter` stdlib | manual / pino | manual | `System.Text.Json` | **`log/slog` en la stdlib** | manual con `format!` | Go es el unico con JSON logging de fabrica y sin dependencia. |
-| Riesgo de fuga entre requests | bajo (proceso muere) | bajo | medio | **alto (pool de threads)** | medio | bajo | **nulo** | Un `ThreadLocal` sin limpiar hace que el log del usuario siguiente lleve el id del anterior. |
+| Riesgo de fuga entre requests | bajo (proceso muere) | bajo | medio | **nulo por alcance** | medio | bajo | **nulo** | `ScopedValue` restaura el binding al salir; Rust impide por tipos que la referencia sobreviva. |
 
 **El concepto que los siete stacks demuestran es idéntico** (y estos tres, en detalle): logs sin estructura y sin correlación hacen el diagnóstico imposible. La diferencia practica es que Python tiene la API mas dificil de violar accidentalmente; PHP y Node confian en disciplina del developer (o de una libreria como winston/pino para Node, monolog para PHP).
 
@@ -324,10 +323,10 @@ fn structured_log(ctx: &RequestCtx, level: &str, event: &str, fields: &[(&str, &
 | PHP | contexto por request en el proceso FPM |
 | Python | `logging.LoggerAdapter` + `JsonFormatter` |
 | Node.js | `AsyncLocalStorage` |
-| Java 21 | `ThreadLocal<RequestContext>` |
-| .NET 8 | `AsyncLocal<T>` que fluye por `await` |
-| Go 1.23 | `context.Context` **como parametro**; `log/slog` en la stdlib |
-| Rust 1.83 | **`&RequestCtx` prestado**; el borrow checker impide que sobreviva al request |
+| Java 25 | `ScopedValue<RequestContext>` con alcance lexical |
+| .NET 10 | `AsyncLocal<T>` que fluye por `await` |
+| Go 1.27 | `context.Context` **como parametro**; `log/slog` en la stdlib |
+| Rust 1.99 | **`&RequestCtx` prestado**; el borrow checker impide que sobreviva al request |
 
 ---
 
@@ -337,11 +336,11 @@ fn structured_log(ctx: &RequestCtx, level: &str, event: &str, fields: &[(&str, &
 
 | | Stack | Por que |
 |---|---|---|
-| 🥇 | **Rust 1.83** | Unico stack donde **el compilador impide** que el contexto sobreviva al request. La fuga de correlacion entre usuarios no se puede escribir. |
-| 🥈 | **Go 1.23** | `context.Context` explicito + `log/slog` en la stdlib. Hace la dependencia visible en la firma, pero **no la impone**: `go func(){}()` sin `ctx` compila. |
-| 🥉 | **Python 3.12** | `LoggerAdapter` + `JsonFormatter` de stdlib: la API mas dificil de violar por accidente entre los interpretados. |
-| 4º | **.NET 8** | `AsyncLocal` fluye correctamente por `await`, que es mas de lo que logra un `ThreadLocal`. |
-| 5º | **Java 21** | `ThreadLocal` funciona, pero un thread reutilizado sin limpiar arrastra el id al request siguiente. |
+| 🥇 | **Rust 1.99** | Unico stack donde **el compilador impide** que el contexto sobreviva al request. La fuga de correlacion entre usuarios no se puede escribir. |
+| 🥈 | **Go 1.27** | `context.Context` explicito + `log/slog` en la stdlib. Hace la dependencia visible en la firma, pero **no la impone**: `go func(){}()` sin `ctx` compila. |
+| 🥉 | **Java 25** | `ScopedValue` hace inmutable el contexto y lo revierte al salir del alcance: no hay limpieza manual que olvidar. |
+| 4º | **Python 3.12** | `LoggerAdapter` + `JsonFormatter` de stdlib: la API mas dificil de violar por accidente entre los interpretados. |
+| 5º | **.NET 10** | `AsyncLocal` fluye correctamente por `await`, pero sigue siendo contexto ambiente mutable. |
 | 6º | **Node.js 22 / PHP 8.3** | `AsyncLocalStorage` y disciplina manual. Funcionan; nada las respalda. |
 
 **Lectura honesta:** Es el caso donde mas se nota la diferencia entre *hacer algo visible* (Go) y *hacerlo imposible de romper* (Rust).

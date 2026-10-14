@@ -2,6 +2,38 @@
 
 Todos los cambios notables de este laboratorio se registran aqui con foco en madurez tecnica y documental.
 
+## 2026-10-14 - Revision de runtimes y cierre del drift de lenguajes
+
+Revision humana del issue de drift siguiendo
+[`docs/language-upgrade-protocol.md`](docs/language-upgrade-protocol.md).
+
+### Changed — runtimes soportados
+
+- **Java 21 → 25 LTS.** El caso 03 migra de `ThreadLocal<RequestContext>` a
+  `ScopedValue<RequestContext>`, API final en JDK 25. El binding ahora es
+  inmutable, queda acotado lexicalmente al handler y se restaura sin un
+  `remove()` manual. La comparativa sube Java del quinto al tercer puesto.
+- **.NET 8 → 10 LTS.** Los 20 proyectos pasan a `net10.0`; las imagenes SDK y
+  ASP.NET pasan a `10.0`, y `Microsoft.Data.Sqlite` queda fijado en `10.0.13`.
+  Las primitivas de los casos 04, 09 y 11 conservan su semantica.
+- **Go 1.23 → 1.27.** Se revisaron scheduler, `sync`, `context` y `log/slog`:
+  no aparece una primitiva que invalide los casos 03, 09 u 11. El cambio
+  recupera una toolchain con soporte sin reescribir la narrativa.
+- **Rust 1.83 → 1.99.** `std` sigue sin cancelacion cooperativa, semaforo ni
+  runtime asincronico; las limitaciones documentadas en los casos 04 y 09
+  permanecen ciertas. Los crates conservan la edicion 2021 deliberadamente.
+- **Node.js 22 LTS se mantiene.** `node:sqlite` esta habilitado por defecto
+  desde 22.13: se elimina `--experimental-sqlite` de los casos 01/02 y del
+  dispatcher. La API aun es experimental en 22 y release candidate en 24.
+
+### Reviewed — sin bump
+
+- **PHP 8.3** conserva soporte de seguridad hasta diciembre de 2027; PDO, el
+  dashboard y el pool del caso 01 no cambian de semantica.
+- **Python 3.12** conserva soporte hasta octubre de 2028. El free-threading de
+  3.13+ requiere un build especifico sin GIL y no es el comportamiento por
+  defecto de la imagen oficial; el argumento del caso 11 sigue siendo cierto.
+
 ## 2026-08-17 - Caso 20: la dead letter queue olvidada — el Eje 1 queda cerrado
 
 Octavo y ultimo caso del **Eje 1 del ROADMAP**. El lab llega a **20 casos x 7

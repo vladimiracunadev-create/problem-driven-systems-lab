@@ -104,10 +104,9 @@ curl -s localhost:8200/11/diagnostics/summary
 
 ## 🏆 Dónde gana y dónde pierde en el laboratorio
 
-Agregado de los veredictos de las 19 comparativas que rankean: **0 primeros puestos, media 5.0**.
+Agregado de los veredictos de las 19 comparativas que rankean: **0 primeros puestos, media 5.1**.
 
-- 🥉 **Tercero en 03** — `LoggerAdapter` + `JsonFormatter`: la API más difícil de violar por accidente del set completo. Es el mejor resultado de Python en el laboratorio y no tiene nada que ver con rendimiento.
-- **4º en 02, 06, 09, 14 y 15**
+- **4º en 02, 03, 06, 09, 14 y 15** — en el 03, `LoggerAdapter` + `JsonFormatter` sigue siendo la combinacion mas solida entre los interpretados, pero Java 25 elimina la limpieza manual con `ScopedValue`.
 - **6º en 20** — clasifica en cuatro líneas y encadena causas desde la 3.0, pero `except Exception` está a una palabra de mandar a la DLQ los bugs del propio consumidor, y nada en el lenguaje lo señala.
 - **6º en 20** — clasifica en cuatro líneas y encadena causas desde la 3.0, pero `except Exception` está a una palabra de mandar a la DLQ los bugs del propio consumidor, y nada en el lenguaje lo señala.
 - **4º en 19** — el álgebra de conjuntos da el diagnóstico más corto de los siete, y `except: pass` el bug más corto: Python hace fácil el diagnóstico y también el error.

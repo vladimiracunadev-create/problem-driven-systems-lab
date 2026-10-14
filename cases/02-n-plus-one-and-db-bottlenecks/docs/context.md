@@ -24,10 +24,10 @@ Muchos sistemas parecen correctos funcionalmente, pero escalan mal por decisione
 | 🐘 PHP | `PHP 8.3` | `http://localhost:8100/02/` | [README](../php/README.md) |
 | 🐍 Python | `Python 3.12` | `http://localhost:8200/02/` | [README](../python/README.md) |
 | 🟢 Node.js | `Node.js 22` | `http://localhost:8300/02/` | [README](../node/README.md) |
-| ☕ Java | `Java 21` | `http://localhost:8400/02/` | [README](../java/README.md) |
-| 🔵 .NET | `.NET 8` | `http://localhost:8500/02/` | [README](../dotnet/README.md) |
-| 🐹 Go | `Go 1.23` | `http://localhost:8600/02/` | [README](../go/README.md) |
-| 🦀 Rust | `Rust 1.83` | `http://localhost:8700/02/` | [README](../rust/README.md) |
+| ☕ Java | `Java 25` | `http://localhost:8400/02/` | [README](../java/README.md) |
+| 🔵 .NET | `.NET 10` | `http://localhost:8500/02/` | [README](../dotnet/README.md) |
+| 🐹 Go | `Go 1.27` | `http://localhost:8600/02/` | [README](../go/README.md) |
+| 🦀 Rust | `Rust 1.99` | `http://localhost:8700/02/` | [README](../rust/README.md) |
 
 > ⚠️ **Nota de honestidad del caso:** No intenta representar un ORM especifico. Reproduce un patron muy real de round-trips repetidos y relaciones cargadas dentro de bucles.
 <!-- /catalogo -->

@@ -106,19 +106,19 @@ La stdlib **no tiene read-write lock**: hay que construirlo. La bandera `_writer
 
 No tiene locks porque no tiene hilos — y el caso ocurre igual, de la forma más literal: **el lock exclusivo es el event loop**. Ni siquiera el timeout del lector puede dispararse. Ver [`node/README.md`](node/README.md). Modo aislado: `8217`. Hub: `http://localhost:8300/17/`.
 
-### ☕ Java 21
+### ☕ Java 25
 
 El único con **deadline y equidad de fábrica**: `tryLock(timeout, unit)` y `new ReentrantReadWriteLock(true)`. Sin el flag de justicia, el escritor puede no entrar nunca. Ver [`java/README.md`](java/README.md). Modo aislado: `8417`. Hub: `http://localhost:8400/17/`.
 
-### 🔵 .NET 8
+### 🔵 .NET 10
 
 `TryEnterReadLock(ms)` devuelve `false` en vez de lanzar. Y `ReaderWriterLockSlim` es `IDisposable`: un lock con recursos nativos en un runtime con GC. No tiene modo justo. Ver [`dotnet/README.md`](dotnet/README.md). Modo aislado: `8517`. Hub: `http://localhost:8500/17/`.
 
-### 🐹 Go 1.23
+### 🐹 Go 1.27
 
 `sync.RWMutex` es lo más simple del set y no tiene hambruna de escritor, pero **no trae `RLock` con timeout**: hay que armarlo con goroutine y `select` — y la goroutine sobrevive al lector que se rindió. Ver [`go/README.md`](go/README.md). Modo aislado: `8617`. Hub: `http://localhost:8600/17/`.
 
-### 🦀 Rust 1.83
+### 🦀 Rust 1.99
 
 La `std` no ofrece deadline de ninguna clase, así que la única opción es un **spin que consume CPU**. Es el caso donde la respuesta de Rust es peor que la de los otros seis. A cambio, los guards eliminan el unlock olvidado. Ver [`rust/README.md`](rust/README.md). Modo aislado: `8717`. Hub: `http://localhost:8700/17/`.
 
@@ -147,10 +147,10 @@ Convierte «hay que desplegar a las 3 de la mañana» en «se despliega cuando e
 | 🐘 PHP 8.3 | `OPERATIVO` (`flock` `LOCK_SH`/`LOCK_EX` — lock del SO, entre procesos) |
 | 🐍 Python 3.12 | `OPERATIVO` (RWLock construido a mano sobre `Condition`) |
 | 🟢 Node.js 22 | `OPERATIVO` (el event loop **es** el lock; `await` como equidad) |
-| ☕ Java 21 | `OPERATIVO` (`ReentrantReadWriteLock` justo + `tryLock(timeout)`) |
-| 🔵 .NET 8 | `OPERATIVO` (`ReaderWriterLockSlim` + `TryEnterReadLock(ms)`) |
-| 🐹 Go 1.23 | `OPERATIVO` (`sync.RWMutex` + deadline armado con goroutine) |
-| 🦀 Rust 1.83 | `OPERATIVO` (`RwLock` con spin acotado; guards sin unlock olvidado) |
+| ☕ Java 25 | `OPERATIVO` (`ReentrantReadWriteLock` justo + `tryLock(timeout)`) |
+| 🔵 .NET 10 | `OPERATIVO` (`ReaderWriterLockSlim` + `TryEnterReadLock(ms)`) |
+| 🐹 Go 1.27 | `OPERATIVO` (`sync.RWMutex` + deadline armado con goroutine) |
+| 🦀 Rust 1.99 | `OPERATIVO` (`RwLock` con spin acotado; guards sin unlock olvidado) |
 
 ---
 

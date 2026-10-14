@@ -12,10 +12,10 @@
 | PHP — portal + hub + DB + observabilidad | `docker compose -f compose.root.yml up -d --build` | `8080` portal · `8100` hub · `9091` Prometheus · `3001` Grafana |
 | Python — dispatcher unificado | `docker compose -f compose.python.yml up -d --build` | `8200` hub |
 | Node.js — dispatcher unificado | `docker compose -f compose.nodejs.yml up -d --build` | `8300` hub |
-| Java 21 — dispatcher unificado | `docker compose -f compose.java.yml up -d --build` | `8400` hub |
-| .NET 8 — dispatcher unificado | `docker compose -f compose.dotnet.yml up -d --build` | `8500` hub |
-| Go 1.23 — dispatcher unificado | `docker compose -f compose.go.yml up -d --build` | `8600` hub |
-| Rust 1.83 — dispatcher unificado | `docker compose -f compose.rust.yml up -d --build` | `8700` hub |
+| Java 25 — dispatcher unificado | `docker compose -f compose.java.yml up -d --build` | `8400` hub |
+| .NET 10 — dispatcher unificado | `docker compose -f compose.dotnet.yml up -d --build` | `8500` hub |
+| Go 1.27 — dispatcher unificado | `docker compose -f compose.go.yml up -d --build` | `8600` hub |
+| Rust 1.99 — dispatcher unificado | `docker compose -f compose.rust.yml up -d --build` | `8700` hub |
 | Portal liviano | `docker compose -f compose.portal.yml up -d --build` | `8080` |
 
 Los siete stacks pueden correr en paralelo sin colisión de puertos. **PHP/Python/Node/Java/.NET/Go/Rust sirven 20 casos cada uno desde `:8100`/`:8200`/`:8300`/`:8400`/`:8500`/`:8600`/`:8700`. 140 endpoints operativos detras de 7 hubs.**
@@ -61,30 +61,30 @@ Cada caso conserva su propio `compose.yml` para reproducir UN problema en aislam
 | Caso 10 Node.js | `docker compose -f cases/10-expensive-architecture-for-simple-needs/node/compose.yml up -d --build` |
 | Caso 11 Node.js | `docker compose -f cases/11-heavy-reporting-blocks-operations/node/compose.yml up -d --build` |
 | Caso 12 Node.js | `docker compose -f cases/12-single-point-of-knowledge-and-operational-risk/node/compose.yml up -d --build` |
-| Caso 01 Java 21 | `docker compose -f cases/01-api-latency-under-load/java/compose.yml up -d --build` |
-| Caso 02 Java 21 | `docker compose -f cases/02-n-plus-one-and-db-bottlenecks/java/compose.yml up -d --build` |
-| Caso 03 Java 21 | `docker compose -f cases/03-poor-observability-and-useless-logs/java/compose.yml up -d --build` |
-| Caso 04 Java 21 | `docker compose -f cases/04-timeout-chain-and-retry-storms/java/compose.yml up -d --build` |
-| Caso 05 Java 21 | `docker compose -f cases/05-memory-pressure-and-resource-leaks/java/compose.yml up -d --build` |
-| Caso 06 Java 21 | `docker compose -f cases/06-broken-pipeline-and-fragile-delivery/java/compose.yml up -d --build` |
-| Caso 07 Java 21 | `docker compose -f cases/07-incremental-monolith-modernization/java/compose.yml up -d --build` |
-| Caso 08 Java 21 | `docker compose -f cases/08-critical-module-extraction-without-breaking-operations/java/compose.yml up -d --build` |
-| Caso 09 Java 21 | `docker compose -f cases/09-unstable-external-integration/java/compose.yml up -d --build` |
-| Caso 10 Java 21 | `docker compose -f cases/10-expensive-architecture-for-simple-needs/java/compose.yml up -d --build` |
-| Caso 11 Java 21 | `docker compose -f cases/11-heavy-reporting-blocks-operations/java/compose.yml up -d --build` |
-| Caso 12 Java 21 | `docker compose -f cases/12-single-point-of-knowledge-and-operational-risk/java/compose.yml up -d --build` |
-| Caso 01 .NET 8 | `docker compose -f cases/01-api-latency-under-load/dotnet/compose.yml up -d --build` |
-| Caso 02 .NET 8 | `docker compose -f cases/02-n-plus-one-and-db-bottlenecks/dotnet/compose.yml up -d --build` |
-| Caso 03 .NET 8 | `docker compose -f cases/03-poor-observability-and-useless-logs/dotnet/compose.yml up -d --build` |
-| Caso 04 .NET 8 | `docker compose -f cases/04-timeout-chain-and-retry-storms/dotnet/compose.yml up -d --build` |
-| Caso 05 .NET 8 | `docker compose -f cases/05-memory-pressure-and-resource-leaks/dotnet/compose.yml up -d --build` |
-| Caso 06 .NET 8 | `docker compose -f cases/06-broken-pipeline-and-fragile-delivery/dotnet/compose.yml up -d --build` |
-| Caso 07 .NET 8 | `docker compose -f cases/07-incremental-monolith-modernization/dotnet/compose.yml up -d --build` |
-| Caso 08 .NET 8 | `docker compose -f cases/08-critical-module-extraction-without-breaking-operations/dotnet/compose.yml up -d --build` |
-| Caso 09 .NET 8 | `docker compose -f cases/09-unstable-external-integration/dotnet/compose.yml up -d --build` |
-| Caso 10 .NET 8 | `docker compose -f cases/10-expensive-architecture-for-simple-needs/dotnet/compose.yml up -d --build` |
-| Caso 11 .NET 8 | `docker compose -f cases/11-heavy-reporting-blocks-operations/dotnet/compose.yml up -d --build` |
-| Caso 12 .NET 8 | `docker compose -f cases/12-single-point-of-knowledge-and-operational-risk/dotnet/compose.yml up -d --build` |
+| Caso 01 Java 25 | `docker compose -f cases/01-api-latency-under-load/java/compose.yml up -d --build` |
+| Caso 02 Java 25 | `docker compose -f cases/02-n-plus-one-and-db-bottlenecks/java/compose.yml up -d --build` |
+| Caso 03 Java 25 | `docker compose -f cases/03-poor-observability-and-useless-logs/java/compose.yml up -d --build` |
+| Caso 04 Java 25 | `docker compose -f cases/04-timeout-chain-and-retry-storms/java/compose.yml up -d --build` |
+| Caso 05 Java 25 | `docker compose -f cases/05-memory-pressure-and-resource-leaks/java/compose.yml up -d --build` |
+| Caso 06 Java 25 | `docker compose -f cases/06-broken-pipeline-and-fragile-delivery/java/compose.yml up -d --build` |
+| Caso 07 Java 25 | `docker compose -f cases/07-incremental-monolith-modernization/java/compose.yml up -d --build` |
+| Caso 08 Java 25 | `docker compose -f cases/08-critical-module-extraction-without-breaking-operations/java/compose.yml up -d --build` |
+| Caso 09 Java 25 | `docker compose -f cases/09-unstable-external-integration/java/compose.yml up -d --build` |
+| Caso 10 Java 25 | `docker compose -f cases/10-expensive-architecture-for-simple-needs/java/compose.yml up -d --build` |
+| Caso 11 Java 25 | `docker compose -f cases/11-heavy-reporting-blocks-operations/java/compose.yml up -d --build` |
+| Caso 12 Java 25 | `docker compose -f cases/12-single-point-of-knowledge-and-operational-risk/java/compose.yml up -d --build` |
+| Caso 01 .NET 10 | `docker compose -f cases/01-api-latency-under-load/dotnet/compose.yml up -d --build` |
+| Caso 02 .NET 10 | `docker compose -f cases/02-n-plus-one-and-db-bottlenecks/dotnet/compose.yml up -d --build` |
+| Caso 03 .NET 10 | `docker compose -f cases/03-poor-observability-and-useless-logs/dotnet/compose.yml up -d --build` |
+| Caso 04 .NET 10 | `docker compose -f cases/04-timeout-chain-and-retry-storms/dotnet/compose.yml up -d --build` |
+| Caso 05 .NET 10 | `docker compose -f cases/05-memory-pressure-and-resource-leaks/dotnet/compose.yml up -d --build` |
+| Caso 06 .NET 10 | `docker compose -f cases/06-broken-pipeline-and-fragile-delivery/dotnet/compose.yml up -d --build` |
+| Caso 07 .NET 10 | `docker compose -f cases/07-incremental-monolith-modernization/dotnet/compose.yml up -d --build` |
+| Caso 08 .NET 10 | `docker compose -f cases/08-critical-module-extraction-without-breaking-operations/dotnet/compose.yml up -d --build` |
+| Caso 09 .NET 10 | `docker compose -f cases/09-unstable-external-integration/dotnet/compose.yml up -d --build` |
+| Caso 10 .NET 10 | `docker compose -f cases/10-expensive-architecture-for-simple-needs/dotnet/compose.yml up -d --build` |
+| Caso 11 .NET 10 | `docker compose -f cases/11-heavy-reporting-blocks-operations/dotnet/compose.yml up -d --build` |
+| Caso 12 .NET 10 | `docker compose -f cases/12-single-point-of-knowledge-and-operational-risk/dotnet/compose.yml up -d --build` |
 
 ## ▶️ Arranque recomendado
 
@@ -125,7 +125,7 @@ Cada caso conserva su propio `compose.yml` para reproducir UN problema en aislam
 | Caso 02 Node.js | `http://localhost:8300/02/health` | Respuesta saludable |
 | Casos 03–12 Node.js | `http://localhost:8300/03/health` … `http://localhost:8300/12/health` | Respuesta saludable |
 
-### Java 21 (compose.java.yml)
+### Java 25 (compose.java.yml)
 
 | Componente | URL | Senal esperada |
 | --- | --- | --- |
@@ -134,7 +134,7 @@ Cada caso conserva su propio `compose.yml` para reproducir UN problema en aislam
 | Caso 02 Java | `http://localhost:8400/02/health` | Respuesta saludable |
 | Casos 03–12 Java | `http://localhost:8400/03/health` … `http://localhost:8400/12/health` | Respuesta saludable |
 
-### .NET 8 (compose.dotnet.yml)
+### .NET 10 (compose.dotnet.yml)
 
 | Componente | URL | Senal esperada |
 | --- | --- | --- |

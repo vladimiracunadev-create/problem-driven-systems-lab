@@ -1,4 +1,4 @@
-# go-dispatcher — un solo contenedor con dispatcher + los casos del lab (Go 1.23).
+# go-dispatcher — un solo contenedor con dispatcher + los casos del lab (Go 1.27).
 #
 # Espejo del patron java-dispatcher / dotnet-dispatcher: el stage de build
 # compila cada caso por separado y el runtime los junta en /app/cases/0X/.
@@ -8,7 +8,7 @@
 # `go mod tidy`; el resto son solo stdlib y compilan sin red.
 #
 # CGO_ENABLED=0 en todos: binarios estaticos, imagen final sin toolchain de C.
-FROM golang:1.23-alpine AS build
+FROM golang:1.27-alpine AS build
 WORKDIR /src
 
 # --- casos con dependencia externa (SQLite embebido en Go puro) ---
@@ -53,6 +53,6 @@ COPY --from=build /out/cases      /app/cases
 
 EXPOSE 8600
 ENV PORT=8600
-ENV APP_STACK="Go 1.23"
+ENV APP_STACK="Go 1.27"
 
 ENTRYPOINT ["/app/dispatcher"]

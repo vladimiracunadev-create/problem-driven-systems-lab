@@ -1,4 +1,4 @@
-# ☕ Caso 03 — Java 21
+# ☕ Caso 03 — Java 25
 
 <!-- nav-stack -->
 [⬅️ Caso 03](../README.md) · [⚖️ Comparativa de los 7 stacks](../comparison.md) · [☕ Perfil de Java](../../../docs/languages/java.md) · [🧬 Todos los perfiles](../../../docs/languages/README.md)
@@ -10,7 +10,7 @@ Stack Java operativo del caso 03. Contraste entre logs opacos (`println` sin con
 
 | Primitiva | Rol |
 |---|---|
-| `ThreadLocal<RequestContext>` | Contexto de correlation ID propagado durante el handler. Equivalente a `ScopedValue` de JDK 21 sin requerir preview flags. |
+| `ScopedValue<RequestContext>` | Contexto de correlation ID inmutable y acotado al handler. API final desde JDK 25, sin preview flags ni limpieza manual. |
 | `UUID.randomUUID()` | Generacion de `correlation_id` por request. |
 | Estructurado JSON inline | Sin libreria de logging externa: build manual con `StringBuilder` para mantener el lab single-file. |
 
@@ -26,11 +26,12 @@ if (total > 500) {
 
 **Observable** — correlation ID + campos estructurados:
 ```java
-CTX.set(new RequestContext(corrId, "checkout-observable", Instant.now().toString()));
-structuredLog("error", "checkout_failed", Map.of(
-    "total", String.valueOf(total),
-    "reason", "exceeds_limit",
-    "limit", "500"));
+RequestContext ctx = new RequestContext(corrId, "checkout-observable", Instant.now().toString());
+ScopedValue.where(CTX, ctx).run(() ->
+    structuredLog("error", "checkout_failed", Map.of(
+        "total", String.valueOf(total),
+        "reason", "exceeds_limit",
+        "limit", "500")));
 // → {"ts":"...","level":"error","event":"checkout_failed","correlation_id":"<uuid>",
 //    "route":"checkout-observable","total":"600.0","reason":"exceeds_limit","limit":"500"}
 ```
@@ -54,6 +55,11 @@ curl "http://127.0.0.1:8400/03/checkout-observable?total=600"
 curl http://127.0.0.1:8400/03/logs
 ```
 
-## Por que ThreadLocal y no ScopedValue
+## Por que `ScopedValue` y no `ThreadLocal`
 
-`ScopedValue` (JDK 21) es la API moderna recomendada por Loom. Aqui se usa `ThreadLocal` porque (a) requiere menos flags de compilacion, (b) el resultado observable es el mismo: contexto propagado dentro del handler, limpiado en `finally`. Para produccion real con `Executors.newVirtualThreadPerTaskExecutor()` la migracion a `ScopedValue` es ~10 lineas.
+`ScopedValue` quedo final en JDK 25. La vinculacion existe solo durante la llamada a
+`ScopedValue.where(...).call(...)`, es inmutable y el runtime restaura el alcance
+anterior al salir, incluso si hay una excepcion. No existe un `remove()` que olvidar ni
+un valor que pueda quedar pegado al siguiente request cuando el pool reutiliza el
+thread. `ThreadLocal` queda documentado como la alternativa historica y mutable que
+este caso ya no recomienda.

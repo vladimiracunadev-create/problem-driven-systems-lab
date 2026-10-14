@@ -1,11 +1,11 @@
-// Caso 03 — Observabilidad deficiente y logs inutiles (stack Rust 1.83).
+// Caso 03 — Observabilidad deficiente y logs inutiles (stack Rust 1.99).
 //
 // Legacy: println opaco, sin correlation, sin contexto.
 // Observable: log estructurado JSON con correlation_id propagado + /logs.
 //
 // El contraste que este stack aporta:
 //
-//   Java propaga el contexto con ThreadLocal, .NET con AsyncLocal, Node con
+//   Java propaga el contexto con ScopedValue, .NET con AsyncLocal, Node con
 //   AsyncLocalStorage. Los tres son **almacenamiento ambiente**: la funcion lee
 //   un valor que alguien dejo en el hilo. Go lo hace explicito con
 //   context.Context como parametro.
@@ -42,7 +42,7 @@ static CORR_SEQ: AtomicU64 = AtomicU64::new(0);
 static RECENT_LOGS: Mutex<Vec<String>> = Mutex::new(Vec::new());
 
 fn stack() -> String {
-    std::env::var("APP_STACK").unwrap_or_else(|_| "Rust 1.83".to_string())
+    std::env::var("APP_STACK").unwrap_or_else(|_| "Rust 1.99".to_string())
 }
 
 /// Contexto de request. Se pasa por referencia: el borrow checker impide que

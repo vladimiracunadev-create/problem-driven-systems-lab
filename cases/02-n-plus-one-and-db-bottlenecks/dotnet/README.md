@@ -1,4 +1,4 @@
-# 🔵 Caso 02 — .NET 8 + SQLite (Microsoft.Data.Sqlite)
+# 🔵 Caso 02 — .NET 10 + SQLite (Microsoft.Data.Sqlite)
 
 <!-- nav-stack -->
 [⬅️ Caso 02](../README.md) · [⚖️ Comparativa de los 7 stacks](../comparison.md) · [🔵 Perfil de .NET](../../../docs/languages/dotnet.md) · [🧬 Todos los perfiles](../../../docs/languages/README.md)

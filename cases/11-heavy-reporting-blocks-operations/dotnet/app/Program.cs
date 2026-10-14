@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-// Caso 11 — Reportes pesados que bloquean operacion — stack .NET 8.
+// Caso 11 — Reportes pesados que bloquean operacion — stack .NET 10.
 //
 // Primitivas .NET distintivas:
 //   - Default ThreadPool actua como "main pool" (lo usan los handlers HTTP).
@@ -19,7 +19,7 @@ using System.Threading.Tasks;
 internal static class Program
 {
     private const string CaseName = "11 - Reportes pesados que bloquean operacion";
-    private static readonly string Stack = Environment.GetEnvironmentVariable("APP_STACK") ?? ".NET 8";
+    private static readonly string Stack = Environment.GetEnvironmentVariable("APP_STACK") ?? ".NET 10";
 
     // Scheduler dedicado limitado a 2 tasks concurrentes (espejo de newFixedThreadPool(2))
     private static readonly ConcurrentExclusiveSchedulerPair ReportingPair =

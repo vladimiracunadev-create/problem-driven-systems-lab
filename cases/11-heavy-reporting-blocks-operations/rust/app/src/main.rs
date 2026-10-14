@@ -1,4 +1,4 @@
-// Caso 11 — Reportes pesados que bloquean operacion — stack Rust 1.83.
+// Caso 11 — Reportes pesados que bloquean operacion — stack Rust 1.99.
 //
 // Legacy: el reporte corre sin acotar en el thread del request.
 // Isolated: el reporte pasa por un limitador de concurrencia; como maximo N
@@ -66,7 +66,7 @@ fn slots_used() -> usize {
 }
 
 fn stack() -> String {
-    std::env::var("APP_STACK").unwrap_or_else(|_| "Rust 1.83".to_string())
+    std::env::var("APP_STACK").unwrap_or_else(|_| "Rust 1.99".to_string())
 }
 
 fn main() {

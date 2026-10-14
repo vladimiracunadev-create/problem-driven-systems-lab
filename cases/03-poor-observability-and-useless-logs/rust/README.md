@@ -1,4 +1,4 @@
-# 🦀 Caso 03 — Rust 1.83
+# 🦀 Caso 03 — Rust 1.99
 
 <!-- nav-stack -->
 [⬅️ Caso 03](../README.md) · [⚖️ Comparativa de los 7 stacks](../comparison.md) · [🦀 Perfil de Rust](../../../docs/languages/rust.md) · [🧬 Todos los perfiles](../../../docs/languages/README.md)
@@ -59,10 +59,10 @@ curl http://127.0.0.1:8700/03/logs
 
 ## Referencia prestada vs contexto ambiente
 
-Java propaga con `ThreadLocal`, .NET con `AsyncLocal`, Node con `AsyncLocalStorage`. Los tres son **almacenamiento ambiente**: la funcion lee un valor que alguien dejo en el hilo. Go lo hace explicito pasando `context.Context` como parametro.
+Java propaga con `ScopedValue`, .NET con `AsyncLocal`, Node con `AsyncLocalStorage`. Los tres son **contexto ambiente**: la funcion lee un valor que no aparece en su firma. Go lo hace explicito pasando `context.Context` como parametro.
 
 Rust va un paso mas: el contexto se presta como `&RequestCtx`, y el borrow checker **impide que esa referencia sobreviva al handler**. Guardarla en una estructura de vida mas larga no compila.
 
-Eso cierra una categoria de bug concreta: en los modelos ambiente, un contexto que sobrevive a su request —porque el thread se reutiliza y nadie limpio el `ThreadLocal`— hace que los logs del usuario siguiente lleven el `correlation_id` del anterior. Es un bug silencioso y desagradable de auditar. Aca no se puede escribir.
+Eso cierra una categoria de bug concreta: una referencia Rust no puede sobrevivir al request. Java 25 evita la misma fuga por alcance dinamico restaurado automaticamente; .NET y Node siguen dependiendo de que el flujo ambiente no se capture donde no corresponde.
 
 **Contrapartida honesta:** `std` no trae logger estructurado. Go tiene `log/slog` en la biblioteca estandar desde 1.21; en Rust el ecosistema usa `tracing` o `log`, y para mantener el caso sin dependencias el JSON se arma con `format!` a mano. Es menos ergonomico y no hay razon para pretender lo contrario.

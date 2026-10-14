@@ -1,4 +1,4 @@
-// Caso 17 — Migracion de esquema sin downtime — stack Rust 1.83.
+// Caso 17 — Migracion de esquema sin downtime — stack Rust 1.99.
 //
 // Blocking: un `ALTER TABLE` toma el lock exclusivo durante toda la migracion.
 // Expand-contract: cuatro fases, y el lock se toma y se suelta en cada lote.
@@ -352,7 +352,7 @@ fn diagnostics() -> String {
 }
 
 fn stack() -> String {
-    std::env::var("APP_STACK").unwrap_or_else(|_| "Rust 1.83".to_string())
+    std::env::var("APP_STACK").unwrap_or_else(|_| "Rust 1.99".to_string())
 }
 
 fn route(path: &str, params: &HashMap<String, String>) -> (u16, String) {

@@ -3,7 +3,7 @@
 > **TL;DR** — el budget baja `5→4→3→2→1→0` y la sexta llamada degrada a snapshot en vez de fallar. Siete formas de escribir un semaforo, y una de ellas no necesita que exista la palabra semaforo.
 
 <!-- nav -->
-`🐘 PHP` · `🐍 Python` · `🟢 Node.js` · `☕ Java 21` · `🔵 .NET 8` · `🐹 Go 1.23` · `🦀 Rust 1.83`
+`🐘 PHP` · `🐍 Python` · `🟢 Node.js` · `☕ Java 25` · `🔵 .NET 10` · `🐹 Go 1.27` · `🦀 Rust 1.99`
 
 **Estructura:** 🎯 el problema → una seccion por stack → ⚖️ tabla de decision → 📊 primitiva por stack → 🏁 veredicto y ranking
 <!-- /nav -->
@@ -190,7 +190,7 @@ if (normalized.price_usd === undefined) {
 
 ---
 
-## ☕ Java 21: `Semaphore` budget + `ConcurrentHashMap` snapshot cache + `AtomicReference` breaker
+## ☕ Java 25: `Semaphore` budget + `ConcurrentHashMap` snapshot cache + `AtomicReference` breaker
 
 **Runtime:** JVM con thread pool. Cada request compite por permits del budget; lecturas del cache son lock-free; el breaker se transiciona con CAS.
 
@@ -215,9 +215,9 @@ snapshotCache.put(sku, fresh);
 
 ---
 
-## 🔵 .NET 8: SemaphoreSlim como budget + Interlocked.CompareExchange sobre el breaker
+## 🔵 .NET 10: SemaphoreSlim como budget + Interlocked.CompareExchange sobre el breaker
 
-**Runtime:** .NET 8 sobre `HttpListener`. CLR `ThreadPool` despachando handlers async. Budget de cuota, cache snapshot y breaker, todos en memoria del proceso.
+**Runtime:** .NET 10 sobre `HttpListener`. CLR `ThreadPool` despachando handlers async. Budget de cuota, cache snapshot y breaker, todos en memoria del proceso.
 
 **El fallo legacy en C#:**
 ```csharp
@@ -256,7 +256,7 @@ Interlocked.Exchange(ref breakerState, "closed");
 
 ---
 
-## 🐹 Go 1.23: un canal bufferizado **es** el semaforo
+## 🐹 Go 1.27: un canal bufferizado **es** el semaforo
 
 Java usa `Semaphore(5)`, una clase de `java.util.concurrent`. Go no tiene semaforo en la stdlib y no le hace falta:
 
@@ -278,7 +278,7 @@ Ese es el argumento de fondo de la concurrencia en Go: canal + `select` cubren s
 
 ---
 
-## 🦀 Rust 1.83: menos expresivo, pero sin unlock que olvidar
+## 🦀 Rust 1.99: menos expresivo, pero sin unlock que olvidar
 
 `std` de Rust tampoco tiene semaforo. Aca el budget es mas prosaico: un `Mutex<i64>` que se decrementa si hay permisos.
 
@@ -319,10 +319,10 @@ En expresividad, Go gana. Pero el guard libera al salir de scope **en todos los 
 | PHP | cache en disco + contador |
 | Python | `threading.Semaphore` |
 | Node.js | contador + `Map` snapshot |
-| Java 21 | `Semaphore` + `AtomicReference` breaker |
-| .NET 8 | `SemaphoreSlim` + `Interlocked.CompareExchange` |
-| Go 1.23 | **`chan struct{}` bufferizado ES el semaforo** (`struct{}` = tamaño cero) |
-| Rust 1.83 | `Mutex<i64>`; menos expresivo, pero **el guard libera en todos los caminos** |
+| Java 25 | `Semaphore` + `AtomicReference` breaker |
+| .NET 10 | `SemaphoreSlim` + `Interlocked.CompareExchange` |
+| Go 1.27 | **`chan struct{}` bufferizado ES el semaforo** (`struct{}` = tamaño cero) |
+| Rust 1.99 | `Mutex<i64>`; menos expresivo, pero **el guard libera en todos los caminos** |
 
 ---
 
@@ -332,9 +332,9 @@ En expresividad, Go gana. Pero el guard libera al salir de scope **en todos los 
 
 | | Stack | Por que |
 |---|---|---|
-| 🥇 | **Go 1.23** | `chan struct{}` bufferizado **es** el semaforo, con `struct{}` de tamaño cero. Una primitiva —canal + `select`— cubre semaforo, timeout, cola y cancelacion en todo el lab. |
-| 🥈 | **Rust 1.83** | Menos expresivo (`Mutex<i64>` con decremento condicional), pero el guard libera en **todos** los caminos: no hay unlock que olvidar. |
-| 🥉 | **Java 21 / .NET 8** | `Semaphore` / `SemaphoreSlim` son claros y directos; cada primitiva de concurrencia es una clase distinta que hay que conocer. |
+| 🥇 | **Go 1.27** | `chan struct{}` bufferizado **es** el semaforo, con `struct{}` de tamaño cero. Una primitiva —canal + `select`— cubre semaforo, timeout, cola y cancelacion en todo el lab. |
+| 🥈 | **Rust 1.99** | Menos expresivo (`Mutex<i64>` con decremento condicional), pero el guard libera en **todos** los caminos: no hay unlock que olvidar. |
+| 🥉 | **Java 25 / .NET 10** | `Semaphore` / `SemaphoreSlim` son claros y directos; cada primitiva de concurrencia es una clase distinta que hay que conocer. |
 | 4º | **Python 3.12** | `threading.Semaphore` de stdlib, correcto. |
 | 6º | **Node.js 22 / PHP 8.3** | Contador en memoria o en disco. Funciona en su modelo de concurrencia; no hay primitiva que lo respalde. |
 

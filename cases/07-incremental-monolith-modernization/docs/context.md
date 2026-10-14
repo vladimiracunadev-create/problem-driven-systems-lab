@@ -24,10 +24,10 @@ Muchas organizaciones no pueden reescribir desde cero; necesitan modernización 
 | 🐘 PHP | `PHP 8.3` | `http://localhost:8100/07/` | [README](../php/README.md) |
 | 🐍 Python | `Python 3.12` | `http://localhost:8200/07/` | [README](../python/README.md) |
 | 🟢 Node.js | `Node.js 22` | `http://localhost:8300/07/` | [README](../node/README.md) |
-| ☕ Java | `Java 21` | `http://localhost:8400/07/` | [README](../java/README.md) |
-| 🔵 .NET | `.NET 8` | `http://localhost:8500/07/` | [README](../dotnet/README.md) |
-| 🐹 Go | `Go 1.23` | `http://localhost:8600/07/` | [README](../go/README.md) |
-| 🦀 Rust | `Rust 1.83` | `http://localhost:8700/07/` | [README](../rust/README.md) |
+| ☕ Java | `Java 25` | `http://localhost:8400/07/` | [README](../java/README.md) |
+| 🔵 .NET | `.NET 10` | `http://localhost:8500/07/` | [README](../dotnet/README.md) |
+| 🐹 Go | `Go 1.27` | `http://localhost:8600/07/` | [README](../go/README.md) |
+| 🦀 Rust | `Rust 1.99` | `http://localhost:8700/07/` | [README](../rust/README.md) |
 
 > ⚠️ **Nota de honestidad del caso:** No reemplaza un programa real de modernizacion con multiples servicios y equipos. Si reproduce la parte operativa relevante: blast radius, migracion por consumidor, contratos y avance incremental.
 <!-- /catalogo -->

@@ -106,19 +106,19 @@ Sin heap compartido, la clave vive en el almacenamiento y la atomicidad la aport
 
 La primitiva distintiva es **una ausencia**: `has()` + `set()` es atómico porque no hay otro hilo. Y por eso el código correcto para un proceso es incorrecto para dos, sin cambiar una línea. Ver [`node/README.md`](node/README.md). Modo aislado: `8216`. Hub: `http://localhost:8300/16/`.
 
-### ☕ Java 21
+### ☕ Java 25
 
 `ConcurrentHashMap.putIfAbsent` resuelve la carrera **y** dice quién ganó en una sola llamada. Es la formulación más directa del patrón. Ver [`java/README.md`](java/README.md). Modo aislado: `8416`. Hub: `http://localhost:8400/16/`.
 
-### 🔵 .NET 8
+### 🔵 .NET 10
 
 `TryAdd` sí es atómico — a diferencia de `GetOrAdd` con fábrica, que en el caso 13 hubo que envolver en `Lazy<T>`. Dos APIs en la misma clase con garantías distintas. Ver [`dotnet/README.md`](dotnet/README.md). Modo aislado: `8516`. Hub: `http://localhost:8500/16/`.
 
-### 🐹 Go 1.23
+### 🐹 Go 1.27
 
 `sync.Map.LoadOrStore` con el contrato comma-ok de siempre. Y es el caso donde `sync.Map` **sí** corresponde: claves escritas una vez y leídas muchas — el opuesto exacto del caso 13. Ver [`go/README.md`](go/README.md). Modo aislado: `8616`. Hub: `http://localhost:8600/16/`.
 
-### 🦀 Rust 1.83
+### 🦀 Rust 1.99
 
 La entry API con `match` exhaustivo: **ignorar el resultado no compila**. Y el `Entry` presta el mapa, así que la ventana check-then-act es inexpresable. Ver [`rust/README.md`](rust/README.md). Modo aislado: `8716`. Hub: `http://localhost:8700/16/`.
 
@@ -147,10 +147,10 @@ Convierte cobros duplicados —que se devuelven de a uno, con costo de soporte y
 | 🐘 PHP 8.3 | `OPERATIVO` (reserva en almacenamiento compartido; la única que escala) |
 | 🐍 Python 3.12 | `OPERATIVO` (`dict.setdefault` bajo `Lock`) |
 | 🟢 Node.js 22 | `OPERATIVO` (`Map` atómico por el modelo de un solo hilo) |
-| ☕ Java 21 | `OPERATIVO` (`ConcurrentHashMap.putIfAbsent`) |
-| 🔵 .NET 8 | `OPERATIVO` (`ConcurrentDictionary.TryAdd`) |
-| 🐹 Go 1.23 | `OPERATIVO` (`sync.Map.LoadOrStore`) |
-| 🦀 Rust 1.83 | `OPERATIVO` (`HashMap::entry` con `match` exhaustivo) |
+| ☕ Java 25 | `OPERATIVO` (`ConcurrentHashMap.putIfAbsent`) |
+| 🔵 .NET 10 | `OPERATIVO` (`ConcurrentDictionary.TryAdd`) |
+| 🐹 Go 1.27 | `OPERATIVO` (`sync.Map.LoadOrStore`) |
+| 🦀 Rust 1.99 | `OPERATIVO` (`HashMap::entry` con `match` exhaustivo) |
 
 ---
 

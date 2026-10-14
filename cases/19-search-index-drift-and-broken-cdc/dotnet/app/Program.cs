@@ -9,7 +9,7 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Threading.Tasks;
 
-// Caso 19 — Deriva del indice de busqueda y CDC roto — stack .NET 8.
+// Caso 19 — Deriva del indice de busqueda y CDC roto — stack .NET 10.
 //
 // Dual-write: la aplicacion escribe en la base y despues en el indice. Cuando la
 // segunda escritura falla —y falla, porque son dos sistemas sin transaccion
@@ -51,7 +51,7 @@ using System.Threading.Tasks;
 internal static class Program
 {
     private const string CaseName = "19 - Deriva del indice de busqueda y CDC roto";
-    private static readonly string Stack = Environment.GetEnvironmentVariable("APP_STACK") ?? ".NET 8";
+    private static readonly string Stack = Environment.GetEnvironmentVariable("APP_STACK") ?? ".NET 10";
     private static readonly string[] Terms = { "alfa", "beta", "gamma", "delta", "epsilon", "zeta", "eta", "theta" };
 
     private static readonly Stopwatch Clock = Stopwatch.StartNew();

@@ -1,4 +1,4 @@
-// Caso 01 — API lenta bajo carga (stack Rust 1.83).
+// Caso 01 — API lenta bajo carga (stack Rust 1.99).
 //
 // Espejo del Main.java / Program.cs / main.go equivalentes: mismos endpoints,
 // misma semantica, mismo shape de JSON, mismo dataset.
@@ -45,7 +45,7 @@ static LEGACY_SAMPLES: Mutex<Vec<f64>> = Mutex::new(Vec::new());
 static OPTIMIZED_SAMPLES: Mutex<Vec<f64>> = Mutex::new(Vec::new());
 
 fn stack() -> String {
-    std::env::var("APP_STACK").unwrap_or_else(|_| "Rust 1.83".to_string())
+    std::env::var("APP_STACK").unwrap_or_else(|_| "Rust 1.99".to_string())
 }
 
 fn db_path() -> String {

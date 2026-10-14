@@ -22,24 +22,23 @@ import java.util.concurrent.atomic.LongAdder;
  * Caso 03 — Observabilidad deficiente y logs inutiles (stack Java).
  *
  * Legacy: System.out.println sin correlation, sin contexto. Errores opacos.
- * Observable: log estructurado JSON con correlationId + ScopedValue-like via
- * ThreadLocal, mas /logs endpoint que devuelve los ultimos N logs estructurados.
+ * Observable: log estructurado JSON con correlationId propagado mediante
+ * ScopedValue, mas /logs endpoint que devuelve los ultimos N logs estructurados.
  *
  * Primitiva Java distintiva:
- *   - ThreadLocal<RequestContext> como contexto de correlation (espejo del
- *     ScopedValue de JDK 21 que requiere preview flags). Cada handler arranca
- *     un contexto y lo limpia al final.
+ *   - ScopedValue<RequestContext> como contexto de correlation inmutable y
+ *     acotado lexicalmente. JDK 25 lo ofrece como API final, sin preview flags.
  *   - LongAdder para contadores por tipo de evento.
  */
 public class Main {
 
     private static final String CASE_NAME = "03 - Observabilidad deficiente y logs inutiles";
-    private static final String STACK = "Java 21";
+    private static final String STACK = "Java 25";
     private static final int PORT = Integer.parseInt(System.getenv().getOrDefault("PORT", "8080"));
     private static final int MAX_LOG_ENTRIES = 200;
 
     private static final Deque<String> recentLogs = new ArrayDeque<>();
-    private static final ThreadLocal<RequestContext> CTX = new ThreadLocal<>();
+    private static final ScopedValue<RequestContext> CTX = ScopedValue.newInstance();
 
     private static final LongAdder legacyErrors = new LongAdder();
     private static final LongAdder observableErrors = new LongAdder();
@@ -125,8 +124,10 @@ public class Main {
     /** Observable: correlation ID propagado, log estructurado JSON, /logs endpoint. */
     private static String checkoutObservable(String totalRaw) {
         String corrId = UUID.randomUUID().toString();
-        CTX.set(new RequestContext(corrId, "checkout-observable", Instant.now().toString()));
-        try {
+        RequestContext requestContext = new RequestContext(
+                corrId, "checkout-observable", Instant.now().toString());
+
+        return ScopedValue.where(CTX, requestContext).call(() -> {
             double total = parseDoubleOr(totalRaw, 100.0);
             structuredLog("info", "checkout_start", Map.of("total", String.valueOf(total)));
             if (total > 500) {
@@ -141,13 +142,11 @@ public class Main {
             structuredLog("info", "checkout_ok", Map.of("total", String.valueOf(total)));
             return "{\"variant\":\"observable\",\"status\":\"ok\",\"correlation_id\":\"" + corrId +
                     "\",\"total\":" + total + ",\"note\":\"correlation_id propagado en logs estructurados.\"}";
-        } finally {
-            CTX.remove();
-        }
+        });
     }
 
     private static void structuredLog(String level, String event, Map<String, String> fields) {
-        RequestContext c = CTX.get();
+        RequestContext c = CTX.isBound() ? CTX.get() : null;
         StringBuilder sb = new StringBuilder(256);
         sb.append("{\"ts\":\"").append(Instant.now()).append('"');
         sb.append(",\"level\":\"").append(level).append('"');

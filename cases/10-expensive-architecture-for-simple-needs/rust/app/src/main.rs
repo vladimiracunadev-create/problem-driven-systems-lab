@@ -1,4 +1,4 @@
-// Caso 10 — Arquitectura cara para un problema simple — stack Rust 1.83.
+// Caso 10 — Arquitectura cara para un problema simple — stack Rust 1.99.
 //
 // Complex: N hops simulados con serializacion costosa en cada uno, alto CPU.
 // Right-sized: lookup directo en un HashMap, O(1), CPU minimo.
@@ -50,7 +50,7 @@ const DECISIONS: [&str; 2] = [
 ];
 
 fn stack() -> String {
-    std::env::var("APP_STACK").unwrap_or_else(|_| "Rust 1.83".to_string())
+    std::env::var("APP_STACK").unwrap_or_else(|_| "Rust 1.99".to_string())
 }
 
 fn main() {

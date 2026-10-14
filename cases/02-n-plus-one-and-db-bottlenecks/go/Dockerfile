@@ -3,7 +3,7 @@
 # modernc.org/sqlite es un port de SQLite a Go puro: no necesita cgo, asi que
 # CGO_ENABLED=0 produce un binario sin dependencias de libc. Esa es la razon de
 # elegirlo por sobre mattn/go-sqlite3, que exigiria toolchain de C en el runtime.
-FROM golang:1.23-alpine AS build
+FROM golang:1.27-alpine AS build
 WORKDIR /src
 
 COPY app/go.mod ./

@@ -1,4 +1,4 @@
-// Caso 09 — Integracion externa inestable — stack Go 1.23.
+// Caso 09 — Integracion externa inestable — stack Go 1.27.
 //
 // Legacy: cada request pega al provider sin cache, sin budget, sin breaker.
 // Hardened: budget de cuota + snapshot cache + breaker + mapping defensivo.
@@ -39,7 +39,7 @@ const (
 	budgetPerWindow  = 5
 )
 
-var stack = envOr("APP_STACK", "Go 1.23")
+var stack = envOr("APP_STACK", "Go 1.27")
 
 var (
 	legacyCalls          int64

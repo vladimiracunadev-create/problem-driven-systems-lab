@@ -89,11 +89,11 @@ El stack Node.js resuelve el N+1 anidado contra SQLite real via `node:sqlite` (b
 
 Ver [`node/README.md`](node/README.md). Puerto local: `822`.
 
-### Java 21 (implementacion operativa)
+### Java 25 (implementacion operativa)
 
 Stack Java operativo con SQLite real via `sqlite-jdbc` (single jar, sin Maven). `Connection` + `PreparedStatement` con `?` posicional, batch `IN(?, ?, ?, ...)` consolidado en una `executeQuery()`, `try-with-resources` para cleanup garantizado, `record` types inmutables (`Order`, `Item`), y `LongAdder` para contadores p95/p99 lock-free. Mismas rutas de contraste (`/orders-legacy`, `/orders-optimized`, `/diagnostics/summary`). Ver [`java/README.md`](java/README.md). Hub: `http://localhost:8400/02/`. Aislado: puerto `842`.
 
-### .NET 8 (implementacion operativa)
+### .NET 10 (implementacion operativa)
 
 Stack .NET operativo con SQLite real via `Microsoft.Data.Sqlite` (paquete oficial Microsoft, API ADO.NET). `SqliteConnection` + `SqliteCommand` con bindings `@named`, batch `IN(@id0, @id1, ...)` consolidado en un `ExecuteReader()`, `using` para cleanup de `IDisposable`, `record` types inmutables (`Order`, `Item`), y `Interlocked.Increment` para contadores. Mismas rutas de contraste (`/orders-legacy`, `/orders-optimized`, `/diagnostics/summary`). Ver [`dotnet/README.md`](dotnet/README.md). Hub: `http://localhost:8500/02/`. Aislado: puerto `852`.
 
@@ -123,8 +123,8 @@ Stack .NET operativo con SQLite real via `Microsoft.Data.Sqlite` (paquete oficia
 | 🐘 PHP 8 | ✅ Implementado (Docker + PostgreSQL real + PDO) |
 | 🐍 Python | ✅ Implementado (Docker + SQLite stdlib `sqlite3` + cursor compartido) |
 | 🟢 Node.js | ✅ Implementado (Docker + SQLite real via `node:sqlite` + `event_loop_lag_ms`) |
-| ☕ Java 21 | `OPERATIVO` (SQLite real via `sqlite-jdbc` + `PreparedStatement` + batch `IN(?, ...)`) |
-| 🔵 .NET 8 | `OPERATIVO` (SQLite real via `Microsoft.Data.Sqlite` + `SqliteCommand` + batch `IN(@id, ...)`) |
+| ☕ Java 25 | `OPERATIVO` (SQLite real via `sqlite-jdbc` + `PreparedStatement` + batch `IN(?, ...)`) |
+| 🔵 .NET 10 | `OPERATIVO` (SQLite real via `Microsoft.Data.Sqlite` + `SqliteCommand` + batch `IN(@id, ...)`) |
 
 ---
 

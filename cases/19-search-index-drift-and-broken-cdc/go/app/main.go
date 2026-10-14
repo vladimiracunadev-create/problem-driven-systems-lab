@@ -1,4 +1,4 @@
-// Caso 19 — Deriva del indice de busqueda y CDC roto — stack Go 1.23.
+// Caso 19 — Deriva del indice de busqueda y CDC roto — stack Go 1.27.
 //
 // Dual-write: la aplicacion escribe en la base y despues en el indice. Cuando la
 // segunda escritura falla —y falla, porque son dos sistemas sin transaccion
@@ -50,7 +50,7 @@ import (
 )
 
 var (
-	appStack = envOr("APP_STACK", "Go 1.23")
+	appStack = envOr("APP_STACK", "Go 1.27")
 	caseName = "19 - Deriva del indice de busqueda y CDC roto"
 	terms    = []string{"alfa", "beta", "gamma", "delta", "epsilon", "zeta", "eta", "theta"}
 	start    = time.Now()

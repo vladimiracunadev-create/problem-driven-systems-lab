@@ -1,4 +1,4 @@
-# compose.dotnet.yml — Stack .NET 8 (todos los casos operativos)
+# compose.dotnet.yml — Stack .NET 10 (todos los casos operativos)
 #
 # Un solo contenedor, un solo puerto.
 # El dispatcher interno enruta por prefijo de path:
@@ -24,7 +24,7 @@ services:
     ports:
       - "8500:8500"
     environment:
-      APP_STACK: ".NET 8"
+      APP_STACK: ".NET 10"
       PORT: "8500"
     healthcheck:
       test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:8500/01/health > /dev/null || exit 1"]

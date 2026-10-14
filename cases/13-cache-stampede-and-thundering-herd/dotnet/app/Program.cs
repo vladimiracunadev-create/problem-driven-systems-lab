@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-// Caso 13 — Cache stampede (thundering herd) — stack .NET 8.
+// Caso 13 — Cache stampede (thundering herd) — stack .NET 10.
 //
 // Naive: la clave expira y los N llamadores concurrentes recalculan el origen.
 // `origin_computations == concurrency`.
@@ -37,7 +37,7 @@ using System.Threading.Tasks;
 internal static class Program
 {
     private const string CaseName = "13 - Cache stampede y thundering herd";
-    private static readonly string Stack = Environment.GetEnvironmentVariable("APP_STACK") ?? ".NET 8";
+    private static readonly string Stack = Environment.GetEnvironmentVariable("APP_STACK") ?? ".NET 10";
 
     private const long TtlBaseMs = 4000;
     private const int JitterPct = 25;

@@ -109,11 +109,11 @@ Misma lógica con `Optional`-like via try/except + diccionario de owners. Ver [`
 
 Optional chaining (`a?.b?.c ?? default`) como **runbook codificado en el lenguaje** — `distributed` evita el crash que sufre legacy con acceso ciego a estructuras anidadas. `share-knowledge` sube `coverage` y baja `mttr_min` de forma medible. Ver [`node/README.md`](node/README.md). Modo aislado: puerto `8212`. Hub: `http://localhost:8300/12/`.
 
-### Java 21
+### Java 25
 
 `Optional<T>` + `map`/`flatMap`/`orElse` como runbook codificado en el sistema de tipos. El crash legacy no es falla de Java — es falla de no usar las herramientas que Java ya ofrece. `record Owner/Incident` inmutables; `AtomicInteger` para coverage y bus_factor. Ver [`java/README.md`](java/README.md). Modo aislado: puerto `8412`. Hub: `http://localhost:8400/12/`.
 
-### .NET 8
+### .NET 10
 
 Operadores `?.` (null-conditional) + `??` (null-coalescing) con Nullable Reference Types habilitado (`<Nullable>enable</Nullable>`) — el compilador advierte sobre desreferencias de `Owner?` sin chequear. El crash legacy no es falla de .NET — es falla de no usar las herramientas que C# moderno ya ofrece. `record Owner/Incident` inmutables; `Interlocked.Add` para coverage y bus_factor. Ver [`dotnet/README.md`](dotnet/README.md). Modo aislado: puerto `8512`. Hub: `http://localhost:8500/12/`.
 
@@ -140,8 +140,8 @@ Reduce **riesgo organizacional**, mejora continuidad y hace al producto más sos
 | 🐘 PHP 8 | `OPERATIVO` (runbook checks + share-knowledge) |
 | 🐍 Python 3.12 | `OPERATIVO` (try/except + dict owners) |
 | 🟢 Node.js 22 | `OPERATIVO` (optional chaining `?.` como runbook codificado) |
-| ☕ Java 21 | `OPERATIVO` (`Optional<T>` + `map/flatMap/orElse` + `record` types) |
-| 🔵 .NET 8 | `OPERATIVO` (`?.` + `??` con Nullable Reference Types + `record` types) |
+| ☕ Java 25 | `OPERATIVO` (`Optional<T>` + `map/flatMap/orElse` + `record` types) |
+| 🔵 .NET 10 | `OPERATIVO` (`?.` + `??` con Nullable Reference Types + `record` types) |
 
 ---
 

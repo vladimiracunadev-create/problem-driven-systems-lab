@@ -1,4 +1,4 @@
-# ☕ Caso 14 — Java 21
+# ☕ Caso 14 — Java 25
 
 <!-- nav-stack -->
 [⬅️ Caso 14](../README.md) · [⚖️ Comparativa de los 7 stacks](../comparison.md) · [☕ Perfil de Java](../../../docs/languages/java.md) · [🧬 Todos los perfiles](../../../docs/languages/README.md)

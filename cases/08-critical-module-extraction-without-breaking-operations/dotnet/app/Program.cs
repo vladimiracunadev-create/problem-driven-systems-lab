@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-// Caso 08 — Extraccion critica de modulo (cutover) — stack .NET 8.
+// Caso 08 — Extraccion critica de modulo (cutover) — stack .NET 10.
 //
 // Primitivas .NET distintivas:
 //   - Func<TOld,TNew> como proxy de compatibilidad (espejo del Function Java).
@@ -17,7 +17,7 @@ using System.Threading.Tasks;
 internal static class Program
 {
     private const string CaseName = "08 - Extraccion critica de modulo";
-    private static readonly string Stack = Environment.GetEnvironmentVariable("APP_STACK") ?? ".NET 8";
+    private static readonly string Stack = Environment.GetEnvironmentVariable("APP_STACK") ?? ".NET 10";
     private const int MaxEvents = 50;
 
     private sealed record PriceRequestOld(string Sku, double CostUsd);

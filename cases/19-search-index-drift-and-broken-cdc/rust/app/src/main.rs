@@ -1,4 +1,4 @@
-//! Caso 19 — Deriva del indice de busqueda y CDC roto — stack Rust 1.83.
+//! Caso 19 — Deriva del indice de busqueda y CDC roto — stack Rust 1.99.
 //!
 //! Dual-write: la aplicacion escribe en la base y despues en el indice. Cuando la
 //! segunda escritura falla —y falla, porque son dos sistemas sin transaccion
@@ -659,7 +659,7 @@ fn handle(mut stream: TcpStream, stack: &str) {
 
 fn main() {
     let _ = start();
-    let stack = std::env::var("APP_STACK").unwrap_or_else(|_| "Rust 1.83".to_string());
+    let stack = std::env::var("APP_STACK").unwrap_or_else(|_| "Rust 1.99".to_string());
     let port = std::env::var("PORT").unwrap_or_else(|_| "8080".to_string());
     let listener = TcpListener::bind(format!("0.0.0.0:{}", port)).expect("bind");
     println!("Servidor Rust escuchando en {}", port);

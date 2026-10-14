@@ -9,9 +9,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Data.Sqlite;
 
-// Caso 02 — N+1 queries y cuellos de botella DB (stack .NET 8).
+// Caso 02 — N+1 queries y cuellos de botella DB (stack .NET 10).
 //
-// Substrato real: SQLite embebido vía Microsoft.Data.Sqlite 8.0.10. Conexión
+// Substrato real: SQLite embebido vía Microsoft.Data.Sqlite 10.0.13. Conexión
 // en proceso, sin contenedor extra, sin puerto extra. Antes este caso
 // simulaba N+1 con un Dictionary<int, List<Item>>, lo que es deshonesto:
 // N+1 *es* un problema de round-trips contra una base relacional.
@@ -25,7 +25,7 @@ using Microsoft.Data.Sqlite;
 internal static class Program
 {
     private const string CaseName = "02 - N+1 queries y cuellos de botella DB";
-    private static readonly string Stack = Environment.GetEnvironmentVariable("APP_STACK") ?? ".NET 8";
+    private static readonly string Stack = Environment.GetEnvironmentVariable("APP_STACK") ?? ".NET 10";
     private const int MaxSamples = 3000;
 
     // Conexión global a `:memory:`. Microsoft.Data.Sqlite descarta una DB

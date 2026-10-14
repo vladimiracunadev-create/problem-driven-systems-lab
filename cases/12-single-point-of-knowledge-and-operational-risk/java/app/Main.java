@@ -34,7 +34,7 @@ import java.util.concurrent.atomic.LongAdder;
 public class Main {
 
     private static final String CASE_NAME = "12 - Punto unico de conocimiento";
-    private static final String STACK = "Java 21";
+    private static final String STACK = "Java 25";
     private static final int PORT = Integer.parseInt(System.getenv().getOrDefault("PORT", "8080"));
     private static final int MAX_INCIDENTS = 30;
 

@@ -3,7 +3,7 @@
 > **TL;DR** — Con 120 mensajes y un consumidor 3× más lento, la cola sin límite acumula **los 120** y el mensaje más viejo espera ~280 ms. La misma carga con capacidad 32 acota la profundidad y baja esa espera a ~80 ms. Pero acotar **obliga a elegir**: frenar al productor (218 ms de espera), descartar 88 mensajes, o mandar 88 a la DLQ. Los siete stacks llegan al mismo resultado. Lo que cambia es **cuánto ayuda el lenguaje a no equivocarse**.
 
 <!-- nav -->
-`🐘 PHP 8.3` · `🐍 Python 3.12` · `🟢 Node.js 22` · `☕ Java 21` · `🔵 .NET 8` · `🐹 Go 1.23` · `🦀 Rust 1.83`
+`🐘 PHP 8.3` · `🐍 Python 3.12` · `🟢 Node.js 22` · `☕ Java 25` · `🔵 .NET 10` · `🐹 Go 1.27` · `🦀 Rust 1.99`
 
 **Estructura:** 🎯 el problema → 🧪 fidelidad del substrato → una sección por stack → ⚖️ tabla de decisión → 📊 primitiva por stack → 🏁 veredicto y ranking
 <!-- /nav -->
@@ -195,11 +195,11 @@ Err(TrySendError::Full(msg)) => dlq.push(msg),   // el mensaje vuelve
 
 | Puesto | Stack | Por qué |
 |---|---|---|
-| 🥇 | **Go 1.23** | La capacidad es parte de la construcción del canal: **no existe el buffer infinito**. La versión con el bug hay que escribirla a mano y sale más larga que la correcta. Y las tres políticas reutilizan el `select` que ya se aprendió en otros cuatro casos. |
-| 🥈 | **Rust 1.83** | El límite está en el tipo, así que la confusión no compila. `TrySendError::Full(T)` devolviendo el mensaje rechazado es la mejor primitiva del set para una DLQ. Pierde el oro porque `mpsc::channel()` sin límite está a un nombre de distancia. |
-| 🥉 | **.NET 8** | La política como enum del constructor se decide una vez para todo el sistema, y el callback de descarte hace que la pérdida silenciosa sea difícil de escribir. `CreateUnbounded()` sin advertencias le cuesta el podio más alto. |
+| 🥇 | **Go 1.27** | La capacidad es parte de la construcción del canal: **no existe el buffer infinito**. La versión con el bug hay que escribirla a mano y sale más larga que la correcta. Y las tres políticas reutilizan el `select` que ya se aprendió en otros cuatro casos. |
+| 🥈 | **Rust 1.99** | El límite está en el tipo, así que la confusión no compila. `TrySendError::Full(T)` devolviendo el mensaje rechazado es la mejor primitiva del set para una DLQ. Pierde el oro porque `mpsc::channel()` sin límite está a un nombre de distancia. |
+| 🥉 | **.NET 10** | La política como enum del constructor se decide una vez para todo el sistema, y el callback de descarte hace que la pérdida silenciosa sea difícil de escribir. `CreateUnbounded()` sin advertencias le cuesta el podio más alto. |
 | 4º | **Python 3.12** | `put` / `put_nowait` / `put(timeout=)` es la API más explícita para elegir política. Baja porque `Queue()` sin `maxsize` se escribe con menos caracteres que la acotada. |
-| 5º | **Java 21** | Le puso nombre a cada forma de rechazar, lo cual es valioso. Pero `ConcurrentLinkedQueue` comparte interfaz con `ArrayBlockingQueue`, así que sacar el freno del sistema es un cambio de una línea que compila y pasa los tests. |
+| 5º | **Java 25** | Le puso nombre a cada forma de rechazar, lo cual es valioso. Pero `ConcurrentLinkedQueue` comparte interfaz con `ArrayBlockingQueue`, así que sacar el freno del sistema es un cambio de una línea que compila y pasa los tests. |
 | 6º | **Node.js 22** | Único stack donde el backpressure es parte del protocolo del runtime — y único donde **ignorarlo compila, pasa los tests y funciona en desarrollo**. La señal existe; nada obliga a mirarla. |
 | 7º | **PHP 8.3** | No tiene cola en proceso, así que el caso se demuestra en un solo bucle. A cambio enseña lo que ningún otro: que el freno, si no está en tu proceso, está en el kernel o en el broker — y hay que saber cuál. |
 

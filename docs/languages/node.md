@@ -95,9 +95,9 @@ curl -s localhost:8300/01/metrics                          # db_hits constante, 
 | **`AsyncLocalStorage` no impide la fuga** | Funciona, pero nada en el lenguaje evita almacenar el contexto donde no corresponde | [caso 03](../../cases/03-poor-observability-and-useless-logs/comparison.md) |
 | **`?.` esconde el error hasta tres capas después** | El `undefined` viaja en silencio y explota lejos del origen. Es lo contrario de `Option<T>` | [caso 12](../../cases/12-single-point-of-knowledge-and-operational-risk/comparison.md) |
 | **Sin tipos en runtime** | Nada valida la firma del handler al registrarlo; el error llega con el request | [caso 07](../../cases/07-incremental-monolith-modernization/comparison.md) |
-| **`node:sqlite` sigue siendo experimental en 22** | Requiere el flag `--experimental-sqlite`. La API puede cambiar entre versiones menores | casos 01 y 02 |
+| **`node:sqlite` sigue siendo experimental en 22** | Esta habilitado por defecto desde 22.13, pero la API aun puede cambiar entre versiones menores | casos 01 y 02 |
 
-**Desafío abierto del stack en este laboratorio:** los casos 01 y 02 dependen de `node:sqlite`, que en Node 22 sigue detrás de `--experimental-sqlite`. Es la dependencia más frágil del repositorio: una API experimental puede cambiar sin ceremonia. Está anotada como disparador explícito en `scripts/language_drift.py`.
+**Desafío abierto del stack en este laboratorio:** los casos 01 y 02 dependen de `node:sqlite`, habilitado por defecto desde Node 22.13 pero aun experimental en esa linea LTS. El flag ya fue retirado; lo que queda por vigilar es la estabilidad de la API, que en Node 24 avanzo a release candidate.
 
 ---
 
@@ -129,7 +129,7 @@ Agregado de los veredictos de las 19 comparativas que rankean: **0 primeros pues
 
 **Qué revisar en el próximo salto:**
 
-1. **🚨 `node:sqlite` fuera de experimental (Node 24+)** — el flag `--experimental-sqlite` de los [casos 01](../../cases/01-api-latency-under-load/node/README.md) y [02](../../cases/02-n-plus-one-and-db-bottlenecks/node/README.md) sobraría, y la API podría haber cambiado. Hay que revisar el código, no solo el `Dockerfile`.
+1. **`node:sqlite` hacia estabilidad** — el flag ya no existe en el lab porque Node 22.13+ habilita el modulo por defecto. En Node 24 es release candidate; revisar la API de los [casos 01](../../cases/01-api-latency-under-load/node/README.md) y [02](../../cases/02-n-plus-one-and-db-bottlenecks/node/README.md) antes de cambiar de LTS.
 2. **Cambios en `AbortSignal`** — es la primitiva central de los casos 04 y 09.
 3. **Evolución de `worker_threads`** — el argumento del caso 11 depende de que sacar el CPU del loop siga siendo la única salida.
 4. **Cambios en el GC de V8** — afectan la lectura de `process.memoryUsage()` en el caso 05.

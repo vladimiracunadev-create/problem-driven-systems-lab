@@ -34,7 +34,7 @@ import java.util.concurrent.atomic.LongAdder;
 public class Main {
 
     private static final String CASE_NAME = "04 - Timeout chain y retry storms";
-    private static final String STACK = "Java 21";
+    private static final String STACK = "Java 25";
     private static final int PORT = Integer.parseInt(System.getenv().getOrDefault("PORT", "8080"));
     private static final long BREAKER_COOLDOWN_MS = 5000;
     private static final int BREAKER_FAIL_THRESHOLD = 3;

@@ -7,7 +7,7 @@
 El laboratorio se organiza hoy como un sistema de cuatro capas:
 
 1. una capa editorial y operativa en la raíz;
-2. un portal local ligero para evaluación guiada, más entradas completas por lenguaje (PHP, Python, Node.js, Java 21 y .NET 8 operativos, cada uno con su propio compose raíz);
+2. un portal local ligero para evaluación guiada, más entradas completas por lenguaje (PHP, Python, Node.js, Java 25 y .NET 10 operativos, cada uno con su propio compose raíz);
 3. un catálogo maestro en metadatos compartidos;
 4. casos problem-driven con stacks aislados por Docker.
 
@@ -95,10 +95,10 @@ Cada lenguaje operativo tiene su compose raíz — un comando levanta los 20 cas
 | `compose.root.yml` | PHP 8.3 | `:8100` | + portal `:8080`, Prometheus `:9091`, Grafana `:3001`, RDS × 2 internos |
 | `compose.python.yml` | Python 3.12 | `:8200` | 20 casos en un solo contenedor dispatcher, stdlib pura |
 | `compose.nodejs.yml` | Node.js 20 | `:8300` | 20 casos en un solo contenedor, stdlib pura |
-| `compose.java.yml` | Java 21 | `:8400` | 20 casos en un solo contenedor, JDK built-in (`HttpServer`, `HttpClient`) |
-| `compose.dotnet.yml` | .NET 8 | `:8500` | 20 casos en un solo contenedor, BCL built-in (`HttpListener`, `System.Text.Json`) |
-| `compose.go.yml` | Go 1.23 | `:8600` | 20 casos en un solo contenedor, stdlib (`net/http`, `encoding/json`, `httputil.ReverseProxy`) |
-| `compose.rust.yml` | Rust 1.83 | `:8700` | 20 casos en un solo contenedor; `std` **no** trae HTTP ni JSON — capa propia sobre `TcpListener` |
+| `compose.java.yml` | Java 25 | `:8400` | 20 casos en un solo contenedor, JDK built-in (`HttpServer`, `HttpClient`) |
+| `compose.dotnet.yml` | .NET 10 | `:8500` | 20 casos en un solo contenedor, BCL built-in (`HttpListener`, `System.Text.Json`) |
+| `compose.go.yml` | Go 1.27 | `:8600` | 20 casos en un solo contenedor, stdlib (`net/http`, `encoding/json`, `httputil.ReverseProxy`) |
+| `compose.rust.yml` | Rust 1.99 | `:8700` | 20 casos en un solo contenedor; `std` **no** trae HTTP ni JSON — capa propia sobre `TcpListener` |
 | `compose.portal.yml` | — | `:8080` | portal liviano solamente |
 
 Los siete stacks pueden correr en paralelo sin colisión de puertos — comparten el mismo patrón hub.
@@ -243,7 +243,7 @@ graph LR
 |---|---|---|
 | `01` API latency | **SQL real en los 7.** PostgreSQL+worker (PHP) · SQLite stdlib+thread (Python) · `node:sqlite` (Node) · `sqlite-jdbc`+WAL (Java) · `Microsoft.Data.Sqlite`+WAL (.NET) · `modernc.org/sqlite`+WAL (Go) · `rusqlite` bundled+WAL (Rust) | OPERATIVO, fidelidad universal |
 | `02` N+1 | **SQL real en los 7.** Mismos motores que el caso 01; `db_hits` cuenta ejecuciones contra el motor | OPERATIVO, fidelidad universal |
-| `03` Observabilidad | correlation_id: `ThreadLocal` (Java) · `AsyncLocal` (.NET) · `AsyncLocalStorage` (Node) · **`context.Context` explícito + `log/slog` (Go)** · **`&RequestCtx` con lifetime acotado (Rust)** | OPERATIVO |
+| `03` Observabilidad | correlation_id: `ScopedValue` (Java) · `AsyncLocal` (.NET) · `AsyncLocalStorage` (Node) · **`context.Context` explícito + `log/slog` (Go)** · **`&RequestCtx` con lifetime acotado (Rust)** | OPERATIVO |
 | `04` Timeout chain | `AbortController` (Node) · `orTimeout` (Java) · `CancellationTokenSource` (.NET) · **`context.WithTimeout` que cancela aguas abajo (Go)** · `mpsc::recv_timeout` (Rust, corta la espera no el trabajo) | OPERATIVO |
 | `05` Memory pressure | heap V8 (Node) · `LinkedHashMap` LRU (Java) · LRU manual (.NET) · `container/list` + `runtime.ReadMemStats` (Go) · **`impl Drop` que cuenta liberaciones, sin GC (Rust)** | OPERATIVO |
 | `06` Pipeline roto | `record` + state machine (Java/.NET) · `sync.Mutex` sobre la transacción completa (Go) · **`enum` + `match` exhaustivo (Rust)** | OPERATIVO |
@@ -408,10 +408,10 @@ La arquitectura actual queda sostenida por seis mecanismos:
 | `compose.root.yml` | PHP: portal (`:8080`) + hub (`:8100`) + DB × 2 + worker + Prometheus (`:9091`) + Grafana (`:3001`) |
 | `compose.python.yml` | Python: dispatcher único con 20 casos internos (`:8200`) |
 | `compose.nodejs.yml` | Node: dispatcher único con 20 casos internos (`:8300`) |
-| `compose.java.yml` | Java 21: dispatcher único con 20 casos internos (`:8400`) |
-| `compose.dotnet.yml` | .NET 8: dispatcher único con 20 casos internos (`:8500`) |
-| `compose.go.yml` | Go 1.23: dispatcher único con 20 casos internos (`:8600`) |
-| `compose.rust.yml` | Rust 1.83: dispatcher único con 20 casos internos (`:8700`) |
+| `compose.java.yml` | Java 25: dispatcher único con 20 casos internos (`:8400`) |
+| `compose.dotnet.yml` | .NET 10: dispatcher único con 20 casos internos (`:8500`) |
+| `compose.go.yml` | Go 1.27: dispatcher único con 20 casos internos (`:8600`) |
+| `compose.rust.yml` | Rust 1.99: dispatcher único con 20 casos internos (`:8700`) |
 | `compose.portal.yml` | Portal liviano solamente (`:8080`) |
 | `cases/<caso>/<stack>/compose.yml` | Escenario concreto y aislado (estudio individual) |
 | `cases/<caso>/compose.compare.yml` | Comparación entre stacks del mismo caso |

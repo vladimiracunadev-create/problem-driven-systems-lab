@@ -107,19 +107,19 @@ Los siete stacks exponen el mismo contrato: `/pool-leaky` y `/pool-managed` sobr
 
 El modo de falla más silencioso del set: el que espera no es un hilo sino una Promise que nadie va a resolver. `AbortSignal.timeout()` es lo único que le da un final observable. Ver [`node/README.md`](node/README.md). Modo aislado: `8214`. Hub: `http://localhost:8300/14/`.
 
-### ☕ Java 21
+### ☕ Java 25
 
 `ArrayBlockingQueue` —la base de HikariCP— más `Lease implements AutoCloseable`. El compilador genera el `finally` de try-with-resources para todos los caminos de salida. Ver [`java/README.md`](java/README.md). Modo aislado: `8414`. Hub: `http://localhost:8400/14/`.
 
-### 🔵 .NET 8
+### 🔵 .NET 10
 
 `SemaphoreSlim.WaitAsync(timeout)` devuelve `false` en vez de lanzar, separando «no había conexión» de «la conexión falló». Y `using var` hace que el código correcto sea más corto que el incorrecto. Ver [`dotnet/README.md`](dotnet/README.md). Modo aislado: `8514`. Hub: `http://localhost:8500/14/`.
 
-### 🐹 Go 1.23
+### 🐹 Go 1.27
 
 El canal bufferizado **es** el pool: contenedor y límite en una estructura. El `select` con temporizador es la misma primitiva de los casos 04, 08 y 09. El límite honesto: `defer` hay que acordarse de escribirlo. Ver [`go/README.md`](go/README.md). Modo aislado: `8614`. Hub: `http://localhost:8600/14/`.
 
-### 🦀 Rust 1.83
+### 🦀 Rust 1.99
 
 `impl Drop` devuelve la conexión sin que haya línea que recordar — ni siquiera durante un `panic`. La variante con fuga tuvo que escribirse con `std::mem::forget`, la única forma de perder un recurso en Rust seguro. Ver [`rust/README.md`](rust/README.md). Modo aislado: `8714`. Hub: `http://localhost:8700/14/`.
 
@@ -147,10 +147,10 @@ Convierte una indisponibilidad que nadie sabe explicar —el servicio no respond
 | 🐘 PHP 8.3 | `OPERATIVO` (`finally` + nota sobre persistentes de FPM) |
 | 🐍 Python 3.12 | `OPERATIVO` (`queue.Queue` como pool + `@contextmanager`) |
 | 🟢 Node.js 22 | `OPERATIVO` (`AbortSignal.timeout` + `finally`) |
-| ☕ Java 21 | `OPERATIVO` (`ArrayBlockingQueue` + try-with-resources) |
-| 🔵 .NET 8 | `OPERATIVO` (`SemaphoreSlim.WaitAsync` + `using var`) |
-| 🐹 Go 1.23 | `OPERATIVO` (canal bufferizado como pool + `select` + `defer`) |
-| 🦀 Rust 1.83 | `OPERATIVO` (`impl Drop`; la fuga exige `mem::forget`) |
+| ☕ Java 25 | `OPERATIVO` (`ArrayBlockingQueue` + try-with-resources) |
+| 🔵 .NET 10 | `OPERATIVO` (`SemaphoreSlim.WaitAsync` + `using var`) |
+| 🐹 Go 1.27 | `OPERATIVO` (canal bufferizado como pool + `select` + `defer`) |
+| 🦀 Rust 1.99 | `OPERATIVO` (`impl Drop`; la fuga exige `mem::forget`) |
 
 ---
 

@@ -38,13 +38,13 @@
 | 20 | La dead letter queue olvidada | Resiliencia | Elimina la perdida silenciosa de datos en pipelines de mensajes. |
 | 20 | La dead letter queue olvidada | Resiliencia | Elimina la perdida silenciosa de datos en pipelines de mensajes. |
 
-Los 20 casos estan **OPERATIVOS** en los 7 stacks: PHP/Python/Node.js/Java 21/.NET 8/Go 1.23/Rust 1.83. Detalle de paridad: [`docs/case-catalog.md`](case-catalog.md).
+Los 20 casos estan **OPERATIVOS** en los 7 stacks: PHP/Python/Node.js/Java 25/.NET 10/Go 1.27/Rust 1.99. Detalle de paridad: [`docs/case-catalog.md`](case-catalog.md).
 
 ---
 
 ## Caso 01 — API lenta bajo carga
 
-**Categoria:** Rendimiento · **Stacks operativos:** PHP, Python, Node.js, Java 21, .NET 8
+**Categoria:** Rendimiento · **Stacks operativos:** PHP, Python, Node.js, Java 25, .NET 10
 
 **Problema.** La API responde bien con pocos usuarios, pero degrada latencia y estabilidad al aumentar la concurrencia. Filtros no sargables + patron N+1 + worker concurrente compitiendo por la DB.
 
@@ -60,7 +60,7 @@ Los 20 casos estan **OPERATIVOS** en los 7 stacks: PHP/Python/Node.js/Java 21/.N
 
 ## Caso 02 — N+1 queries y cuellos de botella en DB
 
-**Categoria:** Rendimiento · **Stacks operativos:** PHP, Python, Node.js, Java 21, .NET 8
+**Categoria:** Rendimiento · **Stacks operativos:** PHP, Python, Node.js, Java 25, .NET 10
 
 **Problema.** Demasiadas consultas por solicitud o acceso a datos ineficiente — el clasico N+1 dentro de bucles + relaciones cargadas innecesariamente.
 
@@ -76,7 +76,7 @@ Los 20 casos estan **OPERATIVOS** en los 7 stacks: PHP/Python/Node.js/Java 21/.N
 
 ## Caso 03 — Observabilidad deficiente y logs inutiles
 
-**Categoria:** Observabilidad · **Stacks operativos:** PHP, Python, Node.js, Java 21, .NET 8
+**Categoria:** Observabilidad · **Stacks operativos:** PHP, Python, Node.js, Java 25, .NET 10
 
 **Problema.** Hay errores, pero no hay trazabilidad para identificar causa raiz rapido. Logs sin correlacion + sin contexto + sin metricas.
 
@@ -92,7 +92,7 @@ Los 20 casos estan **OPERATIVOS** en los 7 stacks: PHP/Python/Node.js/Java 21/.N
 
 ## Caso 04 — Cadena de timeouts y tormentas de reintentos
 
-**Categoria:** Resiliencia · **Stacks operativos:** PHP, Python, Node.js, Java 21, .NET 8
+**Categoria:** Resiliencia · **Stacks operativos:** PHP, Python, Node.js, Java 25, .NET 10
 
 **Problema.** Una integracion lenta dispara reintentos sin control → bloqueos → cascadas de fallas entre servicios.
 
@@ -108,7 +108,7 @@ Los 20 casos estan **OPERATIVOS** en los 7 stacks: PHP/Python/Node.js/Java 21/.N
 
 ## Caso 05 — Presion de memoria y fugas de recursos
 
-**Categoria:** Rendimiento · **Stacks operativos:** PHP, Python, Node.js, Java 21, .NET 8
+**Categoria:** Rendimiento · **Stacks operativos:** PHP, Python, Node.js, Java 25, .NET 10
 
 **Problema.** El sistema acumula memoria, descriptores o conexiones de forma progresiva hasta degradar o caerse. Problemas silenciosos que **no fallan de inmediato**.
 
@@ -124,7 +124,7 @@ Los 20 casos estan **OPERATIVOS** en los 7 stacks: PHP/Python/Node.js/Java 21/.N
 
 ## Caso 06 — Pipeline roto y entrega fragil
 
-**Categoria:** Entrega · **Stacks operativos:** PHP, Python, Node.js, Java 21, .NET 8
+**Categoria:** Entrega · **Stacks operativos:** PHP, Python, Node.js, Java 25, .NET 10
 
 **Problema.** El software funciona en dev, pero falla al desplegar, promover o revertir. Drift entre ambientes, secretos perdidos, smoke tests que pasan tarde.
 
@@ -140,7 +140,7 @@ Los 20 casos estan **OPERATIVOS** en los 7 stacks: PHP/Python/Node.js/Java 21/.N
 
 ## Caso 07 — Modernizacion incremental de monolito
 
-**Categoria:** Arquitectura · **Stacks operativos:** PHP, Python, Node.js, Java 21, .NET 8
+**Categoria:** Arquitectura · **Stacks operativos:** PHP, Python, Node.js, Java 25, .NET 10
 
 **Problema.** El legacy sigue siendo critico, pero su evolucion es lenta, riesgosa y cara. Cada cambio amenaza con romper algo no relacionado.
 
@@ -156,7 +156,7 @@ Los 20 casos estan **OPERATIVOS** en los 7 stacks: PHP/Python/Node.js/Java 21/.N
 
 ## Caso 08 — Extraccion de modulo critico sin romper operacion
 
-**Categoria:** Arquitectura · **Stacks operativos:** PHP, Python, Node.js, Java 21, .NET 8
+**Categoria:** Arquitectura · **Stacks operativos:** PHP, Python, Node.js, Java 25, .NET 10
 
 **Problema.** Hay que desacoplar una parte clave, pero esa parte participa en flujos sensibles (checkout, partners, backoffice) y no admite quiebres.
 
@@ -172,7 +172,7 @@ Los 20 casos estan **OPERATIVOS** en los 7 stacks: PHP/Python/Node.js/Java 21/.N
 
 ## Caso 09 — Integracion externa inestable
 
-**Categoria:** Resiliencia · **Stacks operativos:** PHP, Python, Node.js, Java 21, .NET 8
+**Categoria:** Resiliencia · **Stacks operativos:** PHP, Python, Node.js, Java 25, .NET 10
 
 **Problema.** Una API externa introduce latencia, errores intermitentes o reglas cambiantes que afectan el sistema propio. No controlamos al tercero.
 
@@ -188,7 +188,7 @@ Los 20 casos estan **OPERATIVOS** en los 7 stacks: PHP/Python/Node.js/Java 21/.N
 
 ## Caso 10 — Arquitectura cara para un problema simple
 
-**Categoria:** Arquitectura · **Stacks operativos:** PHP, Python, Node.js, Java 21, .NET 8
+**Categoria:** Arquitectura · **Stacks operativos:** PHP, Python, Node.js, Java 25, .NET 10
 
 **Problema.** La solucion tecnica consume mas servicios, complejidad y costo del que el problema de negocio realmente necesita. Sobre-ingenieria disfrazada de "estandar".
 
@@ -204,7 +204,7 @@ Los 20 casos estan **OPERATIVOS** en los 7 stacks: PHP/Python/Node.js/Java 21/.N
 
 ## Caso 11 — Reportes pesados que bloquean la operacion
 
-**Categoria:** Operaciones · **Stacks operativos:** PHP, Python, Node.js, Java 21, .NET 8
+**Categoria:** Operaciones · **Stacks operativos:** PHP, Python, Node.js, Java 25, .NET 10
 
 **Problema.** Reporting compite con operacion transaccional y degrada el sistema completo. Aparece tarde y cuesta caro porque no se detecta hasta que ya bloquea ventas.
 
@@ -220,7 +220,7 @@ Los 20 casos estan **OPERATIVOS** en los 7 stacks: PHP/Python/Node.js/Java 21/.N
 
 ## Caso 12 — Punto unico de conocimiento y riesgo operacional
 
-**Categoria:** Operaciones · **Stacks operativos:** PHP, Python, Node.js, Java 21, .NET 8
+**Categoria:** Operaciones · **Stacks operativos:** PHP, Python, Node.js, Java 25, .NET 10
 
 **Problema.** Una persona o procedimiento concentra tanto conocimiento que el sistema se vuelve fragil ante ausencias o rotacion. **Bus factor = 1**.
 
@@ -236,7 +236,7 @@ Los 20 casos estan **OPERATIVOS** en los 7 stacks: PHP/Python/Node.js/Java 21/.N
 
 ## Caso 13 — Cache stampede y thundering herd
 
-**Categoria:** Rendimiento · **Stacks operativos:** PHP, Python, Node.js, Java 21, .NET 8, Go 1.23, Rust 1.83
+**Categoria:** Rendimiento · **Stacks operativos:** PHP, Python, Node.js, Java 25, .NET 10, Go 1.27, Rust 1.99
 
 **Problema.** Una clave de cache caliente expira y los N requests que la estaban usando van todos al origen a recalcular el mismo valor. La cache marca 99% de hit rate mientras el sistema se cae en el 1% restante.
 
@@ -252,7 +252,7 @@ Los 20 casos estan **OPERATIVOS** en los 7 stacks: PHP/Python/Node.js/Java 21/.N
 
 ## Caso 14 — Agotamiento del pool de conexiones
 
-**Categoria:** Rendimiento · **Stacks operativos:** PHP, Python, Node.js, Java 21, .NET 8, Go 1.23, Rust 1.83
+**Categoria:** Rendimiento · **Stacks operativos:** PHP, Python, Node.js, Java 25, .NET 10, Go 1.27, Rust 1.99
 
 **Problema.** El pool pierde una conexion cada vez que una query lanza, porque la devolucion esta solo en el camino feliz. Sin deadline de adquisicion, el que llega cuando ya no hay conexiones no falla: se queda. El servicio deja de responder sin que ningun proceso muera y sin que ninguna alerta dispare.
 
@@ -268,7 +268,7 @@ Los 20 casos estan **OPERATIVOS** en los 7 stacks: PHP/Python/Node.js/Java 21/.N
 
 ## Caso 15 — Backpressure en colas de mensajes
 
-**Categoria:** Resiliencia · **Stacks operativos:** PHP, Python, Node.js, Java 21, .NET 8, Go 1.23, Rust 1.83
+**Categoria:** Resiliencia · **Stacks operativos:** PHP, Python, Node.js, Java 25, .NET 10, Go 1.27, Rust 1.99
 
 **Problema.** El productor va mas rapido que el consumidor y la cola absorbe la diferencia. Sin limite crece hasta el OOM, y el throughput se ve perfecto hasta el segundo antes. Con limite hay que elegir que pasa cuando se llena — y las tres opciones cuestan algo.
 
@@ -284,7 +284,7 @@ Los 20 casos estan **OPERATIVOS** en los 7 stacks: PHP/Python/Node.js/Java 21/.N
 
 ## Caso 16 — Idempotencia y efectos duplicados
 
-**Categoria:** Resiliencia · **Stacks operativos:** PHP, Python, Node.js, Java 21, .NET 8, Go 1.23, Rust 1.83
+**Categoria:** Resiliencia · **Stacks operativos:** PHP, Python, Node.js, Java 25, .NET 10, Go 1.27, Rust 1.99
 
 **Problema.** El cliente reintenta porque el primer intento dio timeout. Pero el primer intento SI llego — lo que se perdio fue la respuesta. El cliente no puede distinguir 'no llego' de 'llego y no me entere', y sin una Idempotency-Key el servidor tampoco.
 
@@ -300,7 +300,7 @@ Los 20 casos estan **OPERATIVOS** en los 7 stacks: PHP/Python/Node.js/Java 21/.N
 
 ## Caso 17 — Migracion de esquema sin downtime
 
-**Categoria:** Entrega · **Stacks operativos:** PHP, Python, Node.js, Java 21, .NET 8, Go 1.23, Rust 1.83
+**Categoria:** Entrega · **Stacks operativos:** PHP, Python, Node.js, Java 25, .NET 10, Go 1.27, Rust 1.99
 
 **Problema.** Un ALTER TABLE sobre una tabla caliente toma el lock exclusivo y no lo suelta hasta terminar. Veinte minutos de 503 por agregar una columna — con el proceso vivo y el healthcheck en verde todo el tiempo.
 
@@ -316,7 +316,7 @@ Los 20 casos estan **OPERATIVOS** en los 7 stacks: PHP/Python/Node.js/Java 21/.N
 
 ## Caso 18 — Arranque en frio y retraso del autoescalado
 
-**Categoria:** Resiliencia · **Stacks operativos:** PHP, Python, Node.js, Java 21, .NET 8, Go 1.23, Rust 1.83
+**Categoria:** Resiliencia · **Stacks operativos:** PHP, Python, Node.js, Java 25, .NET 10, Go 1.27, Rust 1.99
 
 **Problema.** El autoescalador suma instancias y la tasa de error sube con cada una. El proceso esta vivo desde el milisegundo cero y el healthcheck lo confirma, pero la instancia no puede servir hasta terminar de inicializar — y el balanceador que enruta por liveness manda trafico a ese hueco.
 
@@ -332,7 +332,7 @@ Los 20 casos estan **OPERATIVOS** en los 7 stacks: PHP/Python/Node.js/Java 21/.N
 
 ## Caso 19 — Deriva del indice de busqueda y CDC roto
 
-**Categoria:** Observabilidad · **Stacks operativos:** PHP, Python, Node.js, Java 21, .NET 8, Go 1.23, Rust 1.83
+**Categoria:** Observabilidad · **Stacks operativos:** PHP, Python, Node.js, Java 25, .NET 10, Go 1.27, Rust 1.99
 
 **Problema.** La aplicacion escribe en la base y despues en el indice de busqueda. Dos sistemas, ninguna transaccion que los ate: cuando la segunda escritura falla, el codigo sigue. La busqueda no rompe — devuelve mal.
 
@@ -348,7 +348,7 @@ Los 20 casos estan **OPERATIVOS** en los 7 stacks: PHP/Python/Node.js/Java 21/.N
 
 ## Caso 20 — La dead letter queue olvidada
 
-**Categoria:** Resiliencia · **Stacks operativos:** PHP, Python, Node.js, Java 21, .NET 8, Go 1.23, Rust 1.83
+**Categoria:** Resiliencia · **Stacks operativos:** PHP, Python, Node.js, Java 25, .NET 10, Go 1.27, Rust 1.99
 
 **Problema.** El consumidor falla, manda el mensaje a la DLQ y sigue: sin clasificar el error, sin reintentar, sin medir, sin alerta. El pipeline se ve sano —throughput normal, error rate en cero— porque los errores se fueron a otro lado. Cierra el arco del caso 15, donde la DLQ nace como politica de rechazo.
 
@@ -364,7 +364,7 @@ Los 20 casos estan **OPERATIVOS** en los 7 stacks: PHP/Python/Node.js/Java 21/.N
 
 ## Caso 20 — La dead letter queue olvidada
 
-**Categoria:** Resiliencia · **Stacks operativos:** PHP, Python, Node.js, Java 21, .NET 8, Go 1.23, Rust 1.83
+**Categoria:** Resiliencia · **Stacks operativos:** PHP, Python, Node.js, Java 25, .NET 10, Go 1.27, Rust 1.99
 
 **Problema.** El consumidor falla, manda el mensaje a la DLQ y sigue: sin clasificar el error, sin reintentar, sin medir, sin alerta. El pipeline se ve sano —throughput normal, error rate en cero— porque los errores se fueron a otro lado. Cierra el arco del caso 15, donde la DLQ nace como politica de rechazo.
 

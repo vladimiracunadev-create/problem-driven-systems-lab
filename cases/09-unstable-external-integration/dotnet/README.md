@@ -1,4 +1,4 @@
-# 🔵 Caso 09 — .NET 8
+# 🔵 Caso 09 — .NET 10
 
 <!-- nav-stack -->
 [⬅️ Caso 09](../README.md) · [⚖️ Comparativa de los 7 stacks](../comparison.md) · [🔵 Perfil de .NET](../../../docs/languages/dotnet.md) · [🧬 Todos los perfiles](../../../docs/languages/README.md)

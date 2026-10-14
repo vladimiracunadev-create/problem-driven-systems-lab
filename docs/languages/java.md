@@ -1,6 +1,6 @@
 # ☕ Java
 
-> **Versión fijada:** `21` (LTS) · **Imagen base:** `eclipse-temurin:21-jdk-alpine` · **Hub:** `:8400` · **Casos operativos:** 20 / 20
+> **Versión fijada:** `25` (LTS) · **Imagen base:** `eclipse-temurin:25-jdk-alpine` · **Hub:** `:8400` · **Casos operativos:** 20 / 20
 
 [⬅️ Volver a los perfiles de lenguaje](README.md) · [🗺️ Mapa de stacks](../stack-map.md) · [🔄 Protocolo de actualización](../language-upgrade-protocol.md)
 
@@ -14,7 +14,7 @@ Java es un lenguaje de tipado estático que compila a bytecode y corre sobre la 
 
 **Por qué está en este laboratorio:** porque tiene el catálogo de primitivas concurrentes más rico del set. `java.util.concurrent` no es una biblioteca externa: es la respuesta canónica a la mayoría de los problemas de este laboratorio, y en el caso 11 —donde el problema **es** el pool de threads— eso deja de ser ceremonia y pasa a ser la herramienta exacta.
 
-**Nota de precisión sobre el laboratorio:** los doce casos corren con `javac Main.java` + `java Main`, sin Maven, sin Gradle y sin frameworks. `HttpServer` viene en el JDK. La decisión es deliberada: hace visible qué parte de la solución es *del lenguaje* y qué parte sería del framework.
+**Nota de precisión sobre el laboratorio:** los veinte casos corren con `javac Main.java` + `java Main`, sin Maven, sin Gradle y sin frameworks. `HttpServer` viene en el JDK. La decisión es deliberada: hace visible qué parte de la solución es *del lenguaje* y qué parte sería del framework.
 
 ---
 
@@ -26,7 +26,7 @@ Java es un lenguaje de tipado estático que compila a bytecode y corre sobre la 
 |---|---|
 | **Paralelismo real sin GIL** | Dos threads ejecutan bytecode simultáneamente en dos núcleos. Python no puede; Java sí — [caso 11](../../cases/11-heavy-reporting-blocks-operations/java/README.md) |
 | **El pool es explícito y observable** | `getActiveCount()` y `getQueue().size()` reportan saturación desde adentro, sin agente. Es el `event_loop_lag` del mundo JVM — [caso 11](../../cases/11-heavy-reporting-blocks-operations/java/README.md) |
-| **El thread se reutiliza entre requests** | Un `ThreadLocal` sin limpiar arrastra el correlation ID al request siguiente. El caso 03 documenta ese riesgo en vez de esconderlo — [caso 03](../../cases/03-poor-observability-and-useless-logs/java/README.md) |
+| **El contexto puede acotarse lexicalmente** | `ScopedValue` comparte el correlation ID sin estado mutable ni limpieza manual; el binding desaparece al salir del handler — [caso 03](../../cases/03-poor-observability-and-useless-logs/java/README.md) |
 | **El JIT calienta** | Las primeras requests son más lentas que las siguientes. Cualquier medición debe descartar el arranque | transversal |
 
 ---
@@ -37,7 +37,7 @@ Java es un lenguaje de tipado estático que compila a bytecode y corre sobre la 
 |---|---|---|
 | [01 · API lenta](../../cases/01-api-latency-under-load/java/README.md) | `ConcurrentHashMap` + `ScheduledExecutorService` + `LongAdder` | Cache leída sin lock; worker con shutdown limpio en SIGTERM. `LongAdder` supera a `synchronized` bajo contención |
 | [02 · N+1](../../cases/02-n-plus-one-and-db-bottlenecks/java/README.md) | `PreparedStatement` + `try-with-resources` | Cleanup garantizado incluso bajo excepción; plan cacheado por `sqlite-jdbc` |
-| [03 · Observabilidad](../../cases/03-poor-observability-and-useless-logs/java/README.md) | `ThreadLocal<RequestContext>` | Equivalente disponible hoy de `ScopedValue`, que en JDK 21 sigue en preview |
+| [03 · Observabilidad](../../cases/03-poor-observability-and-useless-logs/java/README.md) | `ScopedValue<RequestContext>` | Contexto inmutable, acotado al handler y restaurado automaticamente; API final desde JDK 25 |
 | [04 · Timeouts](../../cases/04-timeout-chain-and-retry-storms/java/README.md) | `CompletableFuture.orTimeout(Duration)` | Deadline a nivel future. **Limitación documentada:** completa el future a tiempo, pero el thread sigue dormido |
 | [05 · Memoria](../../cases/05-memory-pressure-and-resource-leaks/java/README.md) | `LinkedHashMap` con `removeEldestEntry` | **La única LRU built-in del set completo.** En Go, Rust y .NET hay que construirla a mano |
 | [06 · Pipeline](../../cases/06-broken-pipeline-and-fragile-delivery/java/README.md) | `record EnvState` + `ConcurrentHashMap` | Snapshots inmutables por ambiente, sin boilerplate de getters |
@@ -93,19 +93,19 @@ curl -s "localhost:8400/11/order-write"                # el pool principal quedo
 | Límite | Por qué importa | Dónde se ve |
 |---|---|---|
 | **`orTimeout` no interrumpe el trabajo** | Completa el future a tiempo, pero el thread proveedor sigue dormido. *Parece* que cortó, y no cortó | [caso 04](../../cases/04-timeout-chain-and-retry-storms/java/README.md) |
-| **`ThreadLocal` se filtra entre requests** | Un thread reutilizado sin limpiar arrastra el correlation ID. `ScopedValue` lo resuelve, pero en 21 es preview | [caso 03](../../cases/03-poor-observability-and-useless-logs/java/README.md) |
+| **`ScopedValue` exige un alcance activo** | Fuera del binding, `get()` falla; el contexto no debe delegarse a trabajo no estructurado que sobreviva al handler | [caso 03](../../cases/03-poor-observability-and-useless-logs/java/README.md) |
 | **`Optional.get()` sin `isPresent()` compila** | El tipo expresa la ausencia; el compilador no la exige. En Rust, omitir el brazo `None` no compila | [caso 12](../../cases/12-single-point-of-knowledge-and-operational-risk/comparison.md) |
 | **El ecosistema fabrica N+1 solo** | Hibernate y JPA con lazy loading generan el bug del caso 02 sin que nadie lo escriba. Por eso Java queda 6º ahí | [caso 02](../../cases/02-n-plus-one-and-db-bottlenecks/comparison.md) |
 | **Arranque lento y huella de memoria alta** | La JVM tarda en calentar y reserva heap con generosidad. Relevante en funciones serverless o contenedores efímeros | transversal |
 | **Subscribers síncronos en el EventBus** | `CopyOnWriteArrayList` es thread-safe pero notifica en línea: un subscriber lento frena al publicador | [caso 08](../../cases/08-critical-module-extraction-without-breaking-operations/java/README.md) |
 
-**Desafío abierto del stack en este laboratorio:** el caso 03 está escrito sobre `ThreadLocal` porque `ScopedValue` sigue en preview en JDK 21. Cuando salga de preview, el caso pasa a enseñar la forma vieja de hacer las cosas. Es el disparador de revisión más concreto de todo el repositorio y está anotado explícitamente en `scripts/language_drift.py`.
+**Revisión completada en JDK 25:** el caso 03 ya usa `ScopedValue`; `ThreadLocal` queda solo como contraste histórico. El desafío abierto pasa al caso 11: virtual threads y concurrencia estructurada pueden cambiar cuándo un pool acotado de threads de plataforma sigue siendo el modelo correcto.
 
 ---
 
 ## 🏆 Dónde gana y dónde pierde en el laboratorio
 
-Agregado de los veredictos de las 19 comparativas que rankean: **2 primeros puestos, media 3.4**.
+Agregado de los veredictos de las 19 comparativas que rankean: **2 primeros puestos, media 3.3**.
 
 - 🥉 **Tercero en 20** — la jerarquía `sealed ... permits` es la clasificación más expresiva del set y lo más cerca que llega a la exhaustividad de Rust; detrás de .NET porque clasificar obliga a capturar, y capturar acorta la pila que la DLQ necesita.
 - 🥉 **Tercero en 20** — la jerarquía `sealed ... permits` es la clasificación más expresiva del set y lo más cerca que llega a la exhaustividad de Rust; detrás de .NET porque clasificar obliga a capturar, y capturar acorta la pila que la DLQ necesita.
@@ -113,11 +113,11 @@ Agregado de los veredictos de las 19 comparativas que rankean: **2 primeros pues
 - **7º en 18** — **51,9x medidos** de curva de calentamiento: el arranque en frío canónico, y el único stack donde la lentitud posterior a estar «listo» realimenta al autoescalador. Tiene las herramientas más potentes contra su propio problema (AppCDS, GraalVM) y ninguna viene activada.
 - 🥇 **Gana en 11 y 17** — en el 17 por ser el único stack con deadline y equidad de fábrica en el mismo lock — cuando el problema *es* el pool de threads, tener pool explícito y observable es la herramienta exacta.
 - 🥈 **Segundo en 01, 06, 13, 14 y 16** — paralelismo real, `record` types inmutables el `computeIfAbsent` atómico que elimina la ventana check-then-act, y try-with-resources, que hace que el compilador escriba el `finally`.
-- 🥉 **Tercero en 05, 07, 09 y 12**
+- 🥉 **Tercero en 03, 05, 07, 09 y 12** — en el 03, `ScopedValue` elimina la fuga entre requests sin limpieza manual.
 - **5º en 15** — le puso nombre a cada forma de rechazar, pero `ConcurrentLinkedQueue` comparte interfaz con `ArrayBlockingQueue` y sacar el freno es una línea que compila. — sólido, con las limitaciones documentadas arriba.
 - **6º en 02** — no por la API (JDBC es correcto), sino porque es uno de los dos ecosistemas donde el N+1 **nace solo**.
 
-**Lectura honesta:** Java y .NET quedan a dos décimas y ganan exactamente el mismo caso. Son casi intercambiables en este laboratorio, y las diferencias reales aparecen en los detalles: `AsyncLocal` de .NET fluye por `await` mejor que `ThreadLocal`; `LinkedHashMap` de Java es la única LRU built-in del set.
+**Lectura honesta:** Java y .NET siguen muy cerca, pero JDK 25 corrige una asimetria concreta: `ScopedValue` ya ofrece alcance inmutable y restauracion automatica para el caso 03. `AsyncLocal` conserva la ventaja de fluir por `await`; `LinkedHashMap` de Java sigue siendo la unica LRU built-in del set.
 
 ---
 
@@ -125,15 +125,15 @@ Agregado de los veredictos de las 19 comparativas que rankean: **2 primeros pues
 
 | | |
 |---|---|
-| **Versión fijada hoy** | `21` LTS (`eclipse-temurin:21-jdk-alpine`) |
+| **Versión fijada hoy** | `25` LTS (`eclipse-temurin:25-jdk-alpine`) |
 | **Cadencia upstream** | Una release cada 6 meses; una LTS cada 2 años |
-| **Política de soporte** | Temurin da soporte extendido a las LTS (21 hasta al menos 2029) |
+| **Política de soporte** | Temurin da soporte extendido a las LTS (25 hasta al menos septiembre de 2031) |
 | **Producto en endoflife.date** | `eclipse-temurin` |
 
 **Qué revisar en el próximo salto:**
 
-1. **🚨 `ScopedValue` fuera de preview (JDK 25)** — el `ThreadLocal` del [caso 03](../../cases/03-poor-observability-and-useless-logs/java/README.md) pasa de "alternativa razonable" a "lo que ya no se hace". Hay que reescribir el caso y su `comparison.md`, no solo cambiar el `FROM`.
-2. **Virtual threads (Loom)** — estables desde 21. El [caso 11](../../cases/11-heavy-reporting-blocks-operations/java/README.md) está construido sobre pools acotados de threads de plataforma; con virtual threads el argumento cambia de fondo. Vale la pena evaluar si el caso debería mostrar **ambos** modelos.
+1. **Concurrencia estructurada** — cuando deje de ser preview, revisar si el [caso 11](../../cases/11-heavy-reporting-blocks-operations/java/README.md) debe contrastar pools acotados con tareas estructuradas sobre virtual threads.
+2. **Virtual threads (Loom)** — estables desde 21. El caso 11 sigue construido sobre pools acotados de threads de plataforma porque el problema que enseña es precisamente su saturacion; cualquier cambio debe conservar ese contraste.
 3. **Cambios en el GC por defecto** — afectan la lectura del [caso 05](../../cases/05-memory-pressure-and-resource-leaks/java/README.md).
 4. **Pattern matching y `sealed` types** — si maduran, el [caso 06](../../cases/06-broken-pipeline-and-fragile-delivery/java/README.md) podría acercarse a la exhaustividad que hoy solo tiene Rust.
 

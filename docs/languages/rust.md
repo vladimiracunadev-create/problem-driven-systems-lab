@@ -1,6 +1,6 @@
 # 🦀 Rust
 
-> **Versión fijada:** `1.83` · **Imagen base:** `rust:1.83-alpine` · **Hub:** `:8700` · **Casos operativos:** 20 / 20
+> **Versión fijada:** `1.99` · **Imagen base:** `rust:1.99-alpine` · **Hub:** `:8700` · **Casos operativos:** 20 / 20
 
 [⬅️ Volver a los perfiles de lenguaje](README.md) · [🗺️ Mapa de stacks](../stack-map.md) · [🔄 Protocolo de actualización](../language-upgrade-protocol.md)
 
@@ -127,12 +127,18 @@ Agregado de los veredictos de las 19 comparativas que rankean: **10 primeros pue
 
 | | |
 |---|---|
-| **Versión fijada hoy** | `1.83` (`rust:1.83-alpine`) |
+| **Versión fijada hoy** | `1.99` (`rust:1.99-alpine`) |
 | **Cadencia upstream** | Una release menor cada 6 semanas |
 | **Política de soporte** | Solo la última versión estable; el compromiso es de estabilidad hacia atrás por *edición*, no soporte de versiones viejas |
 | **Producto en endoflife.date** | `rust` |
 
-**Qué revisar en el próximo salto:**
+**Resultado de la revisión 1.99 y qué revisar en el próximo salto:**
+
+Las notas de Rust 1.84 a 1.99 no agregan cancelacion cooperativa, semaforo ni
+runtime asincronico a `std`. Por eso las limitaciones de los casos 04 y 09
+siguen siendo ciertas. Los crates conservan la edicion 2021 deliberadamente:
+actualizar el compilador por soporte no obliga a mezclar este cambio con una
+migracion de edicion.
 
 1. **🚨 Cancelación en `std`** — si `std` incorpora algo equivalente a un timeout cancelable o a un semáforo, **las limitaciones documentadas en los casos 04 y 09 dejan de ser ciertas**. Es el disparador de revisión más importante de este stack: no es un bump, es una reescritura de la narrativa del caso.
 2. **`LazyLock`** — estabilizado en 1.80 y usado en los casos 05, 07, 08 y 10. Cualquier cambio de API los toca a todos.

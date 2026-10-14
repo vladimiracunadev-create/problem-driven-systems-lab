@@ -1,4 +1,4 @@
-# 🔵 Caso 01 — .NET 8
+# 🔵 Caso 01 — .NET 10
 
 <!-- nav-stack -->
 [⬅️ Caso 01](../README.md) · [⚖️ Comparativa de los 7 stacks](../comparison.md) · [🔵 Perfil de .NET](../../../docs/languages/dotnet.md) · [🧬 Todos los perfiles](../../../docs/languages/README.md)
@@ -87,7 +87,7 @@ curl http://127.0.0.1:851/health
 
 ## Fidelidad
 
-**Substrato real.** Este stack corre SQL contra SQLite embebido via `Microsoft.Data.Sqlite` 8.0.10 (paquete oficial de Microsoft, ADO.NET-style), en archivo bajo el temp del sistema y con `journal_mode=WAL`. No hay listas en memoria simulando ser una base: `db_hits` cuenta ejecuciones reales — `1 + N` en la ruta legacy, constante en la optimizada.
+**Substrato real.** Este stack corre SQL contra SQLite embebido via `Microsoft.Data.Sqlite` 10.0.13 (paquete oficial de Microsoft, ADO.NET-style), en archivo bajo el temp del sistema y con `journal_mode=WAL`. No hay listas en memoria simulando ser una base: `db_hits` cuenta ejecuciones reales — `1 + N` en la ruta legacy, constante en la optimizada.
 
 **El filtro no sargable lo confirma el planner, no el README:**
 

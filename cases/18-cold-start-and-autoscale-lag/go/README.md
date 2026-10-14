@@ -1,4 +1,4 @@
-# 🐹 Caso 18 — Go 1.23
+# 🐹 Caso 18 — Go 1.27
 
 <!-- nav-stack -->
 [⬅️ Caso 18](../README.md) · [⚖️ Comparativa de los 7 stacks](../comparison.md) · [🐹 Perfil de Go](../../../docs/languages/go.md) · [🧬 Todos los perfiles](../../../docs/languages/README.md)

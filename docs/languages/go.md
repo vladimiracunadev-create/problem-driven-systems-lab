@@ -1,6 +1,6 @@
 # 🐹 Go
 
-> **Versión fijada:** `1.23` · **Imagen base:** `golang:1.23-alpine` · **Hub:** `:8600` · **Casos operativos:** 20 / 20
+> **Versión fijada:** `1.27` · **Imagen base:** `golang:1.27-alpine` · **Hub:** `:8600` · **Casos operativos:** 20 / 20
 
 [⬅️ Volver a los perfiles de lenguaje](README.md) · [🗺️ Mapa de stacks](../stack-map.md) · [🔄 Protocolo de actualización](../language-upgrade-protocol.md)
 
@@ -132,12 +132,17 @@ Agregado de los veredictos de las 19 comparativas que rankean: **7 primeros pues
 
 | | |
 |---|---|
-| **Versión fijada hoy** | `1.23` (`golang:1.23-alpine`) |
+| **Versión fijada hoy** | `1.27` (`golang:1.27-alpine`) |
 | **Cadencia upstream** | Dos releases menores por año (febrero y agosto) |
 | **Política de soporte** | Las dos últimas versiones menores reciben parches de seguridad |
 | **Producto en endoflife.date** | `go` |
 
-**Qué revisar en el próximo salto:**
+**Resultado de la revisión 1.27 y qué revisar en el próximo salto:**
+
+Go 1.27 mantiene la promesa de compatibilidad, no incorpora un semaforo ni un
+limitador de tasa en `sync`/`context`, y no cambia la semantica de `GOMAXPROCS`
+que sostiene el caso 11. Las primitivas del laboratorio siguen siendo
+idiomaticas; el bump corrige soporte, no narrativa.
 
 1. **Cambios en el scheduler** — el argumento del [caso 11](../../cases/11-heavy-reporting-blocks-operations/go/README.md) depende de cómo el runtime reparte goroutines sobre `GOMAXPROCS`. Un cambio ahí no rompe el código, pero puede volver falsa la explicación.
 2. **Nuevas primitivas en `sync` o `context`** — si la stdlib incorpora un semáforo o un limitador de tasa, los casos 09 y 11 pasarían a enseñar la construcción manual de algo que ya viene hecho.

@@ -1,4 +1,4 @@
-// Caso 01 — API lenta bajo carga (stack Go 1.23).
+// Caso 01 — API lenta bajo carga (stack Go 1.27).
 //
 // Espejo del Main.java / Program.cs equivalentes: mismos endpoints, misma
 // semantica, mismo shape de JSON.
@@ -49,7 +49,7 @@ const (
 )
 
 var (
-	stack = envOr("APP_STACK", "Go 1.23")
+	stack = envOr("APP_STACK", "Go 1.27")
 	db    *sql.DB
 
 	legacyMetrics    = &metrics{}

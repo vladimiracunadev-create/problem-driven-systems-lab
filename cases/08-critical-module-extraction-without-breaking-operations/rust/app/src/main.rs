@@ -1,4 +1,4 @@
-// Caso 08 — Extraccion critica de modulo (cutover) — stack Rust 1.83.
+// Caso 08 — Extraccion critica de modulo (cutover) — stack Rust 1.99.
 //
 // Big-bang: el cambio de contrato rompe consumers sensibles.
 // Compatible: un proxy traduce el contrato viejo ↔ nuevo en vuelo, y un bus de
@@ -80,7 +80,7 @@ static CUTOVER_PROGRESS: LazyLock<Mutex<HashMap<String, bool>>> = LazyLock::new(
 static BUS_TX: LazyLock<Mutex<Option<Sender<BusEvent>>>> = LazyLock::new(|| Mutex::new(None));
 
 fn stack() -> String {
-    std::env::var("APP_STACK").unwrap_or_else(|_| "Rust 1.83".to_string())
+    std::env::var("APP_STACK").unwrap_or_else(|_| "Rust 1.99".to_string())
 }
 
 fn start_bus() {

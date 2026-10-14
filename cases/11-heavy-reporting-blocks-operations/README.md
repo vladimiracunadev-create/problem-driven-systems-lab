@@ -103,11 +103,11 @@ Mismo contraste con threading. Ver [`python/README.md`](python/README.md). Modo 
 
 `monitorEventLoopDelay()` (perf_hooks) mide lag real del event loop. `report-legacy` ejecuta CPU sincrónico que castiga el loop entero (visible en `event_loop_lag_ms_p99`); `report-isolated` cede control con `setImmediate` para que el loop respire. Ver [`node/README.md`](node/README.md). Modo aislado: puerto `8211`. Hub: `http://localhost:8300/11/`.
 
-### Java 21
+### Java 25
 
 `ThreadPoolExecutor` acotado a 4 threads como pool principal (saturación realista); `ExecutorService` dedicado de 2 threads para reporting. `CompletableFuture.supplyAsync(task, executor)` para submission explícita al pool correcto. `getActiveCount()` y `getQueue().size()` son la señal nativa de saturación, equivalente al `monitorEventLoopDelay` de Node. Ver [`java/README.md`](java/README.md). Modo aislado: puerto `8411`. Hub: `http://localhost:8400/11/`.
 
-### .NET 8
+### .NET 10
 
 `ConcurrentExclusiveSchedulerPair.ExclusiveScheduler` (o `Thread` dedicado) como aislamiento del trabajo CPU-bound de reporting. `Task.Factory.StartNew(task, ..., scheduler)` para submission explicita. `ThreadPool.GetAvailableWorkerThreads` revela la saturacion del pool principal — equivalente .NET de `monitorEventLoopDelay` Node y de `ThreadPoolExecutor.getActiveCount()` Java. Ver [`dotnet/README.md`](dotnet/README.md). Modo aislado: puerto `8511`. Hub: `http://localhost:8500/11/`.
 
@@ -134,8 +134,8 @@ Mismo contraste con threading. Ver [`python/README.md`](python/README.md). Modo 
 | 🐘 PHP 8 | `OPERATIVO` (locks vs cola/replica) |
 | 🐍 Python 3.12 | `OPERATIVO` (threading + métricas locales) |
 | 🟢 Node.js 22 | `OPERATIVO` (`monitorEventLoopDelay()` + `setImmediate` para ceder) |
-| ☕ Java 21 | `OPERATIVO` (`ThreadPoolExecutor` saturation observable + `ExecutorService` dedicado) |
-| 🔵 .NET 8 | `OPERATIVO` (`ConcurrentExclusiveSchedulerPair` + `ThreadPool.GetAvailableWorkerThreads`) |
+| ☕ Java 25 | `OPERATIVO` (`ThreadPoolExecutor` saturation observable + `ExecutorService` dedicado) |
+| 🔵 .NET 10 | `OPERATIVO` (`ConcurrentExclusiveSchedulerPair` + `ThreadPool.GetAvailableWorkerThreads`) |
 
 ---
 

@@ -1,4 +1,4 @@
-// Caso 11 — Reportes pesados que bloquean operacion — stack Go 1.23.
+// Caso 11 — Reportes pesados que bloquean operacion — stack Go 1.27.
 //
 // Legacy: el reporte corre sin acotar en la goroutine del request. Con varios
 // reportes concurrentes se ocupan todos los procesadores logicos y /order-write
@@ -43,7 +43,7 @@ const (
 	degradedThreshold = 100 // ms
 )
 
-var stack = envOr("APP_STACK", "Go 1.23")
+var stack = envOr("APP_STACK", "Go 1.27")
 
 var (
 	legacyReports       int64

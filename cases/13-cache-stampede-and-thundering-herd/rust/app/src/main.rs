@@ -1,4 +1,4 @@
-// Caso 13 — Cache stampede (thundering herd) — stack Rust 1.83.
+// Caso 13 — Cache stampede (thundering herd) — stack Rust 1.99.
 //
 // Naive: la clave expira y los N llamadores concurrentes recalculan el origen.
 // `origin_computations == concurrency`.
@@ -428,7 +428,7 @@ fn diagnostics() -> String {
 }
 
 fn stack() -> String {
-    std::env::var("APP_STACK").unwrap_or_else(|_| "Rust 1.83".to_string())
+    std::env::var("APP_STACK").unwrap_or_else(|_| "Rust 1.99".to_string())
 }
 
 fn route(path: &str, params: &HashMap<String, String>) -> (u16, String) {

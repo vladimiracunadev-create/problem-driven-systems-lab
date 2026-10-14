@@ -1,10 +1,10 @@
-FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /src
 COPY app/Case12.csproj .
 COPY app/Program.cs .
 RUN dotnet publish Case12.csproj -c Release --no-self-contained -o /out
 
-FROM mcr.microsoft.com/dotnet/aspnet:8.0
+FROM mcr.microsoft.com/dotnet/aspnet:10.0
 WORKDIR /app
 COPY --from=build /out .
 ENV ASPNETCORE_URLS=http://0.0.0.0:8080

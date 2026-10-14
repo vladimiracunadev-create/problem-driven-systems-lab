@@ -1,4 +1,4 @@
-// Caso 06 — Pipeline roto y entrega fragil (stack Rust 1.83).
+// Caso 06 — Pipeline roto y entrega fragil (stack Rust 1.99).
 //
 // Legacy: deploy directo sin preflight, sin smoke, sin rollback.
 // Controlled: preflight → deploy → smoke → promote | rollback.
@@ -89,7 +89,7 @@ struct State {
 static STATE: Mutex<Option<State>> = Mutex::new(None);
 
 fn stack() -> String {
-    std::env::var("APP_STACK").unwrap_or_else(|_| "Rust 1.83".to_string())
+    std::env::var("APP_STACK").unwrap_or_else(|_| "Rust 1.99".to_string())
 }
 
 fn fresh_state() -> State {

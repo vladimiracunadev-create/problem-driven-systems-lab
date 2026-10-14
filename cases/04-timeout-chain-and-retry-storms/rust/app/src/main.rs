@@ -1,4 +1,4 @@
-// Caso 04 — Timeout chain y retry storms (stack Rust 1.83).
+// Caso 04 — Timeout chain y retry storms (stack Rust 1.99).
 //
 // Legacy: 5 reintentos secuenciales sin backoff, sin timeout, sin breaker.
 // Resilient: deadline + circuit breaker + fallback cacheado.
@@ -60,7 +60,7 @@ static BREAKER: Mutex<BreakerState> = Mutex::new(BreakerState {
 });
 
 fn stack() -> String {
-    std::env::var("APP_STACK").unwrap_or_else(|_| "Rust 1.83".to_string())
+    std::env::var("APP_STACK").unwrap_or_else(|_| "Rust 1.99".to_string())
 }
 
 fn main() {

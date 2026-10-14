@@ -1,4 +1,4 @@
-// Caso 13 — Cache stampede (thundering herd) — stack Go 1.23.
+// Caso 13 — Cache stampede (thundering herd) — stack Go 1.27.
 //
 // Naive: la clave expira y los N llamadores concurrentes recalculan el origen.
 // `origin_computations == concurrency`.
@@ -46,7 +46,7 @@ const (
 	softFraction = 0.6
 )
 
-var stack = envOr("APP_STACK", "Go 1.23")
+var stack = envOr("APP_STACK", "Go 1.27")
 
 // ---------- cache ----------
 

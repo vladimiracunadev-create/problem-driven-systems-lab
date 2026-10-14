@@ -3,7 +3,7 @@
 > **TL;DR** — el blast radius baja de `4` modulos a `1` cuando el consumer ya migro, y a `2` cuando cae al monolito con ACL. Lo que cambia entre stacks es **cuando falla un handler mal registrado**: al escribir la migracion, o el martes que llega el primer request.
 
 <!-- nav -->
-`🐘 PHP` · `🐍 Python` · `🟢 Node.js` · `☕ Java 21` · `🔵 .NET 8` · `🐹 Go 1.23` · `🦀 Rust 1.83`
+`🐘 PHP` · `🐍 Python` · `🟢 Node.js` · `☕ Java 25` · `🔵 .NET 10` · `🐹 Go 1.27` · `🦀 Rust 1.99`
 
 **Estructura:** 🎯 el problema → una seccion por stack → ⚖️ tabla de decision → 📊 primitiva por stack → 🏁 veredicto y ranking
 <!-- /nav -->
@@ -158,7 +158,7 @@ Mover un consumidor al nuevo modulo es **una linea**: `registerNewHandler('mobil
 
 ---
 
-## ☕ Java 21: `ConcurrentHashMap<String, Function>` + ACL como closure
+## ☕ Java 25: `ConcurrentHashMap<String, Function>` + ACL como closure
 
 **Runtime:** JVM con thread pool. Lecturas de la routing table son frecuentes (cada request consulta); escrituras (registrar nuevo handler) son raras. `ConcurrentHashMap` ofrece reads sin lock y writes atomicos por bucket — exactamente el patron de lectura intensa, escritura ocasional.
 
@@ -183,9 +183,9 @@ return legacyMonolith(req);                       // fallback acotado con ACL
 
 ---
 
-## 🔵 .NET 8: ConcurrentDictionary con Func<Request,Response> como tabla de routing mutable
+## 🔵 .NET 10: ConcurrentDictionary con Func<Request,Response> como tabla de routing mutable
 
-**Runtime:** .NET 8 sobre `HttpListener`. CLR `ThreadPool`. La tabla de routing vive en memoria del proceso unico, compartida entre handlers.
+**Runtime:** .NET 10 sobre `HttpListener`. CLR `ThreadPool`. La tabla de routing vive en memoria del proceso unico, compartida entre handlers.
 
 **El fallo legacy en C#:**
 ```csharp
@@ -216,7 +216,7 @@ return LegacyMonolith(req);   // fallback acotado con ACL
 
 ---
 
-## 🐹 Go 1.23: la firma **es** el tipo del handler
+## 🐹 Go 1.27: la firma **es** el tipo del handler
 
 ```go
 type handlerFunc func(request) response
@@ -230,7 +230,7 @@ Java necesita `Function<Request,Response>` y .NET `Func<Request,Response>` — t
 
 ---
 
-## 🦀 Rust 1.83: `Send + Sync` verificados en el punto de registro
+## 🦀 Rust 1.99: `Send + Sync` verificados en el punto de registro
 
 ```rust
 type Handler = Box<dyn Fn(&Request) -> Response + Send + Sync>;
@@ -269,10 +269,10 @@ En Java, un `Function<Request,Response>` guardado en un `ConcurrentHashMap` pued
 | PHP | routing por config |
 | Python | `dict[str, Callable]` |
 | Node.js | `Map<consumer, handler>` |
-| Java 21 | `ConcurrentHashMap<String,Function>` |
-| .NET 8 | `Func<Request,Response>` delegate |
-| Go 1.23 | `map[string]handlerFunc` — **la firma es el tipo**, sin generico envolvente |
-| Rust 1.83 | **`Box<dyn Fn(..) + Send + Sync>` — thread-safety verificada al registrar** |
+| Java 25 | `ConcurrentHashMap<String,Function>` |
+| .NET 10 | `Func<Request,Response>` delegate |
+| Go 1.27 | `map[string]handlerFunc` — **la firma es el tipo**, sin generico envolvente |
+| Rust 1.99 | **`Box<dyn Fn(..) + Send + Sync>` — thread-safety verificada al registrar** |
 
 ---
 
@@ -282,9 +282,9 @@ En Java, un `Function<Request,Response>` guardado en un `ConcurrentHashMap` pued
 
 | | Stack | Por que |
 |---|---|---|
-| 🥇 | **Rust 1.83** | `Box<dyn Fn(..) + Send + Sync>`: el compilador verifica **en el punto de registro** que el handler es seguro de compartir. En un strangler eso importa porque los handlers nuevos se registran con trafico encima. |
-| 🥈 | **Go 1.23** | La firma *es* el tipo, sin generico envolvente, y `RWMutex` respeta el patron de acceso real (muchas lecturas, una escritura por migracion). |
-| 🥉 | **Java 21 / .NET 8** | `Function`/`Func` en un mapa concurrente. Correcto, pero el mapa es thread-safe y el closure no — y nadie avisa. |
+| 🥇 | **Rust 1.99** | `Box<dyn Fn(..) + Send + Sync>`: el compilador verifica **en el punto de registro** que el handler es seguro de compartir. En un strangler eso importa porque los handlers nuevos se registran con trafico encima. |
+| 🥈 | **Go 1.27** | La firma *es* el tipo, sin generico envolvente, y `RWMutex` respeta el patron de acceso real (muchas lecturas, una escritura por migracion). |
+| 🥉 | **Java 25 / .NET 10** | `Function`/`Func` en un mapa concurrente. Correcto, pero el mapa es thread-safe y el closure no — y nadie avisa. |
 | 4º | **Node.js 22** | `Map<consumer, handler>` mutable en runtime, legible y directo; sin red de tipos. |
 | 6º | **Python 3.12 / PHP 8.3** | `dict` de callables. Funciona; el error de firma aparece cuando llega el request. |
 

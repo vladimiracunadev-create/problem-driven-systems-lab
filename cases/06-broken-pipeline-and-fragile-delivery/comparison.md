@@ -3,7 +3,7 @@
 > **TL;DR** — legacy deja el ambiente `degraded`; controlled bloquea en preflight o revierte a la version previa. Lo que separa a los stacks es **si el estado no contemplado es un `else` silencioso o un error de compilacion**.
 
 <!-- nav -->
-`🐘 PHP` · `🐍 Python` · `🟢 Node.js` · `☕ Java 21` · `🔵 .NET 8` · `🐹 Go 1.23` · `🦀 Rust 1.83`
+`🐘 PHP` · `🐍 Python` · `🟢 Node.js` · `☕ Java 25` · `🔵 .NET 10` · `🐹 Go 1.27` · `🦀 Rust 1.99`
 
 **Estructura:** 🎯 el problema → una seccion por stack → ⚖️ tabla de decision → 📊 primitiva por stack → 🏁 veredicto y ranking
 <!-- /nav -->
@@ -172,7 +172,7 @@ if (scenario === 'failing_smoke') {
 
 ---
 
-## ☕ Java 21: `record` types inmutables + `ConcurrentHashMap` por ambiente + state machine como guards
+## ☕ Java 25: `record` types inmutables + `ConcurrentHashMap` por ambiente + state machine como guards
 
 **Runtime:** JVM con thread pool. Los `record` types (`EnvState`, `Deployment`) son inmutables — cada deploy crea una nueva instancia, no muta la anterior. Esto descarta una clase entera de bugs de concurrencia.
 
@@ -206,9 +206,9 @@ Tres ramas explicitas: preflight bloquea (sin tocar estado), smoke falla (rollba
 
 ---
 
-## 🔵 .NET 8: record types + ConcurrentDictionary + rollback automatico
+## 🔵 .NET 10: record types + ConcurrentDictionary + rollback automatico
 
-**Runtime:** .NET 8 sobre `HttpListener`. `ThreadPool` despachando handlers concurrentes. Estado por ambiente compartido entre threads → `ConcurrentDictionary` evita lock global.
+**Runtime:** .NET 10 sobre `HttpListener`. `ThreadPool` despachando handlers concurrentes. Estado por ambiente compartido entre threads → `ConcurrentDictionary` evita lock global.
 
 **El fallo legacy en C#:**
 ```csharp
@@ -246,7 +246,7 @@ Tres ramas explicitas — mismo patron que Java. `with`-expression sobre `record
 
 ---
 
-## 🐹 Go 1.23: mutex sobre estructura explicita, no `sync.Map`
+## 🐹 Go 1.27: mutex sobre estructura explicita, no `sync.Map`
 
 Go tiene `sync.Map`, el analogo directo del `ConcurrentHashMap` que usa Java aca. **No se usa, a proposito.**
 
@@ -264,7 +264,7 @@ El mutex hace visible que el invariante es la secuencia completa. Es el mismo ra
 
 ---
 
-## 🦀 Rust 1.83: los estados del pipeline son un `enum`, y el `match` es exhaustivo
+## 🦀 Rust 1.99: los estados del pipeline son un `enum`, y el `match` es exhaustivo
 
 En Java, .NET, Go y Node el resultado de este pipeline es un **string** (`"rolled_back"`, `"promoted"`). Agregar un estado nuevo —digamos `canary`— no rompe nada: cae al `else` de algun `if` y se comporta como si fuera otra cosa.
 
@@ -306,10 +306,10 @@ Para una maquina de estados de deploy esa diferencia no es estetica: el estado n
 | PHP | estado en disco/DB entre procesos |
 | Python | `dict` protegido por lock |
 | Node.js | objeto en memoria, single-thread |
-| Java 21 | `ConcurrentHashMap<String,EnvState>` + `record` |
-| .NET 8 | `ConcurrentDictionary` + maquina de estados |
-| Go 1.23 | `sync.Mutex` sobre la **transaccion completa**, no `sync.Map` por operacion |
-| Rust 1.83 | **`enum` con datos asociados + `match` exhaustivo: agregar variante rompe la compilacion** |
+| Java 25 | `ConcurrentHashMap<String,EnvState>` + `record` |
+| .NET 10 | `ConcurrentDictionary` + maquina de estados |
+| Go 1.27 | `sync.Mutex` sobre la **transaccion completa**, no `sync.Map` por operacion |
+| Rust 1.99 | **`enum` con datos asociados + `match` exhaustivo: agregar variante rompe la compilacion** |
 
 ---
 
@@ -319,9 +319,9 @@ Para una maquina de estados de deploy esa diferencia no es estetica: el estado n
 
 | | Stack | Por que |
 |---|---|---|
-| 🥇 | **Rust 1.83** | Los estados son un `enum` y el `match` es exhaustivo: agregar `Canary` mañana **rompe la compilacion** de todo sitio que no lo contemple. |
-| 🥈 | **Java 21 / .NET 8** | `record` types inmutables y `with`-expressions para el rollback. Buen modelado; el resultado sigue siendo un string. |
-| 🥉 | **Go 1.23** | `sync.Mutex` sobre la transaccion completa es la decision correcta —un mapa concurrente seria seguro por operacion e incorrecto en conjunto— pero el resultado tambien es un string. |
+| 🥇 | **Rust 1.99** | Los estados son un `enum` y el `match` es exhaustivo: agregar `Canary` mañana **rompe la compilacion** de todo sitio que no lo contemple. |
+| 🥈 | **Java 25 / .NET 10** | `record` types inmutables y `with`-expressions para el rollback. Buen modelado; el resultado sigue siendo un string. |
+| 🥉 | **Go 1.27** | `sync.Mutex` sobre la transaccion completa es la decision correcta —un mapa concurrente seria seguro por operacion e incorrecto en conjunto— pero el resultado tambien es un string. |
 | 4º | **Python 3.12 / Node.js 22** | Estado en memoria con lock o single-thread. Correcto y sin red de seguridad de tipos. |
 | 6º | **PHP 8.3** | Estado en disco entre procesos aislados: funciona, pero la transaccion logica no esta protegida por nada. |
 

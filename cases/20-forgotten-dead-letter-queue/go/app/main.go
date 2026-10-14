@@ -1,4 +1,4 @@
-// Caso 20 — La dead letter queue olvidada — stack Go 1.23.
+// Caso 20 — La dead letter queue olvidada — stack Go 1.27.
 //
 // Cierra el arco que abrio el caso 15: alli la DLQ nace, como la politica de
 // rechazo que salva al productor de bloquearse. Aca se ve que pasa cuando nadie
@@ -63,7 +63,7 @@ import (
 )
 
 var (
-	appStack      = envOr("APP_STACK", "Go 1.23")
+	appStack      = envOr("APP_STACK", "Go 1.27")
 	caseName      = "20 - La dead letter queue olvidada"
 	poisonClasses = []string{"schema_mismatch", "unknown_field", "null_required", "invalid_encoding"}
 	start         = time.Now()

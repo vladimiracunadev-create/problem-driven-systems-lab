@@ -10,8 +10,8 @@ name: Language drift
 #
 #   · Java 21 -> 25: `ScopedValue` sale de preview y el `ThreadLocal` del caso
 #     03 pasa de "alternativa razonable" a "lo que ya no se hace".
-#   · Node 22 -> 24: `node:sqlite` deja de ser experimental y el flag
-#     `--experimental-sqlite` de los casos 01 y 02 sobra.
+#   · Node 22.13 -> 24: `node:sqlite` pasa de habilitado por defecto a release
+#     candidate; hay que revisar la API de los casos 01 y 02.
 #   · Rust: si `std` incorpora algo equivalente a un semaforo o a un timeout
 #     cancelable, la limitacion documentada en el caso 04 deja de ser cierta.
 #   · Go 1.25+: cambios en el scheduler alteran el argumento del caso 11.

@@ -104,11 +104,11 @@ Función de adaptación + lista de listeners para eventos. Sin frameworks extern
 
 `Proxy` nativo intercepta `computeFinalPrice` y traduce `cost_usd` → `price` en vuelo. `EventEmitter` (`cutoverBus`) publica cada avance del cutover a N subscribers. Ver [`node/README.md`](node/README.md). Modo aislado: puerto `828`. Hub: `http://localhost:8300/08/`.
 
-### Java 21
+### Java 25
 
 `Function<PriceRequestOld, PriceRequestNew>` como proxy compat (tipado, sin reflection). `CopyOnWriteArrayList<Consumer<String>>` como event bus thread-safe: reads paralelos sin lock, writes raros copian el array — exactamente el patrón "muchos suscriptores, raras altas/bajas". Ver [`java/README.md`](java/README.md). Modo aislado: puerto `848`. Hub: `http://localhost:8400/08/`.
 
-### .NET 8
+### .NET 10
 
 `Func<PriceRequestOld, PriceRequestNew>` como proxy compat (tipado, sin reflection). `ImmutableList<Action<string>>` + `ImmutableInterlocked.Update` como event bus thread-safe: reads paralelos sin lock, writes raros generan nueva lista persistente — patron equivalente al `CopyOnWriteArrayList` Java. `record PriceRequestOld/New` inmutables. Ver [`dotnet/README.md`](dotnet/README.md). Modo aislado: puerto `858`. Hub: `http://localhost:8500/08/`.
 
@@ -135,8 +135,8 @@ Reduce **riesgo operacional** y habilita **evolución controlada** de piezas cr�
 | 🐘 PHP 8 | `OPERATIVO` (proxy de traducción + registro de cutover) |
 | 🐍 Python 3.12 | `OPERATIVO` (función adapter + lista de listeners) |
 | 🟢 Node.js 22 | `OPERATIVO` (`Proxy` nativo + `EventEmitter` para eventos) |
-| ☕ Java 21 | `OPERATIVO` (`Function` proxy + `CopyOnWriteArrayList<Consumer>` event bus) |
-| 🔵 .NET 8 | `OPERATIVO` (`Func<Old,New>` proxy + `ImmutableList<Action<string>>` event bus) |
+| ☕ Java 25 | `OPERATIVO` (`Function` proxy + `CopyOnWriteArrayList<Consumer>` event bus) |
+| 🔵 .NET 10 | `OPERATIVO` (`Func<Old,New>` proxy + `ImmutableList<Action<string>>` event bus) |
 
 ---
 

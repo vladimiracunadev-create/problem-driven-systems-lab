@@ -1,6 +1,6 @@
 # 🔵 .NET
 
-> **Versión fijada:** `8.0` (LTS) · **Imagen base:** `mcr.microsoft.com/dotnet/sdk:8.0` · **Hub:** `:8500` · **Casos operativos:** 20 / 20
+> **Versión fijada:** `10.0` (LTS) · **Imagen base:** `mcr.microsoft.com/dotnet/sdk:10.0` · **Hub:** `:8500` · **Casos operativos:** 20 / 20
 
 [⬅️ Volver a los perfiles de lenguaje](README.md) · [🗺️ Mapa de stacks](../stack-map.md) · [🔄 Protocolo de actualización](../language-upgrade-protocol.md)
 
@@ -12,9 +12,9 @@
 
 **Para qué se usa en la industria:** aplicaciones empresariales, servicios web de alto rendimiento (ASP.NET Core es consistentemente competitivo en los benchmarks públicos de throughput), integraciones corporativas, videojuegos vía Unity y herramientas de escritorio. Es la plataforma por defecto de las organizaciones con inversión previa en el ecosistema Microsoft.
 
-**Por qué está en este laboratorio:** porque es el contraste directo con Java —mismo perfil de problema, mismas garantías, decisiones de diseño distintas— y porque `async/await` está en toda la BCL. Comparar `AsyncLocal<T>` contra `ThreadLocal`, o `CancellationToken` contra `CompletableFuture.orTimeout`, es donde se ve que dos plataformas parecidas resuelven la misma cosa con calidad diferente.
+**Por qué está en este laboratorio:** porque es el contraste directo con Java —mismo perfil de problema, mismas garantías, decisiones de diseño distintas— y porque `async/await` está en toda la BCL. Comparar `AsyncLocal<T>` contra `ScopedValue`, o `CancellationToken` contra `CompletableFuture.orTimeout`, es donde se ve que dos plataformas parecidas resuelven la misma cosa con calidad diferente.
 
-**Nota de precisión sobre el laboratorio:** los doce casos usan `HttpListener` de la BCL, sin ASP.NET y sin paquetes NuGet más allá del proveedor de SQLite. La decisión es deliberada: hace visible qué parte de la solución es de la plataforma y qué parte sería del framework.
+**Nota de precisión sobre el laboratorio:** los veinte casos usan `HttpListener` de la BCL, sin ASP.NET y sin paquetes NuGet más allá del proveedor de SQLite. La decisión es deliberada: hace visible qué parte de la solución es de la plataforma y qué parte sería del framework.
 
 ---
 
@@ -25,7 +25,7 @@
 | Consecuencia | Dónde se nota |
 |---|---|
 | **`await` no bloquea el thread** | Durante la espera de I/O el hilo vuelve al pool y atiende otro trabajo. Es la diferencia entre esperar y ocupar | transversal |
-| **`AsyncLocal<T>` fluye por `await`** | El contexto sobrevive al cambio de thread que hace el pool. Un `ThreadLocal` en Java no lo logra — [caso 03](../../cases/03-poor-observability-and-useless-logs/dotnet/README.md) |
+| **`AsyncLocal<T>` fluye por `await`** | El contexto sobrevive al cambio de thread que hace el pool. A diferencia de `ScopedValue` en Java 25, su valor ambiente es mutable — [caso 03](../../cases/03-poor-observability-and-useless-logs/dotnet/README.md) |
 | **`CancellationToken` está en toda la BCL** | La cancelación cooperativa no es un patrón del proyecto: es la convención de la plataforma — [caso 04](../../cases/04-timeout-chain-and-retry-storms/dotnet/README.md) |
 | **El pool se puede acotar y observar** | `ThreadPool.SetMaxThreads` y `GetAvailableWorkerThreads` hacen la saturación medible desde adentro — [caso 11](../../cases/11-heavy-reporting-blocks-operations/dotnet/README.md) |
 
@@ -105,7 +105,7 @@ curl -s "localhost:8500/11/order-write"                  # el pool principal que
 
 ## 🏆 Dónde gana y dónde pierde en el laboratorio
 
-Agregado de los veredictos de las 19 comparativas que rankean: **1 primer puesto, media 3.3**.
+Agregado de los veredictos de las 19 comparativas que rankean: **1 primer puesto, media 3.4**.
 
 - 🥇 **Gana en 11** — junto con Java: cuando el problema es el pool, tener pool explícito es la herramienta exacta.
 - 🥈 **Segundo en 01 y 06** — `record` types con `with`-expressions modelan el rollback mejor que casi cualquier otro stack.
@@ -113,10 +113,11 @@ Agregado de los veredictos de las 19 comparativas que rankean: **1 primer puesto
 - 🥈 **Segundo en 20** — los filtros `catch (e) when (...)` son la **única primitiva del laboratorio que decide antes de desenrollar la pila**: para un registro de DLQ, conservar el punto de falla original es la diferencia entre poder depurarlo y no.
 - 🥉 **Tercero en 04, 07, 09, 14, 15, 17, 18 y 19** — en el 19 porque `Except` y `Join` expresan las tres caras de la deriva como consultas tipadas, la forma más legible del set (con la pereza de LINQ como trampa) — en el 18 porque es el único stack con la respuesta a su propio problema **en la caja**: `PublishReadyToRun`, `TieredPGO` y `PublishAot` son tres líneas del `.csproj`
 - **4º en 16** — `TryAdd` es correcto, pero convive con `GetOrAdd`, que parece equivalente y no lo es. — `CancellationToken` y `SemaphoreSlim` son claros y directos.
+- **5º en 03** — `AsyncLocal` fluye por `await`, pero sigue siendo contexto ambiente mutable; `ScopedValue` de Java 25 acota el binding automaticamente.
 - **5º en 13** — `GetOrAdd` no garantiza fábrica única y el envoltorio `Lazy` que sí lo hace no es obvio.
 - **6º en 02** — mismo motivo que Java: el ORM del ecosistema fabrica el bug.
 
-**Lectura honesta:** dos décimas detrás de Java. La ventaja concreta de .NET en este laboratorio es el caso 03 —`AsyncLocal` fluye por `await`, que es más de lo que logra un `ThreadLocal` reutilizado— y la de Java es el caso 05, con la única LRU built-in del set.
+**Lectura honesta:** Java toma ventaja en el caso 03 desde JDK 25: `ScopedValue` restaura el alcance automaticamente, mientras `AsyncLocal` sigue siendo mutable. .NET conserva su fortaleza donde el flujo cruza `await`; Java mantiene además la única LRU built-in del set.
 
 ---
 
@@ -124,14 +125,14 @@ Agregado de los veredictos de las 19 comparativas que rankean: **1 primer puesto
 
 | | |
 |---|---|
-| **Versión fijada hoy** | `8.0` LTS (`mcr.microsoft.com/dotnet/sdk:8.0`) |
+| **Versión fijada hoy** | `10.0` LTS (`mcr.microsoft.com/dotnet/sdk:10.0`) |
 | **Cadencia upstream** | Una release por año en noviembre; LTS en las pares |
-| **Política de soporte** | LTS: 3 años. .NET 8 llega hasta noviembre de 2026 |
+| **Política de soporte** | LTS: 3 años. .NET 10 recibe soporte hasta noviembre de 2028 |
 | **Producto en endoflife.date** | `dotnet` |
 
 **Qué revisar en el próximo salto:**
 
-1. **Fecha de EOL de .NET 8 (noviembre 2026)** — es la fecha de caducidad más cercana de todo el laboratorio. `language-drift.yml` la marcará en rojo cuando llegue.
+1. **Fecha de EOL de .NET 10 (noviembre 2028)** — `language-drift.yml` la marcara en rojo cuando llegue.
 2. **Cambios en las primitivas BCL de los casos 04, 09 y 11** — `CancellationTokenSource`, `SemaphoreSlim` y la API de `ThreadPool` son el corazón de esos tres casos.
 3. **Mejoras en el análisis de nulabilidad** — si el compilador endureciera el aviso a error, el veredicto del caso 12 cambiaría.
 4. **Nuevas colecciones en la BCL** — una LRU oficial dejaría obsoleta la construcción manual del caso 05.

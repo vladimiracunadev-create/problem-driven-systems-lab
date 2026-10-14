@@ -1,4 +1,4 @@
-// Caso 12 — Punto unico de conocimiento y riesgo operacional — stack Go 1.23.
+// Caso 12 — Punto unico de conocimiento y riesgo operacional — stack Go 1.27.
 //
 // Legacy: el incidente con owner ausente hace acceso ciego a estructuras
 // anidadas y revienta.
@@ -42,7 +42,7 @@ const (
 	maxIncidents = 30
 )
 
-var stack = envOr("APP_STACK", "Go 1.23")
+var stack = envOr("APP_STACK", "Go 1.27")
 
 var (
 	legacyIncidents      int64

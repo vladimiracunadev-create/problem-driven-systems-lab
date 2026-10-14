@@ -15,7 +15,7 @@ Cuatro ejemplos concretos que este protocolo existe para anticipar:
 | Cambio upstream | Qué deja obsoleto | Caso afectado |
 |---|---|---|
 | **Java 21 → 25:** `ScopedValue` sale de preview | El `ThreadLocal` pasa de "alternativa razonable" a "lo que ya no se hace" | [03](../cases/03-poor-observability-and-useless-logs/java/README.md) |
-| **Node 22 → 24:** `node:sqlite` deja de ser experimental | El flag `--experimental-sqlite` sobra, y la API pudo cambiar | [01](../cases/01-api-latency-under-load/node/README.md) · [02](../cases/02-n-plus-one-and-db-bottlenecks/node/README.md) |
+| **Node 22.13 → 24:** `node:sqlite` pasa de habilitado por defecto a release candidate | El flag ya sobra; lo que cambia es la estabilidad y potencialmente la API | [01](../cases/01-api-latency-under-load/node/README.md) · [02](../cases/02-n-plus-one-and-db-bottlenecks/node/README.md) |
 | **Python 3.12 → 3.13+:** free-threading (PEP 703) | El GIL deja de ser un techo estructural y pasa a ser una opción de build | [11](../cases/11-heavy-reporting-blocks-operations/python/README.md) |
 | **Rust:** si `std` incorpora timeout cancelable o semáforo | Las limitaciones documentadas **dejan de ser ciertas** | [04](../cases/04-timeout-chain-and-retry-storms/rust/README.md) · [09](../cases/09-unstable-external-integration/rust/README.md) |
 

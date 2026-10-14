@@ -3,7 +3,7 @@
 > **TL;DR** — Con un pool de 4 y 24 requests de las que fallan ~7, la variante sin devolución garantizada pierde **4 conexiones** y deja **12 requests colgadas**; el pool termina en `0/4` y nunca se recupera. La variante corregida pierde **0**, termina en `4/4`, y tarda 155 ms en vez de 2 segundos. El número es idéntico en los siete stacks. Lo que cambia es **cuánto trabajo hace falta para no equivocarse**.
 
 <!-- nav -->
-`🐘 PHP 8.3` · `🐍 Python 3.12` · `🟢 Node.js 22` · `☕ Java 21` · `🔵 .NET 8` · `🐹 Go 1.23` · `🦀 Rust 1.83`
+`🐘 PHP 8.3` · `🐍 Python 3.12` · `🟢 Node.js 22` · `☕ Java 25` · `🔵 .NET 10` · `🐹 Go 1.27` · `🦀 Rust 1.99`
 
 **Estructura:** 🎯 el problema → 🧪 fidelidad del substrato → una sección por stack → ⚖️ tabla de decisión → 📊 primitiva por stack → 🏁 veredicto y ranking
 <!-- /nav -->
@@ -206,11 +206,11 @@ Es la única forma de fugar un recurso en Rust seguro. Y no es `unsafe`: no pued
 
 | Puesto | Stack | Por qué |
 |---|---|---|
-| 🥇 | **Rust 1.83** | El único stack donde la fuga **no se puede escribir por descuido**. `impl Drop` cubre el return feliz, el temprano y el desenrollado por panic. Fugar exige llamar a `mem::forget` por su nombre. |
-| 🥈 | **Java 21** | try-with-resources genera el `finally` en el compilador, para todos los caminos. Se puede fugar, pero solo no usándolo — y eso se ve en la review. |
-| 🥉 | **.NET 8** | La misma garantía que Java más dos ventajas de forma: `using var` sin anidar hace que lo correcto sea más corto, y `WaitAsync` devuelve `false` en vez de lanzar, separando «no había» de «falló». |
+| 🥇 | **Rust 1.99** | El único stack donde la fuga **no se puede escribir por descuido**. `impl Drop` cubre el return feliz, el temprano y el desenrollado por panic. Fugar exige llamar a `mem::forget` por su nombre. |
+| 🥈 | **Java 25** | try-with-resources genera el `finally` en el compilador, para todos los caminos. Se puede fugar, pero solo no usándolo — y eso se ve en la review. |
+| 🥉 | **.NET 10** | La misma garantía que Java más dos ventajas de forma: `using var` sin anidar hace que lo correcto sea más corto, y `WaitAsync` devuelve `false` en vez de lanzar, separando «no había» de «falló». |
 | 4º | **Python 3.12** | `queue.Queue` + `@contextmanager` es limpio y el `with` se lee bien, pero la garantía depende de que alguien escriba el context manager y de que todos lo usen. |
-| 5º | **Go 1.23** | El canal como pool es la expresión más económica del laboratorio, y el `select` reutiliza el concepto de otros cuatro casos. Pierde el podio por una línea: `defer` hay que acordarse de escribirlo, y olvidarlo compila. |
+| 5º | **Go 1.27** | El canal como pool es la expresión más económica del laboratorio, y el `select` reutiliza el concepto de otros cuatro casos. Pierde el podio por una línea: `defer` hay que acordarse de escribirlo, y olvidarlo compila. |
 | 6º | **Node.js 22** | `AbortSignal.timeout` y `finally` alcanzan, pero el modo de falla es el peor del set: sin deadline el que espera es una Promise invisible que no aparece en ningún stack trace ni consume CPU. |
 | 7º | **PHP 8.3** | Sin concurrencia dentro del proceso, el caso se demuestra en secuencia. Y su versión real del problema es otra — persistentes de FPM contra `max_connections` — que este código documenta pero no ejecuta. |
 

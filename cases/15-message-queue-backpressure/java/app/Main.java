@@ -24,7 +24,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.LongAdder;
 
 /**
- * Caso 15 — Backpressure en colas de mensajes — stack Java 21.
+ * Caso 15 — Backpressure en colas de mensajes — stack Java 25.
  *
  * Unbounded: `ConcurrentLinkedQueue`, que **no tiene capacidad maxima**. El
  * productor nunca se entera de que el consumidor no da abasto.
@@ -54,7 +54,7 @@ import java.util.concurrent.atomic.LongAdder;
 public class Main {
 
     private static final String CASE_NAME = "15 - Backpressure en colas de mensajes";
-    private static final String STACK = System.getenv().getOrDefault("APP_STACK", "Java 21");
+    private static final String STACK = System.getenv().getOrDefault("APP_STACK", "Java 25");
     private static final int PORT = Integer.parseInt(System.getenv().getOrDefault("PORT", "8080"));
 
     private static final int MSG_BYTES = 2048;

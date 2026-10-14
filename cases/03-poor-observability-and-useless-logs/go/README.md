@@ -1,4 +1,4 @@
-# 🐹 Caso 03 — Go 1.23
+# 🐹 Caso 03 — Go 1.27
 
 <!-- nav-stack -->
 [⬅️ Caso 03](../README.md) · [⚖️ Comparativa de los 7 stacks](../comparison.md) · [🐹 Perfil de Go](../../../docs/languages/go.md) · [🧬 Todos los perfiles](../../../docs/languages/README.md)
@@ -60,7 +60,7 @@ curl http://127.0.0.1:8600/03/logs
 
 ## Por que `context.Context` y no un ThreadLocal
 
-Java usa `ThreadLocal`, .NET usa `AsyncLocal`, Node usa `AsyncLocalStorage`. Los tres son **contexto ambiente**: la funcion lee un valor que alguien dejo en el hilo, sin declararlo en su firma.
+Java usa `ScopedValue`, .NET usa `AsyncLocal`, Node usa `AsyncLocalStorage`. Los tres son **contexto ambiente**: la funcion lee un valor sin declararlo en su firma. Java acota y restaura el binding automaticamente; .NET y Node lo siguen por el flujo asincronico.
 
 Go va al reves: el contexto es un parametro. Eso tiene una consecuencia operativa concreta —
 

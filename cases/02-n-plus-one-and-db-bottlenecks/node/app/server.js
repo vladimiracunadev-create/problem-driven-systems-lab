@@ -2,8 +2,8 @@
 
 // Caso 02 — N+1 queries y cuellos de botella en base de datos (stack Node.js).
 //
-// Substrato real: SQLite embebido vía `node:sqlite` (built-in en Node 22.x con
-// flag --experimental-sqlite). Sin contenedor extra, sin puerto extra: el
+// Substrato real: SQLite embebido vía `node:sqlite` (built-in y habilitado por
+// defecto desde Node 22.13). Sin contenedor extra, sin puerto extra: el
 // motor corre en proceso. Esto cierra la asimetría con PHP/Python (que ya
 // usaban DB real) — antes este caso simulaba N+1 con `Map`/`Dictionary` en
 // memoria, lo que pierde el sentido pedagógico: N+1 *es* un problema de

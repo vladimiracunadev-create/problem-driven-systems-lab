@@ -9,12 +9,12 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Data.Sqlite;
 
-// Caso 01 — API lenta bajo carga (stack .NET 8).
+// Caso 01 — API lenta bajo carga (stack .NET 10).
 //
 // Espejo del Main.java equivalente. Mismos endpoints, misma semantica, JSON con
 // el mismo shape.
 //
-// Substrato real: SQLite embebido via Microsoft.Data.Sqlite 8.0.10, en archivo
+// Substrato real: SQLite embebido via Microsoft.Data.Sqlite 10.0.13, en archivo
 // bajo el temp del sistema y con journal_mode=WAL. No hay listas en memoria
 // simulando ser una base: `db_hits` cuenta ejecuciones reales contra el motor.
 //
@@ -33,7 +33,7 @@ using Microsoft.Data.Sqlite;
 internal static class Program
 {
     private const string CaseName = "01 - API lenta bajo carga";
-    private static readonly string Stack = Environment.GetEnvironmentVariable("APP_STACK") ?? ".NET 8";
+    private static readonly string Stack = Environment.GetEnvironmentVariable("APP_STACK") ?? ".NET 10";
     private const int SummaryRefreshSeconds = 5;
     private const int MaxSamples = 3000;
     private const int MaxJobRuns = 30;

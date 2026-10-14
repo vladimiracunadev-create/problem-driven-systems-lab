@@ -20,8 +20,8 @@ El laboratorio no se levanta como un unico sistema enorme. Se trabaja por capas:
 | `compose.root.yml` | Portal + 20 casos PHP en una sola entrada |
 | `compose.python.yml` | Hub Python con los 20 casos en un solo contenedor |
 | `compose.nodejs.yml` | Hub Node.js con los 20 casos en un solo contenedor |
-| `compose.java.yml` | Hub Java 21 con los 20 casos en un solo contenedor |
-| `compose.dotnet.yml` | Hub .NET 8 con los 20 casos en un solo contenedor |
+| `compose.java.yml` | Hub Java 25 con los 20 casos en un solo contenedor |
+| `compose.dotnet.yml` | Hub .NET 10 con los 20 casos en un solo contenedor |
 | `compose.portal.yml` | Portal liviano solamente |
 | `cases/<caso>/<stack>/compose.yml` | Un escenario concreto y aislado |
 | `cases/<caso>/compose.compare.yml` | Comparacion entre stacks del mismo caso |
@@ -76,10 +76,10 @@ flowchart LR
 | **PHP** | `compose.root.yml` | **~7 contenedores** (portal + `php-lab` + 2 PostgreSQL + worker + exporter + prometheus + grafana) | `php-dispatcher` con 12 subprocesos `php -S` en `127.0.0.1:9001-9012` | `8100` |
 | **Python** | `compose.python.yml` | **1 contenedor** (`pdsl-python-lab`) | `python-dispatcher` con 12 subprocesos `subprocess.Popen` en `:9001-9012` | `8200` |
 | **Node.js 22** | `compose.nodejs.yml` | **1 contenedor** (`pdsl-node-lab`) | `node-dispatcher` con 12 subprocesos `child_process.spawn` en `:9101 + :9002-9012` | `8300` |
-| **Java 21** | `compose.java.yml` | **1 contenedor** (`pdsl-java-lab`) | `java-dispatcher` con 12 subprocesos `ProcessBuilder` (`java Main`) en `:9401-:9412` | `8400` |
-| **.NET 8** | `compose.dotnet.yml` | **1 contenedor** (`pdsl-dotnet-lab`) | `dotnet-dispatcher` con 12 subprocesos en `:9501-:9512` | `8500` |
-| **Go 1.23** | `compose.go.yml` | **1 contenedor** (`pdsl-go-lab`) | `go-dispatcher` con 12 subprocesos en `:9601-:9612` | `8600` |
-| **Rust 1.83** | `compose.rust.yml` | **1 contenedor** (`pdsl-rust-lab`) | `rust-dispatcher` con 12 subprocesos en `:9701-:9712` | `8700` |
+| **Java 25** | `compose.java.yml` | **1 contenedor** (`pdsl-java-lab`) | `java-dispatcher` con 12 subprocesos `ProcessBuilder` (`java Main`) en `:9401-:9412` | `8400` |
+| **.NET 10** | `compose.dotnet.yml` | **1 contenedor** (`pdsl-dotnet-lab`) | `dotnet-dispatcher` con 12 subprocesos en `:9501-:9512` | `8500` |
+| **Go 1.27** | `compose.go.yml` | **1 contenedor** (`pdsl-go-lab`) | `go-dispatcher` con 12 subprocesos en `:9601-:9612` | `8600` |
+| **Rust 1.99** | `compose.rust.yml` | **1 contenedor** (`pdsl-rust-lab`) | `rust-dispatcher` con 12 subprocesos en `:9701-:9712` | `8700` |
 
 > **Asimetria residual del PHP**: PHP levanta ~7 contenedores en lugar de 1 porque los casos `01` y `02` necesitan PostgreSQL **real** corriendo en paralelo, mas el worker de caso 01, mas Prometheus + Grafana. Eso son **servicios independientes** (no subprocesos PHP) que el caso 01 estudia. Las 12 apps PHP se colapsan en `php-lab` (1 contenedor); los servicios reales se mantienen separados porque tienen que serlo.
 
@@ -144,7 +144,7 @@ Esta simetria se preserva al migrar a AWS — ver [`AWS_MIGRATION.md`](../AWS_MI
 
 Ademas, **los siete stacks comparten un modelo simetrico** — cada lenguaje sirve sus 20 casos como subprocesos dentro de un solo contenedor (hub). PHP suma servicios extras solo porque los casos `01` y `02` estudian PostgreSQL/worker/observabilidad reales, no porque la app PHP requiera N contenedores. Ver seccion **"Modelo de containerización (simétrico para los stacks operativos)"** arriba para el porque y los trade-offs explicitos.
 
-La familia PHP comparte un runtime comun en `docker/php/Dockerfile`. La familia Python usa `python:3.12-alpine` directo. La familia Node usa `node:22-alpine` directo (Node 22 habilita `node:sqlite` built-in usado en caso 02). La familia Java usa `eclipse-temurin:21`. La familia .NET usa `mcr.microsoft.com/dotnet/sdk:8.0`. Cada lenguaje futuro seguira el patron `compose.{lang}.yml` con su bloque de puertos propio en la raiz.
+La familia PHP comparte un runtime comun en `docker/php/Dockerfile`. La familia Python usa `python:3.12-alpine` directo. La familia Node usa `node:22-alpine` directo (Node 22 habilita `node:sqlite` built-in usado en caso 02). La familia Java usa `eclipse-temurin:25`. La familia .NET usa `mcr.microsoft.com/dotnet/sdk:10.0`. Cada lenguaje futuro seguira el patron `compose.{lang}.yml` con su bloque de puertos propio en la raiz.
 
 ## 🔎 Ejemplos concretos
 

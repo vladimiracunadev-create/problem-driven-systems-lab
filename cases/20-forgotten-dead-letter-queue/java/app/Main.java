@@ -1,4 +1,4 @@
-// Caso 20 — La dead letter queue olvidada — stack Java 21.
+// Caso 20 — La dead letter queue olvidada — stack Java 25.
 //
 // Cierra el arco que abrio el caso 15: alli la DLQ nace, como la politica de
 // rechazo que salva al productor de bloquearse. Aca se ve que pasa cuando nadie
@@ -69,7 +69,7 @@ import java.util.concurrent.Executors;
 
 public class Main {
 
-    static final String APP_STACK = System.getenv().getOrDefault("APP_STACK", "Java 21");
+    static final String APP_STACK = System.getenv().getOrDefault("APP_STACK", "Java 25");
     static final String CASE_NAME = "20 - La dead letter queue olvidada";
     static final String[] POISON_CLASSES = {"schema_mismatch", "unknown_field", "null_required", "invalid_encoding"};
 

@@ -70,11 +70,11 @@ Misma lógica con stdlib. `dict` por ambiente, lista de deployments para histori
 
 `AbortController` para cancelación cooperativa entre pasos del pipeline — si el cliente desconecta o el deadline se vence, los pasos en curso reciben la señal y limpian limpio. Ver [`node/README.md`](node/README.md). Modo aislado: puerto `826`. Hub: `http://localhost:8300/06/`.
 
-### Java 21
+### Java 25
 
 `record EnvState(name, version, health)` y `record Deployment(at, variant, env, version, scenario, result)` **inmutables** — cada deploy crea instancias nuevas, no muta. Eso descarta una clase entera de bugs de concurrencia: el snapshot que captura `before` en preflight se mantiene aunque otro thread haga `put()` paralelo. `ConcurrentHashMap<String, EnvState>` por ambiente; state machine como guards explícitos (preflight → smoke → promote | rollback). Ver [`java/README.md`](java/README.md). Modo aislado: puerto `846`. Hub: `http://localhost:8400/06/`.
 
-### .NET 8
+### .NET 10
 
 `record EnvState(string Name, string Version, string Health)` y `record Deployment(...)` **inmutables** con `with`-expressions para rollback sin mutar. `ConcurrentDictionary<string, EnvState>` por ambiente; state machine con guards explicitos (preflight → smoke → promote | rollback). `Interlocked.Increment` para contadores. Ver [`dotnet/README.md`](dotnet/README.md). Modo aislado: puerto `856`. Hub: `http://localhost:8500/06/`.
 
@@ -101,8 +101,8 @@ Permite **publicar con menos riesgo**, reducir incidentes operativos y mejorar l
 | 🐘 PHP 8 | `OPERATIVO` (preflight + smoke + rollback automático) |
 | 🐍 Python 3.12 | `OPERATIVO` (misma lógica con stdlib, dict por ambiente) |
 | 🟢 Node.js 22 | `OPERATIVO` (`AbortController` para cancelación cooperativa entre pasos) |
-| ☕ Java 21 | `OPERATIVO` (`record` types inmutables + state machine + `ConcurrentHashMap`) |
-| 🔵 .NET 8 | `OPERATIVO` (`record EnvState` + `ConcurrentDictionary` + `with`-expressions para rollback) |
+| ☕ Java 25 | `OPERATIVO` (`record` types inmutables + state machine + `ConcurrentHashMap`) |
+| 🔵 .NET 10 | `OPERATIVO` (`record EnvState` + `ConcurrentDictionary` + `with`-expressions para rollback) |
 
 ---
 

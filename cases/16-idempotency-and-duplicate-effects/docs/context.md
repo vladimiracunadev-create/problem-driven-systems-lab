@@ -31,10 +31,10 @@ La segunda mitad del problema aparece cuando el efecto cruza un boundary. El car
 | 🐘 PHP | `PHP 8.3` | `http://localhost:8100/16/` | [README](../php/README.md) |
 | 🐍 Python | `Python 3.12` | `http://localhost:8200/16/` | [README](../python/README.md) |
 | 🟢 Node.js | `Node.js 22` | `http://localhost:8300/16/` | [README](../node/README.md) |
-| ☕ Java | `Java 21` | `http://localhost:8400/16/` | [README](../java/README.md) |
-| 🔵 .NET | `.NET 8` | `http://localhost:8500/16/` | [README](../dotnet/README.md) |
-| 🐹 Go | `Go 1.23` | `http://localhost:8600/16/` | [README](../go/README.md) |
-| 🦀 Rust | `Rust 1.83` | `http://localhost:8700/16/` | [README](../rust/README.md) |
+| ☕ Java | `Java 25` | `http://localhost:8400/16/` | [README](../java/README.md) |
+| 🔵 .NET | `.NET 10` | `http://localhost:8500/16/` | [README](../dotnet/README.md) |
+| 🐹 Go | `Go 1.27` | `http://localhost:8600/16/` | [README](../go/README.md) |
+| 🦀 Rust | `Rust 1.99` | `http://localhost:8700/16/` | [README](../rust/README.md) |
 
 > ⚠️ **Nota de honestidad del caso:** el ledger, la tabla de idempotencia y el outbox son estructuras en memoria (un archivo con `flock` en PHP), no una base con `UNIQUE` real. Lo que se demuestra con fidelidad es la **operación atómica de reserva** y el contraste de `charges_applied`. Y hay una asimetría de fondo que el caso documenta en vez de esconder: seis de las siete versiones resuelven la carrera **dentro de su proceso**, así que con dos réplicas dejan de ser correctas.
 <!-- /catalogo -->

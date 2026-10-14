@@ -22,7 +22,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.LongAdder;
 
 /**
- * Caso 16 — Idempotencia y efectos duplicados — stack Java 21.
+ * Caso 16 — Idempotencia y efectos duplicados — stack Java 25.
  *
  * Unsafe: N reintentos del mismo pago aplican N cargos.
  * Idempotent: `Idempotency-Key` persistida + outbox pattern.
@@ -55,7 +55,7 @@ import java.util.concurrent.atomic.LongAdder;
 public class Main {
 
     private static final String CASE_NAME = "16 - Idempotencia y efectos duplicados";
-    private static final String STACK = System.getenv().getOrDefault("APP_STACK", "Java 21");
+    private static final String STACK = System.getenv().getOrDefault("APP_STACK", "Java 25");
     private static final int PORT = Integer.parseInt(System.getenv().getOrDefault("PORT", "8080"));
 
     private static final long DEDUPE_WINDOW_MS = 24L * 60 * 60 * 1000;

@@ -3,7 +3,7 @@
 > **TL;DR** — legacy retiene sin limite; optimized se estabiliza en `cap=1000`. Seis stacks tienen GC y la fuga es *memoria referenciada de mas*; Rust no tiene GC y la fuga es *memoria retenida de mas*. Mismo grafico de heap, distinto mecanismo.
 
 <!-- nav -->
-`🐘 PHP` · `🐍 Python` · `🟢 Node.js` · `☕ Java 21` · `🔵 .NET 8` · `🐹 Go 1.23` · `🦀 Rust 1.83`
+`🐘 PHP` · `🐍 Python` · `🟢 Node.js` · `☕ Java 25` · `🔵 .NET 10` · `🐹 Go 1.27` · `🦀 Rust 1.99`
 
 **Estructura:** 🎯 el problema → una seccion por stack → ⚖️ tabla de decision → 📊 primitiva por stack → 🏁 veredicto y ranking
 <!-- /nav -->
@@ -184,7 +184,7 @@ if (mode === 'optimized') {
 
 ---
 
-## ☕ Java 21: heap del JVM + `LinkedHashMap` LRU built-in + `Runtime` metrics
+## ☕ Java 25: heap del JVM + `LinkedHashMap` LRU built-in + `Runtime` metrics
 
 **Runtime:** JVM con GC generacional (G1 por defecto en JDK 21). El "leak" en Java NO es que el SO pierda memoria — es que el GC no puede recolectar porque las referencias siguen alcanzables desde una raiz (`static field`). El heap puede crecer hasta `-Xmx` y a partir de ahi `OutOfMemoryError`.
 
@@ -215,9 +215,9 @@ private static final Map<Integer, byte[]> optimizedCache =
 
 ---
 
-## 🔵 .NET 8: LRU manual con Dictionary + LinkedList, Process.WorkingSet64 como senal
+## 🔵 .NET 10: LRU manual con Dictionary + LinkedList, Process.WorkingSet64 como senal
 
-**Runtime:** .NET 8 sobre `HttpListener`. CLR con GC generacional (Gen0/Gen1/Gen2 + LOH). Una fuga es referencia alcanzable desde una raiz `static` — el GC no la puede recolectar.
+**Runtime:** .NET 10 sobre `HttpListener`. CLR con GC generacional (Gen0/Gen1/Gen2 + LOH). Una fuga es referencia alcanzable desde una raiz `static` — el GC no la puede recolectar.
 
 **El fallo legacy en C#:**
 ```csharp
@@ -265,7 +265,7 @@ lock (sync) {
 
 ---
 
-## 🐹 Go 1.23: GC igual que Java, pero con `runtime.ReadMemStats` sin agente
+## 🐹 Go 1.27: GC igual que Java, pero con `runtime.ReadMemStats` sin agente
 
 **La fuga:** un `[]byte` global que crece por request. Igual que en Java, .NET, Node y Python, **no es memoria sin liberar** — es memoria *referenciada* de mas, que el GC no puede tocar porque el slice sigue apuntando a ella.
 
@@ -277,7 +277,7 @@ lock (sync) {
 
 ---
 
-## 🦀 Rust 1.83: sin GC, liberacion deterministica **y contada**
+## 🦀 Rust 1.99: sin GC, liberacion deterministica **y contada**
 
 Este es el caso donde Rust dice algo que ningun otro stack del lab puede decir, y tambien donde mas facil seria contar una mentira comoda. Las dos cosas, explicitas:
 
@@ -323,10 +323,10 @@ impl Drop for Tracked {
 | PHP | proceso por request: la fuga muere con el proceso |
 | Python | `gc` + `sys.getsizeof` |
 | Node.js | `process.memoryUsage()`; heap V8 |
-| Java 21 | `LinkedHashMap.removeEldestEntry` LRU + `Runtime` metrics |
-| .NET 8 | `Dictionary`+`LinkedList` LRU + `Process.WorkingSet64` |
-| Go 1.23 | `container/list` LRU + `runtime.ReadMemStats` + `NumGoroutine()` |
-| Rust 1.83 | **sin GC: `impl Drop` que cuenta sus liberaciones (`dropped_total` observable)** |
+| Java 25 | `LinkedHashMap.removeEldestEntry` LRU + `Runtime` metrics |
+| .NET 10 | `Dictionary`+`LinkedList` LRU + `Process.WorkingSet64` |
+| Go 1.27 | `container/list` LRU + `runtime.ReadMemStats` + `NumGoroutine()` |
+| Rust 1.99 | **sin GC: `impl Drop` que cuenta sus liberaciones (`dropped_total` observable)** |
 
 ---
 
@@ -336,10 +336,10 @@ impl Drop for Tracked {
 
 | | Stack | Por que |
 |---|---|---|
-| 🥇 | **Rust 1.83** | Liberacion deterministica **y observable**: `dropped_total` es contabilidad real del destructor. Ningun otro stack puede mostrar esa cifra. |
-| 🥈 | **Go 1.23** | `runtime.ReadMemStats` sin agente externo, y `NumGoroutine()` cubre ademas la fuga de concurrencia tipica del runtime. |
-| 🥉 | **Java 21** | `LinkedHashMap.removeEldestEntry` es la unica LRU built-in del set; el resto se construye a mano. |
-| 4º | **.NET 8** | `Process.WorkingSet64` + LRU manual con `Dictionary`+`LinkedList`. |
+| 🥇 | **Rust 1.99** | Liberacion deterministica **y observable**: `dropped_total` es contabilidad real del destructor. Ningun otro stack puede mostrar esa cifra. |
+| 🥈 | **Go 1.27** | `runtime.ReadMemStats` sin agente externo, y `NumGoroutine()` cubre ademas la fuga de concurrencia tipica del runtime. |
+| 🥉 | **Java 25** | `LinkedHashMap.removeEldestEntry` es la unica LRU built-in del set; el resto se construye a mano. |
+| 4º | **.NET 10** | `Process.WorkingSet64` + LRU manual con `Dictionary`+`LinkedList`. |
 | 5º | **Node.js 22** | `process.memoryUsage()` distingue heap V8 de RSS, que es mas de lo que ofrecen los dos ultimos. |
 | 6º | **Python 3.12 / PHP 8.3** | `tracemalloc` sirve; en PHP el proceso muere y se lleva la fuga puesta, lo que **oculta** el problema en vez de resolverlo. |
 

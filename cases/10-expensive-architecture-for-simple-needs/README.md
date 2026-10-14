@@ -98,11 +98,11 @@ Misma lógica con stdlib + JSON serialization manual. Ver [`python/README.md`](p
 
 CPU real medido como N rondas de `JSON.stringify`/`parse` sobre arrays grandes en `complex` vs acceso O(1) en `right_sized`. Bajo `seasonal_peak`, complex devuelve 502 por timeout interno. Ver [`node/README.md`](node/README.md). Modo aislado: puerto `8210`. Hub: `http://localhost:8300/10/`.
 
-### Java 21
+### Java 25
 
 CPU real medido en `StringBuilder` loops por hop (alocación + traversal). `HashMap.get(key)` O(1) en right-sized. `System.nanoTime()` para medición directa; el JIT optimiza el lookup pero no el StringBuilder, mostrando el costo real. Ver [`java/README.md`](java/README.md). Modo aislado: puerto `8410`. Hub: `http://localhost:8400/10/`.
 
-### .NET 8
+### .NET 10
 
 CPU real medido en hops de `JsonSerializer.Serialize`/`Deserialize` (alocacion + parsing, con presion al LOH cuando los blobs superan 85 KB). `Dictionary<string,long>.TryGetValue` O(1) en right-sized. `Stopwatch` para medicion directa. Ver [`dotnet/README.md`](dotnet/README.md). Modo aislado: puerto `8510`. Hub: `http://localhost:8500/10/`.
 
@@ -129,8 +129,8 @@ CPU real medido en hops de `JsonSerializer.Serialize`/`Deserialize` (alocacion +
 | 🐘 PHP 8 | `OPERATIVO` (simulación de hops + ADRs registrados) |
 | 🐍 Python 3.12 | `OPERATIVO` (stdlib + serialization manual) |
 | 🟢 Node.js 22 | `OPERATIVO` (`JSON.stringify`/`parse` cycles como CPU real) |
-| ☕ Java 21 | `OPERATIVO` (`StringBuilder` loops vs `HashMap` O(1); CPU real medido) |
-| 🔵 .NET 8 | `OPERATIVO` (lookup `Dictionary` O(1) vs N hops `JsonSerializer` con presion LOH) |
+| ☕ Java 25 | `OPERATIVO` (`StringBuilder` loops vs `HashMap` O(1); CPU real medido) |
+| 🔵 .NET 10 | `OPERATIVO` (lookup `Dictionary` O(1) vs N hops `JsonSerializer` con presion LOH) |
 
 ---
 

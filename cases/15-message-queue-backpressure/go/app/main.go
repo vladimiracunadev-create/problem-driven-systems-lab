@@ -1,4 +1,4 @@
-// Caso 15 — Backpressure en colas de mensajes — stack Go 1.23.
+// Caso 15 — Backpressure en colas de mensajes — stack Go 1.27.
 //
 // Unbounded: una slice que crece sin techo. El productor nunca se entera de que
 // el consumidor no da abasto.
@@ -44,7 +44,7 @@ const (
 	msgBytes = 2048
 )
 
-var stack = envOr("APP_STACK", "Go 1.23")
+var stack = envOr("APP_STACK", "Go 1.27")
 
 var policies = []string{"block", "drop_oldest", "dead_letter"}
 

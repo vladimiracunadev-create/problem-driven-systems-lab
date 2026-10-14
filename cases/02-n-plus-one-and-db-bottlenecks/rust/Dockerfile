@@ -3,7 +3,7 @@
 # rusqlite con feature `bundled` compila SQLite desde fuente, asi que el stage
 # de build necesita toolchain de C (musl-dev). La imagen final solo lleva el
 # binario: no hay runtime que instalar.
-FROM rust:1.83-alpine AS build
+FROM rust:1.99-alpine AS build
 RUN apk add --no-cache musl-dev
 WORKDIR /src
 

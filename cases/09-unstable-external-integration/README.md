@@ -118,11 +118,11 @@ Misma lógica con stdlib + `dict` como cache + `threading.Lock` para budget. Ver
 
 `AbortSignal.timeout(ms)` (Node 18+) marca deadline del llamado externo + circuit breaker en memoria con tres estados (`closed`/`open`/`half_open`) y reapertura automática tras cooldown. Ver [`node/README.md`](node/README.md). Modo aislado: puerto `829`. Hub: `http://localhost:8300/09/`.
 
-### Java 21
+### Java 25
 
 `Semaphore` como budget de cuota (`tryAcquire()` no bloquea — si no hay permits, sirve snapshot). `ConcurrentHashMap` como snapshot cache thread-safe. `AtomicReference<String>` como breaker con CAS implícito. Ver [`java/README.md`](java/README.md). Modo aislado: puerto `849`. Hub: `http://localhost:8400/09/`.
 
-### .NET 8
+### .NET 10
 
 `SemaphoreSlim.Wait(0)` como budget de cuota (no bloquea — si no hay permits, sirve snapshot). `ConcurrentDictionary<string,string>` como snapshot cache thread-safe. `Interlocked.CompareExchange` sobre el estado del breaker (`closed`/`open`/`half_open`) con CAS explicito. Ver [`dotnet/README.md`](dotnet/README.md). Modo aislado: puerto `859`. Hub: `http://localhost:8500/09/`.
 
@@ -149,8 +149,8 @@ Misma lógica con stdlib + `dict` como cache + `threading.Lock` para budget. Ver
 | 🐘 PHP 8 | `OPERATIVO` (adapter + cache + breaker persistente) |
 | 🐍 Python 3.12 | `OPERATIVO` (stdlib + threading.Lock + dict cache) |
 | 🟢 Node.js 22 | `OPERATIVO` (`AbortSignal.timeout` + CB en memoria) |
-| ☕ Java 21 | `OPERATIVO` (`Semaphore` budget + snapshot cache + `AtomicReference` breaker) |
-| 🔵 .NET 8 | `OPERATIVO` (`SemaphoreSlim` budget + `ConcurrentDictionary` cache + `Interlocked.CompareExchange` breaker) |
+| ☕ Java 25 | `OPERATIVO` (`Semaphore` budget + snapshot cache + `AtomicReference` breaker) |
+| 🔵 .NET 10 | `OPERATIVO` (`SemaphoreSlim` budget + `ConcurrentDictionary` cache + `Interlocked.CompareExchange` breaker) |
 
 ---
 

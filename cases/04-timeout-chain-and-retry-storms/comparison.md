@@ -3,7 +3,7 @@
 > **TL;DR** — legacy tarda ~4 s y falla; resilient corta a 300 ms y, con el breaker abierto, a ~0 ms. La diferencia real entre stacks no es el reloj: es **si el trabajo remoto se abandona o sigue ocupando el recurso**.
 
 <!-- nav -->
-`🐘 PHP` · `🐍 Python` · `🟢 Node.js` · `☕ Java 21` · `🔵 .NET 8` · `🐹 Go 1.23` · `🦀 Rust 1.83`
+`🐘 PHP` · `🐍 Python` · `🟢 Node.js` · `☕ Java 25` · `🔵 .NET 10` · `🐹 Go 1.27` · `🦀 Rust 1.99`
 
 **Estructura:** 🎯 el problema → una seccion por stack → ⚖️ tabla de decision → 📊 primitiva por stack → 🏁 veredicto y ranking
 <!-- /nav -->
@@ -112,7 +112,7 @@ Misma formula que PHP/Python. La diferencia: `await sleep(wait)` cede al loop pe
 
 ---
 
-## ☕ Java 21: `CompletableFuture.orTimeout()` + `AtomicReference<BreakerState>` con CAS
+## ☕ Java 25: `CompletableFuture.orTimeout()` + `AtomicReference<BreakerState>` con CAS
 
 **Runtime:** JVM con thread pool. `CompletableFuture` ejecuta el call al provider en otro thread y puede completarse exceptionally por timeout sin requerir cooperacion del callee (a diferencia de `AbortSignal` Node que necesita que el handler chequee la senal).
 
@@ -144,9 +144,9 @@ Tras 3 fallos consecutivos `breaker.set(new BreakerState("open", fails, now()))`
 
 ---
 
-## 🔵 .NET 8: CancellationToken cooperativo + Interlocked CAS sobre el breaker
+## 🔵 .NET 10: CancellationToken cooperativo + Interlocked CAS sobre el breaker
 
-**Runtime:** .NET 8 sobre `HttpListener`. CLR `ThreadPool` despachando handlers async. Las primitivas idiomaticas son `Task` + `CancellationToken` para deadlines y `Interlocked.CompareExchange` para transiciones de estado sin lock.
+**Runtime:** .NET 10 sobre `HttpListener`. CLR `ThreadPool` despachando handlers async. Las primitivas idiomaticas son `Task` + `CancellationToken` para deadlines y `Interlocked.CompareExchange` para transiciones de estado sin lock.
 
 **El fallo legacy en C#:**
 ```csharp
@@ -189,7 +189,7 @@ try {
 
 ---
 
-## 🐹 Go 1.23: `context.WithTimeout` — el unico stack donde el deadline cancela de verdad
+## 🐹 Go 1.27: `context.WithTimeout` — el unico stack donde el deadline cancela de verdad
 
 **La primitiva:** el deadline no es un reloj para el llamador, es una señal que **viaja hacia abajo**. El proveedor la observa:
 
@@ -212,7 +212,7 @@ En Go el trabajo se abandona de verdad y la goroutine se libera. No es azucar si
 
 ---
 
-## 🦀 Rust 1.83: `mpsc::recv_timeout` — y la limitacion que este stack no puede ocultar
+## 🦀 Rust 1.99: `mpsc::recv_timeout` — y la limitacion que este stack no puede ocultar
 
 **La primitiva:** se lanza el trabajo en un thread y el llamador espera con limite.
 
@@ -254,10 +254,10 @@ La razon es estructural: `std` de Rust no tiene runtime asincronico ni cancelaci
 | PHP | reintentos con `sleep()`; sin cancelacion real |
 | Python | `signal`/timeouts de socket |
 | Node.js | `AbortController` + `AbortSignal.timeout` |
-| Java 21 | `CompletableFuture.orTimeout` — corta la espera, no el trabajo |
-| .NET 8 | `CancellationTokenSource` con timeout |
-| Go 1.23 | **`context.WithTimeout` — el callee observa `ctx.Done()` y abandona de verdad** |
-| Rust 1.83 | `mpsc::recv_timeout` — corta la espera, no el trabajo (como Java; `tokio` lo resolveria) |
+| Java 25 | `CompletableFuture.orTimeout` — corta la espera, no el trabajo |
+| .NET 10 | `CancellationTokenSource` con timeout |
+| Go 1.27 | **`context.WithTimeout` — el callee observa `ctx.Done()` y abandona de verdad** |
+| Rust 1.99 | `mpsc::recv_timeout` — corta la espera, no el trabajo (como Java; `tokio` lo resolveria) |
 
 ---
 
@@ -267,11 +267,11 @@ La razon es estructural: `std` de Rust no tiene runtime asincronico ni cancelaci
 
 | | Stack | Por que |
 |---|---|---|
-| 🥇 | **Go 1.23** | `context.WithTimeout` propaga la cancelacion y el callee la observa con `select`. **El unico stack donde el trabajo remoto se abandona de verdad.** |
+| 🥇 | **Go 1.27** | `context.WithTimeout` propaga la cancelacion y el callee la observa con `select`. **El unico stack donde el trabajo remoto se abandona de verdad.** |
 | 🥈 | **Node.js 22** | `AbortController` cancela cooperativamente y es la misma primitiva que se usa con `fetch` en produccion. |
-| 🥉 | **.NET 8** | `CancellationToken` es cooperativo y esta en toda la BCL; requiere que el callee lo respete. |
-| 4º | **Java 21** | `orTimeout` completa el future a tiempo, **pero el thread sigue dormido**. Cree que corto; el recurso sigue tomado. |
-| 5º | **Rust 1.83** | `mpsc::recv_timeout` tiene exactamente la misma limitacion que Java. `tokio` lo resuelve; `std` no. |
+| 🥉 | **.NET 10** | `CancellationToken` es cooperativo y esta en toda la BCL; requiere que el callee lo respete. |
+| 4º | **Java 25** | `orTimeout` completa el future a tiempo, **pero el thread sigue dormido**. Cree que corto; el recurso sigue tomado. |
+| 5º | **Rust 1.99** | `mpsc::recv_timeout` tiene exactamente la misma limitacion que Java. `tokio` lo resuelve; `std` no. |
 | 6º | **Python 3.12 / PHP 8.3** | Wall-clock que abandona el resultado sin liberar nada. |
 
 **Lectura honesta:** **Es el unico caso del lab donde Rust queda por detras de Go**, y esta escrito asi a proposito: `std` no tiene runtime asincronico. Un ranking que pusiera a Rust primero por reputacion seria una mentira comoda.

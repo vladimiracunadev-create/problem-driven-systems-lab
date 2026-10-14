@@ -52,7 +52,7 @@ internal static class Program
         int.TryParse(Environment.GetEnvironmentVariable("PORT"), out var p) ? p : 8500;
 
     private static readonly string AppStack =
-        Environment.GetEnvironmentVariable("APP_STACK") ?? ".NET 8";
+        Environment.GetEnvironmentVariable("APP_STACK") ?? ".NET 10";
 
     private static readonly HttpClient Http = new(new SocketsHttpHandler
     {

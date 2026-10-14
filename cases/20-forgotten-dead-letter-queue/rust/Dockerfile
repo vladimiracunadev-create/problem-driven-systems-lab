@@ -2,7 +2,7 @@
 #
 # Solo std: sin crates externos. musl-dev es necesario igual porque el
 # linker de Rust en Alpine lo requiere. La imagen final solo lleva el binario.
-FROM rust:1.83-alpine AS build
+FROM rust:1.99-alpine AS build
 RUN apk add --no-cache musl-dev
 WORKDIR /src
 

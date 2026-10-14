@@ -50,7 +50,7 @@
   <rect x="34" y="370" width="932" height="74" rx="9" ry="9" fill="#f1f5f9" stroke="none" stroke-width="1"/>
   <rect x="34" y="370" width="5" height="74" rx="2" ry="2" fill="#c4622d" stroke="none" stroke-width="1"/>
   <text x="54" y="396" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="15" fill="#c4622d" text-anchor="start" font-weight="600">Java</text>
-  <text x="54" y="415" font-family="SFMono-Regular, Consolas, Liberation Mono, monospace" font-size="11" fill="#64748b" text-anchor="start" font-weight="400">Java 21</text>
+  <text x="54" y="415" font-family="SFMono-Regular, Consolas, Liberation Mono, monospace" font-size="11" fill="#64748b" text-anchor="start" font-weight="400">Java 25</text>
   <text x="54" y="432" font-family="SFMono-Regular, Consolas, Liberation Mono, monospace" font-size="10.5" fill="#64748b" text-anchor="start" font-weight="400">hub :8400</text>
   <line x1="202" y1="384" x2="202" y2="430" stroke="#cbd5e1" stroke-width="1.5"/>
   <text x="224" y="396" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="9.5" fill="#64748b" text-anchor="start" font-weight="700" letter-spacing="0.5">MODELO DE EJECUCION</text>
@@ -63,7 +63,7 @@
   <rect x="34" y="456" width="932" height="74" rx="9" ry="9" fill="#f1f5f9" stroke="none" stroke-width="1"/>
   <rect x="34" y="456" width="5" height="74" rx="2" ry="2" fill="#6c4bb6" stroke="none" stroke-width="1"/>
   <text x="54" y="482" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="15" fill="#6c4bb6" text-anchor="start" font-weight="600">.NET</text>
-  <text x="54" y="501" font-family="SFMono-Regular, Consolas, Liberation Mono, monospace" font-size="11" fill="#64748b" text-anchor="start" font-weight="400">.NET 8</text>
+  <text x="54" y="501" font-family="SFMono-Regular, Consolas, Liberation Mono, monospace" font-size="11" fill="#64748b" text-anchor="start" font-weight="400">.NET 10</text>
   <text x="54" y="518" font-family="SFMono-Regular, Consolas, Liberation Mono, monospace" font-size="10.5" fill="#64748b" text-anchor="start" font-weight="400">hub :8500</text>
   <line x1="202" y1="470" x2="202" y2="516" stroke="#cbd5e1" stroke-width="1.5"/>
   <text x="224" y="482" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="9.5" fill="#64748b" text-anchor="start" font-weight="700" letter-spacing="0.5">MODELO DE EJECUCION</text>
@@ -76,7 +76,7 @@
   <rect x="34" y="542" width="932" height="74" rx="9" ry="9" fill="#f1f5f9" stroke="none" stroke-width="1"/>
   <rect x="34" y="542" width="5" height="74" rx="2" ry="2" fill="#2a9bb5" stroke="none" stroke-width="1"/>
   <text x="54" y="568" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="15" fill="#2a9bb5" text-anchor="start" font-weight="600">Go</text>
-  <text x="54" y="587" font-family="SFMono-Regular, Consolas, Liberation Mono, monospace" font-size="11" fill="#64748b" text-anchor="start" font-weight="400">Go 1.23</text>
+  <text x="54" y="587" font-family="SFMono-Regular, Consolas, Liberation Mono, monospace" font-size="11" fill="#64748b" text-anchor="start" font-weight="400">Go 1.27</text>
   <text x="54" y="604" font-family="SFMono-Regular, Consolas, Liberation Mono, monospace" font-size="10.5" fill="#64748b" text-anchor="start" font-weight="400">hub :8600</text>
   <line x1="202" y1="556" x2="202" y2="602" stroke="#cbd5e1" stroke-width="1.5"/>
   <text x="224" y="568" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="9.5" fill="#64748b" text-anchor="start" font-weight="700" letter-spacing="0.5">MODELO DE EJECUCION</text>
@@ -89,7 +89,7 @@
   <rect x="34" y="628" width="932" height="74" rx="9" ry="9" fill="#f1f5f9" stroke="none" stroke-width="1"/>
   <rect x="34" y="628" width="5" height="74" rx="2" ry="2" fill="#a8453a" stroke="none" stroke-width="1"/>
   <text x="54" y="654" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="15" fill="#a8453a" text-anchor="start" font-weight="600">Rust</text>
-  <text x="54" y="673" font-family="SFMono-Regular, Consolas, Liberation Mono, monospace" font-size="11" fill="#64748b" text-anchor="start" font-weight="400">Rust 1.83</text>
+  <text x="54" y="673" font-family="SFMono-Regular, Consolas, Liberation Mono, monospace" font-size="11" fill="#64748b" text-anchor="start" font-weight="400">Rust 1.99</text>
   <text x="54" y="690" font-family="SFMono-Regular, Consolas, Liberation Mono, monospace" font-size="10.5" fill="#64748b" text-anchor="start" font-weight="400">hub :8700</text>
   <line x1="202" y1="642" x2="202" y2="688" stroke="#cbd5e1" stroke-width="1.5"/>
   <text x="224" y="654" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="9.5" fill="#64748b" text-anchor="start" font-weight="700" letter-spacing="0.5">MODELO DE EJECUCION</text>

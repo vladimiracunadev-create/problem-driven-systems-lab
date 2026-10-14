@@ -24,10 +24,10 @@ Es muy común en plataformas maduras: el negocio pide más información y el sis
 | 🐘 PHP | `PHP 8.3` | `http://localhost:8100/11/` | [README](../php/README.md) |
 | 🐍 Python | `Python 3.12` | `http://localhost:8200/11/` | [README](../python/README.md) |
 | 🟢 Node.js | `Node.js 22` | `http://localhost:8300/11/` | [README](../node/README.md) |
-| ☕ Java | `Java 21` | `http://localhost:8400/11/` | [README](../java/README.md) |
-| 🔵 .NET | `.NET 8` | `http://localhost:8500/11/` | [README](../dotnet/README.md) |
-| 🐹 Go | `Go 1.23` | `http://localhost:8600/11/` | [README](../go/README.md) |
-| 🦀 Rust | `Rust 1.83` | `http://localhost:8700/11/` | [README](../rust/README.md) |
+| ☕ Java | `Java 25` | `http://localhost:8400/11/` | [README](../java/README.md) |
+| 🔵 .NET | `.NET 10` | `http://localhost:8500/11/` | [README](../dotnet/README.md) |
+| 🐹 Go | `Go 1.27` | `http://localhost:8600/11/` | [README](../go/README.md) |
+| 🦀 Rust | `Rust 1.99` | `http://localhost:8700/11/` | [README](../rust/README.md) |
 
 > ⚠️ **Nota de honestidad del caso:** No reemplaza una replica real ni un data warehouse. Si reproduce el problema operativo importante: reporting sobre el primario versus aislamiento de cargas.
 <!-- /catalogo -->

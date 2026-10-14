@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-// Caso 14 — Agotamiento del pool de conexiones — stack .NET 8.
+// Caso 14 — Agotamiento del pool de conexiones — stack .NET 10.
 //
 // Leaky: sin deadline de adquisicion y con el `Release()` solo en el camino
 // feliz. Cada excepcion se lleva una conexion que nunca vuelve al pool.
@@ -35,7 +35,7 @@ using System.Threading.Tasks;
 internal static class Program
 {
     private const string CaseName = "14 - Agotamiento del pool de conexiones";
-    private static readonly string Stack = Environment.GetEnvironmentVariable("APP_STACK") ?? ".NET 8";
+    private static readonly string Stack = Environment.GetEnvironmentVariable("APP_STACK") ?? ".NET 10";
 
     private const int AcquireTimeoutMs = 200;
     /// Sin deadline la variante leaky no terminaria. El watchdog permite medirla.

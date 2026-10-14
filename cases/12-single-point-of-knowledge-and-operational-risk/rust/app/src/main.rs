@@ -1,4 +1,4 @@
-// Caso 12 — Punto unico de conocimiento y riesgo operacional — stack Rust 1.83.
+// Caso 12 — Punto unico de conocimiento y riesgo operacional — stack Rust 1.99.
 //
 // Legacy: el incidente con owner ausente hace acceso ciego y revienta.
 // Distributed: la ausencia esta en el tipo, el fallback es codigo, no folclore.
@@ -77,7 +77,7 @@ fn fresh_owners() -> HashMap<String, Owner> {
 }
 
 fn stack() -> String {
-    std::env::var("APP_STACK").unwrap_or_else(|_| "Rust 1.83".to_string())
+    std::env::var("APP_STACK").unwrap_or_else(|_| "Rust 1.99".to_string())
 }
 
 fn main() {

@@ -33,7 +33,7 @@ import java.util.concurrent.atomic.LongAdder;
 public class Main {
 
     private static final String CASE_NAME = "11 - Reportes pesados que bloquean operacion";
-    private static final String STACK = "Java 21";
+    private static final String STACK = "Java 25";
     private static final int PORT = Integer.parseInt(System.getenv().getOrDefault("PORT", "8080"));
 
     // pool principal limitado a 4 threads — saturar es realista

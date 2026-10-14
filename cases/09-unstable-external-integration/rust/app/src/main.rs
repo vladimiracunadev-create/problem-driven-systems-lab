@@ -1,4 +1,4 @@
-// Caso 09 — Integracion externa inestable — stack Rust 1.83.
+// Caso 09 — Integracion externa inestable — stack Rust 1.99.
 //
 // Legacy: cada request pega al provider sin cache, sin budget, sin breaker.
 // Hardened: budget de cuota + snapshot cache + breaker + mapping defensivo.
@@ -60,7 +60,7 @@ static SNAPSHOT_CACHE: LazyLock<RwLock<HashMap<String, String>>> = LazyLock::new
 });
 
 fn stack() -> String {
-    std::env::var("APP_STACK").unwrap_or_else(|_| "Rust 1.83".to_string())
+    std::env::var("APP_STACK").unwrap_or_else(|_| "Rust 1.99".to_string())
 }
 
 fn main() {

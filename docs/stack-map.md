@@ -15,13 +15,13 @@ El objetivo es mostrar cómo **el mismo problema se manifiesta y se resuelve de 
 
 | Stack | Ícono | Versión | Fortaleza en el contexto del lab |
 |-------|-------|---------|----------------------------------|
-| PHP | 🐘 | 8.x | Ideal para casos de APIs web, ORMs y patrones MVC |
-| Node.js | 🟢 | 20 LTS | Single-thread + event loop; primitivas estandar (`AbortController`, `AbortSignal.timeout`, `Proxy`, `EventEmitter`, `monitorEventLoopDelay`, `process.memoryUsage`) que mapean a problemas de cancelacion, contratos, eventos y observabilidad sin libreria externa |
-| Python | 🐍 | 3.x | Data, análisis, scripting y rapidez de prototipado |
-| Java | ☕ | 21 | Tipado fuerte, primitivas concurrentes ricas (`ConcurrentHashMap`, `CompletableFuture.orTimeout`, `LinkedHashMap` LRU, `Optional<T>`, `Semaphore`, `ThreadPoolExecutor`); paralelismo real sin GIL |
-| .NET | 🔵 | 8 | Tipado fuerte con Nullable Reference Types, primitivas BCL idiomaticas (`ConcurrentDictionary`, `CancellationTokenSource`, `AsyncLocal<T>`, `Interlocked.CompareExchange`, `SemaphoreSlim`, `ImmutableList<T>`, `ThreadPool.GetAvailableWorkerThreads`); `record` types + `with`-expressions; `await` que no bloquea threads |
-| Go | 🐹 | 1.23 | Concurrencia con una sola primitiva: canal + `select` cubren semaforo, timeout, cola y cancelacion. `context.Context` propaga deadlines que el callee **si** observa. Sin pool de threads que dimensionar: el runtime multiplexa goroutines. `log/slog` y `httputil.ReverseProxy` en la stdlib |
-| Rust | 🦀 | 1.83 | Sin GC: liberacion deterministica via `Drop`, observable en el caso 05. Ausencia y exhaustividad en el sistema de tipos (`Option<T>`, `enum` + `match`). `Send + Sync` verificados por el compilador. Contrapartida: `std` no trae HTTP, JSON ni runtime asincronico |
+| PHP | 🐘 | 8.3 | Ideal para casos de APIs web, ORMs y patrones MVC |
+| Node.js | 🟢 | 22 LTS | Single-thread + event loop; primitivas estandar (`AbortController`, `AbortSignal.timeout`, `Proxy`, `EventEmitter`, `monitorEventLoopDelay`, `process.memoryUsage`) que mapean a problemas de cancelacion, contratos, eventos y observabilidad sin libreria externa |
+| Python | 🐍 | 3.12 | Data, análisis, scripting y rapidez de prototipado |
+| Java | ☕ | 25 LTS | Tipado fuerte, contexto acotado con `ScopedValue` y primitivas concurrentes ricas (`ConcurrentHashMap`, `CompletableFuture.orTimeout`, `LinkedHashMap` LRU, `Semaphore`, `ThreadPoolExecutor`); paralelismo real sin GIL |
+| .NET | 🔵 | 10 LTS | Tipado fuerte con Nullable Reference Types, primitivas BCL idiomaticas (`ConcurrentDictionary`, `CancellationTokenSource`, `AsyncLocal<T>`, `Interlocked.CompareExchange`, `SemaphoreSlim`, `ImmutableList<T>`, `ThreadPool.GetAvailableWorkerThreads`); `record` types + `with`-expressions; `await` que no bloquea threads |
+| Go | 🐹 | 1.27 | Concurrencia con una sola primitiva: canal + `select` cubren semaforo, timeout, cola y cancelacion. `context.Context` propaga deadlines que el callee **si** observa. Sin pool de threads que dimensionar: el runtime multiplexa goroutines. `log/slog` y `httputil.ReverseProxy` en la stdlib |
+| Rust | 🦀 | 1.99 | Sin GC: liberacion deterministica via `Drop`, observable en el caso 05. Ausencia y exhaustividad en el sistema de tipos (`Option<T>`, `enum` + `match`). `Send + Sync` verificados por el compilador. Contrapartida: `std` no trae HTTP, JSON ni runtime asincronico |
 
 ---
 

@@ -1,4 +1,4 @@
-// Caso 14 — Agotamiento del pool de conexiones — stack Go 1.23.
+// Caso 14 — Agotamiento del pool de conexiones — stack Go 1.27.
 //
 // Leaky: sin deadline de adquisicion y con la devolucion solo en el camino
 // feliz. Cada error se lleva una conexion que nunca vuelve al pool.
@@ -52,7 +52,7 @@ const (
 	leakyWatchdogMs   = 2000
 )
 
-var stack = envOr("APP_STACK", "Go 1.23")
+var stack = envOr("APP_STACK", "Go 1.27")
 
 var errNoConn = errors.New("pool acquire timeout")
 

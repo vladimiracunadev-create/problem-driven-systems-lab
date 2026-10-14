@@ -10,7 +10,7 @@ El laboratorio resuelve **los mismos 20 problemas en 7 lenguajes**. Eso obliga a
 
 > ¿La primitiva que este caso enseña sigue siendo *la forma idiomática actual*, o el lenguaje ya incorporó algo que la reemplaza?
 
-Un perfil por lenguaje es donde esa pregunta tiene respuesta escrita. Sin esto, cuando Java 25 saque `ScopedValue` de preview, el caso 03 seguiría enseñando `ThreadLocal` como si nada hubiera pasado — y nadie sabría dónde mirar.
+Un perfil por lenguaje es donde esa pregunta tiene respuesta escrita. La migracion Java 21 → 25 lo demostro: al quedar `ScopedValue` final, el caso 03 dejo `ThreadLocal` como contexto historico y adopto la primitiva actual.
 
 Cada perfil documenta seis cosas:
 
@@ -32,10 +32,10 @@ Cada perfil documenta seis cosas:
 | 🐘 **PHP** | `8.3` | Proceso por petición, sin estado compartido | [php.md](php.md) |
 | 🐍 **Python** | `3.12` | Threads reales con GIL | [python.md](python.md) |
 | 🟢 **Node.js** | `22` | Event loop de un solo hilo | [node.md](node.md) |
-| ☕ **Java** | `21` | Threads del SO, paralelismo real, JVM | [java.md](java.md) |
-| 🔵 **.NET** | `8.0` | ThreadPool con `async/await` | [dotnet.md](dotnet.md) |
-| 🐹 **Go** | `1.23` | Goroutines multiplexadas por el runtime | [go.md](go.md) |
-| 🦀 **Rust** | `1.83` | Threads del SO sin GC, `Drop` determinista | [rust.md](rust.md) |
+| ☕ **Java** | `25` | Threads del SO, paralelismo real, JVM | [java.md](java.md) |
+| 🔵 **.NET** | `10.0` | ThreadPool con `async/await` | [dotnet.md](dotnet.md) |
+| 🐹 **Go** | `1.27` | Goroutines multiplexadas por el runtime | [go.md](go.md) |
+| 🦀 **Rust** | `1.99` | Threads del SO sin GC, `Drop` determinista | [rust.md](rust.md) |
 
 La versión fijada no se escribe a mano en esta tabla ni en los perfiles: sale de [`shared/catalog/cases.json`](../../shared/catalog/cases.json) y [`scripts/check-language-versions.sh`](../../scripts/check-language-versions.sh) falla el PR si algún `Dockerfile` dice otra cosa.
 

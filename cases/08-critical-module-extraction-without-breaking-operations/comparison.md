@@ -3,7 +3,7 @@
 > **TL;DR** — big-bang devuelve `contract_violation`; el proxy traduce `{cost_usd}` a `{price, currency}` y el consumer no se entera. Lo que separa a los stacks es **si el bus de eventos corre en el thread del request o desacoplado**.
 
 <!-- nav -->
-`🐘 PHP` · `🐍 Python` · `🟢 Node.js` · `☕ Java 21` · `🔵 .NET 8` · `🐹 Go 1.23` · `🦀 Rust 1.83`
+`🐘 PHP` · `🐍 Python` · `🟢 Node.js` · `☕ Java 25` · `🔵 .NET 10` · `🐹 Go 1.27` · `🦀 Rust 1.99`
 
 **Estructura:** 🎯 el problema → una seccion por stack → ⚖️ tabla de decision → 📊 primitiva por stack → 🏁 veredicto y ranking
 <!-- /nav -->
@@ -145,7 +145,7 @@ Otros listeners (alerting, audit log, slack notifier) pueden engancharse al `cut
 
 ---
 
-## ☕ Java 21: `Function` proxy de compatibilidad + `CopyOnWriteArrayList<Consumer>` event bus
+## ☕ Java 25: `Function` proxy de compatibilidad + `CopyOnWriteArrayList<Consumer>` event bus
 
 **Runtime:** JVM con thread pool. El event bus tiene lectores frecuentes (cada emit recorre suscriptores) y escritores raros (add/remove subscriber) — `CopyOnWriteArrayList` es exactamente este trade-off.
 
@@ -169,9 +169,9 @@ emit("cutover_done:" + consumer);                       // CopyOnWriteArrayList<
 
 ---
 
-## 🔵 .NET 8: Func<Old,New> como proxy + ImmutableList<Action<string>> como event bus
+## 🔵 .NET 10: Func<Old,New> como proxy + ImmutableList<Action<string>> como event bus
 
-**Runtime:** .NET 8 sobre `HttpListener`. CLR `ThreadPool` con state compartido. Cutover gradual con proxy de traduccion + bus de eventos thread-safe.
+**Runtime:** .NET 10 sobre `HttpListener`. CLR `ThreadPool` con state compartido. Cutover gradual con proxy de traduccion + bus de eventos thread-safe.
 
 **El fallo big-bang en C#:**
 ```csharp
@@ -213,7 +213,7 @@ public static void Emit(string evt) {
 
 ---
 
-## 🐹 Go 1.23: bus por canal, con la politica de descarte explicita
+## 🐹 Go 1.27: bus por canal, con la politica de descarte explicita
 
 Java modela el bus con `CopyOnWriteArrayList<Consumer<Event>>`, .NET con un `event` del CLR, Node con `EventEmitter`. Los tres comparten una propiedad que rara vez se nota hasta que duele: **el `emit()` corre los subscribers en el thread del request**. Un subscriber lento penaliza al consumer que disparo el evento.
 
@@ -230,7 +230,7 @@ func emit(name string) {
 
 ---
 
-## 🦀 Rust 1.83: `mpsc` — el tipo dice cuantos consumidores hay
+## 🦀 Rust 1.99: `mpsc` — el tipo dice cuantos consumidores hay
 
 ```go
 ch := make(chan busEvent, 256)   // Go: cualquiera puede enviar Y recibir
@@ -270,10 +270,10 @@ En Go, dos goroutines leyendo el mismo canal se reparten los mensajes en silenci
 | PHP | hooks sincronos |
 | Python | callbacks en lista |
 | Node.js | `EventEmitter` + `Proxy` de compatibilidad |
-| Java 21 | `CopyOnWriteArrayList<Consumer>` — corre en el thread del request |
-| .NET 8 | `ImmutableList<Action<string>>` |
-| Go 1.23 | **canal + `select` con `default`: descarta antes que frenar trafico** |
-| Rust 1.83 | **`mpsc`: single-consumer impuesto por el tipo** (canal no acotado — la cola crece) |
+| Java 25 | `CopyOnWriteArrayList<Consumer>` — corre en el thread del request |
+| .NET 10 | `ImmutableList<Action<string>>` |
+| Go 1.27 | **canal + `select` con `default`: descarta antes que frenar trafico** |
+| Rust 1.99 | **`mpsc`: single-consumer impuesto por el tipo** (canal no acotado — la cola crece) |
 
 ---
 
@@ -283,10 +283,10 @@ En Go, dos goroutines leyendo el mismo canal se reparten los mensajes en silenci
 
 | | Stack | Por que |
 |---|---|---|
-| 🥇 | **Go 1.23** | El canal desacopla publicacion de consumo **y** el `select` con `default` deja escrita la politica de backpressure en dos lineas auditables. |
-| 🥈 | **Rust 1.83** | `mpsc` desacopla igual y ademas impone single-consumer por tipo. Pierde el primer puesto porque el canal de `std` no es acotado: la cola crece sin politica. |
+| 🥇 | **Go 1.27** | El canal desacopla publicacion de consumo **y** el `select` con `default` deja escrita la politica de backpressure en dos lineas auditables. |
+| 🥈 | **Rust 1.99** | `mpsc` desacopla igual y ademas impone single-consumer por tipo. Pierde el primer puesto porque el canal de `std` no es acotado: la cola crece sin politica. |
 | 🥉 | **Node.js 22** | `EventEmitter` + `Proxy` para el ACL es lo mas idiomatico del set, aunque los subscribers corren en el thread del request. |
-| 4º | **Java 21 / .NET 8** | `CopyOnWriteArrayList` y `event` del CLR son thread-safe y sincronos: un subscriber lento penaliza al consumer. |
+| 4º | **Java 25 / .NET 10** | `CopyOnWriteArrayList` y `event` del CLR son thread-safe y sincronos: un subscriber lento penaliza al consumer. |
 | 6º | **Python 3.12 / PHP 8.3** | Listas de callbacks y hooks sincronos. Simples y sin desacople. |
 
 **Lectura honesta:** La pregunta del caso no es "¿puedo publicar eventos?" sino "¿que pasa cuando el consumidor no da abasto?". Solo Go la responde de forma explicita en el codigo.

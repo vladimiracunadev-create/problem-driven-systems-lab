@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-// Caso 17 — Migracion de esquema sin downtime — stack .NET 8.
+// Caso 17 — Migracion de esquema sin downtime — stack .NET 10.
 //
 // Blocking: un `ALTER TABLE` toma el lock exclusivo durante toda la migracion.
 // Expand-contract: cuatro fases, y el lock se toma y se suelta en cada lote.
@@ -40,7 +40,7 @@ using System.Threading.Tasks;
 internal static class Program
 {
     private const string CaseName = "17 - Migracion de esquema sin downtime";
-    private static readonly string Stack = Environment.GetEnvironmentVariable("APP_STACK") ?? ".NET 8";
+    private static readonly string Stack = Environment.GetEnvironmentVariable("APP_STACK") ?? ".NET 10";
 
     private const int ReadTimeoutMs = 120;
 

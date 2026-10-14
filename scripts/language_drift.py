@@ -41,9 +41,9 @@ for _stream in (sys.stdout, sys.stderr):
 #           que primitiva del lab podria quedar obsoleta si el lenguaje avanza)
 STACKS = {
     "php":    ("php",     r"^FROM php:(\d+\.\d+)",                        "El dashboard PHP y el pool FPM del caso 01."),
-    "node":   ("nodejs",  r"^FROM node:(\d+)",                            "`node:sqlite` sigue tras `--experimental-sqlite` en 22; en 24+ el flag podria sobrar (casos 01 y 02)."),
+    "node":   ("nodejs",  r"^FROM node:(\d+)",                            "`node:sqlite` esta habilitado por defecto desde 22.13 y pasa a release candidate en 24; revisar estabilidad de API en los casos 01 y 02."),
     "python": ("python",  r"^FROM python:(\d+\.\d+)",                     "El GIL del caso 11: Python 3.13+ con free-threading cambia el argumento."),
-    "java":   ("eclipse-temurin", r"^FROM eclipse-temurin:(\d+)",         "`ScopedValue` sale de preview en 25 y deja al `ThreadLocal` del caso 03 como la forma vieja."),
+    "java":   ("eclipse-temurin", r"^FROM eclipse-temurin:(\d+)",         "Revisar concurrencia estructurada y virtual threads en el caso 11; el caso 03 ya usa `ScopedValue` final."),
     "dotnet": ("dotnet",  r"^FROM mcr\.microsoft\.com/dotnet/sdk:(\d+\.\d+)", "Primitivas BCL de los casos 04, 09 y 11."),
     "go":     ("go",      r"^FROM golang:(\d+\.\d+)",                     "Cambios de scheduler afectan el argumento del caso 11."),
     "rust":   ("rust",    r"^FROM rust:(\d+\.\d+)",                       "Si `std` incorpora timeout cancelable o semaforo, la limitacion documentada en los casos 04 y 09 deja de ser cierta."),

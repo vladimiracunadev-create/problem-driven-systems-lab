@@ -1,4 +1,4 @@
-// Caso 07 — Modernizacion incremental de monolito (strangler) — stack Go 1.23.
+// Caso 07 — Modernizacion incremental de monolito (strangler) — stack Go 1.27.
 //
 // Legacy: el cambio toca el shared_schema acoplado, blast radius alto.
 // Strangler: una tabla de routing por consumer decide si la operacion va al
@@ -34,7 +34,7 @@ import (
 
 const caseName = "07 - Modernizacion incremental de monolito"
 
-var stack = envOr("APP_STACK", "Go 1.23")
+var stack = envOr("APP_STACK", "Go 1.27")
 
 var (
 	legacyCalls       int64
