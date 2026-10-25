@@ -1,4 +1,4 @@
-FROM node:22-alpine
+FROM node:22.23.4-alpine3.24
 # Node 22.13+ habilita el built-in `node:sqlite` por defecto.
 
 WORKDIR /app

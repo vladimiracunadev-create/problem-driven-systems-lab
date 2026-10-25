@@ -34,7 +34,7 @@ El problema del **N+1** en PHP no es exclusivo de los ORMs pesados (como Eloquen
 
 ## 🧱 Servicios
 
-- `app` -> API PHP 8.3 con endpoints legacy y optimized.
+- `app` -> API PHP 8.4.27 con endpoints legacy y optimized.
 - `db` -> PostgreSQL 16 con datos semilla y relaciones reales.
 
 ## 🚀 Arranque

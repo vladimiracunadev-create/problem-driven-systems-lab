@@ -193,7 +193,7 @@ function diagnosticsSummary(): array
 {
     return [
         'case' => '05 - Memory pressure and resource leaks',
-        'stack' => envOr('APP_STACK', 'PHP 8.3'),
+        'stack' => envOr('APP_STACK', 'PHP 8.4.27'),
         'state' => stateSummary(),
         'metrics' => telemetrySummary(readTelemetry()),
         'interpretation' => [
@@ -251,7 +251,7 @@ try {
         $payload = [
             'lab' => 'Problem-Driven Systems Lab',
             'case' => '05 - Memory pressure and resource leaks',
-            'stack' => envOr('APP_STACK', 'PHP 8.3'),
+            'stack' => envOr('APP_STACK', 'PHP 8.4.27'),
             'goal' => 'Comparar un proceso que retiene memoria y recursos con otro que compacta estado y limita el crecimiento.',
             'routes' => [
                 '/health' => 'Estado basico del servicio.',
@@ -267,7 +267,7 @@ try {
             'allowed_scenarios' => array_keys(scenarioCatalog()),
         ];
     } elseif ($uri === '/health') {
-        $payload = ['status' => 'ok', 'stack' => envOr('APP_STACK', 'PHP 8.3')];
+        $payload = ['status' => 'ok', 'stack' => envOr('APP_STACK', 'PHP 8.4.27')];
     } elseif ($uri === '/batch-legacy' || $uri === '/batch-optimized') {
         $mode = $uri === '/batch-legacy' ? 'legacy' : 'optimized';
         $scenario = (string) ($query['scenario'] ?? 'mixed_pressure');
@@ -295,7 +295,7 @@ try {
         $payload = array_merge(
             [
                 'case' => '05 - Memory pressure and resource leaks',
-                'stack' => envOr('APP_STACK', 'PHP 8.3'),
+                'stack' => envOr('APP_STACK', 'PHP 8.4.27'),
             ],
             telemetrySummary(readTelemetry())
         );

@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Caso 17 — Migracion de esquema sin downtime — stack PHP 8.3.
+ * Caso 17 — Migracion de esquema sin downtime — stack PHP 8.4.27.
  *
  * Lo que este stack aporta, y es el unico del lab que lo tiene:
  *

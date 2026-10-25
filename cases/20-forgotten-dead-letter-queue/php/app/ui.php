@@ -57,7 +57,7 @@ footer a{color:var(--accent);text-decoration:none}
     <h1>🪦 La dead letter queue olvidada</h1>
     <p>Resiliencia · Cierra el arco del caso 15, donde la DLQ nace</p>
   </div>
-  <span class="stack-badge">PHP 8.3 · catch union · drenaje por cron</span>
+  <span class="stack-badge">PHP 8.4.27 · catch union · drenaje por cron</span>
 </div>
 
 <div class="container">

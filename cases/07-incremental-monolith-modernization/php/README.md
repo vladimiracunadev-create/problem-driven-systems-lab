@@ -1,4 +1,4 @@
-# 🐘 Caso 07 - PHP 8.3 con modernización incremental comparada
+# 🐘 Caso 07 - PHP 8.4.27 con modernización incremental comparada
 
 > Implementación operativa del caso 07 para contrastar un cambio sobre un monolito acoplado contra una ruta strangler con migración gradual.
 
@@ -30,7 +30,7 @@ Este caso implementa la topología de memoria y dependencias de PHP para exponer
 
 ## 🧱 Servicio
 
-- `app` -> API PHP 8.3 con progreso por consumidor, cobertura del módulo extraído y métricas de blast radius.
+- `app` -> API PHP 8.4.27 con progreso por consumidor, cobertura del módulo extraído y métricas de blast radius.
 
 ## 🚀 Arranque
 

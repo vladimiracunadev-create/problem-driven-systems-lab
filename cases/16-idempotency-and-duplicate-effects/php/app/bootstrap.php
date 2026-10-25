@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Caso 16 — Idempotencia y efectos duplicados — stack PHP 8.3.
+ * Caso 16 — Idempotencia y efectos duplicados — stack PHP 8.4.27.
  *
  * Lo que este stack aporta, y por que su version es la unica que sobrevive a
  * varias replicas:

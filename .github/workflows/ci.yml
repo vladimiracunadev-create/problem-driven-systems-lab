@@ -24,7 +24,13 @@ jobs:
       - name: Setup PHP
         uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240  # v2
         with:
-          php-version: "8.3"
+          php-version: "8.4"
+
+      - name: Audit PHP security invariants
+        run: php tests/php-security-audit.php
+
+      - name: Audit weekly runtime pins
+        run: php tests/runtime-base-images.php
 
       - name: Check generated catalog
         run: php scripts/generate_case_catalog.php --check

@@ -1,4 +1,4 @@
-# 🐘 Caso 11 - PHP 8.3 con reporting legacy vs aislado
+# 🐘 Caso 11 - PHP 8.4.27 con reporting legacy vs aislado
 
 > Implementación operativa del caso 11 para contrastar reporting pesado sobre el primario contra una ruta que protege la operación.
 
@@ -31,7 +31,7 @@ El choque entre procesos de reporte y operaciones vitales se produce mediante la
 
 ## 🧱 Servicio
 
-- `app` -> API PHP 8.3 con estado persistido de carga en primario, presión de locks, lag de replica y cola de reporting.
+- `app` -> API PHP 8.4.27 con estado persistido de carga en primario, presión de locks, lag de replica y cola de reporting.
 
 ## 🚀 Arranque
 

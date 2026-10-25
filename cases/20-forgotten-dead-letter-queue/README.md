@@ -115,7 +115,7 @@ Timeout, 503 del downstream, deadlock: transitorios. Schema roto, campo desconoc
 
 Los siete stacks exponen el mismo contrato y —al ser el escenario determinista— producen **resultados idénticos hasta el último dígito**. Lo que cambia es qué tan difícil hace cada lenguaje clasificar mal.
 
-### ✅ PHP 8.3
+### ✅ PHP 8.4.27
 
 `catch (A | B $e)` sin duplicar el bloque, y `Throwable` haciendo explícito que capturar todo incluye los bugs propios. El drenaje como **comando de cron** es una ventaja operativa real. Ver [`php/README.md`](php/README.md). Modo aislado: `8120`.
 
@@ -169,7 +169,7 @@ El indicador honesto no es `dlq_depth` sino **`dlq_oldest_msg_age_ms`**: mil men
 
 | Stack | Estado |
 | --- | --- |
-| 🐘 PHP 8.3 | `OPERATIVO` (`catch (A\|B)` + `Throwable` + drenaje por cron) |
+| 🐘 PHP 8.4.27 | `OPERATIVO` (`catch (A\|B)` + `Throwable` + drenaje por cron) |
 | 🐍 Python 3.12 | `OPERATIVO` (jerarquía de excepciones + `raise ... from`) |
 | 🟢 Node.js 22 | `OPERATIVO` (`instanceof` frágil + `error.cause` de ES2022) |
 | ☕ Java 25 | `OPERATIVO` (jerarquía `sealed ... permits` + multi-catch) |

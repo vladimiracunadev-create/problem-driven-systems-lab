@@ -2,6 +2,33 @@
 
 Todos los cambios notables de este laboratorio se registran aqui con foco en madurez tecnica y documental.
 
+## 2026-10-25 - Correccion de CVE semanales en runtimes
+
+### Security
+
+- **PHP:** las 23 imagenes quedan en `8.4.27`; CVE-2026-109618 y
+  CVE-2026-109619 quedan corregidas. CVE-2026-115560 queda mitigada mediante
+  `session.upload_progress.enabled=0` y `file_uploads=0` hasta que PHP publique
+  una release correctiva.
+- **Node.js:** los 20 casos y el dispatcher quedan fijados en `22.23.4`, release
+  que corrige las siete CVE publicadas por Node.js en la ventana auditada.
+- **Go:** los 20 casos y el dispatcher quedan fijados en `1.27.3`, version que
+  corrige GO-2026-6809 / CVE-2026-111943.
+- **Java:** los 20 casos y el dispatcher migran a Corretto `25.0.5` y eliminan
+  del trust store los cuatro certificados afectados por CVE-2026-91403. Se
+  declara mitigada, no corregida por numero de version.
+- **Python:** se elimina el tag flotante y se fija `3.13.17`. La correccion
+  completa `3.13.18` aun no tenia imagen Docker Official Images disponible al
+  cierre; queda registrada como riesgo residual abierto, no como remediada.
+- Se agregan inventario PHP, matriz de CVE, reporte de remediacion, riesgos
+  residuales, SBOM de bases, pruebas estaticas y gates de CI. Los fallos
+  pedagogicos y las referencias historicas se conservan.
+
+Detalle y evidencia: [`docs/security/CVE-2026-OCTOBER.md`](docs/security/CVE-2026-OCTOBER.md),
+[`docs/security/PHP-RUNTIME-INVENTORY.md`](docs/security/PHP-RUNTIME-INVENTORY.md),
+[`docs/security/REMEDIATION-REPORT.md`](docs/security/REMEDIATION-REPORT.md) y
+[`docs/security/RESIDUAL-RISKS.md`](docs/security/RESIDUAL-RISKS.md).
+
 ## 2026-10-14 - Revision de runtimes y cierre del drift de lenguajes
 
 Revision humana del issue de drift siguiendo

@@ -171,6 +171,14 @@ function runBurst(string $variant, string $key, int $concurrency, int $rounds): 
     ];
 }
 
+function safeCacheKey(mixed $value): string
+{
+    $key = substr((string) $value, 0, 60);
+    return preg_match('/\A[A-Za-z0-9][A-Za-z0-9._:-]{0,59}\z/D', $key) === 1
+        ? $key
+        : 'report-alpha';
+}
+
 function cacheStateSummary(): array
 {
     $entries = [];
@@ -223,7 +231,7 @@ function diagnosticsSummary(): array
     }
 
     return [
-        'stack' => envOr('APP_STACK', 'PHP 8.3'),
+        'stack' => envOr('APP_STACK', 'PHP 8.4.27'),
         'case' => CASE_NAME,
         'variants' => $variants,
         'origin_total_computations' => $total,
@@ -239,10 +247,7 @@ function diagnosticsSummary(): array
 $uri = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/';
 parse_str(parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_QUERY) ?? '', $query);
 
-$key = substr((string) ($query['key'] ?? 'report-alpha'), 0, 60);
-if ($key === '') {
-    $key = 'report-alpha';
-}
+$key = safeCacheKey($query['key'] ?? 'report-alpha');
 $concurrency = clampInt((int) ($query['concurrency'] ?? 16), 1, 128);
 $rounds = clampInt((int) ($query['cost'] ?? 40), 1, 400);
 
@@ -256,7 +261,7 @@ try {
         $payload = [
             'lab' => 'Problem-Driven Systems Lab',
             'case' => CASE_NAME,
-            'stack' => envOr('APP_STACK', 'PHP 8.3'),
+            'stack' => envOr('APP_STACK', 'PHP 8.4.27'),
             'goal' => 'Mostrar cuantas veces pega el origen cuando una clave caliente expira con N llamadores encima.',
             'php_specific' => 'Sin heap compartido entre requests, el single-flight vive en el almacenamiento: flock() exclusivo + double-checked locking.',
             'routes' => [
@@ -269,7 +274,7 @@ try {
             ],
         ];
     } elseif ($uri === '/health') {
-        $payload = ['status' => 'ok', 'stack' => envOr('APP_STACK', 'PHP 8.3'), 'case' => CASE_NAME];
+        $payload = ['status' => 'ok', 'stack' => envOr('APP_STACK', 'PHP 8.4.27'), 'case' => CASE_NAME];
     } elseif ($uri === '/cache-naive') {
         $payload = runBurst('naive', $key, $concurrency, $rounds);
     } elseif ($uri === '/cache-singleflight') {

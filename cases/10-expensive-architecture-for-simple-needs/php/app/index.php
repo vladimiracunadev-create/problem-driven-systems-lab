@@ -141,7 +141,7 @@ function diagnosticsSummary(): array
 {
     return [
         'case' => '10 - Expensive architecture for simple needs',
-        'stack' => envOr('APP_STACK', 'PHP 8.3'),
+        'stack' => envOr('APP_STACK', 'PHP 8.4.27'),
         'architecture' => stateSummary(),
         'metrics' => telemetrySummary(readTelemetry()),
         'interpretation' => [
@@ -194,7 +194,7 @@ try {
         $payload = [
             'lab' => 'Problem-Driven Systems Lab',
             'case' => '10 - Expensive architecture for simple needs',
-            'stack' => envOr('APP_STACK', 'PHP 8.3'),
+            'stack' => envOr('APP_STACK', 'PHP 8.4.27'),
             'goal' => 'Comparar una solucion sobredimensionada contra una ruta proporcional al valor real del problema.',
             'routes' => [
                 '/health' => 'Estado basico del servicio.',
@@ -210,7 +210,7 @@ try {
             'allowed_scenarios' => array_keys(scenarioCatalog()),
         ];
     } elseif ($uri === '/health') {
-        $payload = ['status' => 'ok', 'stack' => envOr('APP_STACK', 'PHP 8.3')];
+        $payload = ['status' => 'ok', 'stack' => envOr('APP_STACK', 'PHP 8.4.27')];
     } elseif ($uri === '/feature-complex' || $uri === '/feature-right-sized') {
         $mode = $uri === '/feature-complex' ? 'complex' : 'right_sized';
         $scenario = (string) ($query['scenario'] ?? 'basic_crud');
@@ -237,7 +237,7 @@ try {
         $payload = array_merge(
             [
                 'case' => '10 - Expensive architecture for simple needs',
-                'stack' => envOr('APP_STACK', 'PHP 8.3'),
+                'stack' => envOr('APP_STACK', 'PHP 8.4.27'),
             ],
             telemetrySummary(readTelemetry())
         );

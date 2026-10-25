@@ -92,7 +92,7 @@ Cada lenguaje operativo tiene su compose raíz — un comando levanta los 20 cas
 
 | Archivo | Lenguaje | Puerto hub | Observaciones |
 |---|---|---|---|
-| `compose.root.yml` | PHP 8.3 | `:8100` | + portal `:8080`, Prometheus `:9091`, Grafana `:3001`, RDS × 2 internos |
+| `compose.root.yml` | PHP 8.4.27 | `:8100` | + portal `:8080`, Prometheus `:9091`, Grafana `:3001`, RDS × 2 internos |
 | `compose.python.yml` | Python 3.12 | `:8200` | 20 casos en un solo contenedor dispatcher, stdlib pura |
 | `compose.nodejs.yml` | Node.js 20 | `:8300` | 20 casos en un solo contenedor, stdlib pura |
 | `compose.java.yml` | Java 25 | `:8400` | 20 casos en un solo contenedor, JDK built-in (`HttpServer`, `HttpClient`) |
@@ -322,7 +322,7 @@ graph TB
 
 ### 5. Docker es la vía oficial
 
-**Decisión:** `docker compose up` es el método soportado. `make` existe como atajo pero no es la ruta primaria. No hay instrucciones de "instalar PHP 8.3 + Composer + ...".
+**Decisión:** `docker compose up` es el método soportado. `make` existe como atajo pero no es la ruta primaria. No hay instrucciones de "instalar PHP 8.4.27 + Composer + ...".
 
 **Por qué:** reproducibilidad. Cualquier evaluador con Docker Desktop puede levantar el lab en <5 minutos sin tocar su sistema base. Los Dockerfiles son legibles y minimales.
 

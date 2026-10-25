@@ -311,7 +311,7 @@ function diagnostics(string $stack): array
 // Enrutado
 // ---------------------------------------------------------------------------
 
-$stack = envOr('APP_STACK', 'PHP 8.3');
+$stack = envOr('APP_STACK', 'PHP 8.4.27');
 $uri = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/';
 $q = $_GET;
 

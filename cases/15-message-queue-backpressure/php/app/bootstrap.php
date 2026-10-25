@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Caso 15 — Backpressure en colas de mensajes — stack PHP 8.3.
+ * Caso 15 — Backpressure en colas de mensajes — stack PHP 8.4.27.
  *
  * Lo que este stack aporta, y por que su respuesta es la mas incomoda:
  *

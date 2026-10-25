@@ -24,7 +24,7 @@ Lo que lo vuelve difícil de diagnosticar es que **la cache estaba haciendo su t
 
 | Stack | Versión | URL en el hub | Implementación |
 |---|---|---|---|
-| 🐘 PHP | `PHP 8.3` | `http://localhost:8100/13/` | [README](../php/README.md) |
+| 🐘 PHP | `PHP 8.4.27` | `http://localhost:8100/13/` | [README](../php/README.md) |
 | 🐍 Python | `Python 3.12` | `http://localhost:8200/13/` | [README](../python/README.md) |
 | 🟢 Node.js | `Node.js 22` | `http://localhost:8300/13/` | [README](../node/README.md) |
 | ☕ Java | `Java 25` | `http://localhost:8400/13/` | [README](../java/README.md) |

@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Caso 18 — Arranque en frio y retraso del autoescalado — stack PHP 8.3.
+ * Caso 18 — Arranque en frio y retraso del autoescalado — stack PHP 8.4.27.
  *
  * Frio: el autoescalador levanta instancias cuando el trafico ya subio. El
  * proceso queda vivo al instante y `/health` responde 200 — pero la instancia
@@ -29,7 +29,7 @@
  *   configuracion, abrir el pool. `pm.start_servers` y `pm.min_spare_servers`
  *   son el pool tibio de PHP, y son configuracion, no codigo.
  *
- *   Sobre el JIT: PHP 8.3 tiene uno (`opcache.jit`), pero viene **apagado** por
+ *   Sobre el JIT: PHP 8.4.27 tiene uno (`opcache.jit`), pero viene **apagado** por
  *   defecto y solo paga en codigo CPU-bound. Por eso `warmup_speedup_x` sale
  *   cerca de 1.0 aqui: no hay curva de calentamiento que medir, igual que en
  *   Python, y por la misma razon de fondo.

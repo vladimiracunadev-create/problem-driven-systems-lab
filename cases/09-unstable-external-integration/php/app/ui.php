@@ -64,7 +64,7 @@ footer{text-align:center;padding:32px;color:var(--muted);font-size:12px;border-t
     <h1>🛡️ Integración externa inestable</h1>
     <p>Resiliencia · Schema drift, rate limiting, payloads parciales, ventanas de mantenimiento del proveedor</p>
   </div>
-  <span class="stack-badge">PHP 8.3 · Adapter · Cache</span>
+  <span class="stack-badge">PHP 8.4.27 · Adapter · Cache</span>
 </div>
 <div class="container">
   <div class="cards-row">

@@ -265,7 +265,7 @@ function diagnosticsSummary(): array
     $state = readState();
 
     return [
-        'stack' => envOr('APP_STACK', 'PHP 8.3'),
+        'stack' => envOr('APP_STACK', 'PHP 8.4.27'),
         'case' => CASE_NAME,
         'variants' => $state['metrics'],
         'migration' => migrationStateSummary(),
@@ -303,7 +303,7 @@ try {
         $payload = [
             'lab' => 'Problem-Driven Systems Lab',
             'case' => CASE_NAME,
-            'stack' => envOr('APP_STACK', 'PHP 8.3'),
+            'stack' => envOr('APP_STACK', 'PHP 8.4.27'),
             'goal' => 'Mostrar que el trabajo total de una migracion es el mismo; lo que cambia es si se cobra todo '
                 . 'junto con la app caida o repartido en lotes que nadie nota.',
             'php_specific' => 'flock con LOCK_SH / LOCK_EX / LOCK_NB: el unico read-write lock del laboratorio que lo '
@@ -319,7 +319,7 @@ try {
             ],
         ];
     } elseif ($uri === '/health') {
-        $payload = ['status' => 'ok', 'stack' => envOr('APP_STACK', 'PHP 8.3'), 'case' => CASE_NAME];
+        $payload = ['status' => 'ok', 'stack' => envOr('APP_STACK', 'PHP 8.4.27'), 'case' => CASE_NAME];
     } elseif ($uri === '/migrate-blocking') {
         $payload = runMigration('blocking', $rows, $readers, $msPer1k, $batch, $pauseMs);
     } elseif ($uri === '/migrate-expand-contract') {

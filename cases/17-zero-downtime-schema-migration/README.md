@@ -94,7 +94,7 @@ Y hay un detalle que lo vuelve difícil de detectar: **el proceso sigue vivo**. 
 
 Los siete stacks exponen el mismo contrato: `/migrate-blocking` y `/migrate-expand-contract` con lectores concurrentes midiendo `availability_pct` **durante** la migración.
 
-### ✅ PHP 8.3
+### ✅ PHP 8.4.27
 
 `flock` con `LOCK_SH` / `LOCK_EX` / `LOCK_NB`: el **único read-write lock del laboratorio provisto por el sistema operativo**, y el único que coordina procesos en vez de hilos — que es lo que hace de verdad un motor. Ver [`php/README.md`](php/README.md). Modo aislado: `8117`.
 
@@ -144,7 +144,7 @@ Convierte «hay que desplegar a las 3 de la mañana» en «se despliega cuando e
 
 | Stack | Estado |
 | --- | --- |
-| 🐘 PHP 8.3 | `OPERATIVO` (`flock` `LOCK_SH`/`LOCK_EX` — lock del SO, entre procesos) |
+| 🐘 PHP 8.4.27 | `OPERATIVO` (`flock` `LOCK_SH`/`LOCK_EX` — lock del SO, entre procesos) |
 | 🐍 Python 3.12 | `OPERATIVO` (RWLock construido a mano sobre `Condition`) |
 | 🟢 Node.js 22 | `OPERATIVO` (el event loop **es** el lock; `await` como equidad) |
 | ☕ Java 25 | `OPERATIVO` (`ReentrantReadWriteLock` justo + `tryLock(timeout)`) |

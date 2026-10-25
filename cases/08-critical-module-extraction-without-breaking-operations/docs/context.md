@@ -21,7 +21,7 @@ Es un reto frecuente cuando se busca aliviar cuellos de botella o reducir depend
 
 | Stack | Versión | URL en el hub | Implementación |
 |---|---|---|---|
-| 🐘 PHP | `PHP 8.3` | `http://localhost:8100/08/` | [README](../php/README.md) |
+| 🐘 PHP | `PHP 8.4.27` | `http://localhost:8100/08/` | [README](../php/README.md) |
 | 🐍 Python | `Python 3.12` | `http://localhost:8200/08/` | [README](../python/README.md) |
 | 🟢 Node.js | `Node.js 22` | `http://localhost:8300/08/` | [README](../node/README.md) |
 | ☕ Java | `Java 25` | `http://localhost:8400/08/` | [README](../java/README.md) |

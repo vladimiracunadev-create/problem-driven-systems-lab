@@ -97,7 +97,7 @@ Un sistema que procesa 1.000 mensajes por segundo con una cola de 400.000 está 
 
 Los siete stacks exponen el mismo contrato: `/produce-unbounded` y `/produce-bounded` con las tres políticas, y `queue_depth_peak` más `oldest_msg_age_ms_peak` como métricas centrales.
 
-### ✅ PHP 8.3
+### ✅ PHP 8.4.27
 
 No tiene cola en proceso: el backpressure vive en el transporte (`listen.backlog` de FPM, `pm.max_children`, la DLQ del broker). Es el stack que mejor enseña que **el freno es una propiedad del sistema, no de la cola**. Ver [`php/README.md`](php/README.md). Modo aislado: `8115`.
 
@@ -146,7 +146,7 @@ Convierte un reinicio inexplicable cada tantas horas —y una pérdida de datos 
 
 | Stack | Estado |
 | --- | --- |
-| 🐘 PHP 8.3 | `OPERATIVO` (el freno vive en FPM y el broker, no en el lenguaje) |
+| 🐘 PHP 8.4.27 | `OPERATIVO` (el freno vive en FPM y el broker, no en el lenguaje) |
 | 🐍 Python 3.12 | `OPERATIVO` (`queue.Queue(maxsize=N)` + política en la firma de `put()`) |
 | 🟢 Node.js 22 | `OPERATIVO` (`stream.Writable` con `highWaterMark` y `'drain'`) |
 | ☕ Java 25 | `OPERATIVO` (`ArrayBlockingQueue` + `put`/`offer`/`offer(timeout)`) |

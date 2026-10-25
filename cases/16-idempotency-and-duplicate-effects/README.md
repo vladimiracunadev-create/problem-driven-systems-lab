@@ -94,7 +94,7 @@ Y la operación que la hace funcionar tiene un requisito que parece menor y no l
 
 Los siete stacks exponen el mismo contrato: `/charge-unsafe` y `/charge-idempotent` sobre los mismos N reintentos, con `charges_applied` y `overcharged_cents` como métricas centrales.
 
-### ✅ PHP 8.3
+### ✅ PHP 8.4.27
 
 Sin heap compartido, la clave vive en el almacenamiento y la atomicidad la aporta el motor (`INSERT ... ON CONFLICT DO NOTHING`, modelado con `flock`). **Es la única de las siete versiones que sigue siendo correcta con veinte réplicas.** Ver [`php/README.md`](php/README.md). Modo aislado: `8116`.
 
@@ -144,7 +144,7 @@ Convierte cobros duplicados —que se devuelven de a uno, con costo de soporte y
 
 | Stack | Estado |
 | --- | --- |
-| 🐘 PHP 8.3 | `OPERATIVO` (reserva en almacenamiento compartido; la única que escala) |
+| 🐘 PHP 8.4.27 | `OPERATIVO` (reserva en almacenamiento compartido; la única que escala) |
 | 🐍 Python 3.12 | `OPERATIVO` (`dict.setdefault` bajo `Lock`) |
 | 🟢 Node.js 22 | `OPERATIVO` (`Map` atómico por el modelo de un solo hilo) |
 | ☕ Java 25 | `OPERATIVO` (`ConcurrentHashMap.putIfAbsent`) |

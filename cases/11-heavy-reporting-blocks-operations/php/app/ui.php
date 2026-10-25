@@ -64,7 +64,7 @@ footer{text-align:center;padding:32px;color:var(--muted);font-size:12px;border-t
     <h1>📊 Reporting pesado bloquea operaciones</h1>
     <p>Operaciones · Analitica y transaccional compitiendo sobre el mismo primario — locks y degradación</p>
   </div>
-  <span class="stack-badge">PHP 8.3 · DB Isolation · Replica</span>
+  <span class="stack-badge">PHP 8.4.27 · DB Isolation · Replica</span>
 </div>
 <div class="container">
   <div class="cards-row">

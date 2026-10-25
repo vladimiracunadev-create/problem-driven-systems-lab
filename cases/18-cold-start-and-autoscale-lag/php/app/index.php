@@ -209,7 +209,7 @@ function runScenario(string $variant, int $requests, int $instances, int $client
     $payload['php_note'] = 'PHP arranca en frio en CADA peticion por diseño: el modelo share-nothing descarta todo '
         . 'el estado al terminar. Opcache es lo que evita que eso sea catastrofico, y es el equivalente exacto de '
         . 'ReadyToRun o AppCDS — con la diferencia de que viene activado de fabrica y su cache la comparten los '
-        . 'procesos, no los hilos. El JIT de PHP 8.3 existe pero viene apagado, y por eso warmup_speedup_x ronda 1.0.';
+        . 'procesos, no los hilos. El JIT de PHP 8.4.27 existe pero viene apagado, y por eso warmup_speedup_x ronda 1.0.';
     return $payload;
 }
 
@@ -265,7 +265,7 @@ function diagnostics(string $stack): array
 // Enrutado
 // ---------------------------------------------------------------------------
 
-$stack = envOr('APP_STACK', 'PHP 8.3');
+$stack = envOr('APP_STACK', 'PHP 8.4.27');
 $uri = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/';
 $q = $_GET;
 

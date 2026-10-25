@@ -1,4 +1,4 @@
-# 🐘 Caso 08 - PHP 8.3 con extracción compatible
+# 🐘 Caso 08 - PHP 8.4.27 con extracción compatible
 
 > Implementación operativa del caso 08 para contrastar una extracción big bang contra una ruta segura con proxy, contratos y cutover por consumidor.
 
@@ -30,7 +30,7 @@ Este caso implementa cruces de contratos mediante manipulaciones de arreglos aso
 
 ## 🧱 Servicio
 
-- `app` -> API PHP 8.3 con consumidores sensibles, proxy de compatibilidad y estado de cutover persistido localmente.
+- `app` -> API PHP 8.4.27 con consumidores sensibles, proxy de compatibilidad y estado de cutover persistido localmente.
 
 ## 🚀 Arranque
 

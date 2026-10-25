@@ -20,6 +20,25 @@ function normalizePath(string $path): string
     return '/' . ltrim($path === '' ? '/' : $path, '/');
 }
 
+function validatedPublicHost(string $candidate): string
+{
+    $host = parse_url('http://' . $candidate, PHP_URL_HOST);
+    if (!is_string($host) || $host === '') {
+        return 'localhost';
+    }
+
+    if (filter_var($host, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6) !== false) {
+        return '[' . $host . ']';
+    }
+    if (filter_var($host, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4) !== false) {
+        return $host;
+    }
+
+    return preg_match('/\A(?:localhost|[A-Za-z0-9](?:[A-Za-z0-9.-]{0,251}[A-Za-z0-9])?)\z/D', $host) === 1
+        ? strtolower($host)
+        : 'localhost';
+}
+
 function parseStatusCode(array $headers): int
 {
     if ($headers === []) {
@@ -76,7 +95,7 @@ if (!is_array($runtimeEntry)) {
 }
 
 $probeHost = envOr('PDSL_PROBE_HOST', 'host.docker.internal');
-$publicHost = envOr('PDSL_PUBLIC_HOST', parse_url('http://' . ($_SERVER['HTTP_HOST'] ?? 'localhost:8080'), PHP_URL_HOST) ?: 'localhost');
+$publicHost = validatedPublicHost(envOr('PDSL_PUBLIC_HOST', (string) ($_SERVER['HTTP_HOST'] ?? 'localhost:8080')));
 $port = (int) ($runtimeEntry['port'] ?? 0);
 $healthPath = normalizePath((string) ($runtimeEntry['health_path'] ?? '/health'));
 $publicTargetUrl = sprintf('http://%s:%d%s', $publicHost, $port, $healthPath);

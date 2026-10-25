@@ -65,7 +65,7 @@ footer{text-align:center;padding:32px;color:var(--muted);font-size:12px;border-t
     <h1>🔧 Extracción de módulo crítico sin romper operaciones</h1>
     <p>Arquitectura · Big bang vs. cutover gradual con proxy de compatibilidad y contratos</p>
   </div>
-  <span class="stack-badge">PHP 8.3 · Proxy · Contratos</span>
+  <span class="stack-badge">PHP 8.4.27 · Proxy · Contratos</span>
 </div>
 <div class="container">
   <div class="cards-row">

@@ -107,7 +107,7 @@ Se ven igual desde afuera —«la búsqueda anda rara»— y se arreglan distint
 
 Los siete stacks exponen el mismo contrato y —al ser el escenario determinista— producen **resultados idénticos hasta el último dígito**. Cuando el resultado es el mismo, lo único que queda para comparar es cómo se escribe.
 
-### ✅ PHP 8.3
+### ✅ PHP 8.4.27
 
 En un runtime share-nothing el consumidor de CDC **es un comando de cron**, así que el checkpoint durable no es buena práctica: es la única opción. En contra, es el único de los siete donde nada ayuda a no ignorar el error. Ver [`php/README.md`](php/README.md). Modo aislado: `8119`.
 
@@ -161,7 +161,7 @@ El indicador honesto no es el error rate del índice —ya es cero, porque el er
 
 | Stack | Estado |
 | --- | --- |
-| 🐘 PHP 8.3 | `OPERATIVO` (`array_diff_key` + checkpoint durable por obligación) |
+| 🐘 PHP 8.4.27 | `OPERATIVO` (`array_diff_key` + checkpoint durable por obligación) |
 | 🐍 Python 3.12 | `OPERATIVO` (álgebra de conjuntos: el diff más corto de los siete) |
 | 🟢 Node.js 22 | `OPERATIVO` (`Map`/`Set`; el bug es el `await` que falta) |
 | ☕ Java 25 | `OPERATIVO` (`ConcurrentSkipListMap.tailMap` + `removeAll`/`retainAll`) |

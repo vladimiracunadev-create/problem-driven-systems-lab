@@ -8,7 +8,7 @@
 # `go mod tidy`; el resto son solo stdlib y compilan sin red.
 #
 # CGO_ENABLED=0 en todos: binarios estaticos, imagen final sin toolchain de C.
-FROM golang:1.27-alpine AS build
+FROM golang:1.27.3-alpine3.24 AS build
 WORKDIR /src
 
 # --- casos con dependencia externa (SQLite embebido en Go puro) ---

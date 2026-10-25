@@ -1,4 +1,4 @@
-# 🐘 Caso 05 - PHP 8.3 con presión de memoria comparada
+# 🐘 Caso 05 - PHP 8.4.27 con presión de memoria comparada
 
 > Implementación operativa del caso 05 para mostrar cómo una fuga silenciosa degrada un proceso largo frente a una variante que controla su estado.
 
@@ -30,7 +30,7 @@ A diferencia de lenguajes como Node.js, PHP "nace para morir" bajo el modelo cl�
 
 ## 🧱 Servicio
 
-- `app` -> API PHP 8.3 con estado local acumulado por modo y métricas de presión.
+- `app` -> API PHP 8.4.27 con estado local acumulado por modo y métricas de presión.
 
 ## 🚀 Arranque
 

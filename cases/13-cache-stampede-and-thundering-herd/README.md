@@ -91,7 +91,7 @@ Lo que lo vuelve difícil de diagnosticar: **la cache estaba haciendo su trabajo
 
 Los siete stacks exponen el mismo contrato: `/cache-naive` y `/cache-singleflight` sobre la misma ráfaga, con `origin_computations` como métrica central.
 
-### ✅ PHP 8.3
+### ✅ PHP 8.4.27
 
 Sin heap compartido entre requests, el single-flight vive en el almacenamiento: `flock()` exclusivo más **double-checked locking**. Es el stack que no puede esconder el paso que los otros seis sí pueden omitir. Ver [`php/README.md`](php/README.md). Modo aislado: puerto `8113`.
 
@@ -140,7 +140,7 @@ Convierte una caída nocturna recurrente e inexplicable en un número que se pue
 
 | Stack | Estado |
 | --- | --- |
-| 🐘 PHP 8.3 | `OPERATIVO` (`flock` + double-checked locking) |
+| 🐘 PHP 8.4.27 | `OPERATIVO` (`flock` + double-checked locking) |
 | 🐍 Python 3.12 | `OPERATIVO` (dict de vuelos + `threading.Event`) |
 | 🟢 Node.js 22 | `OPERATIVO` (`Map<key, Promise>`) |
 | ☕ Java 25 | `OPERATIVO` (`computeIfAbsent` atómico + `CompletableFuture`) |

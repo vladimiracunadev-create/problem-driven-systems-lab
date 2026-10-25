@@ -201,7 +201,7 @@ function diagnosticsSummary(): array
 {
     return [
         'case' => '11 - Heavy reporting blocks operations',
-        'stack' => envOr('APP_STACK', 'PHP 8.3'),
+        'stack' => envOr('APP_STACK', 'PHP 8.4.27'),
         'reporting' => stateSummary(),
         'metrics' => telemetrySummary(readTelemetry()),
         'interpretation' => [
@@ -256,7 +256,7 @@ try {
         $payload = [
             'lab' => 'Problem-Driven Systems Lab',
             'case' => '11 - Heavy reporting blocks operations',
-            'stack' => envOr('APP_STACK', 'PHP 8.3'),
+            'stack' => envOr('APP_STACK', 'PHP 8.4.27'),
             'goal' => 'Comparar reporting directo sobre el primario contra una ruta aislada que protege la operacion.',
             'routes' => [
                 '/health' => 'Estado basico del servicio.',
@@ -273,7 +273,7 @@ try {
             'allowed_scenarios' => array_keys(scenarioCatalog()),
         ];
     } elseif ($uri === '/health') {
-        $payload = ['status' => 'ok', 'stack' => envOr('APP_STACK', 'PHP 8.3')];
+        $payload = ['status' => 'ok', 'stack' => envOr('APP_STACK', 'PHP 8.4.27')];
     } elseif ($uri === '/report-legacy' || $uri === '/report-isolated') {
         $mode = $uri === '/report-legacy' ? 'legacy' : 'isolated';
         $scenario = (string) ($query['scenario'] ?? 'end_of_month');
@@ -306,7 +306,7 @@ try {
         $payload = array_merge(
             [
                 'case' => '11 - Heavy reporting blocks operations',
-                'stack' => envOr('APP_STACK', 'PHP 8.3'),
+                'stack' => envOr('APP_STACK', 'PHP 8.4.27'),
             ],
             telemetrySummary(readTelemetry())
         );

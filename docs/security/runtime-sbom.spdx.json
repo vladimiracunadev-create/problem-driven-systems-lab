@@ -1,0 +1,32 @@
+{
+  "spdxVersion": "SPDX-2.3",
+  "dataLicense": "CC0-1.0",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "name": "problem-driven-systems-lab-runtime-bases-2026-10-25",
+  "documentNamespace": "https://github.com/vladimiracunadev-create/problem-driven-systems-lab/security/runtime-bases/2026-10-25",
+  "creationInfo": {
+    "created": "2026-10-25T00:00:00Z",
+    "creators": ["Tool: Codex runtime inventory"]
+  },
+  "documentComment": "SBOM acotado a imagenes base fijadas; no representa paquetes internos de cada distribucion.",
+  "packages": [
+    {"name":"php-cli","SPDXID":"SPDXRef-PHP-CLI","versionInfo":"8.4.27-alpine3.24","downloadLocation":"https://hub.docker.com/_/php","filesAnalyzed":false,"licenseConcluded":"NOASSERTION","licenseDeclared":"NOASSERTION","externalRefs":[{"referenceCategory":"PACKAGE-MANAGER","referenceType":"purl","referenceLocator":"pkg:docker/php@8.4.27-cli-alpine3.24"}]},
+    {"name":"php-apache","SPDXID":"SPDXRef-PHP-Apache","versionInfo":"8.4.27-apache-trixie","downloadLocation":"https://hub.docker.com/_/php","filesAnalyzed":false,"licenseConcluded":"NOASSERTION","licenseDeclared":"NOASSERTION","externalRefs":[{"referenceCategory":"PACKAGE-MANAGER","referenceType":"purl","referenceLocator":"pkg:docker/php@8.4.27-apache-trixie"}]},
+    {"name":"node","SPDXID":"SPDXRef-Node","versionInfo":"22.23.4-alpine3.24","downloadLocation":"https://hub.docker.com/_/node","filesAnalyzed":false,"licenseConcluded":"NOASSERTION","licenseDeclared":"NOASSERTION","externalRefs":[{"referenceCategory":"PACKAGE-MANAGER","referenceType":"purl","referenceLocator":"pkg:docker/node@22.23.4-alpine3.24"}]},
+    {"name":"python","SPDXID":"SPDXRef-Python","versionInfo":"3.13.17-alpine3.24","downloadLocation":"https://hub.docker.com/_/python","filesAnalyzed":false,"licenseConcluded":"NOASSERTION","licenseDeclared":"NOASSERTION","externalRefs":[{"referenceCategory":"PACKAGE-MANAGER","referenceType":"purl","referenceLocator":"pkg:docker/python@3.13.17-alpine3.24"}]},
+    {"name":"amazoncorretto","SPDXID":"SPDXRef-Java","versionInfo":"25.0.5-alpine3.24","downloadLocation":"https://hub.docker.com/_/amazoncorretto","filesAnalyzed":false,"licenseConcluded":"NOASSERTION","licenseDeclared":"NOASSERTION","externalRefs":[{"referenceCategory":"PACKAGE-MANAGER","referenceType":"purl","referenceLocator":"pkg:docker/amazoncorretto@25.0.5-alpine3.24"}]},
+    {"name":"golang","SPDXID":"SPDXRef-Go","versionInfo":"1.27.3-alpine3.24","downloadLocation":"https://hub.docker.com/_/golang","filesAnalyzed":false,"licenseConcluded":"NOASSERTION","licenseDeclared":"NOASSERTION","externalRefs":[{"referenceCategory":"PACKAGE-MANAGER","referenceType":"purl","referenceLocator":"pkg:docker/golang@1.27.3-alpine3.24"}]},
+    {"name":"dotnet-sdk","SPDXID":"SPDXRef-DotNet","versionInfo":"10.0","downloadLocation":"https://mcr.microsoft.com/product/dotnet/sdk/about","filesAnalyzed":false,"licenseConcluded":"NOASSERTION","licenseDeclared":"NOASSERTION"},
+    {"name":"rust","SPDXID":"SPDXRef-Rust","versionInfo":"1.99-alpine","downloadLocation":"https://hub.docker.com/_/rust","filesAnalyzed":false,"licenseConcluded":"NOASSERTION","licenseDeclared":"NOASSERTION"}
+  ],
+  "relationships": [
+    {"spdxElementId":"SPDXRef-DOCUMENT","relationshipType":"DESCRIBES","relatedSpdxElement":"SPDXRef-PHP-CLI"},
+    {"spdxElementId":"SPDXRef-DOCUMENT","relationshipType":"DESCRIBES","relatedSpdxElement":"SPDXRef-PHP-Apache"},
+    {"spdxElementId":"SPDXRef-DOCUMENT","relationshipType":"DESCRIBES","relatedSpdxElement":"SPDXRef-Node"},
+    {"spdxElementId":"SPDXRef-DOCUMENT","relationshipType":"DESCRIBES","relatedSpdxElement":"SPDXRef-Python"},
+    {"spdxElementId":"SPDXRef-DOCUMENT","relationshipType":"DESCRIBES","relatedSpdxElement":"SPDXRef-Java"},
+    {"spdxElementId":"SPDXRef-DOCUMENT","relationshipType":"DESCRIBES","relatedSpdxElement":"SPDXRef-Go"},
+    {"spdxElementId":"SPDXRef-DOCUMENT","relationshipType":"DESCRIBES","relatedSpdxElement":"SPDXRef-DotNet"},
+    {"spdxElementId":"SPDXRef-DOCUMENT","relationshipType":"DESCRIBES","relatedSpdxElement":"SPDXRef-Rust"}
+  ]
+}

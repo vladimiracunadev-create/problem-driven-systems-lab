@@ -1,4 +1,4 @@
-# 🐘 Caso 06 - PHP 8.3 con delivery comparado
+# 🐘 Caso 06 - PHP 8.4.27 con delivery comparado
 
 > Implementación operativa del caso 06 para mostrar la diferencia entre un pipeline frágil y un flujo de entrega con validaciones y rollback.
 
@@ -30,7 +30,7 @@ Previamente concebidos como simulaciones figurativas, los pipelines aquí resuel
 
 ## 🧱 Servicio
 
-- `app` -> API PHP 8.3 con estado por ambiente, historial de despliegues y métricas de rollback/bloqueos.
+- `app` -> API PHP 8.4.27 con estado por ambiente, historial de despliegues y métricas de rollback/bloqueos.
 
 ## 🚀 Arranque
 

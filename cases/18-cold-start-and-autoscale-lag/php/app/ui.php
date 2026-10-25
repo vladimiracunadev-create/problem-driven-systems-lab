@@ -57,7 +57,7 @@ footer a{color:var(--accent);text-decoration:none}
     <h1>❄️ Arranque en frío y retraso del autoescalado</h1>
     <p>Resiliencia · El proceso está vivo, el healthcheck da verde, y la instancia todavía no sirve nada</p>
   </div>
-  <span class="stack-badge">PHP 8.3 · opcache · share-nothing</span>
+  <span class="stack-badge">PHP 8.4.27 · opcache · share-nothing</span>
 </div>
 
 <div class="container">

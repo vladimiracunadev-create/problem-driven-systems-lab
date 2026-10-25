@@ -163,7 +163,7 @@ function diagnosticsSummary(): array
     }
 
     return [
-        'stack' => envOr('APP_STACK', 'PHP 8.3'),
+        'stack' => envOr('APP_STACK', 'PHP 8.4.27'),
         'case' => CASE_NAME,
         'variants' => $variants,
         'pool' => poolStateSummary(),
@@ -194,7 +194,7 @@ try {
         $payload = [
             'lab' => 'Problem-Driven Systems Lab',
             'case' => CASE_NAME,
-            'stack' => envOr('APP_STACK', 'PHP 8.3'),
+            'stack' => envOr('APP_STACK', 'PHP 8.4.27'),
             'goal' => 'Mostrar como un pool sin devolucion garantizada se achica hasta quedarse sin conexiones.',
             'php_specific' => 'finally garantiza la devolucion en todos los caminos. El proceso por request tapa el bug; las conexiones persistentes de FPM lo destapan.',
             'routes' => [
@@ -207,7 +207,7 @@ try {
             ],
         ];
     } elseif ($uri === '/health') {
-        $payload = ['status' => 'ok', 'stack' => envOr('APP_STACK', 'PHP 8.3'), 'case' => CASE_NAME];
+        $payload = ['status' => 'ok', 'stack' => envOr('APP_STACK', 'PHP 8.4.27'), 'case' => CASE_NAME];
     } elseif ($uri === '/pool-leaky') {
         $payload = runLoad('leaky', $requests, $poolSize, $queryMs, $failRate);
     } elseif ($uri === '/pool-managed') {

@@ -43,6 +43,26 @@ const CASES = [
     '20' => ['port' => 9020, 'name' => 'La dead letter queue olvidada'],
 ];
 
+const MAX_PROXY_BODY_BYTES = 1048576;
+
+function safeForwardHeader(string $value, string $fallback): string
+{
+    if (strlen($value) > 256 || preg_match('/[\r\n\0]/', $value) === 1) {
+        return $fallback;
+    }
+    return $value;
+}
+
+function send_payload_too_large(): void
+{
+    http_response_code(413);
+    header('Content-Type: application/json; charset=utf-8');
+    echo json_encode([
+        'error' => 'request_body_too_large',
+        'max_bytes' => MAX_PROXY_BODY_BYTES,
+    ], JSON_UNESCAPED_UNICODE);
+}
+
 function send_index(): void
 {
     header('Content-Type: application/json; charset=utf-8');
@@ -56,7 +76,7 @@ function send_index(): void
     }
     echo json_encode([
         'lab'   => 'Problem-Driven Systems Lab',
-        'stack' => 'PHP 8.3',
+        'stack' => 'PHP 8.4.27',
         'info'  => 'Dispatcher PHP — un contenedor, un puerto, 20 casos.',
         'usage' => 'GET /{caso}/{ruta}  ->  e.g. /01/health, /05/batch-legacy',
         'cases' => $cases,
@@ -84,7 +104,7 @@ function proxy_to_case(string $caseId, string $subPath, string $rawQuery): void
     }
 
     $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
-    $accept = $_SERVER['HTTP_ACCEPT'] ?? 'application/json';
+    $accept = safeForwardHeader((string) ($_SERVER['HTTP_ACCEPT'] ?? 'application/json'), 'application/json');
 
     $headers = "Accept: {$accept}\r\nConnection: close\r\n";
     $opts = [
@@ -92,15 +112,27 @@ function proxy_to_case(string $caseId, string $subPath, string $rawQuery): void
             'method'        => $method,
             'timeout'       => 30,
             'ignore_errors' => true,
+            'follow_location' => 0,
+            'max_redirects' => 0,
             'header'        => $headers,
         ],
     ];
 
     if (in_array($method, ['POST', 'PUT', 'PATCH', 'DELETE'], true)) {
-        $body = file_get_contents('php://input');
+        $contentLength = (int) ($_SERVER['CONTENT_LENGTH'] ?? 0);
+        if ($contentLength > MAX_PROXY_BODY_BYTES) {
+            send_payload_too_large();
+            return;
+        }
+
+        $body = file_get_contents('php://input', false, null, 0, MAX_PROXY_BODY_BYTES + 1);
+        if (is_string($body) && strlen($body) > MAX_PROXY_BODY_BYTES) {
+            send_payload_too_large();
+            return;
+        }
         if ($body !== false && $body !== '') {
             $opts['http']['content'] = $body;
-            $contentType = $_SERVER['CONTENT_TYPE'] ?? 'application/octet-stream';
+            $contentType = safeForwardHeader((string) ($_SERVER['CONTENT_TYPE'] ?? 'application/octet-stream'), 'application/octet-stream');
             $opts['http']['header'] .= "Content-Type: {$contentType}\r\n";
             $opts['http']['header'] .= 'Content-Length: ' . strlen($body) . "\r\n";
         }

@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Caso 19 — Deriva del indice de busqueda y CDC roto — stack PHP 8.3.
+ * Caso 19 — Deriva del indice de busqueda y CDC roto — stack PHP 8.4.27.
  *
  * Dual-write: la aplicacion escribe en la base y despues en el indice. Cuando la
  * segunda escritura falla —y falla, porque son dos sistemas sin transaccion

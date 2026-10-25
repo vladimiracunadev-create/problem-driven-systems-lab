@@ -69,7 +69,7 @@ footer{text-align:center;padding:32px;color:var(--muted);font-size:12px;border-t
     <h1>🧩 Punto único de conocimiento y riesgo operacional</h1>
     <p>Operaciones · Bus factor = 1, sin runbooks, sin backups, MTTR depende de quién está disponible</p>
   </div>
-  <span class="stack-badge">PHP 8.3 · Knowledge Management</span>
+  <span class="stack-badge">PHP 8.4.27 · Knowledge Management</span>
 </div>
 <div class="container">
   <div class="cards-row">

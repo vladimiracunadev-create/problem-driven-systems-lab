@@ -1,4 +1,4 @@
-# 🐘 Caso 04 - PHP 8.3 resiliente vs legacy
+# 🐘 Caso 04 - PHP 8.4.27 resiliente vs legacy
 
 > Implementación operativa del caso 04 para contrastar retries agresivos contra una variante que contiene la falla.
 
@@ -30,7 +30,7 @@ El diseño de resiliencia requiere manejo de tiempo explícito y algoritmos de r
 
 ## 🧱 Servicio
 
-- `app` -> API PHP 8.3 con escenarios de proveedor estable, lento, caído o intermitente.
+- `app` -> API PHP 8.4.27 con escenarios de proveedor estable, lento, caído o intermitente.
 
 ## 🚀 Arranque
 

@@ -1,6 +1,15 @@
 # syntax=docker/dockerfile:1.7
 
-FROM php:8.3-cli-alpine
+FROM php:8.4.27-cli-alpine3.24
+
+RUN printf '%s\n' \
+    'session.upload_progress.enabled=0' \
+    'file_uploads=0' \
+    'allow_url_include=0' \
+    'expose_php=0' \
+    'display_errors=0' \
+    'log_errors=1' \
+    > "$PHP_INI_DIR/conf.d/zz-security.ini"
 
 # tini = PID 1 limpio (forwarding de senales + reaping de zombies).
 # libpq + pdo_pgsql para casos 01 y 02 (que conectan a PostgreSQL).

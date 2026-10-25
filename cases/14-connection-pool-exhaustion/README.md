@@ -95,7 +95,7 @@ Las dos primeras no son alternativas: una evita la fuga, la otra limita el daño
 
 Los siete stacks exponen el mismo contrato: `/pool-leaky` y `/pool-managed` sobre la misma carga, con `leaked` como métrica central.
 
-### ✅ PHP 8.3
+### ✅ PHP 8.4.27
 
 `finally` garantiza la devolución en todos los caminos, incluido el `continue` del `catch`. Documenta además la versión PHP real del problema: `max_children` de FPM por conexiones `PDO::ATTR_PERSISTENT` contra el `max_connections` del motor. Ver [`php/README.md`](php/README.md). Modo aislado: `8114`.
 
@@ -144,7 +144,7 @@ Convierte una indisponibilidad que nadie sabe explicar —el servicio no respond
 
 | Stack | Estado |
 | --- | --- |
-| 🐘 PHP 8.3 | `OPERATIVO` (`finally` + nota sobre persistentes de FPM) |
+| 🐘 PHP 8.4.27 | `OPERATIVO` (`finally` + nota sobre persistentes de FPM) |
 | 🐍 Python 3.12 | `OPERATIVO` (`queue.Queue` como pool + `@contextmanager`) |
 | 🟢 Node.js 22 | `OPERATIVO` (`AbortSignal.timeout` + `finally`) |
 | ☕ Java 25 | `OPERATIVO` (`ArrayBlockingQueue` + try-with-resources) |

@@ -30,14 +30,14 @@ La mejora no es estetica. Este caso muestra por que la observabilidad reduce MTT
 
 ## 🔬 Análisis Técnico de la Implementación (PHP)
 
-La telemetría efectiva no es un accesorio, es una implementación estructural de herencia y trazabilidad. Este caso demuestra cómo se codifica nativamente esta capacidad utilizando PHP 8.3 puro.
+La telemetría efectiva no es un accesorio, es una implementación estructural de herencia y trazabilidad. Este caso demuestra cómo se codifica nativamente esta capacidad utilizando PHP 8.4.27 puro.
 
 *   **Logs Opacos (`legacy`):** Utiliza un flujo procedural de concatenación de strings mediante `appendLegacyLog('processing customer=' . $customerId)`. Este enfoque destruye la cardinalidad al no usar tipos de datos estructurados, imposibilitando el parsing algorítmico. Además, falla al no propagar un estado compartido, lo que ignora el "blast radius" de errores intercalados en el FPM Worker.
 *   **Logs Estructurados y Trazabilidad (`observable`):** Implanta una arquitectura de **Correlation IDs** generados mediante `bin2hex(random_bytes(4))`, asegurando entropía criptográfica para el `$traceId` y `$requestId`. El motor de ejecución utiliza una clase de excepción personalizada `WorkflowFailure` que captura el estado interno (step, dependency, events) en el momento exacto del fallo. Para el volcado de datos, se utiliza `json_encode()` sobre arreglos asociativos, garantizando que el log sea una estructura de datos `O(1)` consultable por motores de búsqueda, permitiendo reconstruir la traza completa uniendo eventos bajo el mismo `$traceId` independientemente del paralelismo de red.
 
 ## 🧱 Servicio
 
-- `app` -> API PHP 8.3 con logs legacy y observable, metricas y trazas locales.
+- `app` -> API PHP 8.4.27 con logs legacy y observable, metricas y trazas locales.
 
 ## 🚀 Arranque
 

@@ -226,7 +226,7 @@ function diagnosticsSummary(): array
     }
 
     return [
-        'stack' => envOr('APP_STACK', 'PHP 8.3'),
+        'stack' => envOr('APP_STACK', 'PHP 8.4.27'),
         'case' => CASE_NAME,
         'variants' => $variants,
         'dlq_depth' => count($state['dlq']),
@@ -267,7 +267,7 @@ try {
         $payload = [
             'lab' => 'Problem-Driven Systems Lab',
             'case' => CASE_NAME,
-            'stack' => envOr('APP_STACK', 'PHP 8.3'),
+            'stack' => envOr('APP_STACK', 'PHP 8.4.27'),
             'goal' => 'Mostrar que una cola sin limite no es la opcion sin costo: es la opcion con el freno roto.',
             'php_specific' => 'PHP no tiene cola en proceso: el backpressure vive en el transporte (listen.backlog de '
                 . 'FPM, pm.max_children, la DLQ del broker).',
@@ -285,7 +285,7 @@ try {
             'allowed_policies' => POLICIES,
         ];
     } elseif ($uri === '/health') {
-        $payload = ['status' => 'ok', 'stack' => envOr('APP_STACK', 'PHP 8.3'), 'case' => CASE_NAME];
+        $payload = ['status' => 'ok', 'stack' => envOr('APP_STACK', 'PHP 8.4.27'), 'case' => CASE_NAME];
     } elseif ($uri === '/produce-unbounded') {
         $payload = runUnbounded($messages, $consumeMs);
         record('unbounded', $payload, readState()['dlq']);

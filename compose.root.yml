@@ -65,7 +65,7 @@ services:
     ports:
       - "8100:8100"
     environment:
-      APP_STACK: PHP 8.3
+      APP_STACK: PHP 8.4.27
       # Casos 01 y 02 conectan a sus PostgreSQL reales por DNS de Docker.
       CASE01_DB_HOST: case01-db
       CASE01_DB_NAME: problemlab

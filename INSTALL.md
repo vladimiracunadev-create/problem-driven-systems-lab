@@ -31,7 +31,7 @@ Cada lenguaje tiene su propio archivo compose en la raíz. Un solo comando levan
 
 | Archivo | Lenguaje | Puertos | Estado |
 | --- | --- | --- | --- |
-| [`compose.root.yml`](compose.root.yml) | PHP 8.3 | `8080` portal · `8100` PHP hub · `9091` Prometheus · `3001` Grafana | `OPERATIVO` |
+| [`compose.root.yml`](compose.root.yml) | PHP 8.4.27 | `8080` portal · `8100` PHP hub · `9091` Prometheus · `3001` Grafana | `OPERATIVO` |
 | [`compose.python.yml`](compose.python.yml) | Python 3.12 | `8200` Python hub | `OPERATIVO` |
 | [`compose.nodejs.yml`](compose.nodejs.yml) | Node.js 22 | `8300` Node hub | `OPERATIVO` |
 | [`compose.java.yml`](compose.java.yml) | Java 25 | `8400` Java hub | `OPERATIVO` |

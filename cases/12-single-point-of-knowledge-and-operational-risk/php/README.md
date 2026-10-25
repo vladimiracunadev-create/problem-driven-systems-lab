@@ -1,4 +1,4 @@
-# 🐘 Caso 12 - PHP 8.3 con comparación legacy vs conocimiento distribuido
+# 🐘 Caso 12 - PHP 8.4.27 con comparación legacy vs conocimiento distribuido
 
 > Implementación operativa del caso 12 para contrastar dependencia de conocimiento tribal contra una postura más resiliente.
 
@@ -31,7 +31,7 @@ El bus-factor y el conocimiento silencioso son factores operativos abstractos co
 
 ## 🧱 Servicio
 
-- `app` -> API PHP 8.3 con dominios operativos, puntajes de runbook, backups, drills y simulación de incidentes.
+- `app` -> API PHP 8.4.27 con dominios operativos, puntajes de runbook, backups, drills y simulación de incidentes.
 
 ## 🚀 Arranque
 

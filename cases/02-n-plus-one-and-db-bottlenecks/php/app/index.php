@@ -234,7 +234,7 @@ function diagnosticsSummary(PDO $pdo, float &$dbTimeMs, int &$dbQueries): array
 
     return [
         'case' => '02 - N+1 queries y cuellos de botella en base de datos',
-        'stack' => envOr('APP_STACK', 'PHP 8.3'),
+        'stack' => envOr('APP_STACK', 'PHP 8.4.27'),
         'legacy' => $legacy,
         'optimized' => $optimized,
         'delta' => [
@@ -300,7 +300,7 @@ try {
         $payload = [
             'lab' => 'Problem-Driven Systems Lab',
             'case' => '02 - N+1 queries y cuellos de botella en base de datos',
-            'stack' => envOr('APP_STACK', 'PHP 8.3'),
+            'stack' => envOr('APP_STACK', 'PHP 8.4.27'),
             'goal' => 'Comparar una ruta legacy con relaciones cargadas dentro de bucles contra una ruta optimized con lecturas consolidadas.',
             'routes' => [
                 '/health' => 'Estado basico del servicio.',
@@ -313,7 +313,7 @@ try {
             ],
         ];
     } elseif ($uri === '/health') {
-        $payload = ['status' => 'ok', 'stack' => envOr('APP_STACK', 'PHP 8.3')];
+        $payload = ['status' => 'ok', 'stack' => envOr('APP_STACK', 'PHP 8.4.27')];
     } elseif ($uri === '/orders-legacy') {
         $days = clampInt((int) ($query['days'] ?? 30), 1, 180);
         $limit = clampInt((int) ($query['limit'] ?? 20), 1, 60);
@@ -348,7 +348,7 @@ try {
         $payload = array_merge(
             [
                 'case' => '02 - N+1 queries y cuellos de botella en base de datos',
-                'stack' => envOr('APP_STACK', 'PHP 8.3'),
+                'stack' => envOr('APP_STACK', 'PHP 8.4.27'),
             ],
             metricsSummary(readMetrics())
         );

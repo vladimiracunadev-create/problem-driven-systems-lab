@@ -106,7 +106,7 @@ El trabajo por petición es **el mismo lazo entero puro en los siete stacks**, s
 
 Los siete stacks exponen el mismo contrato: `/boot-cold` y `/boot-warmed` con clientes concurrentes midiendo `availability_pct` **durante** el escalado.
 
-### ✅ PHP 8.3
+### ✅ PHP 8.4.27
 
 El **único stack que arranca en frío en cada petición, por diseño**. `opcache` es lo que evita que eso sea catastrófico — y es el único AOT del lab cuya caché comparten los procesos, no los hilos. Ver [`php/README.md`](php/README.md). Modo aislado: `8118`.
 
@@ -158,7 +158,7 @@ El indicador honesto no es cuánto tarda en arrancar, sino **`health_vs_ready_ga
 
 | Stack | Estado |
 | --- | --- |
-| 🐘 PHP 8.3 | `OPERATIVO` (`opcache` + `pm.start_servers`; cold start en cada petición) |
+| 🐘 PHP 8.4.27 | `OPERATIVO` (`opcache` + `pm.start_servers`; cold start en cada petición) |
 | 🐍 Python 3.12 | `OPERATIVO` (sin JIT; imports diferidos como única palanca) |
 | 🟢 Node.js 22 | `OPERATIVO` (V8 en capas; el costo real está en `require`) |
 | ☕ Java 25 | `OPERATIVO` (compilación en capas — **51,9x medidos**) |

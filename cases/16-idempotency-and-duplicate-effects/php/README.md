@@ -1,4 +1,4 @@
-# 🐘 Caso 16 — PHP 8.3
+# 🐘 Caso 16 — PHP 8.4.27
 
 <!-- nav-stack -->
 [⬅️ Caso 16](../README.md) · [⚖️ Comparativa de los 7 stacks](../comparison.md) · [🐘 Perfil de PHP](../../../docs/languages/php.md) · [🧬 Todos los perfiles](../../../docs/languages/README.md)

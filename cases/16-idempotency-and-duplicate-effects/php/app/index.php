@@ -197,6 +197,14 @@ function runAttempts(string $variant, string $key, string $account, int $amount,
     ];
 }
 
+function safeBusinessToken(mixed $value, string $fallback, int $maxLength): string
+{
+    $token = substr((string) $value, 0, $maxLength);
+    $maxSuffix = $maxLength - 1;
+    $pattern = '/\A[A-Za-z0-9][A-Za-z0-9._:-]{0,' . $maxSuffix . '}\z/D';
+    return preg_match($pattern, $token) === 1 ? $token : $fallback;
+}
+
 function idempotencyStateSummary(): array
 {
     $state = readState();
@@ -243,7 +251,7 @@ function diagnosticsSummary(): array
     $pending = count(array_filter($state['outbox'], static fn ($r) => ($r['status'] ?? '') === 'pending'));
 
     return [
-        'stack' => envOr('APP_STACK', 'PHP 8.3'),
+        'stack' => envOr('APP_STACK', 'PHP 8.4.27'),
         'case' => CASE_NAME,
         'variants' => $state['metrics'],
         'outbox_pending' => $pending,
@@ -267,8 +275,8 @@ function diagnosticsSummary(): array
 $uri = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/';
 parse_str(parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_QUERY) ?? '', $query);
 
-$key = substr((string) ($query['key'] ?? 'order-4711'), 0, 60) ?: 'order-4711';
-$account = substr((string) ($query['account'] ?? 'acct-1'), 0, 40) ?: 'acct-1';
+$key = safeBusinessToken($query['key'] ?? 'order-4711', 'order-4711', 60);
+$account = safeBusinessToken($query['account'] ?? 'acct-1', 'acct-1', 40);
 $attempts = clampInt((int) ($query['attempts'] ?? 5), 1, 64);
 $amount = clampInt((int) ($query['amount'] ?? 2500), 1, 10000000);
 $limit = clampInt((int) ($query['limit'] ?? 20), 1, 200);
@@ -283,7 +291,7 @@ try {
         $payload = [
             'lab' => 'Problem-Driven Systems Lab',
             'case' => CASE_NAME,
-            'stack' => envOr('APP_STACK', 'PHP 8.3'),
+            'stack' => envOr('APP_STACK', 'PHP 8.4.27'),
             'goal' => 'Mostrar que un reintento por timeout se convierte en un segundo cobro salvo que el servidor sepa '
                 . "distinguir 'es la primera vez que veo esto' de 'ya procese esto'.",
             'php_specific' => 'Sin heap compartido, la clave vive en el almacenamiento y la atomicidad la da el motor: '
@@ -299,7 +307,7 @@ try {
             ],
         ];
     } elseif ($uri === '/health') {
-        $payload = ['status' => 'ok', 'stack' => envOr('APP_STACK', 'PHP 8.3'), 'case' => CASE_NAME];
+        $payload = ['status' => 'ok', 'stack' => envOr('APP_STACK', 'PHP 8.4.27'), 'case' => CASE_NAME];
     } elseif ($uri === '/charge-unsafe') {
         $payload = runAttempts('unsafe', $key, $account, $amount, $attempts);
     } elseif ($uri === '/charge-idempotent') {

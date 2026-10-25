@@ -26,7 +26,7 @@ La otra mitad del problema es conceptual. Cuando se le pone límite a la cola ha
 
 | Stack | Versión | URL en el hub | Implementación |
 |---|---|---|---|
-| 🐘 PHP | `PHP 8.3` | `http://localhost:8100/15/` | [README](../php/README.md) |
+| 🐘 PHP | `PHP 8.4.27` | `http://localhost:8100/15/` | [README](../php/README.md) |
 | 🐍 Python | `Python 3.12` | `http://localhost:8200/15/` | [README](../python/README.md) |
 | 🟢 Node.js | `Node.js 22` | `http://localhost:8300/15/` | [README](../node/README.md) |
 | ☕ Java | `Java 25` | `http://localhost:8400/15/` | [README](../java/README.md) |

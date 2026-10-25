@@ -1,6 +1,6 @@
 # 🐹 Go
 
-> **Versión fijada:** `1.27` · **Imagen base:** `golang:1.27-alpine` · **Hub:** `:8600` · **Casos operativos:** 20 / 20
+> **Versión fijada:** `1.27.3` · **Imagen base:** `golang:1.27.3-alpine3.24` · **Hub:** `:8600` · **Casos operativos:** 20 / 20
 
 [⬅️ Volver a los perfiles de lenguaje](README.md) · [🗺️ Mapa de stacks](../stack-map.md) · [🔄 Protocolo de actualización](../language-upgrade-protocol.md)
 
@@ -132,7 +132,7 @@ Agregado de los veredictos de las 19 comparativas que rankean: **7 primeros pues
 
 | | |
 |---|---|
-| **Versión fijada hoy** | `1.27` (`golang:1.27-alpine`) |
+| **Versión fijada hoy** | `1.27.3` (`golang:1.27.3-alpine3.24`) |
 | **Cadencia upstream** | Dos releases menores por año (febrero y agosto) |
 | **Política de soporte** | Las dos últimas versiones menores reciben parches de seguridad |
 | **Producto en endoflife.date** | `go` |

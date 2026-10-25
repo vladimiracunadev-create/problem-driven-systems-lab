@@ -203,7 +203,7 @@ function diagnosticsSummary(): array
 {
     return [
         'case' => '03 - Observabilidad deficiente y logs inutiles',
-        'stack' => envOr('APP_STACK', 'PHP 8.3'),
+        'stack' => envOr('APP_STACK', 'PHP 8.4.27'),
         'metrics' => telemetrySummary(readTelemetry()),
         'answerability' => [
             'legacy' => [
@@ -279,7 +279,7 @@ try {
         $payload = [
             'lab' => 'Problem-Driven Systems Lab',
             'case' => '03 - Observabilidad deficiente y logs inutiles',
-            'stack' => envOr('APP_STACK', 'PHP 8.3'),
+            'stack' => envOr('APP_STACK', 'PHP 8.4.27'),
             'goal' => 'Comparar un flujo con logs pobres contra el mismo flujo con telemetria util, correlation IDs y trazas locales.',
             'routes' => [
                 '/health' => 'Estado basico del servicio.',
@@ -296,7 +296,7 @@ try {
             'allowed_scenarios' => array_keys(scenarioCatalog()),
         ];
     } elseif ($uri === '/health') {
-        $payload = ['status' => 'ok', 'stack' => envOr('APP_STACK', 'PHP 8.3')];
+        $payload = ['status' => 'ok', 'stack' => envOr('APP_STACK', 'PHP 8.4.27')];
     } elseif ($uri === '/checkout-legacy' || $uri === '/checkout-observable') {
         $mode = $uri === '/checkout-legacy' ? 'legacy' : 'observable';
         $scenario = (string) ($query['scenario'] ?? 'ok');
@@ -380,7 +380,7 @@ try {
         $payload = array_merge(
             [
                 'case' => '03 - Observabilidad deficiente y logs inutiles',
-                'stack' => envOr('APP_STACK', 'PHP 8.3'),
+                'stack' => envOr('APP_STACK', 'PHP 8.4.27'),
             ],
             telemetrySummary(readTelemetry())
         );

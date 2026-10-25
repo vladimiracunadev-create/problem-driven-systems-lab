@@ -57,7 +57,7 @@ footer a{color:var(--accent);text-decoration:none}
     <h1>🔎 Deriva del índice de búsqueda y CDC roto</h1>
     <p>Observabilidad · La búsqueda responde 200 y lo que devuelve está mal</p>
   </div>
-  <span class="stack-badge">PHP 8.3 · outbox + checkpoint durable</span>
+  <span class="stack-badge">PHP 8.4.27 · outbox + checkpoint durable</span>
 </div>
 
 <div class="container">

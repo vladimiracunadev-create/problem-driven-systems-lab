@@ -189,7 +189,7 @@ function diagnosticsSummary(): array
 {
     return [
         'case' => '08 - Critical module extraction without breaking operations',
-        'stack' => envOr('APP_STACK', 'PHP 8.3'),
+        'stack' => envOr('APP_STACK', 'PHP 8.4.27'),
         'extraction' => stateSummary(),
         'metrics' => telemetrySummary(readTelemetry()),
         'interpretation' => [
@@ -246,7 +246,7 @@ try {
         $payload = [
             'lab' => 'Problem-Driven Systems Lab',
             'case' => '08 - Critical module extraction without breaking operations',
-            'stack' => envOr('APP_STACK', 'PHP 8.3'),
+            'stack' => envOr('APP_STACK', 'PHP 8.4.27'),
             'goal' => 'Comparar una extraccion big bang con una ruta compatible que usa proxy, contratos y cutover progresivo por consumidor.',
             'routes' => [
                 '/health' => 'Estado basico del servicio.',
@@ -263,7 +263,7 @@ try {
             'allowed_scenarios' => array_keys(scenarioCatalog()),
         ];
     } elseif ($uri === '/health') {
-        $payload = ['status' => 'ok', 'stack' => envOr('APP_STACK', 'PHP 8.3')];
+        $payload = ['status' => 'ok', 'stack' => envOr('APP_STACK', 'PHP 8.4.27')];
     } elseif ($uri === '/pricing-bigbang' || $uri === '/pricing-compatible') {
         $mode = $uri === '/pricing-bigbang' ? 'bigbang' : 'compatible';
         $scenario = (string) ($query['scenario'] ?? 'rule_drift');
@@ -303,7 +303,7 @@ try {
         $payload = array_merge(
             [
                 'case' => '08 - Critical module extraction without breaking operations',
-                'stack' => envOr('APP_STACK', 'PHP 8.3'),
+                'stack' => envOr('APP_STACK', 'PHP 8.4.27'),
             ],
             telemetrySummary(readTelemetry())
         );

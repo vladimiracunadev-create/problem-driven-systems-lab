@@ -57,7 +57,7 @@ footer a{color:var(--accent);text-decoration:none}
     <h1>🌊 Backpressure en colas de mensajes</h1>
     <p>Rendimiento · La clave caliente expira y los N llamadores pegan al origen a la vez</p>
   </div>
-  <span class="stack-badge">PHP 8.3 · el freno vive en el transporte</span>
+  <span class="stack-badge">PHP 8.4.27 · el freno vive en el transporte</span>
 </div>
 
 <div class="container">

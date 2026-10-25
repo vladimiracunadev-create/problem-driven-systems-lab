@@ -2,6 +2,20 @@
 
 > **TL;DR.** Este laboratorio está diseñado para correr en **localhost**. El código aplica defensas razonables (validación por allowlist, prepared statements, paths fijos, sin shell exec), pero **no implementa autenticación ni rate limiting** porque ese no es su propósito. Exponerlo en LAN o Internet sin un reverse proxy con auth es un error de despliegue, no del código.
 
+Auditoria de runtimes del 25-10-2026: [`CVE-2026-OCTOBER.md`](docs/security/CVE-2026-OCTOBER.md) · [`PHP-RUNTIME-INVENTORY.md`](docs/security/PHP-RUNTIME-INVENTORY.md) · [`REMEDIATION-REPORT.md`](docs/security/REMEDIATION-REPORT.md) · [`RESIDUAL-RISKS.md`](docs/security/RESIDUAL-RISKS.md)
+
+Estado que debe leer un operador, sin inferencias:
+
+| Runtime | Estado al 25-10-2026 | Version / control aplicado |
+| --- | --- | --- |
+| PHP | **Corregido** para CVE-2026-109618/109619; **mitigado** para CVE-2026-115560 | `8.4.27`; upload progress y uploads desactivados |
+| Node.js | **Corregido** para las siete CVE de la release semanal | `22.23.4` exacta |
+| Go | **Corregido** para CVE-2026-111943 | `1.27.3` exacta |
+| Java | **Mitigado**, no cerrado por numero de version | Corretto `25.0.5` + cuatro roots eliminados y verificados durante el build |
+| Python | **Pendiente**, no remediado por completo | `3.13.17` exacta mientras la imagen oficial `3.13.18` no este publicada |
+
+`Corregido`, `mitigado` y `pendiente` no son sinonimos. La evidencia y los pasos de seguimiento estan en los cuatro documentos enlazados arriba.
+
 ---
 
 ## 🧭 Modelo de amenaza explícito

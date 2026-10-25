@@ -69,7 +69,7 @@ footer{text-align:center;padding:32px;color:var(--muted);font-size:12px;border-t
     <h1>🚚 Pipeline roto y entrega frágil</h1>
     <p>Entrega · Validaciones tardías, sin preflight checks, sin rollback automático, ambiente degradado sin recuperación</p>
   </div>
-  <span class="stack-badge">PHP 8.3 · CI/CD · Preflight</span>
+  <span class="stack-badge">PHP 8.4.27 · CI/CD · Preflight</span>
 </div>
 <div class="container">
   <div class="cards-row">

@@ -1,6 +1,6 @@
 # 🐘 PHP
 
-> **Versión fijada:** `8.3` · **Imagen base:** `php:8.3-cli-alpine` (portal: `php:8.3-apache`) · **Hub:** `:8100` · **Casos operativos:** 20 / 20
+> **Versión fijada:** `8.4.27` · **Imagen base:** `php:8.4.27-cli-alpine3.24` (portal: `php:8.4.27-apache-trixie`) · **Hub:** `:8100` · **Casos operativos:** 20 / 20
 
 [⬅️ Volver a los perfiles de lenguaje](README.md) · [🗺️ Mapa de stacks](../stack-map.md) · [🔄 Protocolo de actualización](../language-upgrade-protocol.md)
 
@@ -128,7 +128,7 @@ Agregado de los veredictos de las 19 comparativas que rankean: **0 primeros pues
 
 | | |
 |---|---|
-| **Versión fijada hoy** | `8.3` (`php:8.3-cli-alpine`; el portal usa `php:8.3-apache`) |
+| **Versión fijada hoy** | `8.4.27` (`php:8.4.27-cli-alpine3.24`; el portal usa `php:8.4.27-apache-trixie`) |
 | **Cadencia upstream** | Una release menor por año, en noviembre |
 | **Política de soporte** | 2 años de soporte activo + 2 de seguridad por versión menor |
 | **Producto en endoflife.date** | `php` |

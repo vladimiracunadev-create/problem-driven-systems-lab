@@ -42,7 +42,7 @@ docker compose -f compose.dotnet.yml up -d --build   # .NET 10
 docker compose -f compose.java.yml   up -d --build   # Java 25
 docker compose -f compose.nodejs.yml up -d --build   # Node 20
 docker compose -f compose.python.yml up -d --build   # Python 3.12
-docker compose -f compose.root.yml   up -d --build   # PHP 8.3 + portal + Prometheus + Grafana
+docker compose -f compose.root.yml   up -d --build   # PHP 8.4.27 + portal + Prometheus + Grafana
 ```
 
 ### 3 — Verificá un caso end-to-end (1 min)

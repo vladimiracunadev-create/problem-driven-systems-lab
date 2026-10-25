@@ -1,6 +1,6 @@
 # 🐍 Python
 
-> **Versión fijada:** `3.12` · **Imagen base:** `python:3.12-alpine` · **Hub:** `:8200` · **Casos operativos:** 20 / 20
+> **Versión fijada:** `3.13.17` · **Imagen base:** `python:3.13.17-alpine3.24` · **Hub:** `:8200` · **Casos operativos:** 20 / 20
 
 [⬅️ Volver a los perfiles de lenguaje](README.md) · [🗺️ Mapa de stacks](../stack-map.md) · [🔄 Protocolo de actualización](../language-upgrade-protocol.md)
 
@@ -122,7 +122,7 @@ Agregado de los veredictos de las 19 comparativas que rankean: **0 primeros pues
 
 | | |
 |---|---|
-| **Versión fijada hoy** | `3.12` (`python:3.12-alpine`) |
+| **Versión fijada hoy** | `3.13.17` (`python:3.13.17-alpine3.24`) |
 | **Cadencia upstream** | Una release menor por año, en octubre |
 | **Política de soporte** | 5 años por versión: 3.12 recibe parches de seguridad hasta octubre de 2028 |
 | **Producto en endoflife.date** | `python` |

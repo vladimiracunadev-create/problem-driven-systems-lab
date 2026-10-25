@@ -463,7 +463,7 @@ function diagnosticsSummary(): array
 {
     return [
         'case' => '04 - Timeout chain and retry storms',
-        'stack' => envOr('APP_STACK', 'PHP 8.3'),
+        'stack' => envOr('APP_STACK', 'PHP 8.4.27'),
         'metrics' => telemetrySummary(readTelemetry()),
         'dependency' => dependencySummary(),
         'interpretation' => [
@@ -527,7 +527,7 @@ try {
         $payload = [
             'lab' => 'Problem-Driven Systems Lab',
             'case' => '04 - Timeout chain and retry storms',
-            'stack' => envOr('APP_STACK', 'PHP 8.3'),
+            'stack' => envOr('APP_STACK', 'PHP 8.4.27'),
             'goal' => 'Comparar una integracion con retries agresivos contra una variante que usa timeout corto, backoff, circuit breaker y fallback.',
             'routes' => [
                 '/health' => 'Estado basico del servicio.',
@@ -543,7 +543,7 @@ try {
             'allowed_scenarios' => array_keys(scenarioCatalog()),
         ];
     } elseif ($uri === '/health') {
-        $payload = ['status' => 'ok', 'stack' => envOr('APP_STACK', 'PHP 8.3')];
+        $payload = ['status' => 'ok', 'stack' => envOr('APP_STACK', 'PHP 8.4.27')];
     } elseif ($uri === '/quote-legacy' || $uri === '/quote-resilient') {
         $mode = $uri === '/quote-legacy' ? 'legacy' : 'resilient';
         $scenario = (string) ($query['scenario'] ?? 'provider_down');
@@ -571,7 +571,7 @@ try {
         $payload = array_merge(
             [
                 'case' => '04 - Timeout chain and retry storms',
-                'stack' => envOr('APP_STACK', 'PHP 8.3'),
+                'stack' => envOr('APP_STACK', 'PHP 8.4.27'),
             ],
             telemetrySummary(readTelemetry())
         );

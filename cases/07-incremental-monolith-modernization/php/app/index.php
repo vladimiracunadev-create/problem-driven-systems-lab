@@ -159,7 +159,7 @@ function diagnosticsSummary(): array
 {
     return [
         'case' => '07 - Incremental monolith modernization',
-        'stack' => envOr('APP_STACK', 'PHP 8.3'),
+        'stack' => envOr('APP_STACK', 'PHP 8.4.27'),
         'migration' => stateSummary(),
         'metrics' => telemetrySummary(readTelemetry()),
         'interpretation' => [
@@ -216,7 +216,7 @@ try {
         $payload = [
             'lab' => 'Problem-Driven Systems Lab',
             'case' => '07 - Incremental monolith modernization',
-            'stack' => envOr('APP_STACK', 'PHP 8.3'),
+            'stack' => envOr('APP_STACK', 'PHP 8.4.27'),
             'goal' => 'Comparar el costo de cambiar un monolito acoplado contra una estrategia strangler con ACL, contratos y migracion gradual.',
             'routes' => [
                 '/health' => 'Estado basico del servicio.',
@@ -232,7 +232,7 @@ try {
             'allowed_scenarios' => array_keys(scenarioCatalog()),
         ];
     } elseif ($uri === '/health') {
-        $payload = ['status' => 'ok', 'stack' => envOr('APP_STACK', 'PHP 8.3')];
+        $payload = ['status' => 'ok', 'stack' => envOr('APP_STACK', 'PHP 8.4.27')];
     } elseif ($uri === '/change-legacy' || $uri === '/change-strangler') {
         $mode = $uri === '/change-legacy' ? 'legacy' : 'strangler';
         $scenario = (string) ($query['scenario'] ?? 'billing_change');
@@ -262,7 +262,7 @@ try {
         $payload = array_merge(
             [
                 'case' => '07 - Incremental monolith modernization',
-                'stack' => envOr('APP_STACK', 'PHP 8.3'),
+                'stack' => envOr('APP_STACK', 'PHP 8.4.27'),
             ],
             telemetrySummary(readTelemetry())
         );

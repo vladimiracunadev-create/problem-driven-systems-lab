@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Caso 13 — Cache stampede (thundering herd) — stack PHP 8.3.
+ * Caso 13 — Cache stampede (thundering herd) — stack PHP 8.4.27.
  *
  * Lo que este stack aporta al caso, y por que su respuesta es distinta a la de
  * los otros seis:

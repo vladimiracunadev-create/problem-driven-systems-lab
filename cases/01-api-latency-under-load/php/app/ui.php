@@ -91,7 +91,7 @@ footer { text-align:center; padding:32px; color:var(--muted); font-size:12px; bo
     <h1>⚡ API lenta bajo carga</h1>
     <p>Rendimiento · N+1 queries, tabla legacy sin índice óptimo, worker concurrente sobre el mismo primario</p>
   </div>
-  <span class="stack-badge">PHP 8.3 · PostgreSQL · Worker</span>
+  <span class="stack-badge">PHP 8.4.27 · PostgreSQL · Worker</span>
 </div>
 
 <div class="container">
@@ -162,7 +162,7 @@ footer { text-align:center; padding:32px; color:var(--muted); font-size:12px; bo
   </div>
 </div>
 
-<footer>Problem-Driven Systems Lab · Caso 01 · PHP 8.3 + PostgreSQL · <a href="/metrics" style="color:var(--accent)">Ver métricas JSON</a> · <a href="/reset-metrics" style="color:var(--muted)">Reset</a></footer>
+<footer>Problem-Driven Systems Lab · Caso 01 · PHP 8.4.27 + PostgreSQL · <a href="/metrics" style="color:var(--accent)">Ver métricas JSON</a> · <a href="/reset-metrics" style="color:var(--muted)">Reset</a></footer>
 
 <script>
 const fmt = v => v !== null && v !== undefined ? String(v) : '—';

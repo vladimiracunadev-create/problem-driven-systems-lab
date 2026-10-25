@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Caso 20 — La dead letter queue olvidada — stack PHP 8.3.
+ * Caso 20 — La dead letter queue olvidada — stack PHP 8.4.27.
  *
  * Cierra el arco que abrio el caso 15: alli la DLQ **nace**, como la politica de
  * rechazo que salva al productor de bloquearse. Aca se ve que pasa cuando nadie

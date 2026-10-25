@@ -25,7 +25,7 @@ services:
         APP_DIR: cases/02-n-plus-one-and-db-bottlenecks/php/app
     container_name: pdsl-02-php-app
     environment:
-      APP_STACK: PHP 8.3
+      APP_STACK: PHP 8.4.27
       DB_HOST: db
       DB_PORT: "5432"
       DB_NAME: problemlab

@@ -62,11 +62,30 @@ function repoUrl(string $base, string $path): string
     return $base . ltrim($path, '/');
 }
 
+function validatedPublicHost(string $candidate): string
+{
+    $host = parse_url('http://' . $candidate, PHP_URL_HOST);
+    if (!is_string($host) || $host === '') {
+        return 'localhost';
+    }
+
+    if (filter_var($host, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6) !== false) {
+        return '[' . $host . ']';
+    }
+    if (filter_var($host, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4) !== false) {
+        return $host;
+    }
+
+    return preg_match('/\A(?:localhost|[A-Za-z0-9](?:[A-Za-z0-9.-]{0,251}[A-Za-z0-9])?)\z/D', $host) === 1
+        ? strtolower($host)
+        : 'localhost';
+}
+
 $catalog = loadCatalog();
 $repoBaseUrl = 'https://github.com/vladimiracunadev-create/problem-driven-systems-lab/blob/main/';
 $hostHeader = $_SERVER['HTTP_HOST'] ?? 'localhost:8080';
-$browserHost = parse_url('http://' . $hostHeader, PHP_URL_HOST) ?: 'localhost';
-$publicHost = envOr('PDSL_PUBLIC_HOST', $browserHost);
+$browserHost = validatedPublicHost($hostHeader);
+$publicHost = validatedPublicHost(envOr('PDSL_PUBLIC_HOST', $browserHost));
 
 $cases = $catalog['cases'];
 usort(

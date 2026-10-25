@@ -67,7 +67,7 @@ footer{text-align:center;padding:32px;color:var(--muted);font-size:12px;border-t
     <h1>🔄 N+1 Queries y cuellos de botella en base de datos</h1>
     <p>Rendimiento · Consultas dentro de bucles, relaciones cargadas una por una, round-trips innecesarios</p>
   </div>
-  <span class="stack-badge">PHP 8.3 · PostgreSQL</span>
+  <span class="stack-badge">PHP 8.4.27 · PostgreSQL</span>
 </div>
 <div class="container">
   <div class="cards-row">

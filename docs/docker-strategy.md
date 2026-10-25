@@ -144,7 +144,7 @@ Esta simetria se preserva al migrar a AWS — ver [`AWS_MIGRATION.md`](../AWS_MI
 
 Ademas, **los siete stacks comparten un modelo simetrico** — cada lenguaje sirve sus 20 casos como subprocesos dentro de un solo contenedor (hub). PHP suma servicios extras solo porque los casos `01` y `02` estudian PostgreSQL/worker/observabilidad reales, no porque la app PHP requiera N contenedores. Ver seccion **"Modelo de containerización (simétrico para los stacks operativos)"** arriba para el porque y los trade-offs explicitos.
 
-La familia PHP comparte un runtime comun en `docker/php/Dockerfile`. La familia Python usa `python:3.12-alpine` directo. La familia Node usa `node:22-alpine` directo (Node 22 habilita `node:sqlite` built-in usado en caso 02). La familia Java usa `eclipse-temurin:25`. La familia .NET usa `mcr.microsoft.com/dotnet/sdk:10.0`. Cada lenguaje futuro seguira el patron `compose.{lang}.yml` con su bloque de puertos propio en la raiz.
+La familia PHP comparte un runtime comun en `docker/php/Dockerfile`. La familia Python usa `python:3.13.17-alpine3.24` directo. La familia Node usa `node:22.23.4-alpine3.24` (Node 22 habilita `node:sqlite` built-in usado en caso 02). La familia Java usa `amazoncorretto:25.0.5-alpine3.24` con la mitigacion de CVE-2026-91403. La familia .NET usa `mcr.microsoft.com/dotnet/sdk:10.0`. Cada lenguaje futuro seguira el patron `compose.{lang}.yml` con su bloque de puertos propio en la raiz.
 
 ## 🔎 Ejemplos concretos
 

@@ -65,7 +65,7 @@ footer{text-align:center;padding:32px;color:var(--muted);font-size:12px;border-t
     <h1>🏗️ Modernización incremental del monolito</h1>
     <p>Arquitectura · Alto acoplamiento, alto radio de impacto por cambio, riesgo de regresión en cada release</p>
   </div>
-  <span class="stack-badge">PHP 8.3 · Strangler Fig Pattern</span>
+  <span class="stack-badge">PHP 8.4.27 · Strangler Fig Pattern</span>
 </div>
 <div class="container">
   <div class="cards-row">

@@ -208,7 +208,7 @@ function diagnosticsSummary(): array
 {
     return [
         'case' => '09 - Unstable external integration',
-        'stack' => envOr('APP_STACK', 'PHP 8.3'),
+        'stack' => envOr('APP_STACK', 'PHP 8.4.27'),
         'integration' => stateSummary(),
         'metrics' => telemetrySummary(readTelemetry()),
         'interpretation' => [
@@ -262,7 +262,7 @@ try {
         $payload = [
             'lab' => 'Problem-Driven Systems Lab',
             'case' => '09 - Unstable external integration',
-            'stack' => envOr('APP_STACK', 'PHP 8.3'),
+            'stack' => envOr('APP_STACK', 'PHP 8.4.27'),
             'goal' => 'Comparar una integracion directa con un tercero cambiante contra una variante endurecida con adapter, validacion y cache.',
             'routes' => [
                 '/health' => 'Estado basico del servicio.',
@@ -278,7 +278,7 @@ try {
             'allowed_scenarios' => array_keys(scenarioCatalog()),
         ];
     } elseif ($uri === '/health') {
-        $payload = ['status' => 'ok', 'stack' => envOr('APP_STACK', 'PHP 8.3')];
+        $payload = ['status' => 'ok', 'stack' => envOr('APP_STACK', 'PHP 8.4.27')];
     } elseif ($uri === '/catalog-legacy' || $uri === '/catalog-hardened') {
         $mode = $uri === '/catalog-legacy' ? 'legacy' : 'hardened';
         $scenario = (string) ($query['scenario'] ?? 'rate_limited');
@@ -305,7 +305,7 @@ try {
         $payload = array_merge(
             [
                 'case' => '09 - Unstable external integration',
-                'stack' => envOr('APP_STACK', 'PHP 8.3'),
+                'stack' => envOr('APP_STACK', 'PHP 8.4.27'),
             ],
             telemetrySummary(readTelemetry())
         );

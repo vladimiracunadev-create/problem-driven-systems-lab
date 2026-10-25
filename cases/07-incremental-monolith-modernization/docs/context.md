@@ -21,7 +21,7 @@ Muchas organizaciones no pueden reescribir desde cero; necesitan modernización 
 
 | Stack | Versión | URL en el hub | Implementación |
 |---|---|---|---|
-| 🐘 PHP | `PHP 8.3` | `http://localhost:8100/07/` | [README](../php/README.md) |
+| 🐘 PHP | `PHP 8.4.27` | `http://localhost:8100/07/` | [README](../php/README.md) |
 | 🐍 Python | `Python 3.12` | `http://localhost:8200/07/` | [README](../python/README.md) |
 | 🟢 Node.js | `Node.js 22` | `http://localhost:8300/07/` | [README](../node/README.md) |
 | ☕ Java | `Java 25` | `http://localhost:8400/07/` | [README](../java/README.md) |

@@ -208,7 +208,7 @@ function summaryComparison(PDO $pdo, string $workerName, float &$dbTimeMs, int &
 
     return [
         'case' => '01 - API lenta bajo carga por cuellos de botella reales',
-        'stack' => envOr('APP_STACK', 'PHP 8.3'),
+        'stack' => envOr('APP_STACK', 'PHP 8.4.27'),
         'legacy' => $legacy,
         'optimized' => $optimized,
         'delta' => [
@@ -297,7 +297,7 @@ try {
         $payload = [
             'lab' => 'Problem-Driven Systems Lab',
             'case' => '01 - API lenta bajo carga por cuellos de botella reales',
-            'stack' => envOr('APP_STACK', 'PHP 8.3'),
+            'stack' => envOr('APP_STACK', 'PHP 8.4.27'),
             'goal' => 'Comparar una ruta legacy con N+1 y filtro no sargable versus una ruta optimizada con tabla resumen y worker concurrente.',
             'routes' => [
                 '/health' => 'Estado básico del servicio.',
@@ -317,7 +317,7 @@ try {
             ],
         ];
     } elseif ($uri === '/health') {
-        $payload = ['status' => 'ok', 'stack' => envOr('APP_STACK', 'PHP 8.3')];
+        $payload = ['status' => 'ok', 'stack' => envOr('APP_STACK', 'PHP 8.4.27')];
     } elseif ($uri === '/report-legacy') {
         $days = clampInt((int) ($query['days'] ?? 30), 1, 180);
         $limit = clampInt((int) ($query['limit'] ?? 20), 1, 50);
@@ -367,7 +367,7 @@ try {
         $payload = array_merge(
             [
                 'case' => '01 - API lenta bajo carga por cuellos de botella reales',
-                'stack' => envOr('APP_STACK', 'PHP 8.3'),
+                'stack' => envOr('APP_STACK', 'PHP 8.4.27'),
             ],
             metricsSummary(readMetrics()),
             [

@@ -1,6 +1,6 @@
 # 🟢 Node.js
 
-> **Versión fijada:** `22` (LTS) · **Imagen base:** `node:22-alpine` · **Hub:** `:8300` · **Casos operativos:** 20 / 20
+> **Versión fijada:** `22.23.4` (LTS) · **Imagen base:** `node:22.23.4-alpine3.24` · **Hub:** `:8300` · **Casos operativos:** 20 / 20
 
 [⬅️ Volver a los perfiles de lenguaje](README.md) · [🗺️ Mapa de stacks](../stack-map.md) · [🔄 Protocolo de actualización](../language-upgrade-protocol.md)
 
@@ -122,7 +122,7 @@ Agregado de los veredictos de las 19 comparativas que rankean: **0 primeros pues
 
 | | |
 |---|---|
-| **Versión fijada hoy** | `22` LTS (`node:22-alpine`) |
+| **Versión fijada hoy** | `22.23.4` LTS (`node:22.23.4-alpine3.24`) |
 | **Cadencia upstream** | Una mayor cada 6 meses; las pares pasan a LTS en octubre |
 | **Política de soporte** | LTS: 30 meses de mantenimiento |
 | **Producto en endoflife.date** | `nodejs` |

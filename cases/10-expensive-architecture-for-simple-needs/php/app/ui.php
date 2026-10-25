@@ -62,7 +62,7 @@ footer{text-align:center;padding:32px;color:var(--muted);font-size:12px;border-t
     <h1>⚙️ Arquitectura costosa para necesidades simples</h1>
     <p>Operaciones · Sobrearquitectura, demasiados servicios, alto costo operativo, coordinación excesiva</p>
   </div>
-  <span class="stack-badge">PHP 8.3 · Architecture Decision</span>
+  <span class="stack-badge">PHP 8.4.27 · Architecture Decision</span>
 </div>
 <div class="container">
   <div class="cards-row">

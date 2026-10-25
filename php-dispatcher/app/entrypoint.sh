@@ -39,7 +39,7 @@ spawn_case() {
             DB_USER="${CASE01_DB_USER:-problemlab}" \
             DB_PASSWORD="${CASE01_DB_PASSWORD:-problemlab}" \
             WORKER_NAME="${WORKER_NAME:-report-refresh}" \
-            APP_STACK="PHP 8.3" \
+            APP_STACK="PHP 8.4.27" \
             php -S "127.0.0.1:$port" -t "$case_dir" "$case_dir/index.php" \
                 >/dev/null 2>&1 &
             ;;
@@ -49,12 +49,12 @@ spawn_case() {
             DB_NAME="${CASE02_DB_NAME:-problemlab}" \
             DB_USER="${CASE02_DB_USER:-problemlab}" \
             DB_PASSWORD="${CASE02_DB_PASSWORD:-problemlab}" \
-            APP_STACK="PHP 8.3" \
+            APP_STACK="PHP 8.4.27" \
             php -S "127.0.0.1:$port" -t "$case_dir" "$case_dir/index.php" \
                 >/dev/null 2>&1 &
             ;;
         *)
-            APP_STACK="PHP 8.3" \
+            APP_STACK="PHP 8.4.27" \
             php -S "127.0.0.1:$port" -t "$case_dir" "$case_dir/index.php" \
                 >/dev/null 2>&1 &
             ;;

@@ -120,7 +120,7 @@ scripts/validate-structure.sh ──▶ .github/workflows/ci.yml ◀── catal
 | `cases/<caso>/<stack>/compose.yml` | escenario concreto y aislado (desarrollo o revision individual) |
 | `cases/<caso>/compose.compare.yml` | comparacion entre stacks del mismo caso |
 
-La familia PHP reutiliza un runtime comun en `docker/php/Dockerfile`. La familia Python usa `python:3.12-alpine` directamente en cada caso. Cada caso mantiene su propio `compose.yml` interno independientemente del compose raiz del lenguaje.
+La familia PHP reutiliza un runtime comun en `docker/php/Dockerfile`. La familia Python usa `python:3.13.17-alpine3.24` directamente en cada caso. Cada caso mantiene su propio `compose.yml` interno independientemente del compose raiz del lenguaje.
 
 ## ✅ Estado operativo real
 

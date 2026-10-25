@@ -24,7 +24,7 @@ La segunda mitad del problema es que **esperar no tiene límite**. Sin timeout d
 
 | Stack | Versión | URL en el hub | Implementación |
 |---|---|---|---|
-| 🐘 PHP | `PHP 8.3` | `http://localhost:8100/14/` | [README](../php/README.md) |
+| 🐘 PHP | `PHP 8.4.27` | `http://localhost:8100/14/` | [README](../php/README.md) |
 | 🐍 Python | `Python 3.12` | `http://localhost:8200/14/` | [README](../python/README.md) |
 | 🟢 Node.js | `Node.js 22` | `http://localhost:8300/14/` | [README](../node/README.md) |
 | ☕ Java | `Java 25` | `http://localhost:8400/14/` | [README](../java/README.md) |

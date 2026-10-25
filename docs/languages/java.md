@@ -1,6 +1,6 @@
 # ☕ Java
 
-> **Versión fijada:** `25` (LTS) · **Imagen base:** `eclipse-temurin:25-jdk-alpine` · **Hub:** `:8400` · **Casos operativos:** 20 / 20
+> **Versión fijada:** `25.0.5` (LTS) · **Imagen base:** `amazoncorretto:25.0.5-alpine3.24` · **Hub:** `:8400` · **Casos operativos:** 20 / 20
 
 [⬅️ Volver a los perfiles de lenguaje](README.md) · [🗺️ Mapa de stacks](../stack-map.md) · [🔄 Protocolo de actualización](../language-upgrade-protocol.md)
 
@@ -125,10 +125,10 @@ Agregado de los veredictos de las 19 comparativas que rankean: **2 primeros pues
 
 | | |
 |---|---|
-| **Versión fijada hoy** | `25` LTS (`eclipse-temurin:25-jdk-alpine`) |
+| **Versión fijada hoy** | `25.0.5` LTS (`amazoncorretto:25.0.5-alpine3.24`) |
 | **Cadencia upstream** | Una release cada 6 meses; una LTS cada 2 años |
-| **Política de soporte** | Temurin da soporte extendido a las LTS (25 hasta al menos septiembre de 2031) |
-| **Producto en endoflife.date** | `eclipse-temurin` |
+| **Política de soporte** | Corretto da soporte extendido a la LTS 25 hasta octubre de 2032 |
+| **Producto en endoflife.date** | `amazon-corretto` |
 
 **Qué revisar en el próximo salto:**
 

@@ -1,4 +1,4 @@
-# 🐘 Caso 09 - PHP 8.3 con adapter y cache defensiva
+# 🐘 Caso 09 - PHP 8.4.27 con adapter y cache defensiva
 
 > Implementación operativa del caso 09 para contrastar una integración externa directa contra una variante endurecida.
 
@@ -34,7 +34,7 @@ Las APIs de terceros fallan en formas sutiles que van más allá de un socket ca
 
 ## 🧱 Servicio
 
-- `app` -> API PHP 8.3 con proveedor externo simulado, quota budget, adapter de contrato y cache local.
+- `app` -> API PHP 8.4.27 con proveedor externo simulado, quota budget, adapter de contrato y cache local.
 
 ## 🚀 Arranque
 

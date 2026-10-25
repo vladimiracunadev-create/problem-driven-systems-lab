@@ -478,7 +478,7 @@ function diagnosticsSummary(): array
 {
     return [
         'case' => '06 - Broken pipeline and fragile delivery',
-        'stack' => envOr('APP_STACK', 'PHP 8.3'),
+        'stack' => envOr('APP_STACK', 'PHP 8.4.27'),
         'state' => stateSummary(),
         'metrics' => telemetrySummary(readTelemetry()),
         'interpretation' => [
@@ -534,7 +534,7 @@ try {
         $payload = [
             'lab' => 'Problem-Driven Systems Lab',
             'case' => '06 - Broken pipeline and fragile delivery',
-            'stack' => envOr('APP_STACK', 'PHP 8.3'),
+            'stack' => envOr('APP_STACK', 'PHP 8.4.27'),
             'goal' => 'Comparar un pipeline fragil que falla tarde con otro que bloquea riesgos temprano y sabe hacer rollback.',
             'routes' => [
                 '/health' => 'Estado basico del servicio.',
@@ -550,7 +550,7 @@ try {
             'allowed_scenarios' => array_keys(scenarioCatalog()),
         ];
     } elseif ($uri === '/health') {
-        $payload = ['status' => 'ok', 'stack' => envOr('APP_STACK', 'PHP 8.3')];
+        $payload = ['status' => 'ok', 'stack' => envOr('APP_STACK', 'PHP 8.4.27')];
     } elseif ($uri === '/deploy-legacy' || $uri === '/deploy-controlled') {
         $mode = $uri === '/deploy-legacy' ? 'legacy' : 'controlled';
         $environment = (string) ($query['environment'] ?? 'staging');
@@ -584,7 +584,7 @@ try {
         $payload = array_merge(
             [
                 'case' => '06 - Broken pipeline and fragile delivery',
-                'stack' => envOr('APP_STACK', 'PHP 8.3'),
+                'stack' => envOr('APP_STACK', 'PHP 8.4.27'),
             ],
             telemetrySummary(readTelemetry())
         );

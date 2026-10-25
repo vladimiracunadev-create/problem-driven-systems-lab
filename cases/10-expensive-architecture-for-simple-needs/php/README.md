@@ -1,4 +1,4 @@
-# 🐘 Caso 10 - PHP 8.3 con comparación complex vs right-sized
+# 🐘 Caso 10 - PHP 8.4.27 con comparación complex vs right-sized
 
 > Implementación operativa del caso 10 para contrastar sobrearquitectura contra una solución proporcional.
 
@@ -30,7 +30,7 @@ La sobre-arquitectura y el abuso de patrones DTO tienen repercusiones físicas s
 
 ## 🧱 Servicio
 
-- `app` -> API PHP 8.3 con comparación de costo mensual, servicios tocados, lead time y coordinación requerida.
+- `app` -> API PHP 8.4.27 con comparación de costo mensual, servicios tocados, lead time y coordinación requerida.
 
 ## 🚀 Arranque
 

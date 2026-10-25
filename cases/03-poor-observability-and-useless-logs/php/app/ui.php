@@ -68,7 +68,7 @@ footer{text-align:center;padding:32px;color:var(--muted);font-size:12px;border-t
     <h1>🔭 Observabilidad deficiente y logs inútiles</h1>
     <p>Observabilidad · Logs sin correlación, sin request_id, sin paso que falló, sin dependencia identificada</p>
   </div>
-  <span class="stack-badge">PHP 8.3 · Logs estructurados</span>
+  <span class="stack-badge">PHP 8.4.27 · Logs estructurados</span>
 </div>
 <div class="container">
   <div class="cards-row">

@@ -34,7 +34,7 @@ STACKS=(
   "php:php:"
   "node:node:"
   "python:python:"
-  "java:eclipse-temurin:"
+  "java:amazoncorretto:"
   "dotnet:mcr.microsoft.com/dotnet/sdk:"
   "go:golang:"
   "rust:rust:"
@@ -67,11 +67,12 @@ echo
 # --- 2. La documentacion declara la misma version que el Dockerfile --------
 # stack|version-esperada-en-docs|patron-en-Dockerfile
 CLAIMS=(
-  "node|Node.js 22|node:22"
-  "python|Python 3.12|python:3.12"
-  "java|Java 25|eclipse-temurin:25"
+  "php|PHP 8.4.27|php:8.4.27-cli-alpine3.24"
+  "node|Node.js 22|node:22.23.4-alpine3.24"
+  "python|Python 3.13|python:3.13.17-alpine3.24"
+  "java|Java 25|amazoncorretto:25.0.5-alpine3.24"
   "dotnet|.NET 10|mcr.microsoft.com/dotnet/sdk:10.0"
-  "go|Go 1.27|golang:1.27"
+  "go|Go 1.27|golang:1.27.3-alpine3.24"
   "rust|Rust 1.99|rust:1.99"
 )
 

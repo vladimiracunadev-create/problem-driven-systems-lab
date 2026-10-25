@@ -57,7 +57,7 @@ footer a{color:var(--accent);text-decoration:none}
     <h1>🚰 Agotamiento del pool de conexiones</h1>
     <p>Rendimiento · La clave caliente expira y los N llamadores pegan al origen a la vez</p>
   </div>
-  <span class="stack-badge">PHP 8.3 · finally garantizado</span>
+  <span class="stack-badge">PHP 8.4.27 · finally garantizado</span>
 </div>
 
 <div class="container">

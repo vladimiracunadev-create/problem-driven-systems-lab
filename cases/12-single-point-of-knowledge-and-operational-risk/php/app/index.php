@@ -163,7 +163,7 @@ function diagnosticsSummary(): array
 {
     return [
         'case' => '12 - Single point of knowledge and operational risk',
-        'stack' => envOr('APP_STACK', 'PHP 8.3'),
+        'stack' => envOr('APP_STACK', 'PHP 8.4.27'),
         'knowledge' => stateSummary(),
         'metrics' => telemetrySummary(readTelemetry()),
         'interpretation' => [
@@ -223,7 +223,7 @@ try {
         $payload = [
             'lab' => 'Problem-Driven Systems Lab',
             'case' => '12 - Single point of knowledge and operational risk',
-            'stack' => envOr('APP_STACK', 'PHP 8.3'),
+            'stack' => envOr('APP_STACK', 'PHP 8.4.27'),
             'goal' => 'Comparar dependencia de conocimiento tribal contra una postura con runbooks, pairing y drills.',
             'routes' => [
                 '/health' => 'Estado basico del servicio.',
@@ -240,7 +240,7 @@ try {
             'allowed_scenarios' => array_keys(scenarioCatalog()),
         ];
     } elseif ($uri === '/health') {
-        $payload = ['status' => 'ok', 'stack' => envOr('APP_STACK', 'PHP 8.3')];
+        $payload = ['status' => 'ok', 'stack' => envOr('APP_STACK', 'PHP 8.4.27')];
     } elseif ($uri === '/incident-legacy' || $uri === '/incident-distributed') {
         $mode = $uri === '/incident-legacy' ? 'legacy' : 'distributed';
         $scenario = (string) ($query['scenario'] ?? 'owner_absent');
@@ -285,7 +285,7 @@ try {
         $payload = array_merge(
             [
                 'case' => '12 - Single point of knowledge and operational risk',
-                'stack' => envOr('APP_STACK', 'PHP 8.3'),
+                'stack' => envOr('APP_STACK', 'PHP 8.4.27'),
             ],
             telemetrySummary(readTelemetry())
         );

@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Caso 14 — Agotamiento del pool de conexiones — stack PHP 8.3.
+ * Caso 14 — Agotamiento del pool de conexiones — stack PHP 8.4.27.
  *
  * Lo que este stack aporta al caso, y por que su version del bug es distinta:
  *

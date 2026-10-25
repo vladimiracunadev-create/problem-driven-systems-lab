@@ -44,7 +44,7 @@ Mapa de lo que vive hoy en los 5 composes raíz:
 | Servicio actual | Imagen / runtime | Equivalente AWS sugerido |
 |---|---|---|
 | `portal-php8` (`:8080`) | PHP 8 + Apache | ECS Fargate Service · o S3 + CloudFront si se hace estático |
-| `pdsl-php-lab` (`:8100`) — dispatcher PHP con 12 procesos `php -S` internos | PHP 8.3 + tini | ECS Fargate Service · Lambda Container |
+| `pdsl-php-lab` (`:8100`) — dispatcher PHP con 12 procesos `php -S` internos | PHP 8.4.27 + tini | ECS Fargate Service · Lambda Container |
 | `pdsl-python-lab` (`:8200`) — dispatcher con 12 subprocesos `subprocess.Popen` | Python 3.12 | ECS Fargate Service · Lambda zip |
 | `pdsl-node-lab` (`:8300`) — dispatcher con 12 subprocesos `child_process.spawn` | Node.js 20 | ECS Fargate Service · Lambda zip |
 | `pdsl-java-lab` (`:8400`) — dispatcher con 12 `ProcessBuilder` (`java Main`) | Java 25 (eclipse-temurin) | ECS Fargate Service · Lambda Container |

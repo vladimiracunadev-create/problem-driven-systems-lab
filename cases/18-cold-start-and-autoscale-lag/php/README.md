@@ -1,4 +1,4 @@
-# 🐘 Caso 18 — PHP 8.3
+# 🐘 Caso 18 — PHP 8.4.27
 
 <!-- nav-stack -->
 [⬅️ Caso 18](../README.md) · [⚖️ Comparativa de los 7 stacks](../comparison.md) · [🐘 Perfil de PHP](../../../docs/languages/php.md) · [🧬 Todos los perfiles](../../../docs/languages/README.md)
@@ -31,7 +31,7 @@ pm.min_spare_servers = 4   ; los que se mantienen listos por si sube el tráfico
 
 ## Sobre el JIT
 
-PHP 8.3 tiene uno (`opcache.jit`), pero **viene apagado** por defecto y solo paga en código CPU-bound. Por eso `warmup_speedup_x` sale ≈1,1x acá: no hay curva de calentamiento que medir, igual que en Python y por la misma razón de fondo.
+PHP 8.4.27 tiene uno (`opcache.jit`), pero **viene apagado** por defecto y solo paga en código CPU-bound. Por eso `warmup_speedup_x` sale ≈1,1x acá: no hay curva de calentamiento que medir, igual que en Python y por la misma razón de fondo.
 
 ## Primitivas nativas
 
