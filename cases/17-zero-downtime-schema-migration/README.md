@@ -98,23 +98,23 @@ Los siete stacks exponen el mismo contrato: `/migrate-blocking` y `/migrate-expa
 
 `flock` con `LOCK_SH` / `LOCK_EX` / `LOCK_NB`: el **único read-write lock del laboratorio provisto por el sistema operativo**, y el único que coordina procesos en vez de hilos — que es lo que hace de verdad un motor. Ver [`php/README.md`](php/README.md). Modo aislado: `8117`.
 
-### 🐍 Python 3.12
+### 🐍 Python 3.13.17
 
 La stdlib **no tiene read-write lock**: hay que construirlo. La bandera `_writer_waiting` es la diferencia entre que el escritor entre alguna vez y que muera de hambre. Ver [`python/README.md`](python/README.md). Modo aislado: `8317`. Hub: `http://localhost:8200/17/`.
 
-### 🟢 Node.js 22
+### 🟢 Node.js 22.23.4
 
 No tiene locks porque no tiene hilos — y el caso ocurre igual, de la forma más literal: **el lock exclusivo es el event loop**. Ni siquiera el timeout del lector puede dispararse. Ver [`node/README.md`](node/README.md). Modo aislado: `8217`. Hub: `http://localhost:8300/17/`.
 
-### ☕ Java 25
+### ☕ Java 25.0.5
 
 El único con **deadline y equidad de fábrica**: `tryLock(timeout, unit)` y `new ReentrantReadWriteLock(true)`. Sin el flag de justicia, el escritor puede no entrar nunca. Ver [`java/README.md`](java/README.md). Modo aislado: `8417`. Hub: `http://localhost:8400/17/`.
 
-### 🔵 .NET 10
+### 🔵 .NET 10.0.14
 
 `TryEnterReadLock(ms)` devuelve `false` en vez de lanzar. Y `ReaderWriterLockSlim` es `IDisposable`: un lock con recursos nativos en un runtime con GC. No tiene modo justo. Ver [`dotnet/README.md`](dotnet/README.md). Modo aislado: `8517`. Hub: `http://localhost:8500/17/`.
 
-### 🐹 Go 1.27
+### 🐹 Go 1.27.3
 
 `sync.RWMutex` es lo más simple del set y no tiene hambruna de escritor, pero **no trae `RLock` con timeout**: hay que armarlo con goroutine y `select` — y la goroutine sobrevive al lector que se rindió. Ver [`go/README.md`](go/README.md). Modo aislado: `8617`. Hub: `http://localhost:8600/17/`.
 
@@ -145,11 +145,11 @@ Convierte «hay que desplegar a las 3 de la mañana» en «se despliega cuando e
 | Stack | Estado |
 | --- | --- |
 | 🐘 PHP 8.4.27 | `OPERATIVO` (`flock` `LOCK_SH`/`LOCK_EX` — lock del SO, entre procesos) |
-| 🐍 Python 3.12 | `OPERATIVO` (RWLock construido a mano sobre `Condition`) |
-| 🟢 Node.js 22 | `OPERATIVO` (el event loop **es** el lock; `await` como equidad) |
-| ☕ Java 25 | `OPERATIVO` (`ReentrantReadWriteLock` justo + `tryLock(timeout)`) |
-| 🔵 .NET 10 | `OPERATIVO` (`ReaderWriterLockSlim` + `TryEnterReadLock(ms)`) |
-| 🐹 Go 1.27 | `OPERATIVO` (`sync.RWMutex` + deadline armado con goroutine) |
+| 🐍 Python 3.13.17 | `OPERATIVO` (RWLock construido a mano sobre `Condition`) |
+| 🟢 Node.js 22.23.4 | `OPERATIVO` (el event loop **es** el lock; `await` como equidad) |
+| ☕ Java 25.0.5 | `OPERATIVO` (`ReentrantReadWriteLock` justo + `tryLock(timeout)`) |
+| 🔵 .NET 10.0.14 | `OPERATIVO` (`ReaderWriterLockSlim` + `TryEnterReadLock(ms)`) |
+| 🐹 Go 1.27.3 | `OPERATIVO` (`sync.RWMutex` + deadline armado con goroutine) |
 | 🦀 Rust 1.99 | `OPERATIVO` (`RwLock` con spin acotado; guards sin unlock olvidado) |
 
 ---

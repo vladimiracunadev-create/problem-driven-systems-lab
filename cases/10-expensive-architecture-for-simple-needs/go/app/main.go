@@ -32,7 +32,7 @@ import (
 
 const caseName = "10 - Arquitectura cara para algo simple"
 
-var stack = envOr("APP_STACK", "Go 1.27")
+var stack = envOr("APP_STACK", "Go 1.27.3")
 
 var (
 	complexCalls    int64

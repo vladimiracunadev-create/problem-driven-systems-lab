@@ -6,14 +6,14 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-// Caso 03 — Observabilidad deficiente y logs inutiles (stack .NET 10).
+// Caso 03 — Observabilidad deficiente y logs inutiles (stack .NET 10.0.14).
 // Espejo funcional del Main.java equivalente.
 // Primitiva distintiva: AsyncLocal<RequestContext> como contraste asincronico de ScopedValue Java.
 
 internal static class Program
 {
     private const string CaseName = "03 - Observabilidad deficiente y logs inutiles";
-    private static readonly string Stack = Environment.GetEnvironmentVariable("APP_STACK") ?? ".NET 10";
+    private static readonly string Stack = Environment.GetEnvironmentVariable("APP_STACK") ?? ".NET 10.0.14";
     private const int MaxLogEntries = 200;
 
     private sealed record RequestContext(string CorrId, string Route, string StartedAt);

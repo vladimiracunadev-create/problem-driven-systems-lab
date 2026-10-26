@@ -3,7 +3,7 @@
 > **TL;DR** — `db_hits` pasa de `1 + 2N` a constante. El filtro no sargable esta verificado con `EXPLAIN QUERY PLAN`: `SCAN orders` vs `SEARCH orders USING INDEX`. Los 7 stacks corren SQL real; los 4 compilados devuelven la misma fila byte por byte.
 
 <!-- nav -->
-`🐘 PHP` · `🐍 Python` · `🟢 Node.js` · `☕ Java 25` · `🔵 .NET 10` · `🐹 Go 1.27` · `🦀 Rust 1.99`
+`🐘 PHP` · `🐍 Python` · `🟢 Node.js` · `☕ Java 25.0.5` · `🔵 .NET 10.0.14` · `🐹 Go 1.27.3` · `🦀 Rust 1.99`
 
 **Estructura:** 🎯 el problema → una seccion por stack → ⚖️ tabla de decision → 📊 primitiva por stack → 🏁 veredicto y ranking
 <!-- /nav -->
@@ -23,9 +23,9 @@ Una API de reportes que carga datos de clientes con sus pedidos recientes. La va
 |---|---|---|---|
 | PHP | PostgreSQL 16 externo | `PDO` sobre socket TCP | MVCC de PostgreSQL |
 | Python | SQLite (archivo) | `sqlite3` stdlib | `threading.RLock` global |
-| Node.js 22 | SQLite (`:memory:`) | `node:sqlite` → `DatabaseSync` | proceso unico; el motor serializa |
-| Java 25 | SQLite (archivo) | `sqlite-jdbc` → `PreparedStatement` | **WAL** + conexion por request |
-| .NET 10 | SQLite (archivo) | `Microsoft.Data.Sqlite` → `SqliteCommand` | **WAL** + conexion por unidad de trabajo |
+| Node.js 22.23.4 | SQLite (`:memory:`) | `node:sqlite` → `DatabaseSync` | proceso unico; el motor serializa |
+| Java 25.0.5 | SQLite (archivo) | `sqlite-jdbc` → `PreparedStatement` | **WAL** + conexion por request |
+| .NET 10.0.14 | SQLite (archivo) | `Microsoft.Data.Sqlite` → `SqliteCommand` | **WAL** + conexion por unidad de trabajo |
 
 ### El filtro no sargable, verificado por el motor
 
@@ -124,7 +124,7 @@ Python construye el `dict` de clientes con una dict comprehension. El acceso por
 
 ## 🟢 Node.js: single-thread event loop, `node:sqlite` sincronico, worker `setInterval`
 
-**Runtime:** Node.js 22 single-thread con event loop libuv. Cada request es una funcion async que comparte el mismo proceso. Un `await` cede al loop pero no libera ningun thread — el costo agregado de awaits secuenciales degrada throughput global del proceso, no solo de la propia request.
+**Runtime:** Node.js 22.23.4 single-thread con event loop libuv. Cada request es una funcion async que comparte el mismo proceso. Un `await` cede al loop pero no libera ningun thread — el costo agregado de awaits secuenciales degrada throughput global del proceso, no solo de la propia request.
 
 **Motor de datos:** SQLite embebido via `node:sqlite` (`DatabaseSync`), built-in desde Node 22.5. Sin `npm install`, sin bindings nativos que compilar — esa fue la razon para descartar `better-sqlite3` y la que hace viable tener motor real sin sumar dependencias.
 
@@ -171,7 +171,7 @@ Una window function (`ROW_NUMBER() OVER PARTITION BY`) reemplaza las 2N queries 
 
 ---
 
-## ☕ Java 25: thread-per-request en JVM, `sqlite-jdbc` con WAL, worker `ScheduledExecutorService`
+## ☕ Java 25.0.5: thread-per-request en JVM, `sqlite-jdbc` con WAL, worker `ScheduledExecutorService`
 
 **Runtime:** JVM con thread pool (cached executor). Cada request HTTP corre en un thread del pool — paralelismo real limitado por nucleos, no por GIL como Python.
 
@@ -226,9 +226,9 @@ EXPLAIN QUERY PLAN … WHERE region >= 'n' AND < 'o'   →  SEARCH orders USING 
 
 ---
 
-## 🔵 .NET 10: ThreadPool del CLR, ConcurrentDictionary como summary cache, worker Task.Delay con CancellationToken
+## 🔵 .NET 10.0.14: ThreadPool del CLR, ConcurrentDictionary como summary cache, worker Task.Delay con CancellationToken
 
-**Runtime:** .NET 10 sobre `HttpListener` (BCL). El CLR despacha cada request al `ThreadPool` — worker threads reales, paralelismo limitado por nucleos (no por GIL como Python, no por single-thread como Node). Estado compartido entre threads requiere primitivas concurrentes explicitas (`ConcurrentDictionary`, `Interlocked`, `AsyncLocal`).
+**Runtime:** .NET 10.0.14 sobre `HttpListener` (BCL). El CLR despacha cada request al `ThreadPool` — worker threads reales, paralelismo limitado por nucleos (no por GIL como Python, no por single-thread como Node). Estado compartido entre threads requiere primitivas concurrentes explicitas (`ConcurrentDictionary`, `Interlocked`, `AsyncLocal`).
 
 **Motor de datos:** SQLite embebido via `Microsoft.Data.Sqlite` 10.0.13 (paquete oficial, ADO.NET-style), en archivo bajo el temp del sistema con `journal_mode=WAL`. Sin EF Core: el caso estudia SQL, no un ORM.
 
@@ -278,7 +278,7 @@ $"SELECT customer_id, order_count, total_amount FROM customer_summary WHERE cust
 
 ---
 
-## 🐹 Go 1.27: `modernc.org/sqlite` en Go puro, worker con goroutine + Ticker
+## 🐹 Go 1.27.3: `modernc.org/sqlite` en Go puro, worker con goroutine + Ticker
 
 **Runtime:** un binario estatico. `net/http` de la stdlib con una goroutine por request; el runtime las multiplexa sobre `GOMAXPROCS` hilos del SO.
 
@@ -355,9 +355,9 @@ for (id, cid, region, amount) in rows.iter() {                    // N+1 real
 | PHP | PostgreSQL 16 externo via `PDO`; worker en contenedor aparte |
 | Python | `sqlite3` stdlib + `threading.RLock`; worker en thread |
 | Node.js | `node:sqlite` `DatabaseSync` **sincronico**; `event_loop_lag_ms` como señal propia |
-| Java 25 | `sqlite-jdbc` + WAL; `try-with-resources`; `ScheduledExecutorService` |
-| .NET 10 | `Microsoft.Data.Sqlite` + WAL; `using`/`IDisposable`; `Task.Delay`+`CancellationToken` |
-| Go 1.27 | `modernc.org/sqlite` (Go puro, sin cgo) + WAL; `defer`; goroutine + `Ticker` |
+| Java 25.0.5 | `sqlite-jdbc` + WAL; `try-with-resources`; `ScheduledExecutorService` |
+| .NET 10.0.14 | `Microsoft.Data.Sqlite` + WAL; `using`/`IDisposable`; `Task.Delay`+`CancellationToken` |
+| Go 1.27.3 | `modernc.org/sqlite` (Go puro, sin cgo) + WAL; `defer`; goroutine + `Ticker` |
 | Rust 1.99 | `rusqlite` bundled + WAL; **`Drop` sin cierre explicito**; `std::thread` |
 
 ---
@@ -368,11 +368,11 @@ for (id, cid, region, amount) in rows.iter() {                    // N+1 real
 
 | | Stack | Por que |
 |---|---|---|
-| 🥇 | **Go 1.27** | WAL + goroutine con `Ticker`: no hay pool que dimensionar ni shutdown hook que registrar, y el binario arranca sin JIT que calentar. La solucion se lee en menos lineas que en cualquier otro stack. |
-| 🥈 | **Java 25 / .NET 10** | WAL + `try-with-resources` / `using` y paralelismo real. Igual de correctos que Go; pagan arranque y verbosidad. |
+| 🥇 | **Go 1.27.3** | WAL + goroutine con `Ticker`: no hay pool que dimensionar ni shutdown hook que registrar, y el binario arranca sin JIT que calentar. La solucion se lee en menos lineas que en cualquier otro stack. |
+| 🥈 | **Java 25.0.5 / .NET 10.0.14** | WAL + `try-with-resources` / `using` y paralelismo real. Igual de correctos que Go; pagan arranque y verbosidad. |
 | 🥉 | **Rust 1.99** | WAL + `Drop` (nadie escribe el cierre), pero thread-per-connection 1:1 y capa HTTP propia: mas trabajo para el mismo resultado. |
-| 4º | **PHP 8.3** | El **mejor substrato del lab** —PostgreSQL real, contencion observable con `pg_stat_activity`— pero proceso por request: no hay estado compartido que optimizar. |
-| 5º | **Python 3.12** | SQLite real y worker en thread, pero el GIL serializa el trabajo CPU entre lectores. |
-| 6º | **Node.js 22** | `DatabaseSync` es sincronico: cada query del N+1 **bloquea el proceso entero**. Es el peor fit para este caso — y por eso es el que mejor lo enseña, via `event_loop_lag_ms`. |
+| 4º | **PHP 8.4.27** | El **mejor substrato del lab** —PostgreSQL real, contencion observable con `pg_stat_activity`— pero proceso por request: no hay estado compartido que optimizar. |
+| 5º | **Python 3.13.17** | SQLite real y worker en thread, pero el GIL serializa el trabajo CPU entre lectores. |
+| 6º | **Node.js 22.23.4** | `DatabaseSync` es sincronico: cada query del N+1 **bloquea el proceso entero**. Es el peor fit para este caso — y por eso es el que mejor lo enseña, via `event_loop_lag_ms`. |
 
 **Lectura honesta:** Go gana por sustraccion: resuelve el problema sin obligarte a elegir un tamaño de pool, y su worker es tres lineas. Node pierde por la misma razon que lo hace didactico.

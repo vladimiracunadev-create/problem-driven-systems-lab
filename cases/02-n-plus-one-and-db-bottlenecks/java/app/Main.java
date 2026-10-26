@@ -41,7 +41,7 @@ import java.util.concurrent.atomic.LongAdder;
 public class Main {
 
     private static final String CASE_NAME = "02 - N+1 queries y cuellos de botella DB";
-    private static final String STACK = "Java 25";
+    private static final String STACK = "Java 25.0.5";
     private static final int PORT = Integer.parseInt(System.getenv().getOrDefault("PORT", "8080"));
     private static final int MAX_SAMPLES = 3000;
 

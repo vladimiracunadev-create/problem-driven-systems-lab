@@ -1,4 +1,4 @@
-# 🐹 Caso 15 — Go 1.27
+# 🐹 Caso 15 — Go 1.27.3
 
 <!-- nav-stack -->
 [⬅️ Caso 15](../README.md) · [⚖️ Comparativa de los 7 stacks](../comparison.md) · [🐹 Perfil de Go](../../../docs/languages/go.md) · [🧬 Todos los perfiles](../../../docs/languages/README.md)

@@ -17,7 +17,7 @@ using System.Threading.Tasks;
 internal static class Program
 {
     private const string CaseName = "07 - Modernizacion incremental de monolito";
-    private static readonly string Stack = Environment.GetEnvironmentVariable("APP_STACK") ?? ".NET 10";
+    private static readonly string Stack = Environment.GetEnvironmentVariable("APP_STACK") ?? ".NET 10.0.14";
 
     private sealed record Request(string Consumer, string Op, Dictionary<string, string> Payload);
     private sealed record Response(string Result, string RoutedTo, int BlastRadiusScore, int RiskScore);

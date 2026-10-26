@@ -1,4 +1,4 @@
-# 🟢 Caso 14 — Node.js 22
+# 🟢 Caso 14 — Node.js 22.23.4
 
 <!-- nav-stack -->
 [⬅️ Caso 14](../README.md) · [⚖️ Comparativa de los 7 stacks](../comparison.md) · [🟢 Perfil de Node.js](../../../docs/languages/node.md) · [🧬 Todos los perfiles](../../../docs/languages/README.md)

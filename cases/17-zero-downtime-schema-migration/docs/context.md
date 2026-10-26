@@ -34,11 +34,11 @@ El **switch va antes del contract** porque el flag es lo único reversible en un
 | Stack | Versión | URL en el hub | Implementación |
 |---|---|---|---|
 | 🐘 PHP | `PHP 8.4.27` | `http://localhost:8100/17/` | [README](../php/README.md) |
-| 🐍 Python | `Python 3.12` | `http://localhost:8200/17/` | [README](../python/README.md) |
-| 🟢 Node.js | `Node.js 22` | `http://localhost:8300/17/` | [README](../node/README.md) |
-| ☕ Java | `Java 25` | `http://localhost:8400/17/` | [README](../java/README.md) |
-| 🔵 .NET | `.NET 10` | `http://localhost:8500/17/` | [README](../dotnet/README.md) |
-| 🐹 Go | `Go 1.27` | `http://localhost:8600/17/` | [README](../go/README.md) |
+| 🐍 Python | `Python 3.13.17` | `http://localhost:8200/17/` | [README](../python/README.md) |
+| 🟢 Node.js | `Node.js 22.23.4` | `http://localhost:8300/17/` | [README](../node/README.md) |
+| ☕ Java | `Java 25.0.5` | `http://localhost:8400/17/` | [README](../java/README.md) |
+| 🔵 .NET | `.NET 10.0.14` | `http://localhost:8500/17/` | [README](../dotnet/README.md) |
+| 🐹 Go | `Go 1.27.3` | `http://localhost:8600/17/` | [README](../go/README.md) |
 | 🦀 Rust | `Rust 1.99` | `http://localhost:8700/17/` | [README](../rust/README.md) |
 
 > ⚠️ **Nota de honestidad del caso:** no hay PostgreSQL detrás. El lock de la tabla se modela con el read-write lock de cada runtime — que es honesto, porque el mecanismo es el mismo: un escritor excluye a todos los lectores. La excepción es PHP, donde `flock` **sí** es un lock del sistema operativo entre procesos. El tiempo de migración es una espera, no CPU: un `ALTER TABLE` se demora esperando I/O del motor.

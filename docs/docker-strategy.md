@@ -21,7 +21,7 @@ El laboratorio no se levanta como un unico sistema enorme. Se trabaja por capas:
 | `compose.python.yml` | Hub Python con los 20 casos en un solo contenedor |
 | `compose.nodejs.yml` | Hub Node.js con los 20 casos en un solo contenedor |
 | `compose.java.yml` | Hub Java 25 con los 20 casos en un solo contenedor |
-| `compose.dotnet.yml` | Hub .NET 10 con los 20 casos en un solo contenedor |
+| `compose.dotnet.yml` | Hub .NET 10.0.14 con los 20 casos en un solo contenedor |
 | `compose.portal.yml` | Portal liviano solamente |
 | `cases/<caso>/<stack>/compose.yml` | Un escenario concreto y aislado |
 | `cases/<caso>/compose.compare.yml` | Comparacion entre stacks del mismo caso |
@@ -50,19 +50,19 @@ flowchart LR
     client --> go_lab["pdsl-go-lab :8600"]
     client --> rs_lab["pdsl-rust-lab :8700"]
 
-    subgraph php_internal["12 subprocesos PHP :9001-9012"]
+    subgraph php_internal["20 subprocesos PHP :9001-9020"]
         php_lab --> p1["..."]
     end
-    subgraph py_internal["12 subprocesos Python :9001-9012"]
+    subgraph py_internal["20 subprocesos Python :9001-9020"]
         py_lab --> py1["..."]
     end
-    subgraph node_internal["12 subprocesos Node :9101 + 9002-9012"]
+    subgraph node_internal["20 subprocesos Node :9101 + 9002-9020"]
         node_lab --> n1["..."]
     end
-    subgraph java_internal["12 subprocesos Java :9401-9412"]
+    subgraph java_internal["20 subprocesos Java :9401-9420"]
         java_lab --> j1["..."]
     end
-    subgraph net_internal["12 subprocesos .NET :9501-9512"]
+    subgraph net_internal["20 subprocesos .NET :9501-9520"]
         net_lab --> d1["..."]
     end
 
@@ -73,15 +73,15 @@ flowchart LR
 
 | Stack | Compose | Contenedores Docker que levanta | Mecanismo interno | Puerto host |
 | --- | --- | --- | --- | --- |
-| **PHP** | `compose.root.yml` | **~7 contenedores** (portal + `php-lab` + 2 PostgreSQL + worker + exporter + prometheus + grafana) | `php-dispatcher` con 12 subprocesos `php -S` en `127.0.0.1:9001-9012` | `8100` |
-| **Python** | `compose.python.yml` | **1 contenedor** (`pdsl-python-lab`) | `python-dispatcher` con 12 subprocesos `subprocess.Popen` en `:9001-9012` | `8200` |
-| **Node.js 22** | `compose.nodejs.yml` | **1 contenedor** (`pdsl-node-lab`) | `node-dispatcher` con 12 subprocesos `child_process.spawn` en `:9101 + :9002-9012` | `8300` |
-| **Java 25** | `compose.java.yml` | **1 contenedor** (`pdsl-java-lab`) | `java-dispatcher` con 12 subprocesos `ProcessBuilder` (`java Main`) en `:9401-:9412` | `8400` |
-| **.NET 10** | `compose.dotnet.yml` | **1 contenedor** (`pdsl-dotnet-lab`) | `dotnet-dispatcher` con 12 subprocesos en `:9501-:9512` | `8500` |
-| **Go 1.27** | `compose.go.yml` | **1 contenedor** (`pdsl-go-lab`) | `go-dispatcher` con 12 subprocesos en `:9601-:9612` | `8600` |
-| **Rust 1.99** | `compose.rust.yml` | **1 contenedor** (`pdsl-rust-lab`) | `rust-dispatcher` con 12 subprocesos en `:9701-:9712` | `8700` |
+| **PHP 8.4.27** | `compose.root.yml` | **~7 contenedores** (portal + `php-lab` + 2 PostgreSQL + worker + exporter + prometheus + grafana) | `php-dispatcher` con 20 subprocesos `php -S` en `127.0.0.1:9001-9020` | `8100` |
+| **Python 3.13.17** | `compose.python.yml` | **1 contenedor** (`pdsl-python-lab`) | `python-dispatcher` con 20 subprocesos `subprocess.Popen` en `:9001-9020` | `8200` |
+| **Node.js 22.23.4** | `compose.nodejs.yml` | **1 contenedor** (`pdsl-node-lab`) | `node-dispatcher` con 20 subprocesos `child_process.spawn` en `:9101 + :9002-9020` | `8300` |
+| **Java 25.0.5** | `compose.java.yml` | **1 contenedor** (`pdsl-java-lab`) | `java-dispatcher` con 20 subprocesos `ProcessBuilder` (`java Main`) en `:9401-:9420` | `8400` |
+| **.NET 10.0.14** | `compose.dotnet.yml` | **1 contenedor** (`pdsl-dotnet-lab`) | `dotnet-dispatcher` con 20 subprocesos en `:9501-:9520` | `8500` |
+| **Go 1.27.3** | `compose.go.yml` | **1 contenedor** (`pdsl-go-lab`) | `go-dispatcher` con 20 subprocesos en `:9601-:9620` | `8600` |
+| **Rust 1.99** | `compose.rust.yml` | **1 contenedor** (`pdsl-rust-lab`) | `rust-dispatcher` con 20 subprocesos en `:9701-:9720` | `8700` |
 
-> **Asimetria residual del PHP**: PHP levanta ~7 contenedores en lugar de 1 porque los casos `01` y `02` necesitan PostgreSQL **real** corriendo en paralelo, mas el worker de caso 01, mas Prometheus + Grafana. Eso son **servicios independientes** (no subprocesos PHP) que el caso 01 estudia. Las 12 apps PHP se colapsan en `php-lab` (1 contenedor); los servicios reales se mantienen separados porque tienen que serlo.
+> **Asimetria residual del PHP**: PHP levanta ~7 contenedores en lugar de 1 porque los casos `01` y `02` necesitan PostgreSQL **real** corriendo en paralelo, mas el worker de caso 01, mas Prometheus + Grafana. Eso son **servicios independientes** (no subprocesos PHP) que el caso 01 estudia. Las 20 apps PHP se colapsan en `php-lab` (1 contenedor); los servicios reales se mantienen separados porque tienen que serlo.
 
 ### Antes y despues del refactor (PHP)
 
@@ -90,7 +90,7 @@ Antes (commit historico): **~20 contenedores Docker**. Despues del dispatcher PH
 | Antes (legacy) | Despues (actual) |
 | --- | --- |
 | `nginx-hub` (path routing) | `php-lab` (dispatcher hace el routing **y** ejecuta los 20 casos) |
-| `case01-app` ... `case12-app` (12 contenedores PHP separados) | 12 subprocesos internos de `php-lab` |
+| `case01-app` ... `case20-app` (20 contenedores PHP separados) | 20 subprocesos internos de `php-lab` |
 | `case01-worker` (separate) | `case01-worker` (sigue separado — es un CLI worker, no HTTP) |
 | `case01-db`, `case02-db` (PostgreSQL) | sin cambio |
 | `case01-prometheus`, `case01-grafana`, `case01-postgres-exporter` | sin cambio |
@@ -144,7 +144,7 @@ Esta simetria se preserva al migrar a AWS — ver [`AWS_MIGRATION.md`](../AWS_MI
 
 Ademas, **los siete stacks comparten un modelo simetrico** — cada lenguaje sirve sus 20 casos como subprocesos dentro de un solo contenedor (hub). PHP suma servicios extras solo porque los casos `01` y `02` estudian PostgreSQL/worker/observabilidad reales, no porque la app PHP requiera N contenedores. Ver seccion **"Modelo de containerización (simétrico para los stacks operativos)"** arriba para el porque y los trade-offs explicitos.
 
-La familia PHP comparte un runtime comun en `docker/php/Dockerfile`. La familia Python usa `python:3.13.17-alpine3.24` directo. La familia Node usa `node:22.23.4-alpine3.24` (Node 22 habilita `node:sqlite` built-in usado en caso 02). La familia Java usa `amazoncorretto:25.0.5-alpine3.24` con la mitigacion de CVE-2026-91403. La familia .NET usa `mcr.microsoft.com/dotnet/sdk:10.0`. Cada lenguaje futuro seguira el patron `compose.{lang}.yml` con su bloque de puertos propio en la raiz.
+La familia PHP comparte un runtime comun en `docker/php/Dockerfile`. La familia Python usa `python:3.13.17-alpine3.24` directo. La familia Node usa `node:22.23.4-alpine3.24` (Node 22 habilita `node:sqlite` built-in usado en caso 02). La familia Java usa `amazoncorretto:25.0.5-alpine3.24` con la mitigacion de CVE-2026-91403. La familia .NET usa `mcr.microsoft.com/dotnet/sdk:10.0.403`. Cada lenguaje futuro seguira el patron `compose.{lang}.yml` con su bloque de puertos propio en la raiz.
 
 ## 🔎 Ejemplos concretos
 

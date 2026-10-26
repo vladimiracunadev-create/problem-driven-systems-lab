@@ -1,6 +1,6 @@
 'use strict';
 
-// Caso 01 — API lenta bajo carga (stack Node.js 22).
+// Caso 01 — API lenta bajo carga (stack Node.js 22.23.4).
 //
 // Substrato real: SQLite embebido vía `node:sqlite` (built-in desde Node 22.5,
 // sin `npm install` y sin bindings nativos). Las dos rutas ejecutan SQL real
@@ -22,7 +22,7 @@ const os = require('os');
 const path = require('path');
 const { DatabaseSync } = require('node:sqlite');
 
-const APP_STACK = 'Node.js 22';
+const APP_STACK = 'Node.js 22.23.4';
 const CASE_NAME = '01 - API lenta bajo carga por cuellos de botella reales';
 const WORKER_NAME = 'report-refresh-node';
 const STORAGE_DIR = path.join(os.tmpdir(), 'pdsl-case01-node');

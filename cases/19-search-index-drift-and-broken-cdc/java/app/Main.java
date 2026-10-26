@@ -58,7 +58,7 @@ import java.util.concurrent.Executors;
 
 public class Main {
 
-    static final String APP_STACK = System.getenv().getOrDefault("APP_STACK", "Java 25");
+    static final String APP_STACK = System.getenv().getOrDefault("APP_STACK", "Java 25.0.5");
     static final String CASE_NAME = "19 - Deriva del indice de busqueda y CDC roto";
     static final String[] TERMS = {"alfa", "beta", "gamma", "delta", "epsilon", "zeta", "eta", "theta"};
 

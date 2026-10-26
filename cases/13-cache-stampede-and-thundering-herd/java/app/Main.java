@@ -48,7 +48,7 @@ import java.util.concurrent.atomic.LongAdder;
 public class Main {
 
     private static final String CASE_NAME = "13 - Cache stampede y thundering herd";
-    private static final String STACK = System.getenv().getOrDefault("APP_STACK", "Java 25");
+    private static final String STACK = System.getenv().getOrDefault("APP_STACK", "Java 25.0.5");
     private static final int PORT = Integer.parseInt(System.getenv().getOrDefault("PORT", "8080"));
 
     private static final long TTL_BASE_MS = 4000;

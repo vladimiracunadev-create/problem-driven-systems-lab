@@ -1,4 +1,4 @@
-# 🐍 Caso 06 — Python 3.12 con delivery comparado
+# 🐍 Caso 06 — Python 3.13.17 con delivery comparado
 
 > Implementacion operativa del caso 06 para mostrar la diferencia entre un pipeline fragil y un flujo de entrega con validaciones y rollback.
 
@@ -27,7 +27,7 @@ Los pipelines de entrega se modelan aqui como mutaciones de estado controladas p
 
 ## 🧱 Servicio
 
-- `app` → API Python 3.12 con estado por ambiente, historial de despliegues y metricas de rollback/bloqueos.
+- `app` → API Python 3.13.17 con estado por ambiente, historial de despliegues y metricas de rollback/bloqueos.
 
 ## 🚀 Arranque
 

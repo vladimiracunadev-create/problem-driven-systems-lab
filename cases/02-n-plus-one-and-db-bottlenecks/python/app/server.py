@@ -7,7 +7,7 @@ import sqlite3
 import tempfile
 import time
 
-APP_STACK = "Python 3.12"
+APP_STACK = "Python 3.13.17"
 CASE_NAME = "02 - N+1 queries y cuellos de botella en base de datos"
 STORAGE_DIR = os.path.join(tempfile.gettempdir(), "pdsl-case02-python")
 DB_PATH = os.path.join(STORAGE_DIR, "case02.sqlite3")

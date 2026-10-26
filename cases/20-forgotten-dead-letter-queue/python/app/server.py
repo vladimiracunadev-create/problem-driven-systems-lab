@@ -1,4 +1,4 @@
-"""Caso 20 — La dead letter queue olvidada — stack Python 3.12.
+"""Caso 20 — La dead letter queue olvidada — stack Python 3.13.17.
 
 Cierra el arco que abrio el [caso 15](../../15-message-queue-backpressure/): alli
 la DLQ **nace**, como la politica de rechazo que salva al productor de bloquearse.
@@ -55,7 +55,7 @@ import os
 import threading
 import time
 
-APP_STACK = os.environ.get("APP_STACK", "Python 3.12")
+APP_STACK = os.environ.get("APP_STACK", "Python 3.13.17")
 CASE_NAME = "20 - La dead letter queue olvidada"
 
 POISON_CLASSES = ("schema_mismatch", "unknown_field", "null_required", "invalid_encoding")

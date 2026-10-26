@@ -37,7 +37,7 @@ const http = require('http');
 const { URL } = require('url');
 const { performance } = require('perf_hooks');
 
-const APP_STACK = process.env.APP_STACK || 'Node.js 22';
+const APP_STACK = process.env.APP_STACK || 'Node.js 22.23.4';
 const CASE_NAME = '16 - Idempotencia y efectos duplicados';
 
 const DEDUPE_WINDOW_MS = 24 * 60 * 60 * 1000;

@@ -69,15 +69,15 @@ Los stacks PHP, Node.js y Python ya implementan este caso con dos modos del mism
 - `checkout-observable` -> logs estructurados, `request_id`, `trace_id`, métricas y trazas locales
 - `/logs/legacy`, `/logs/observable`, `/traces` y `/diagnostics/summary` -> permiten comparar qué tan diagnosticable es el incidente
 
-### Java 25 (implementacion operativa)
+### Java 25.0.5 (implementacion operativa)
 
 Stack Java operativo con `ScopedValue<RequestContext>` para propagar `correlation_id` durante el alcance lexical del handler sin parametros ni estado mutable, `UUID.randomUUID()` por request, y JSON estructurado construido con `StringBuilder` (sin Log4j/SLF4J — single-file sin deps). `/logs` devuelve los ultimos 200 logs estructurados al estilo Loki compacto. Al salir de `ScopedValue.where(...).call(...)` el binding se restaura automaticamente. Ver [`java/README.md`](java/README.md). Hub: `http://localhost:8400/03/`. Aislado: puerto `843`.
 
-### .NET 10 (implementacion operativa)
+### .NET 10.0.14 (implementacion operativa)
 
 Stack .NET operativo con `AsyncLocal<RequestContext>` para propagar `correlation_id` a traves de `await` sobre el `ThreadPool` (contraste asincronico con `ScopedValue` de Java), `Guid.NewGuid()` por request, y JSON estructurado con `System.Text.Json` (sin Serilog/NLog — sin dependencias externas). `/logs` devuelve los ultimos 200 logs estructurados. Ver [`dotnet/README.md`](dotnet/README.md). Hub: `http://localhost:8500/03/`. Aislado: puerto `853`.
 
-### Go 1.27 (implementacion operativa)
+### Go 1.27.3 (implementacion operativa)
 
 Stack Go operativo con `context.Context` como contexto **explicito**: el correlation ID viaja como parametro, no en almacenamiento ambiente, y la clave es un tipo privado del paquete. `log/slog` da el JSON estructurado desde la stdlib — unico stack del lab donde el logger no es una libreria externa. Ver [`go/README.md`](go/README.md). Hub: `http://localhost:8600/03/`.
 
@@ -111,8 +111,8 @@ Stack Rust operativo con `&RequestCtx` prestado por referencia: el borrow checke
 | 🐘 PHP 8 | ✅ Implementado (Docker + telemetría útil) |
 | 🟢 Node.js | ✅ Implementado (legacy vs observable) |
 | 🐍 Python | ✅ Implementado (legacy vs observable) |
-| ☕ Java 25 | `OPERATIVO` (`ScopedValue<RequestContext>` con correlation_id + log estructurado JSON) |
-| 🔵 .NET 10 | `OPERATIVO` (`AsyncLocal<RequestContext>` + `System.Text.Json` estructurado) |
+| ☕ Java 25.0.5 | `OPERATIVO` (`ScopedValue<RequestContext>` con correlation_id + log estructurado JSON) |
+| 🔵 .NET 10.0.14 | `OPERATIVO` (`AsyncLocal<RequestContext>` + `System.Text.Json` estructurado) |
 
 ---
 

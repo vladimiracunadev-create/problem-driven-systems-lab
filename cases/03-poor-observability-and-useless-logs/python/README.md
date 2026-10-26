@@ -1,4 +1,4 @@
-# 🐍 Caso 03 — Python 3.12 con observabilidad comparada
+# 🐍 Caso 03 — Python 3.13.17 con observabilidad comparada
 
 > Implementacion operativa del caso 03 para contrastar logs pobres contra telemetria util en un mismo flujo funcional.
 
@@ -34,7 +34,7 @@ La telemetria efectiva en Python no requiere librerias externas. Se implementa c
 
 ## 🧱 Servicio
 
-- `app` → API Python 3.12 con logs legacy y observable, metricas y trazas locales en JSON.
+- `app` → API Python 3.13.17 con logs legacy y observable, metricas y trazas locales en JSON.
 
 ## 🚀 Arranque
 

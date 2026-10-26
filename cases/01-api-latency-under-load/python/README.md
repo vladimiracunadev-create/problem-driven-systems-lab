@@ -1,4 +1,4 @@
-# 🐍 Caso 01 — Python 3.12 + SQLite + worker embebido
+# 🐍 Caso 01 — Python 3.13.17 + SQLite + worker embebido
 
 > Implementacion operativa del caso 01 para estudiar latencia bajo carga con evidencia observable en Python stdlib puro.
 
@@ -29,7 +29,7 @@ El cuello de botella clasico de N+1 en Python no es exclusivo de ORMs. Ocurre cu
 
 ## 🧱 Servicio
 
-- `app` → API Python 3.12 con rutas legacy y optimized, worker embebido y SQLite autocontenida.
+- `app` → API Python 3.13.17 con rutas legacy y optimized, worker embebido y SQLite autocontenida.
 
 ## 🚀 Arranque
 

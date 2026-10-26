@@ -38,10 +38,10 @@ Vas a ver: tabla de estado actual (7 stacks operativos, 140 endpoints), catálog
 
 ```bash
 # Elegí cualquiera de los 5
-docker compose -f compose.dotnet.yml up -d --build   # .NET 10
-docker compose -f compose.java.yml   up -d --build   # Java 25
+docker compose -f compose.dotnet.yml up -d --build   # .NET 10.0.14
+docker compose -f compose.java.yml   up -d --build   # Java 25.0.5 (Corretto)
 docker compose -f compose.nodejs.yml up -d --build   # Node 20
-docker compose -f compose.python.yml up -d --build   # Python 3.12
+docker compose -f compose.python.yml up -d --build   # Python 3.13.17
 docker compose -f compose.root.yml   up -d --build   # PHP 8.4.27 + portal + Prometheus + Grafana
 ```
 

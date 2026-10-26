@@ -50,7 +50,7 @@ import (
 )
 
 var (
-	appStack = envOr("APP_STACK", "Go 1.27")
+	appStack = envOr("APP_STACK", "Go 1.27.3")
 	caseName = "19 - Deriva del indice de busqueda y CDC roto"
 	terms    = []string{"alfa", "beta", "gamma", "delta", "epsilon", "zeta", "eta", "theta"}
 	start    = time.Now()

@@ -7,7 +7,7 @@ import secrets
 import tempfile
 import time
 
-APP_STACK = "Python 3.12"
+APP_STACK = "Python 3.13.17"
 STORAGE_DIR = os.path.join(tempfile.gettempdir(), "pdsl-case03-python")
 TELEMETRY_PATH = os.path.join(STORAGE_DIR, "telemetry.json")
 LEGACY_LOG_PATH = os.path.join(STORAGE_DIR, "legacy.log")

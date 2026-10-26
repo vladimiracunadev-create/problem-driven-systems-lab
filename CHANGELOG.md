@@ -20,9 +20,16 @@ Todos los cambios notables de este laboratorio se registran aqui con foco en mad
 - **Python:** se elimina el tag flotante y se fija `3.13.17`. La correccion
   completa `3.13.18` aun no tenia imagen Docker Official Images disponible al
   cierre; queda registrada como riesgo residual abierto, no como remediada.
+- **.NET:** la actualización OOB del 25-10 queda aplicada en los 20 casos y el
+  dispatcher: SDK `10.0.403` y runtime ASP.NET `10.0.14`. Corrige
+  CVE-2026-111497, CVE-2026-114148 y completa CVE-2026-70197/CVE-2026-102870.
 - Se agregan inventario PHP, matriz de CVE, reporte de remediacion, riesgos
   residuales, SBOM de bases, pruebas estaticas y gates de CI. Los fallos
   pedagogicos y las referencias historicas se conservan.
+- Una segunda pasada de coherencia alinea la portada, arquitectura, instalacion,
+  migracion AWS, los 20 casos, `APP_STACK`, compose y comparativas con las
+  versiones exactas. El gate ahora rechaza versiones antiguas, etiquetas de
+  parche incompletas y CVE ausentes de la portada o de la matriz de seguridad.
 
 Detalle y evidencia: [`docs/security/CVE-2026-OCTOBER.md`](docs/security/CVE-2026-OCTOBER.md),
 [`docs/security/PHP-RUNTIME-INVENTORY.md`](docs/security/PHP-RUNTIME-INVENTORY.md),

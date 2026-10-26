@@ -59,7 +59,7 @@ import java.util.concurrent.atomic.AtomicLong;
 
 public class Main {
 
-    static final String APP_STACK = System.getenv().getOrDefault("APP_STACK", "Java 25");
+    static final String APP_STACK = System.getenv().getOrDefault("APP_STACK", "Java 25.0.5");
     static final String CASE_NAME = "18 - Arranque en frio y retraso del autoescalado";
 
     static final int WORK_ITERS = 250_000;      // calibrado para ~0.3 ms caliente

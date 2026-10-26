@@ -3,7 +3,7 @@
 // Espejo del patron java-dispatcher / dotnet-dispatcher / node-dispatcher:
 //   - Spawnea cada caso como subproceso interno (/app/cases/0X/case0X).
 //   - Escucha publico en :8600.
-//   - Enruta por prefijo de path: /01/* → :9601, ..., /12/* → :9612.
+//   - Enruta por prefijo de path: /01/* → :9601, ..., /20/* → :9620.
 //   - Los puertos internos nunca se exponen al host.
 //
 // Diferencia respecto de los otros dispatchers del lab: aca el proxy inverso no
@@ -59,7 +59,7 @@ var cases = []caseInfo{
 
 var (
 	dispatchPort = envOr("PORT", "8600")
-	appStack     = envOr("APP_STACK", "Go 1.27")
+	appStack     = envOr("APP_STACK", "Go 1.27.3")
 	proxies      = map[string]*httputil.ReverseProxy{}
 )
 
@@ -184,7 +184,7 @@ func sendIndex(w http.ResponseWriter) {
 func notFound(w http.ResponseWriter, path string) {
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	w.WriteHeader(http.StatusNotFound)
-	fmt.Fprintf(w, `{"error":"not_found","hint":"usa /01/..., /02/..., ..., /12/...","path":%q}`, path)
+	fmt.Fprintf(w, `{"error":"not_found","hint":"usa /01/..., /02/..., ..., /20/...","path":%q}`, path)
 }
 
 func envOr(key, fallback string) string {

@@ -24,7 +24,7 @@
 
 ## 🚫 Que no deberia esperarse
 
-- paridad completa de los doce casos en todos los stacks;
+- paridad completa de los veinte casos en todos los stacks;
 - paridad funcional completa entre los siete lenguajes;
 - una promesa de benchmark absoluto entre runtimes.
 

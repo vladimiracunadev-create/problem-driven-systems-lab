@@ -1,4 +1,4 @@
-"""Caso 14 — Agotamiento del pool de conexiones — stack Python 3.12.
+"""Caso 14 — Agotamiento del pool de conexiones — stack Python 3.13.17.
 
 Leaky: sin timeout de adquisicion y con `put()` solo en el camino feliz. Cada
 excepcion se lleva una conexion que nunca vuelve al pool. Con suficientes
@@ -35,7 +35,7 @@ import queue
 import threading
 import time
 
-APP_STACK = os.environ.get("APP_STACK", "Python 3.12")
+APP_STACK = os.environ.get("APP_STACK", "Python 3.13.17")
 CASE_NAME = "14 - Agotamiento del pool de conexiones"
 
 ACQUIRE_TIMEOUT_MS = 200

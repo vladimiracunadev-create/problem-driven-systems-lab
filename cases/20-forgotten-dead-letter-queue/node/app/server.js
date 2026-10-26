@@ -50,7 +50,7 @@
 
 const http = require('http');
 
-const APP_STACK = process.env.APP_STACK || 'Node.js 22';
+const APP_STACK = process.env.APP_STACK || 'Node.js 22.23.4';
 const CASE_NAME = '20 - La dead letter queue olvidada';
 const POISON_CLASSES = ['schema_mismatch', 'unknown_field', 'null_required', 'invalid_encoding'];
 

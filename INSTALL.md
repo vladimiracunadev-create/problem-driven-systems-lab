@@ -32,11 +32,11 @@ Cada lenguaje tiene su propio archivo compose en la raíz. Un solo comando levan
 | Archivo | Lenguaje | Puertos | Estado |
 | --- | --- | --- | --- |
 | [`compose.root.yml`](compose.root.yml) | PHP 8.4.27 | `8080` portal · `8100` PHP hub · `9091` Prometheus · `3001` Grafana | `OPERATIVO` |
-| [`compose.python.yml`](compose.python.yml) | Python 3.12 | `8200` Python hub | `OPERATIVO` |
-| [`compose.nodejs.yml`](compose.nodejs.yml) | Node.js 22 | `8300` Node hub | `OPERATIVO` |
-| [`compose.java.yml`](compose.java.yml) | Java 25 | `8400` Java hub | `OPERATIVO` |
-| [`compose.dotnet.yml`](compose.dotnet.yml) | .NET 10 | `8500` .NET hub | `OPERATIVO` |
-| [`compose.go.yml`](compose.go.yml) | Go 1.27 | `8600` Go hub | `OPERATIVO` |
+| [`compose.python.yml`](compose.python.yml) | Python 3.13.17 | `8200` Python hub | `OPERATIVO` |
+| [`compose.nodejs.yml`](compose.nodejs.yml) | Node.js 22.23.4 | `8300` Node hub | `OPERATIVO` |
+| [`compose.java.yml`](compose.java.yml) | Java 25.0.5 (Corretto) | `8400` Java hub | `OPERATIVO` |
+| [`compose.dotnet.yml`](compose.dotnet.yml) | .NET 10.0.14 | `8500` .NET hub | `OPERATIVO` |
+| [`compose.go.yml`](compose.go.yml) | Go 1.27.3 | `8600` Go hub | `OPERATIVO` |
 | [`compose.rust.yml`](compose.rust.yml) | Rust 1.99 | `8700` Rust hub | `OPERATIVO` |
 
 ### Topologia de puertos (que levanta cada compose)
@@ -110,7 +110,7 @@ docker compose -f compose.python.yml up -d --build
 URLs esperadas:
 
 - Python hub: `http://localhost:8200/`
-- Casos Python: `http://localhost:8200/01/health` ... `http://localhost:8200/12/health`
+- Casos Python: `http://localhost:8200/01/health` ... `http://localhost:8200/20/health`
 
 Para apagar:
 
@@ -127,7 +127,7 @@ docker compose -f compose.nodejs.yml up -d --build
 URLs esperadas:
 
 - Node.js hub: `http://localhost:8300/`
-- Casos Node.js: `http://localhost:8300/01/health` ... `http://localhost:8300/12/health`
+- Casos Node.js: `http://localhost:8300/01/health` ... `http://localhost:8300/20/health`
 
 Para apagar:
 
@@ -144,7 +144,7 @@ docker compose -f compose.java.yml up -d --build
 URLs esperadas:
 
 - Java hub: `http://localhost:8400/`
-- Casos Java: `http://localhost:8400/01/health` ... `http://localhost:8400/12/health`
+- Casos Java: `http://localhost:8400/01/health` ... `http://localhost:8400/20/health`
 
 Para apagar:
 
@@ -161,11 +161,11 @@ docker compose -f compose.dotnet.yml up -d --build
 URLs esperadas:
 
 - .NET hub: `http://localhost:8500/`
-- Casos .NET: `http://localhost:8500/01/health` ... `http://localhost:8500/12/health`
+- Casos .NET: `http://localhost:8500/01/health` ... `http://localhost:8500/20/health`
 - Go hub: `http://localhost:8600/`
-- Casos Go: `http://localhost:8600/01/health` ... `http://localhost:8600/12/health`
+- Casos Go: `http://localhost:8600/01/health` ... `http://localhost:8600/20/health`
 - Rust hub: `http://localhost:8700/`
-- Casos Rust: `http://localhost:8700/01/health` ... `http://localhost:8700/12/health`
+- Casos Rust: `http://localhost:8700/01/health` ... `http://localhost:8700/20/health`
 
 Para apagar:
 

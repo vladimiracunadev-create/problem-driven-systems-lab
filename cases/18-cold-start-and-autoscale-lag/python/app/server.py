@@ -1,4 +1,4 @@
-"""Caso 18 — Arranque en frio y retraso del autoescalado — stack Python 3.12.
+"""Caso 18 — Arranque en frio y retraso del autoescalado — stack Python 3.13.17.
 
 Frio: el autoescalador levanta instancias nuevas cuando el trafico ya subio. La
 instancia arranca, el proceso queda vivo al instante — y el balanceador, que
@@ -42,7 +42,7 @@ import os
 import threading
 import time
 
-APP_STACK = os.environ.get("APP_STACK", "Python 3.12")
+APP_STACK = os.environ.get("APP_STACK", "Python 3.13.17")
 CASE_NAME = "18 - Arranque en frio y retraso del autoescalado"
 
 WORK_ITERS = 3000        # calibrado para ~0.3 ms por peticion en este runtime

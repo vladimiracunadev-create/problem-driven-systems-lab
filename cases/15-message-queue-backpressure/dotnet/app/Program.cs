@@ -40,7 +40,7 @@ using System.Threading.Tasks;
 internal static class Program
 {
     private const string CaseName = "15 - Backpressure en colas de mensajes";
-    private static readonly string Stack = Environment.GetEnvironmentVariable("APP_STACK") ?? ".NET 10";
+    private static readonly string Stack = Environment.GetEnvironmentVariable("APP_STACK") ?? ".NET 10.0.14";
 
     private const int MsgBytes = 2048;
     private static readonly string[] Policies = { "block", "drop_oldest", "dead_letter" };

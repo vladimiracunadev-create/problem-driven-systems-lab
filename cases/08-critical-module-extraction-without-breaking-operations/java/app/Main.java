@@ -35,7 +35,7 @@ import java.util.function.Function;
 public class Main {
 
     private static final String CASE_NAME = "08 - Extraccion critica de modulo";
-    private static final String STACK = "Java 25";
+    private static final String STACK = "Java 25.0.5";
     private static final int PORT = Integer.parseInt(System.getenv().getOrDefault("PORT", "8080"));
     private static final int MAX_EVENTS = 50;
 

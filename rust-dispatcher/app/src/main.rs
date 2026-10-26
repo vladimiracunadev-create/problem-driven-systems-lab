@@ -3,7 +3,7 @@
 // Espejo del patron java/dotnet/node/go-dispatcher:
 //   - Spawnea cada caso como subproceso interno (/app/cases/0X/case0X).
 //   - Escucha publico en :8700.
-//   - Enruta por prefijo de path: /01/* → :9701, ..., /12/* → :9712.
+//   - Enruta por prefijo de path: /01/* → :9701, ..., /20/* → :9720.
 //   - Los puertos internos nunca se exponen al host.
 //
 // Diferencia respecto de los otros dispatchers: Go usa
@@ -170,7 +170,7 @@ fn handle_conn(mut client: TcpStream) {
         respond(
             &mut client,
             404,
-            r#"{"error":"not_found","hint":"usa /01/..., /02/..., ..., /12/..."}"#,
+            r#"{"error":"not_found","hint":"usa /01/..., /02/..., ..., /20/..."}"#,
         );
         return;
     }

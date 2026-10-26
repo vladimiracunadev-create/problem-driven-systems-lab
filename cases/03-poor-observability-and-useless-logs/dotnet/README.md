@@ -1,4 +1,4 @@
-# 🔵 Caso 03 — .NET 10
+# 🔵 Caso 03 — .NET 10.0.14
 
 <!-- nav-stack -->
 [⬅️ Caso 03](../README.md) · [⚖️ Comparativa de los 7 stacks](../comparison.md) · [🔵 Perfil de .NET](../../../docs/languages/dotnet.md) · [🧬 Todos los perfiles](../../../docs/languages/README.md)
@@ -65,4 +65,4 @@ curl http://127.0.0.1:853/health
 
 ## Por que `AsyncLocal<T>` y no `ThreadLocal<T>`
 
-`ThreadLocal<T>` no sobrevive a un `await` que retoma en otro thread del `ThreadPool`. `AsyncLocal<T>` es la primitiva que el CLR sigue por `ExecutionContext` a traves de cada `await`. Resuelve el mismo problema que `ScopedValue` en Java 25 o `contextvars` en Python, pero con semantica mutable y orientada al flujo asincronico. Para este pipeline HTTP async es la opcion correcta.
+`ThreadLocal<T>` no sobrevive a un `await` que retoma en otro thread del `ThreadPool`. `AsyncLocal<T>` es la primitiva que el CLR sigue por `ExecutionContext` a traves de cada `await`. Resuelve el mismo problema que `ScopedValue` en Java 25.0.5 o `contextvars` en Python, pero con semantica mutable y orientada al flujo asincronico. Para este pipeline HTTP async es la opcion correcta.

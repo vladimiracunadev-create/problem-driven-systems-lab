@@ -1,4 +1,4 @@
-# 🐍 Caso 14 — Python 3.12
+# 🐍 Caso 14 — Python 3.13.17
 
 <!-- nav-stack -->
 [⬅️ Caso 14](../README.md) · [⚖️ Comparativa de los 7 stacks](../comparison.md) · [🐍 Perfil de Python](../../../docs/languages/python.md) · [🧬 Todos los perfiles](../../../docs/languages/README.md)

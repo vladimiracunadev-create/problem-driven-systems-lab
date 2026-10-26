@@ -69,7 +69,7 @@ import java.util.concurrent.Executors;
 
 public class Main {
 
-    static final String APP_STACK = System.getenv().getOrDefault("APP_STACK", "Java 25");
+    static final String APP_STACK = System.getenv().getOrDefault("APP_STACK", "Java 25.0.5");
     static final String CASE_NAME = "20 - La dead letter queue olvidada";
     static final String[] POISON_CLASSES = {"schema_mismatch", "unknown_field", "null_required", "invalid_encoding"};
 

@@ -1,4 +1,4 @@
-"""Caso 19 — Deriva del indice de busqueda y CDC roto — stack Python 3.12.
+"""Caso 19 — Deriva del indice de busqueda y CDC roto — stack Python 3.13.17.
 
 Dual-write: la aplicacion escribe en la base y despues en el indice de busqueda.
 Cuando la segunda escritura falla —y falla, porque son dos sistemas distintos sin
@@ -42,7 +42,7 @@ import os
 import threading
 import time
 
-APP_STACK = os.environ.get("APP_STACK", "Python 3.12")
+APP_STACK = os.environ.get("APP_STACK", "Python 3.13.17")
 CASE_NAME = "19 - Deriva del indice de busqueda y CDC roto"
 
 TERMS = ("alfa", "beta", "gamma", "delta", "epsilon", "zeta", "eta", "theta")

@@ -1,4 +1,4 @@
-# go-dispatcher — un solo contenedor con dispatcher + los casos del lab (Go 1.27).
+# go-dispatcher — un solo contenedor con dispatcher + los casos del lab (Go 1.27.3).
 #
 # Espejo del patron java-dispatcher / dotnet-dispatcher: el stage de build
 # compila cada caso por separado y el runtime los junta en /app/cases/0X/.
@@ -53,6 +53,6 @@ COPY --from=build /out/cases      /app/cases
 
 EXPOSE 8600
 ENV PORT=8600
-ENV APP_STACK="Go 1.27"
+ENV APP_STACK="Go 1.27.3"
 
 ENTRYPOINT ["/app/dispatcher"]

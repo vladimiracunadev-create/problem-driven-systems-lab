@@ -55,7 +55,7 @@ El stack PHP es la implementación **funcional completa** de este caso. Incluye:
 | `prometheus` | Scraping de métricas de la app y la base de datos |
 | `grafana` | Dashboard inicial del caso con paneles de latencia y DB |
 
-### Python 3.12 (implementacion operativa portable)
+### Python 3.13.17 (implementacion operativa portable)
 
 El stack Python ahora resuelve el caso con libreria estandar y SQLite local:
 
@@ -65,7 +65,7 @@ El stack Python ahora resuelve el caso con libreria estandar y SQLite local:
 
 PHP sigue siendo la version mas profunda con PostgreSQL, exporter, Prometheus y Grafana. Python queda operativo para comparar el criterio de solucion sin romper el stack principal.
 
-### Node.js 22 (implementacion operativa)
+### Node.js 22.23.4 (implementacion operativa)
 
 El stack Node.js resuelve el mismo problema con primitivas naturales del runtime:
 
@@ -75,11 +75,11 @@ El stack Node.js resuelve el mismo problema con primitivas naturales del runtime
 
 Ver detalles en [`node/README.md`](node/README.md). Puerto local: `821`.
 
-### Java 25 (implementacion operativa)
+### Java 25.0.5 (implementacion operativa)
 
 Stack Java operativo con SQLite embebido via `sqlite-jdbc` (`journal_mode=WAL`, conexion por request con `try-with-resources`), `LongAdder` para contadores y `ScheduledExecutorService` para el worker `report-refresh-java`. WAL es lo que permite que el worker escriba `customer_summary` sin bloquear a los lectores — el equivalente embebido del MVCC de PostgreSQL. Mismas rutas de contraste (`/report-legacy`, `/report-optimized`, `/batch/status`, `/job-runs`). Ver [`java/README.md`](java/README.md). Hub: `http://localhost:8400/01/`. Aislado: puerto `841`.
 
-### .NET 10 (implementacion operativa)
+### .NET 10.0.14 (implementacion operativa)
 
 Stack .NET operativo con SQLite embebido via `Microsoft.Data.Sqlite` (`journal_mode=WAL`, conexion por unidad de trabajo con `using`/`IDisposable`), `Interlocked.Increment` para contadores y `Task.Delay` + `CancellationToken` para el worker `report-refresh-dotnet`. Es el espejo exacto del Java: mismo esquema, mismas queries, mismos resultados fila por fila. Ver [`dotnet/README.md`](dotnet/README.md). Hub: `http://localhost:8500/01/`. Aislado: puerto `851`.
 

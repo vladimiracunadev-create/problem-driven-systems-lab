@@ -51,7 +51,7 @@ CASES = {
 }
 
 DISPATCH_PORT = int(os.environ.get("PORT", "8200"))
-APP_STACK     = os.environ.get("APP_STACK", "Python 3.12")
+APP_STACK     = os.environ.get("APP_STACK", "Python 3.13.17")
 
 
 # ---------------------------------------------------------------------------

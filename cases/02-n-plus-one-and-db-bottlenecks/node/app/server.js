@@ -23,7 +23,7 @@ const os = require('os');
 const path = require('path');
 const { DatabaseSync } = require('node:sqlite');
 
-const APP_STACK = 'Node.js 22';
+const APP_STACK = 'Node.js 22.23.4';
 const CASE_NAME = '02 - N+1 queries y cuellos de botella en base de datos';
 const STORAGE_DIR = path.join(os.tmpdir(), 'pdsl-case02-node');
 const METRICS_PATH = path.join(STORAGE_DIR, 'metrics.json');

@@ -99,23 +99,23 @@ Los siete stacks exponen el mismo contrato: `/pool-leaky` y `/pool-managed` sobr
 
 `finally` garantiza la devolución en todos los caminos, incluido el `continue` del `catch`. Documenta además la versión PHP real del problema: `max_children` de FPM por conexiones `PDO::ATTR_PERSISTENT` contra el `max_connections` del motor. Ver [`php/README.md`](php/README.md). Modo aislado: `8114`.
 
-### 🐍 Python 3.12
+### 🐍 Python 3.13.17
 
 `queue.Queue(maxsize=N)` **es** el pool, y `@contextmanager` aporta la disciplina de devolverlo. Es de los pocos casos donde el GIL no molesta: `sleep` lo libera. Ver [`python/README.md`](python/README.md). Modo aislado: `8314`. Hub: `http://localhost:8200/14/`.
 
-### 🟢 Node.js 22
+### 🟢 Node.js 22.23.4
 
 El modo de falla más silencioso del set: el que espera no es un hilo sino una Promise que nadie va a resolver. `AbortSignal.timeout()` es lo único que le da un final observable. Ver [`node/README.md`](node/README.md). Modo aislado: `8214`. Hub: `http://localhost:8300/14/`.
 
-### ☕ Java 25
+### ☕ Java 25.0.5
 
 `ArrayBlockingQueue` —la base de HikariCP— más `Lease implements AutoCloseable`. El compilador genera el `finally` de try-with-resources para todos los caminos de salida. Ver [`java/README.md`](java/README.md). Modo aislado: `8414`. Hub: `http://localhost:8400/14/`.
 
-### 🔵 .NET 10
+### 🔵 .NET 10.0.14
 
 `SemaphoreSlim.WaitAsync(timeout)` devuelve `false` en vez de lanzar, separando «no había conexión» de «la conexión falló». Y `using var` hace que el código correcto sea más corto que el incorrecto. Ver [`dotnet/README.md`](dotnet/README.md). Modo aislado: `8514`. Hub: `http://localhost:8500/14/`.
 
-### 🐹 Go 1.27
+### 🐹 Go 1.27.3
 
 El canal bufferizado **es** el pool: contenedor y límite en una estructura. El `select` con temporizador es la misma primitiva de los casos 04, 08 y 09. El límite honesto: `defer` hay que acordarse de escribirlo. Ver [`go/README.md`](go/README.md). Modo aislado: `8614`. Hub: `http://localhost:8600/14/`.
 
@@ -145,11 +145,11 @@ Convierte una indisponibilidad que nadie sabe explicar —el servicio no respond
 | Stack | Estado |
 | --- | --- |
 | 🐘 PHP 8.4.27 | `OPERATIVO` (`finally` + nota sobre persistentes de FPM) |
-| 🐍 Python 3.12 | `OPERATIVO` (`queue.Queue` como pool + `@contextmanager`) |
-| 🟢 Node.js 22 | `OPERATIVO` (`AbortSignal.timeout` + `finally`) |
-| ☕ Java 25 | `OPERATIVO` (`ArrayBlockingQueue` + try-with-resources) |
-| 🔵 .NET 10 | `OPERATIVO` (`SemaphoreSlim.WaitAsync` + `using var`) |
-| 🐹 Go 1.27 | `OPERATIVO` (canal bufferizado como pool + `select` + `defer`) |
+| 🐍 Python 3.13.17 | `OPERATIVO` (`queue.Queue` como pool + `@contextmanager`) |
+| 🟢 Node.js 22.23.4 | `OPERATIVO` (`AbortSignal.timeout` + `finally`) |
+| ☕ Java 25.0.5 | `OPERATIVO` (`ArrayBlockingQueue` + try-with-resources) |
+| 🔵 .NET 10.0.14 | `OPERATIVO` (`SemaphoreSlim.WaitAsync` + `using var`) |
+| 🐹 Go 1.27.3 | `OPERATIVO` (canal bufferizado como pool + `select` + `defer`) |
 | 🦀 Rust 1.99 | `OPERATIVO` (`impl Drop`; la fuga exige `mem::forget`) |
 
 ---

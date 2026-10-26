@@ -44,7 +44,7 @@ const (
 	msgBytes = 2048
 )
 
-var stack = envOr("APP_STACK", "Go 1.27")
+var stack = envOr("APP_STACK", "Go 1.27.3")
 
 var policies = []string{"block", "drop_oldest", "dead_letter"}
 

@@ -111,23 +111,23 @@ Los siete stacks exponen el mismo contrato y —al ser el escenario determinista
 
 En un runtime share-nothing el consumidor de CDC **es un comando de cron**, así que el checkpoint durable no es buena práctica: es la única opción. En contra, es el único de los siete donde nada ayuda a no ignorar el error. Ver [`php/README.md`](php/README.md). Modo aislado: `8119`.
 
-### 🐍 Python 3.12
+### 🐍 Python 3.13.17
 
 El diagnóstico más corto de los siete —tres líneas de álgebra de conjuntos— y el bug más corto también: `except: pass`. Ver [`python/README.md`](python/README.md). Modo aislado: `8319`. Hub: `http://localhost:8200/19/`.
 
-### 🟢 Node.js 22
+### 🟢 Node.js 22.23.4
 
 El **único stack donde el bug se produce por no escribir algo**: el `await` que falta. A favor, su modelo de un solo hilo hace atómicos base y outbox sin ningún lock. Ver [`node/README.md`](node/README.md). Modo aislado: `8219`. Hub: `http://localhost:8300/19/`.
 
-### ☕ Java 25
+### ☕ Java 25.0.5
 
 `@Transactional` hace que el dual-write **parezca** atómico, y nada en el código marca dónde termina su alcance. A favor, `ConcurrentSkipListMap.tailMap` es la mejor expresión del outbox del set. Ver [`java/README.md`](java/README.md). Modo aislado: `8419`. Hub: `http://localhost:8400/19/`.
 
-### 🔵 .NET 10
+### 🔵 .NET 10.0.14
 
 `Except` y `Join` expresan las tres caras como consultas tipadas. La trampa: **LINQ es perezoso**, y los `.ToList()` son lo que fija el resultado antes de mutar. Ver [`dotnet/README.md`](dotnet/README.md). Modo aislado: `8519`. Hub: `http://localhost:8500/19/`.
 
-### 🐹 Go 1.27
+### 🐹 Go 1.27.3
 
 El `_ =` es una declaración de intención auditable, y `errcheck` está en casi todos los CI. En contra: **sin tipo conjunto**, el diagnóstico se escribe a mano. Ver [`go/README.md`](go/README.md). Modo aislado: `8619`. Hub: `http://localhost:8600/19/`.
 
@@ -162,11 +162,11 @@ El indicador honesto no es el error rate del índice —ya es cero, porque el er
 | Stack | Estado |
 | --- | --- |
 | 🐘 PHP 8.4.27 | `OPERATIVO` (`array_diff_key` + checkpoint durable por obligación) |
-| 🐍 Python 3.12 | `OPERATIVO` (álgebra de conjuntos: el diff más corto de los siete) |
-| 🟢 Node.js 22 | `OPERATIVO` (`Map`/`Set`; el bug es el `await` que falta) |
-| ☕ Java 25 | `OPERATIVO` (`ConcurrentSkipListMap.tailMap` + `removeAll`/`retainAll`) |
-| 🔵 .NET 10 | `OPERATIVO` (`Except`/`Join` tipados; la pereza como trampa) |
-| 🐹 Go 1.27 | `OPERATIVO` (`_ =` auditable + `errcheck`; sin tipo conjunto) |
+| 🐍 Python 3.13.17 | `OPERATIVO` (álgebra de conjuntos: el diff más corto de los siete) |
+| 🟢 Node.js 22.23.4 | `OPERATIVO` (`Map`/`Set`; el bug es el `await` que falta) |
+| ☕ Java 25.0.5 | `OPERATIVO` (`ConcurrentSkipListMap.tailMap` + `removeAll`/`retainAll`) |
+| 🔵 .NET 10.0.14 | `OPERATIVO` (`Except`/`Join` tipados; la pereza como trampa) |
+| 🐹 Go 1.27.3 | `OPERATIVO` (`_ =` auditable + `errcheck`; sin tipo conjunto) |
 | 🦀 Rust 1.99 | `OPERATIVO` (`#[must_use]` + `HashSet`: el único con las dos piezas) |
 
 ---

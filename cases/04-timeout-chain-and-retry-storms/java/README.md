@@ -1,4 +1,4 @@
-# ☕ Caso 04 — Java 25
+# ☕ Caso 04 — Java 25.0.5
 
 <!-- nav-stack -->
 [⬅️ Caso 04](../README.md) · [⚖️ Comparativa de los 7 stacks](../comparison.md) · [☕ Perfil de Java](../../../docs/languages/java.md) · [🧬 Todos los perfiles](../../../docs/languages/README.md)

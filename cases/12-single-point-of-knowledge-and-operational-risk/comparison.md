@@ -3,7 +3,7 @@
 > **TL;DR** — legacy revienta con owner ausente (`mttr 120`); distributed degrada al runbook del equipo (`mttr ~44`) y `/share-knowledge` sube el bus factor. Siete formas de preguntar "¿y si no hay nadie?", y solo una donde el compilador exige la respuesta.
 
 <!-- nav -->
-`🐘 PHP` · `🐍 Python` · `🟢 Node.js` · `☕ Java 25` · `🔵 .NET 10` · `🐹 Go 1.27` · `🦀 Rust 1.99`
+`🐘 PHP` · `🐍 Python` · `🟢 Node.js` · `☕ Java 25.0.5` · `🔵 .NET 10.0.14` · `🐹 Go 1.27.3` · `🦀 Rust 1.99`
 
 **Estructura:** 🎯 el problema → una seccion por stack → ⚖️ tabla de decision → 📊 primitiva por stack → 🏁 veredicto y ranking
 <!-- /nav -->
@@ -169,7 +169,7 @@ Misma formula que PHP/Python. La diferencia esta en como Node maneja el "si no e
 
 ---
 
-## ☕ Java 25: `Optional<T>` + `map`/`flatMap`/`orElse` como runbook codificado
+## ☕ Java 25.0.5: `Optional<T>` + `map`/`flatMap`/`orElse` como runbook codificado
 
 **Runtime:** El sistema de tipos obliga a tomar postura ante "owner ausente" cuando devolves `Optional<Owner>` en lugar de `Owner` (que puede ser null). El crash legacy no es falla de Java — es falla de no usar las herramientas que Java ya ofrece.
 
@@ -193,9 +193,9 @@ String script = scriptOpt.orElse(null);
 
 ---
 
-## 🔵 .NET 10: ?. (null-conditional) + ?? (null-coalescing) + Nullable Reference Types
+## 🔵 .NET 10.0.14: ?. (null-conditional) + ?? (null-coalescing) + Nullable Reference Types
 
-**Runtime:** .NET 10 sobre `HttpListener`. CLR `ThreadPool`. Registry de owners thread-safe + runbooks compartidos como fallback.
+**Runtime:** .NET 10.0.14 sobre `HttpListener`. CLR `ThreadPool`. Registry de owners thread-safe + runbooks compartidos como fallback.
 
 **El fallo legacy en C#:**
 ```csharp
@@ -227,7 +227,7 @@ string fallback = script ?? teamRunbooks[runbookKey];              // degrada al
 
 ---
 
-## 🐹 Go 1.27: comma-ok, y el panic que igual hay que contener
+## 🐹 Go 1.27.3: comma-ok, y el panic que igual hay que contener
 
 ```go
 o := pickOwnerLegacy(scenario)   // *owner, puede ser nil
@@ -293,9 +293,9 @@ let script = owner.runbook.get(runbook_key)?;
 | PHP | `isset()` / `??` |
 | Python | `if x is None` / `dict.get()` |
 | Node.js | optional chaining `?.` |
-| Java 25 | `Optional<T>` + `map`/`orElse` — `.get()` sin `isPresent()` compila |
-| .NET 10 | nullable reference types — el chequeo es warning, no error |
-| Go 1.27 | comma-ok `v, ok := m[k]` — `v, _ :=` sigue siendo legal; `recover()` |
+| Java 25.0.5 | `Optional<T>` + `map`/`orElse` — `.get()` sin `isPresent()` compila |
+| .NET 10.0.14 | nullable reference types — el chequeo es warning, no error |
+| Go 1.27.3 | comma-ok `v, ok := m[k]` — `v, _ :=` sigue siendo legal; `recover()` |
 | Rust 1.99 | **`Option<T>` + `match` exhaustivo: omitir `None` no compila**; `?` propaga |
 
 ---
@@ -307,10 +307,10 @@ let script = owner.runbook.get(runbook_key)?;
 | | Stack | Por que |
 |---|---|---|
 | 🥇 | **Rust 1.99** | `Option<T>` con `match` exhaustivo: **omitir el brazo `None` no compila**. Y el operador `?` hace que el camino correcto sea el mas corto de escribir, que es la unica forma de que una convencion sobreviva a un equipo real. |
-| 🥈 | **Go 1.27** | comma-ok pone la ausencia en la firma; el llamador recibe el booleano aunque pueda descartarlo con `_`. |
-| 🥉 | **Java 25** | `Optional<T>` con `map`/`orElse` es expresivo, pero `.get()` sin `isPresent()` compila igual. |
-| 4º | **.NET 10** | Nullable reference types avisan, pero el aviso es un warning y el operador `!` lo silencia. |
-| 5º | **Node.js 22** | `?.` es comodo y propaga `undefined` en silencio hasta que explota tres capas mas arriba. |
-| 6º | **Python 3.12 / PHP 8.3** | `is None` e `isset()`: disciplina pura, cero respaldo del lenguaje. |
+| 🥈 | **Go 1.27.3** | comma-ok pone la ausencia en la firma; el llamador recibe el booleano aunque pueda descartarlo con `_`. |
+| 🥉 | **Java 25.0.5** | `Optional<T>` con `map`/`orElse` es expresivo, pero `.get()` sin `isPresent()` compila igual. |
+| 4º | **.NET 10.0.14** | Nullable reference types avisan, pero el aviso es un warning y el operador `!` lo silencia. |
+| 5º | **Node.js 22.23.4** | `?.` es comodo y propaga `undefined` en silencio hasta que explota tres capas mas arriba. |
+| 6º | **Python 3.13.17 / PHP 8.4.27** | `is None` e `isset()`: disciplina pura, cero respaldo del lenguaje. |
 
 **Lectura honesta:** El caso trata de que el conocimiento no viva en una sola persona. La metafora tecnica es exacta: el valor que no esta y nadie comprobo. Rust es el unico donde el compilador hace de segundo owner.

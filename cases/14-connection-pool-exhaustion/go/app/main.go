@@ -52,7 +52,7 @@ const (
 	leakyWatchdogMs   = 2000
 )
 
-var stack = envOr("APP_STACK", "Go 1.27")
+var stack = envOr("APP_STACK", "Go 1.27.3")
 
 var errNoConn = errors.New("pool acquire timeout")
 

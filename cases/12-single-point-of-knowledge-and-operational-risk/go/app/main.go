@@ -42,7 +42,7 @@ const (
 	maxIncidents = 30
 )
 
-var stack = envOr("APP_STACK", "Go 1.27")
+var stack = envOr("APP_STACK", "Go 1.27.3")
 
 var (
 	legacyIncidents      int64

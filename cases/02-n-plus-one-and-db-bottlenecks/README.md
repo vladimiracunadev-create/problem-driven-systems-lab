@@ -71,7 +71,7 @@ El stack PHP ya implementa este caso con una base relacional real y dos rutas co
 - `orders-optimized` -> consolida pedidos y detalles con lecturas agrupadas
 - `/metrics`, `/metrics-prometheus` y `/diagnostics/summary` -> dejan evidencia medible de la diferencia
 
-### Python 3.12
+### Python 3.13.17
 
 El stack Python ahora implementa el caso con dataset local en SQLite y rutas equivalentes:
 
@@ -79,7 +79,7 @@ El stack Python ahora implementa el caso con dataset local en SQLite y rutas equ
 - `orders-optimized` -> consolida pedidos y detalles con lecturas agrupadas.
 - `/metrics`, `/metrics-prometheus` y `/diagnostics/summary` -> dejan evidencia medible de queries y latencia.
 
-### Node.js 22 (implementacion operativa)
+### Node.js 22.23.4 (implementacion operativa)
 
 El stack Node.js resuelve el N+1 anidado contra SQLite real via `node:sqlite` (built-in en Node 22.5+):
 
@@ -89,11 +89,11 @@ El stack Node.js resuelve el N+1 anidado contra SQLite real via `node:sqlite` (b
 
 Ver [`node/README.md`](node/README.md). Puerto local: `822`.
 
-### Java 25 (implementacion operativa)
+### Java 25.0.5 (implementacion operativa)
 
 Stack Java operativo con SQLite real via `sqlite-jdbc` (single jar, sin Maven). `Connection` + `PreparedStatement` con `?` posicional, batch `IN(?, ?, ?, ...)` consolidado en una `executeQuery()`, `try-with-resources` para cleanup garantizado, `record` types inmutables (`Order`, `Item`), y `LongAdder` para contadores p95/p99 lock-free. Mismas rutas de contraste (`/orders-legacy`, `/orders-optimized`, `/diagnostics/summary`). Ver [`java/README.md`](java/README.md). Hub: `http://localhost:8400/02/`. Aislado: puerto `842`.
 
-### .NET 10 (implementacion operativa)
+### .NET 10.0.14 (implementacion operativa)
 
 Stack .NET operativo con SQLite real via `Microsoft.Data.Sqlite` (paquete oficial Microsoft, API ADO.NET). `SqliteConnection` + `SqliteCommand` con bindings `@named`, batch `IN(@id0, @id1, ...)` consolidado en un `ExecuteReader()`, `using` para cleanup de `IDisposable`, `record` types inmutables (`Order`, `Item`), y `Interlocked.Increment` para contadores. Mismas rutas de contraste (`/orders-legacy`, `/orders-optimized`, `/diagnostics/summary`). Ver [`dotnet/README.md`](dotnet/README.md). Hub: `http://localhost:8500/02/`. Aislado: puerto `852`.
 
@@ -123,8 +123,8 @@ Stack .NET operativo con SQLite real via `Microsoft.Data.Sqlite` (paquete oficia
 | 🐘 PHP 8 | ✅ Implementado (Docker + PostgreSQL real + PDO) |
 | 🐍 Python | ✅ Implementado (Docker + SQLite stdlib `sqlite3` + cursor compartido) |
 | 🟢 Node.js | ✅ Implementado (Docker + SQLite real via `node:sqlite` + `event_loop_lag_ms`) |
-| ☕ Java 25 | `OPERATIVO` (SQLite real via `sqlite-jdbc` + `PreparedStatement` + batch `IN(?, ...)`) |
-| 🔵 .NET 10 | `OPERATIVO` (SQLite real via `Microsoft.Data.Sqlite` + `SqliteCommand` + batch `IN(@id, ...)`) |
+| ☕ Java 25.0.5 | `OPERATIVO` (SQLite real via `sqlite-jdbc` + `PreparedStatement` + batch `IN(?, ...)`) |
+| 🔵 .NET 10.0.14 | `OPERATIVO` (SQLite real via `Microsoft.Data.Sqlite` + `SqliteCommand` + batch `IN(@id, ...)`) |
 
 ---
 

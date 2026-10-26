@@ -17,7 +17,7 @@ using System.Threading.Tasks;
 internal static class Program
 {
     private const string CaseName = "09 - Integracion externa inestable";
-    private static readonly string Stack = Environment.GetEnvironmentVariable("APP_STACK") ?? ".NET 10";
+    private static readonly string Stack = Environment.GetEnvironmentVariable("APP_STACK") ?? ".NET 10.0.14";
     private const int BudgetPerWindow = 5;
 
     private static readonly ConcurrentDictionary<string, string> SnapshotCache = new();

@@ -22,11 +22,11 @@ Las fugas no siempre se ven en ambientes pequeños; en producción generan incid
 | Stack | Versión | URL en el hub | Implementación |
 |---|---|---|---|
 | 🐘 PHP | `PHP 8.4.27` | `http://localhost:8100/05/` | [README](../php/README.md) |
-| 🐍 Python | `Python 3.12` | `http://localhost:8200/05/` | [README](../python/README.md) |
-| 🟢 Node.js | `Node.js 22` | `http://localhost:8300/05/` | [README](../node/README.md) |
-| ☕ Java | `Java 25` | `http://localhost:8400/05/` | [README](../java/README.md) |
-| 🔵 .NET | `.NET 10` | `http://localhost:8500/05/` | [README](../dotnet/README.md) |
-| 🐹 Go | `Go 1.27` | `http://localhost:8600/05/` | [README](../go/README.md) |
+| 🐍 Python | `Python 3.13.17` | `http://localhost:8200/05/` | [README](../python/README.md) |
+| 🟢 Node.js | `Node.js 22.23.4` | `http://localhost:8300/05/` | [README](../node/README.md) |
+| ☕ Java | `Java 25.0.5` | `http://localhost:8400/05/` | [README](../java/README.md) |
+| 🔵 .NET | `.NET 10.0.14` | `http://localhost:8500/05/` | [README](../dotnet/README.md) |
+| 🐹 Go | `Go 1.27.3` | `http://localhost:8600/05/` | [README](../go/README.md) |
 | 🦀 Rust | `Rust 1.99` | `http://localhost:8700/05/` | [README](../rust/README.md) |
 
 > ⚠️ **Nota de honestidad del caso:** No pretende copiar al milimetro el modelo de memoria de cada runtime. Si deja visible la senal operacional importante: crecimiento silencioso, degradacion progresiva y necesidad de limpieza.

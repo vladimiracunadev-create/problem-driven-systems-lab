@@ -47,7 +47,7 @@ const CASES = {
 };
 
 const DISPATCH_PORT = Number.parseInt(process.env.PORT || '8300', 10);
-const APP_STACK = process.env.APP_STACK || 'Node.js 22';
+const APP_STACK = process.env.APP_STACK || 'Node.js 22.23.4';
 
 // ---------------------------------------------------------------------------
 // Startup: spawn each case as an internal subprocess

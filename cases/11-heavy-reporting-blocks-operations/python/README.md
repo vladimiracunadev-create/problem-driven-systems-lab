@@ -1,4 +1,4 @@
-# 🐍 Caso 11 — Python 3.12 con reporting legacy vs aislado
+# 🐍 Caso 11 — Python 3.13.17 con reporting legacy vs aislado
 
 > Implementacion operativa del caso 11 para contrastar reporting pesado sobre el primario contra una ruta que protege la operacion.
 
@@ -28,7 +28,7 @@ La colision entre reportes y operaciones se produce mediante la competencia fisi
 
 ## 🧱 Servicio
 
-- `app` → API Python 3.12 con estado persistido de contention, presion de locks y cola de reporting.
+- `app` → API Python 3.13.17 con estado persistido de contention, presion de locks y cola de reporting.
 
 ## 🚀 Arranque
 

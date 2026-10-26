@@ -21,7 +21,7 @@ Cada paso del pipeline corre dentro de un `AbortController`. El handler engancha
 
 ## Servicio
 
-`app` — API Node.js 22 con dos rutas de deploy, telemetria persistida en `tmp/`, metricas Prometheus.
+`app` — API Node.js 22.23.4 con dos rutas de deploy, telemetria persistida en `tmp/`, metricas Prometheus.
 
 ## Arranque
 

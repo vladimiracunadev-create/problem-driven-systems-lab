@@ -56,7 +56,7 @@ using System.Threading.Tasks;
 internal static class Program
 {
     private const string CaseName = "18 - Arranque en frio y retraso del autoescalado";
-    private static readonly string Stack = Environment.GetEnvironmentVariable("APP_STACK") ?? ".NET 10";
+    private static readonly string Stack = Environment.GetEnvironmentVariable("APP_STACK") ?? ".NET 10.0.14";
 
     private const int WorkIters = 250_000;        // calibrado para ~0.3 ms caliente
     private const int InitTableRows = 2_000_000;  // parte de CPU de la init: trabajo real

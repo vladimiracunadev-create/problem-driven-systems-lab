@@ -1,4 +1,4 @@
-"""Caso 16 — Idempotencia y efectos duplicados — stack Python 3.12.
+"""Caso 16 — Idempotencia y efectos duplicados — stack Python 3.13.17.
 
 Unsafe: N reintentos del mismo pago aplican N cargos. El cliente reintento
 porque el primer intento dio timeout, no porque quisiera pagar de nuevo.
@@ -35,7 +35,7 @@ import os
 import threading
 import time
 
-APP_STACK = os.environ.get("APP_STACK", "Python 3.12")
+APP_STACK = os.environ.get("APP_STACK", "Python 3.13.17")
 CASE_NAME = "16 - Idempotencia y efectos duplicados"
 
 # Ventana de deduplicacion. Pasada esta, la misma clave se considera una

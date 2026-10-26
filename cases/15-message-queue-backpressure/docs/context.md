@@ -27,11 +27,11 @@ La otra mitad del problema es conceptual. Cuando se le pone límite a la cola ha
 | Stack | Versión | URL en el hub | Implementación |
 |---|---|---|---|
 | 🐘 PHP | `PHP 8.4.27` | `http://localhost:8100/15/` | [README](../php/README.md) |
-| 🐍 Python | `Python 3.12` | `http://localhost:8200/15/` | [README](../python/README.md) |
-| 🟢 Node.js | `Node.js 22` | `http://localhost:8300/15/` | [README](../node/README.md) |
-| ☕ Java | `Java 25` | `http://localhost:8400/15/` | [README](../java/README.md) |
-| 🔵 .NET | `.NET 10` | `http://localhost:8500/15/` | [README](../dotnet/README.md) |
-| 🐹 Go | `Go 1.27` | `http://localhost:8600/15/` | [README](../go/README.md) |
+| 🐍 Python | `Python 3.13.17` | `http://localhost:8200/15/` | [README](../python/README.md) |
+| 🟢 Node.js | `Node.js 22.23.4` | `http://localhost:8300/15/` | [README](../node/README.md) |
+| ☕ Java | `Java 25.0.5` | `http://localhost:8400/15/` | [README](../java/README.md) |
+| 🔵 .NET | `.NET 10.0.14` | `http://localhost:8500/15/` | [README](../dotnet/README.md) |
+| 🐹 Go | `Go 1.27.3` | `http://localhost:8600/15/` | [README](../go/README.md) |
 | 🦀 Rust | `Rust 1.99` | `http://localhost:8700/15/` | [README](../rust/README.md) |
 
 > ⚠️ **Nota de honestidad del caso:** la cola vive dentro del proceso y los mensajes son objetos en memoria, no un broker real. El tiempo de consumo es una espera, que es el modelo fiel: un consumidor se demora esperando I/O, no quemando CPU. En PHP el productor y el consumidor son pasos del mismo bucle porque el lenguaje no tiene concurrencia dentro del proceso.

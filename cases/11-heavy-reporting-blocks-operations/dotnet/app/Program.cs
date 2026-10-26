@@ -19,7 +19,7 @@ using System.Threading.Tasks;
 internal static class Program
 {
     private const string CaseName = "11 - Reportes pesados que bloquean operacion";
-    private static readonly string Stack = Environment.GetEnvironmentVariable("APP_STACK") ?? ".NET 10";
+    private static readonly string Stack = Environment.GetEnvironmentVariable("APP_STACK") ?? ".NET 10.0.14";
 
     // Scheduler dedicado limitado a 2 tasks concurrentes (espejo de newFixedThreadPool(2))
     private static readonly ConcurrentExclusiveSchedulerPair ReportingPair =

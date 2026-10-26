@@ -98,23 +98,23 @@ Los siete stacks exponen el mismo contrato: `/charge-unsafe` y `/charge-idempote
 
 Sin heap compartido, la clave vive en el almacenamiento y la atomicidad la aporta el motor (`INSERT ... ON CONFLICT DO NOTHING`, modelado con `flock`). **Es la única de las siete versiones que sigue siendo correcta con veinte réplicas.** Ver [`php/README.md`](php/README.md). Modo aislado: `8116`.
 
-### 🐍 Python 3.12
+### 🐍 Python 3.13.17
 
 `dict.setdefault` bajo `Lock`: una operación en vez de dos. El `Lock` está igual porque la atomicidad del GIL es un detalle de CPython, no un contrato del lenguaje. Ver [`python/README.md`](python/README.md). Modo aislado: `8316`. Hub: `http://localhost:8200/16/`.
 
-### 🟢 Node.js 22
+### 🟢 Node.js 22.23.4
 
 La primitiva distintiva es **una ausencia**: `has()` + `set()` es atómico porque no hay otro hilo. Y por eso el código correcto para un proceso es incorrecto para dos, sin cambiar una línea. Ver [`node/README.md`](node/README.md). Modo aislado: `8216`. Hub: `http://localhost:8300/16/`.
 
-### ☕ Java 25
+### ☕ Java 25.0.5
 
 `ConcurrentHashMap.putIfAbsent` resuelve la carrera **y** dice quién ganó en una sola llamada. Es la formulación más directa del patrón. Ver [`java/README.md`](java/README.md). Modo aislado: `8416`. Hub: `http://localhost:8400/16/`.
 
-### 🔵 .NET 10
+### 🔵 .NET 10.0.14
 
 `TryAdd` sí es atómico — a diferencia de `GetOrAdd` con fábrica, que en el caso 13 hubo que envolver en `Lazy<T>`. Dos APIs en la misma clase con garantías distintas. Ver [`dotnet/README.md`](dotnet/README.md). Modo aislado: `8516`. Hub: `http://localhost:8500/16/`.
 
-### 🐹 Go 1.27
+### 🐹 Go 1.27.3
 
 `sync.Map.LoadOrStore` con el contrato comma-ok de siempre. Y es el caso donde `sync.Map` **sí** corresponde: claves escritas una vez y leídas muchas — el opuesto exacto del caso 13. Ver [`go/README.md`](go/README.md). Modo aislado: `8616`. Hub: `http://localhost:8600/16/`.
 
@@ -145,11 +145,11 @@ Convierte cobros duplicados —que se devuelven de a uno, con costo de soporte y
 | Stack | Estado |
 | --- | --- |
 | 🐘 PHP 8.4.27 | `OPERATIVO` (reserva en almacenamiento compartido; la única que escala) |
-| 🐍 Python 3.12 | `OPERATIVO` (`dict.setdefault` bajo `Lock`) |
-| 🟢 Node.js 22 | `OPERATIVO` (`Map` atómico por el modelo de un solo hilo) |
-| ☕ Java 25 | `OPERATIVO` (`ConcurrentHashMap.putIfAbsent`) |
-| 🔵 .NET 10 | `OPERATIVO` (`ConcurrentDictionary.TryAdd`) |
-| 🐹 Go 1.27 | `OPERATIVO` (`sync.Map.LoadOrStore`) |
+| 🐍 Python 3.13.17 | `OPERATIVO` (`dict.setdefault` bajo `Lock`) |
+| 🟢 Node.js 22.23.4 | `OPERATIVO` (`Map` atómico por el modelo de un solo hilo) |
+| ☕ Java 25.0.5 | `OPERATIVO` (`ConcurrentHashMap.putIfAbsent`) |
+| 🔵 .NET 10.0.14 | `OPERATIVO` (`ConcurrentDictionary.TryAdd`) |
+| 🐹 Go 1.27.3 | `OPERATIVO` (`sync.Map.LoadOrStore`) |
 | 🦀 Rust 1.99 | `OPERATIVO` (`HashMap::entry` con `match` exhaustivo) |
 
 ---

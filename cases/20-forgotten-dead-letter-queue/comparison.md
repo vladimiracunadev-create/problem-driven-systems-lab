@@ -61,12 +61,12 @@ Drenar la del consumidor **observado** recupera **0%**: ahí solo hay veneno, qu
 | Stack | Contra clasificar mal | Contra tragarse los bugs propios |
 |---|---|---|
 | 🦀 **Rust 1.99** | `enum` + `match` exhaustivo: **una variante nueva no compila** | **`panic!` no es un `Result`**: canal separado |
-| 🔵 **.NET 10** | `catch (Ex e) when (...)`: filtra **sin desenrollar** la pila | Nada (`catch (Exception)` los atrapa) |
-| ☕ **Java 25** | Jerarquía `sealed`: una clase nueva debe ir en `permits` | Nada, y `Error` queda fuera de `Exception` |
-| 🐹 **Go 1.27** | `errors.Is` / `errors.As` sobre cadenas `%w` | Los `panic` son canal aparte, como en Rust |
-| 🐘 **PHP 8.3** | `catch (A \| B $e)` — **sin exhaustividad** | Nada, y `Throwable` lo hace explícito |
-| 🐍 **Python 3.12** | Jerarquía de excepciones — **sin exhaustividad** | Nada (`except Exception` los atrapa) |
-| 🟢 **Node.js 22** | `instanceof`, **frágil entre paquetes y workers** | Nada |
+| 🔵 **.NET 10.0.14** | `catch (Ex e) when (...)`: filtra **sin desenrollar** la pila | Nada (`catch (Exception)` los atrapa) |
+| ☕ **Java 25.0.5** | Jerarquía `sealed`: una clase nueva debe ir en `permits` | Nada, y `Error` queda fuera de `Exception` |
+| 🐹 **Go 1.27.3** | `errors.Is` / `errors.As` sobre cadenas `%w` | Los `panic` son canal aparte, como en Rust |
+| 🐘 **PHP 8.4.27** | `catch (A \| B $e)` — **sin exhaustividad** | Nada, y `Throwable` lo hace explícito |
+| 🐍 **Python 3.13.17** | Jerarquía de excepciones — **sin exhaustividad** | Nada (`except Exception` los atrapa) |
+| 🟢 **Node.js 22.23.4** | `instanceof`, **frágil entre paquetes y workers** | Nada |
 
 ---
 
@@ -84,7 +84,7 @@ Lo decisivo no es la elegancia: **agregar una variante rompe la compilación en 
 
 Y el segundo efecto, más silencioso: **un `panic!` no es un `Result`**. Un bug del propio consumidor no puede confundirse con un mensaje venenoso porque no viaja por el mismo canal. Es la causa raíz número 5 del caso, y Rust es el único stack donde estructuralmente no puede ocurrir. Ver [`rust/README.md`](rust/README.md).
 
-## 🔵 .NET 10 — el único que decide sin destruir la evidencia
+## 🔵 .NET 10.0.14 — el único que decide sin destruir la evidencia
 
 ```csharp
 catch (ErrorProceso e) when (e.EsTransitorio)  { Reintentar(); }
@@ -97,7 +97,7 @@ Para este caso eso es el dato que falta: **un registro de DLQ sin el punto de fa
 
 Y el corolario canónico: `catch (Exception e) when (Log(e))` con un filtro que devuelve `false` es **registrar sin capturar**. Ver [`dotnet/README.md`](dotnet/README.md).
 
-## ☕ Java 25 — la jerarquía más expresiva, con un costo estructural
+## ☕ Java 25.0.5 — la jerarquía más expresiva, con un costo estructural
 
 `sealed ... permits` cierra la jerarquía: una clase de error nueva **tiene que declararse**, y con `switch` sobre patrones el compilador exige cubrir todas las ramas. Es lo más cerca que llega el set a la exhaustividad de Rust.
 
@@ -105,7 +105,7 @@ Lo que pierde contra .NET: **para clasificar hay que capturar, y capturar desenr
 
 Detalle que este caso hace visible: `super(m, null, false, false)` desactiva la captura del stack trace, que es lo que domina el costo de una excepción en un lazo caliente. Ver [`java/README.md`](java/README.md).
 
-## 🐹 Go 1.27 — la mejor cadena de contexto, sin exhaustividad
+## 🐹 Go 1.27.3 — la mejor cadena de contexto, sin exhaustividad
 
 `%w` acumula contexto sin borrar la causa, y `errors.Is` compara **por valor**, así que no se rompe al cruzar límites de paquete — que es exactamente donde falla el `instanceof` de Node.
 
@@ -113,7 +113,7 @@ Lo que no da: **nada obliga a manejar una clase nueva**. Agregar `ErrCorrupto` c
 
 Nótese la diferencia con el [caso 19](../19-search-index-drift-and-broken-cdc/comparison.md), donde Go queda segundo: allá el problema era **ignorar** el error, y el `_ =` lo hace visible. Acá el problema es **no mirarlo bien**, y para eso el error-como-valor no alcanza. Ver [`go/README.md`](go/README.md).
 
-## 🐘 PHP 8.3 — union types y el drenaje como comando
+## 🐘 PHP 8.4.27 — union types y el drenaje como comando
 
 `catch (A | B $e)` dice «estos dos se tratan igual» sin duplicar el bloque. Y `Throwable` como raíz común de `Exception` y `Error` **hace explícito** —a diferencia de Java, donde `Error` queda fuera— que capturar todo incluye capturar los bugs propios.
 
@@ -121,13 +121,13 @@ Y una ventaja operativa real: **el drenaje es un comando de cron**. `php bin/dlq
 
 En contra: **PHP no tiene exhaustividad de ninguna clase**. Ver [`php/README.md`](php/README.md).
 
-## 🐍 Python 3.12 — cuatro líneas para clasificar, una palabra para arruinarlo
+## 🐍 Python 3.13.17 — cuatro líneas para clasificar, una palabra para arruinarlo
 
 La jerarquía de excepciones clasifica sin ceremonia: cuatro líneas, sin anotaciones, sin `throws`. Y `raise ... from e` mantiene la cadena de causas visible en el traceback desde Python 3.0 — antes que el `%w` de Go y que el `error.cause` de Node.
 
 El peligro está a una palabra: `except Exception` manda a la DLQ **también los bugs del consumidor**. Un `KeyError` por un typo termina indistinguible de un mensaje corrupto, y meses después la conclusión es «datos malos» en vez de «tuvimos un bug tres semanas». Ver [`python/README.md`](python/README.md).
 
-## 🟢 Node.js 22 — el más débil del set, y justo donde el caso pega
+## 🟢 Node.js 22.23.4 — el más débil del set, y justo donde el caso pega
 
 Los errores de JavaScript son objetos comunes **sin jerarquía obligatoria**. `instanceof` funciona hasta que el error cruza un límite que rompe la cadena de prototipos: dos copias del mismo paquete, un `worker_thread`, una biblioteca nativa que trae `err.code` como string.
 
@@ -142,12 +142,12 @@ En producción la clasificación degrada a comparar strings —`/timeout/i.test(
 | Puesto | Stack | Por qué |
 |---|---|---|
 | 🥇 | **Rust 1.99** | El `enum` con `match` exhaustivo es la primitiva exacta de un caso que trata de clasificar: **una clase de error nueva no compila** hasta que alguien decida qué hacer con ella. Y `panic!` como canal separado de `Result` hace estructuralmente imposible que un bug del consumidor termine en la DLQ disfrazado de dato malo. |
-| 🥈 | **.NET 10** | Los filtros `when (...)` son la única primitiva del laboratorio que **decide antes de desenrollar la pila**. Para un registro de DLQ, conservar el punto de falla original es la diferencia entre poder depurarlo y no. |
-| 🥉 | **Java 25** | La jerarquía `sealed` es la clasificación más expresiva del set y lo más cerca que llega a la exhaustividad de Rust. Detrás de .NET porque clasificar obliga a capturar, y capturar acorta la pila que la DLQ necesita. |
-| 4º | **Go 1.27** | `errors.Is`/`As` sobre cadenas `%w` acumulan contexto sin perder la causa y sobreviven a los límites de paquete. Sin exhaustividad, una clase nueva cae en el camino por defecto sin que nada avise. |
-| 5º | **PHP 8.3** | Union types en `catch`, `Throwable` avisando que capturar todo incluye los bugs propios, y el drenaje como comando de cron — una ventaja operativa real en un incidente. Ninguna ayuda del compilador. |
-| 6º | **Python 3.12** | Clasifica en cuatro líneas y encadena causas desde la 3.0. Pierde puestos porque `except Exception` está a una palabra de distancia y nada en el lenguaje lo señala. |
-| 7º | **Node.js 22** | El único stack donde la herramienta de clasificación —`instanceof`— **es frágil por diseño**: se rompe entre copias de paquete, workers y bibliotecas nativas. La alternativa práctica es comparar strings, y el caso entero depende de clasificar bien. |
+| 🥈 | **.NET 10.0.14** | Los filtros `when (...)` son la única primitiva del laboratorio que **decide antes de desenrollar la pila**. Para un registro de DLQ, conservar el punto de falla original es la diferencia entre poder depurarlo y no. |
+| 🥉 | **Java 25.0.5** | La jerarquía `sealed` es la clasificación más expresiva del set y lo más cerca que llega a la exhaustividad de Rust. Detrás de .NET porque clasificar obliga a capturar, y capturar acorta la pila que la DLQ necesita. |
+| 4º | **Go 1.27.3** | `errors.Is`/`As` sobre cadenas `%w` acumulan contexto sin perder la causa y sobreviven a los límites de paquete. Sin exhaustividad, una clase nueva cae en el camino por defecto sin que nada avise. |
+| 5º | **PHP 8.4.27** | Union types en `catch`, `Throwable` avisando que capturar todo incluye los bugs propios, y el drenaje como comando de cron — una ventaja operativa real en un incidente. Ninguna ayuda del compilador. |
+| 6º | **Python 3.13.17** | Clasifica en cuatro líneas y encadena causas desde la 3.0. Pierde puestos porque `except Exception` está a una palabra de distancia y nada en el lenguaje lo señala. |
+| 7º | **Node.js 22.23.4** | El único stack donde la herramienta de clasificación —`instanceof`— **es frágil por diseño**: se rompe entre copias de paquete, workers y bibliotecas nativas. La alternativa práctica es comparar strings, y el caso entero depende de clasificar bien. |
 
 > **Este es el último caso del laboratorio, y ordena por lo mismo que el [19](../19-search-index-drift-and-broken-cdc/comparison.md) con una vuelta más.** Allá la pregunta era qué hace el lenguaje cuando el programador **no mira** el error. Acá es qué hace cuando lo mira **mal**. Solo Rust responde con el compilador; los otros seis responden con disciplina — y la disciplina no aparece en el diff.
 

@@ -25,11 +25,11 @@ Lo que lo vuelve difícil de diagnosticar es que **la cache estaba haciendo su t
 | Stack | Versión | URL en el hub | Implementación |
 |---|---|---|---|
 | 🐘 PHP | `PHP 8.4.27` | `http://localhost:8100/13/` | [README](../php/README.md) |
-| 🐍 Python | `Python 3.12` | `http://localhost:8200/13/` | [README](../python/README.md) |
-| 🟢 Node.js | `Node.js 22` | `http://localhost:8300/13/` | [README](../node/README.md) |
-| ☕ Java | `Java 25` | `http://localhost:8400/13/` | [README](../java/README.md) |
-| 🔵 .NET | `.NET 10` | `http://localhost:8500/13/` | [README](../dotnet/README.md) |
-| 🐹 Go | `Go 1.27` | `http://localhost:8600/13/` | [README](../go/README.md) |
+| 🐍 Python | `Python 3.13.17` | `http://localhost:8200/13/` | [README](../python/README.md) |
+| 🟢 Node.js | `Node.js 22.23.4` | `http://localhost:8300/13/` | [README](../node/README.md) |
+| ☕ Java | `Java 25.0.5` | `http://localhost:8400/13/` | [README](../java/README.md) |
+| 🔵 .NET | `.NET 10.0.14` | `http://localhost:8500/13/` | [README](../dotnet/README.md) |
+| 🐹 Go | `Go 1.27.3` | `http://localhost:8600/13/` | [README](../go/README.md) |
 | 🦀 Rust | `Rust 1.99` | `http://localhost:8700/13/` | [README](../rust/README.md) |
 
 > ⚠️ **Nota de honestidad del caso:** el origen es CPU real (un digest iterativo), no una consulta a una base de datos ni un `sleep`. Lo que se mide con fidelidad es `origin_computations` — cuántas veces se ejecuta el trabajo caro. La latencia absoluta en milisegundos depende del runtime y no es comparable entre stacks.

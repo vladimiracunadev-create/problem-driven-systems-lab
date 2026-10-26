@@ -3,7 +3,7 @@
 > **TL;DR** — legacy deja el ambiente `degraded`; controlled bloquea en preflight o revierte a la version previa. Lo que separa a los stacks es **si el estado no contemplado es un `else` silencioso o un error de compilacion**.
 
 <!-- nav -->
-`🐘 PHP` · `🐍 Python` · `🟢 Node.js` · `☕ Java 25` · `🔵 .NET 10` · `🐹 Go 1.27` · `🦀 Rust 1.99`
+`🐘 PHP` · `🐍 Python` · `🟢 Node.js` · `☕ Java 25.0.5` · `🔵 .NET 10.0.14` · `🐹 Go 1.27.3` · `🦀 Rust 1.99`
 
 **Estructura:** 🎯 el problema → una seccion por stack → ⚖️ tabla de decision → 📊 primitiva por stack → 🏁 veredicto y ranking
 <!-- /nav -->
@@ -121,7 +121,7 @@ def run_controlled_deployment(env: dict, release: str, scenario: str) -> dict:
 
 ## 🟢 Node.js: AbortController + AbortSignal cooperativo, cancelacion nativa
 
-**Runtime:** Node.js 22 single-thread con event loop. El servidor http vive como un proceso largo, exactamente como Python. Cada request engancha un `AbortController` cuyo `signal` se propaga por todos los pasos asincronicos del pipeline.
+**Runtime:** Node.js 22.23.4 single-thread con event loop. El servidor http vive como un proceso largo, exactamente como Python. Cada request engancha un `AbortController` cuyo `signal` se propaga por todos los pasos asincronicos del pipeline.
 
 **El AbortSignal por paso:**
 ```javascript
@@ -172,7 +172,7 @@ if (scenario === 'failing_smoke') {
 
 ---
 
-## ☕ Java 25: `record` types inmutables + `ConcurrentHashMap` por ambiente + state machine como guards
+## ☕ Java 25.0.5: `record` types inmutables + `ConcurrentHashMap` por ambiente + state machine como guards
 
 **Runtime:** JVM con thread pool. Los `record` types (`EnvState`, `Deployment`) son inmutables — cada deploy crea una nueva instancia, no muta la anterior. Esto descarta una clase entera de bugs de concurrencia.
 
@@ -206,9 +206,9 @@ Tres ramas explicitas: preflight bloquea (sin tocar estado), smoke falla (rollba
 
 ---
 
-## 🔵 .NET 10: record types + ConcurrentDictionary + rollback automatico
+## 🔵 .NET 10.0.14: record types + ConcurrentDictionary + rollback automatico
 
-**Runtime:** .NET 10 sobre `HttpListener`. `ThreadPool` despachando handlers concurrentes. Estado por ambiente compartido entre threads → `ConcurrentDictionary` evita lock global.
+**Runtime:** .NET 10.0.14 sobre `HttpListener`. `ThreadPool` despachando handlers concurrentes. Estado por ambiente compartido entre threads → `ConcurrentDictionary` evita lock global.
 
 **El fallo legacy en C#:**
 ```csharp
@@ -246,7 +246,7 @@ Tres ramas explicitas — mismo patron que Java. `with`-expression sobre `record
 
 ---
 
-## 🐹 Go 1.27: mutex sobre estructura explicita, no `sync.Map`
+## 🐹 Go 1.27.3: mutex sobre estructura explicita, no `sync.Map`
 
 Go tiene `sync.Map`, el analogo directo del `ConcurrentHashMap` que usa Java aca. **No se usa, a proposito.**
 
@@ -306,9 +306,9 @@ Para una maquina de estados de deploy esa diferencia no es estetica: el estado n
 | PHP | estado en disco/DB entre procesos |
 | Python | `dict` protegido por lock |
 | Node.js | objeto en memoria, single-thread |
-| Java 25 | `ConcurrentHashMap<String,EnvState>` + `record` |
-| .NET 10 | `ConcurrentDictionary` + maquina de estados |
-| Go 1.27 | `sync.Mutex` sobre la **transaccion completa**, no `sync.Map` por operacion |
+| Java 25.0.5 | `ConcurrentHashMap<String,EnvState>` + `record` |
+| .NET 10.0.14 | `ConcurrentDictionary` + maquina de estados |
+| Go 1.27.3 | `sync.Mutex` sobre la **transaccion completa**, no `sync.Map` por operacion |
 | Rust 1.99 | **`enum` con datos asociados + `match` exhaustivo: agregar variante rompe la compilacion** |
 
 ---
@@ -320,9 +320,9 @@ Para una maquina de estados de deploy esa diferencia no es estetica: el estado n
 | | Stack | Por que |
 |---|---|---|
 | 🥇 | **Rust 1.99** | Los estados son un `enum` y el `match` es exhaustivo: agregar `Canary` mañana **rompe la compilacion** de todo sitio que no lo contemple. |
-| 🥈 | **Java 25 / .NET 10** | `record` types inmutables y `with`-expressions para el rollback. Buen modelado; el resultado sigue siendo un string. |
-| 🥉 | **Go 1.27** | `sync.Mutex` sobre la transaccion completa es la decision correcta —un mapa concurrente seria seguro por operacion e incorrecto en conjunto— pero el resultado tambien es un string. |
-| 4º | **Python 3.12 / Node.js 22** | Estado en memoria con lock o single-thread. Correcto y sin red de seguridad de tipos. |
-| 6º | **PHP 8.3** | Estado en disco entre procesos aislados: funciona, pero la transaccion logica no esta protegida por nada. |
+| 🥈 | **Java 25.0.5 / .NET 10.0.14** | `record` types inmutables y `with`-expressions para el rollback. Buen modelado; el resultado sigue siendo un string. |
+| 🥉 | **Go 1.27.3** | `sync.Mutex` sobre la transaccion completa es la decision correcta —un mapa concurrente seria seguro por operacion e incorrecto en conjunto— pero el resultado tambien es un string. |
+| 4º | **Python 3.13.17 / Node.js 22.23.4** | Estado en memoria con lock o single-thread. Correcto y sin red de seguridad de tipos. |
+| 6º | **PHP 8.4.27** | Estado en disco entre procesos aislados: funciona, pero la transaccion logica no esta protegida por nada. |
 
 **Lectura honesta:** Un deploy es una maquina de estados. El estado que nadie contemplo es exactamente el que deja produccion a medias — y es el unico caso donde un compilador puede avisarte antes.

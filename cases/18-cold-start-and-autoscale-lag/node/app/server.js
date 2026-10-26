@@ -37,7 +37,7 @@
 
 const http = require('http');
 
-const APP_STACK = process.env.APP_STACK || 'Node.js 22';
+const APP_STACK = process.env.APP_STACK || 'Node.js 22.23.4';
 const CASE_NAME = '18 - Arranque en frio y retraso del autoescalado';
 
 const WORK_ITERS = 150000;     // calibrado para ~0.3 ms por peticion en V8 caliente

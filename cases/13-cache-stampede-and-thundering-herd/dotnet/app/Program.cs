@@ -37,7 +37,7 @@ using System.Threading.Tasks;
 internal static class Program
 {
     private const string CaseName = "13 - Cache stampede y thundering herd";
-    private static readonly string Stack = Environment.GetEnvironmentVariable("APP_STACK") ?? ".NET 10";
+    private static readonly string Stack = Environment.GetEnvironmentVariable("APP_STACK") ?? ".NET 10.0.14";
 
     private const long TtlBaseMs = 4000;
     private const int JitterPct = 25;

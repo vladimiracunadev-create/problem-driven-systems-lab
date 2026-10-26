@@ -62,19 +62,19 @@ El sistema consume memoria, descriptores o conexiones de forma **progresiva** ha
 
 `batch-legacy` acumula estado entre requests en un módulo estático; `batch-optimized` aplica cache acotada con eviction. `memory_get_usage()` y métricas locales dejan visible el `retained_kb` y el `pressure_level` en el tiempo. Ver [`php/README.md`](php/README.md). Modo aislado: puerto `815`.
 
-### Python 3.12 (`tracemalloc` + `gc.collect()`)
+### Python 3.13.17 (`tracemalloc` + `gc.collect()`)
 
 Usa `tracemalloc.start()` para diff snapshots, `sys.getsizeof()` para medir objetos individuales, `gc.collect()` para liberar ciclos. Cache acotada con `collections.OrderedDict` + `popitem(last=False)` como LRU. Ver [`python/README.md`](python/README.md). Modo aislado: puerto `835`. Hub: `http://localhost:8200/05/`.
 
-### Node.js 22 (heap V8 + RSS + external)
+### Node.js 22.23.4 (heap V8 + RSS + external)
 
 `process.memoryUsage()` expone los 4 números clave: `heapUsed`, `heapTotal`, `rss`, `external`. La fuga real es un array de módulo que retiene buffers cross-request. La versión optimizada usa un `Map` acotado con eviction explícita. Ver [`node/README.md`](node/README.md). Modo aislado: puerto `825`. Hub: `http://localhost:8300/05/`.
 
-### Java 25 (`LinkedHashMap` LRU + `Runtime` metrics)
+### Java 25.0.5 (`LinkedHashMap` LRU + `Runtime` metrics)
 
 **`LinkedHashMap` con `removeEldestEntry`** es LRU built-in del JDK — una línea agrega política de eviction. `Runtime.getRuntime().totalMemory()/freeMemory()/maxMemory()` mide el heap del JVM directo, sin agente. El leak legacy es una `static List<byte[]>` retenida por una raíz GC: el GC corre, no encuentra nada que liberar, el heap crece monótonamente hasta `-Xmx`. Ver [`java/README.md`](java/README.md). Modo aislado: puerto `845`. Hub: `http://localhost:8400/05/`.
 
-### .NET 10 (LRU manual + `Process.WorkingSet64` + GC metrics)
+### .NET 10.0.14 (LRU manual + `Process.WorkingSet64` + GC metrics)
 
 LRU acotada compuesta a mano con `Dictionary<K, LinkedListNode<...>>` + `LinkedList<...>` — O(1) en lookup y reordenamiento. `Process.GetCurrentProcess().WorkingSet64` mide el RSS visto por el OS; `GC.GetTotalMemory()` mide lo que el CLR considera vivo; `GC.CollectionCount(2)` revela presion de Gen2 (incluido LOH si los payloads superan 85 KB). El leak legacy es una `static List<byte[]>` retenida por una raiz GC: el GC corre, no encuentra nada que liberar, `WorkingSet64` crece monotonicamente. Ver [`dotnet/README.md`](dotnet/README.md). Modo aislado: puerto `855`. Hub: `http://localhost:8500/05/`.
 
@@ -100,10 +100,10 @@ Disminuye **incidentes silenciosos**, reinicios inesperados y consumo innecesari
 | Stack | Estado |
 | --- | --- |
 | 🐘 PHP 8 | `OPERATIVO` (`memory_get_usage` + retención explícita en módulo) |
-| 🐍 Python 3.12 | `OPERATIVO` (`tracemalloc` + `gc.collect()` + cache acotado) |
-| 🟢 Node.js 22 | `OPERATIVO` (`process.memoryUsage()` con heap V8 + RSS + external) |
-| ☕ Java 25 | `OPERATIVO` (`LinkedHashMap.removeEldestEntry` LRU built-in + `Runtime` metrics) |
-| 🔵 .NET 10 | `OPERATIVO` (LRU manual `Dictionary`+`LinkedList` + `Process.WorkingSet64` + `GC.GetTotalMemory`) |
+| 🐍 Python 3.13.17 | `OPERATIVO` (`tracemalloc` + `gc.collect()` + cache acotado) |
+| 🟢 Node.js 22.23.4 | `OPERATIVO` (`process.memoryUsage()` con heap V8 + RSS + external) |
+| ☕ Java 25.0.5 | `OPERATIVO` (`LinkedHashMap.removeEldestEntry` LRU built-in + `Runtime` metrics) |
+| 🔵 .NET 10.0.14 | `OPERATIVO` (LRU manual `Dictionary`+`LinkedList` + `Process.WorkingSet64` + `GC.GetTotalMemory`) |
 
 ---
 

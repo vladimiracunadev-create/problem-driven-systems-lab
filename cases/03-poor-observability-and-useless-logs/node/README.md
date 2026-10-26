@@ -26,7 +26,7 @@ Esta variante muestra que el valor de la observabilidad no depende del runtime. 
 
 ## 🧱 Servicio
 
-- `app` -> API Node.js 22 con logs legacy y observable, metricas y trazas locales.
+- `app` -> API Node.js 22.23.4 con logs legacy y observable, metricas y trazas locales.
 
 ## 🚀 Arranque
 

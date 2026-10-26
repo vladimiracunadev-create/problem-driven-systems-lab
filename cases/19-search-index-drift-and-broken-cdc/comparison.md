@@ -45,12 +45,12 @@ El caso tiene dos mitades, y ningún stack gana las dos por defecto: **impedir q
 | Stack | Contra ignorar el error | Para el diff de tres caras |
 |---|---|---|
 | 🦀 **Rust 1.99** | `#[must_use]` en la `std` + `deny(unused_must_use)` → **no compila** | `HashSet::difference` / `intersection` |
-| 🐹 **Go 1.27** | `_ =` visible en el diff + `errcheck` en CI | **No hay tipo conjunto**: recorridos a mano |
-| 🔵 **.NET 10** | Nada (`_ = IndexarAsync()` es aún más silencioso) | `Except` / `Join` tipados |
-| 🐍 **Python 3.12** | Nada (`except:` lo tapa) | `-`, `&` sobre `set`: **el más corto de los siete** |
-| 🐘 **PHP 8.3** | Nada (`@` o `catch` vacío) | `array_diff_key` / `array_intersect_key` |
-| ☕ **Java 25** | Nada, y `@Transactional` **sugiere** una atomicidad que no alcanza al índice | `removeAll` / `retainAll` sobre copias |
-| 🟢 **Node.js 22** | Nada, y el bug se produce **por no escribir `await`** | `Map` / `Set` a mano |
+| 🐹 **Go 1.27.3** | `_ =` visible en el diff + `errcheck` en CI | **No hay tipo conjunto**: recorridos a mano |
+| 🔵 **.NET 10.0.14** | Nada (`_ = IndexarAsync()` es aún más silencioso) | `Except` / `Join` tipados |
+| 🐍 **Python 3.13.17** | Nada (`except:` lo tapa) | `-`, `&` sobre `set`: **el más corto de los siete** |
+| 🐘 **PHP 8.4.27** | Nada (`@` o `catch` vacío) | `array_diff_key` / `array_intersect_key` |
+| ☕ **Java 25.0.5** | Nada, y `@Transactional` **sugiere** una atomicidad que no alcanza al índice | `removeAll` / `retainAll` sobre copias |
+| 🟢 **Node.js 22.23.4** | Nada, y el bug se produce **por no escribir `await`** | `Map` / `Set` a mano |
 
 ---
 
@@ -67,7 +67,7 @@ La advertencia sale **sin configurar nada**: `#[must_use]` está en la definici�
 
 Y `HashSet::difference` da el diff de tres caras sin recorrer a mano. Es el único stack del laboratorio con **las dos** piezas. Ver [`rust/README.md`](rust/README.md).
 
-## 🐹 Go 1.27 — el error se ve, el diff se escribe
+## 🐹 Go 1.27.3 — el error se ve, el diff se escribe
 
 `_ =` no es azúcar: es una declaración de intención que queda en el diff y se busca con `grep`. Y `errcheck` —presente en casi todos los CI de Go— convierte en build rojo la llamada cuyo error se ignora sin decirlo.
 
@@ -75,7 +75,7 @@ Segunda mejor defensa de los siete, y la diferencia con Rust es de origen: `#[mu
 
 En contra: **Go no tiene tipo conjunto**. Tres líneas de álgebra en Python son tres recorridos a mano acá. Es la simetría exacta del [caso 17](../17-zero-downtime-schema-migration/python/README.md), donde Python no tenía read-write lock: la ausencia de una primitiva se paga en el mismo lugar. Ver [`go/README.md`](go/README.md).
 
-## 🔵 .NET 10 — el diagnóstico como consulta tipada
+## 🔵 .NET 10.0.14 — el diagnóstico como consulta tipada
 
 `Except` para `missing` y `orphan`, `Join` para `stale`, con el compilador verificando los tipos de las claves en cada paso. Es el único que expresa las tres caras como **una sola forma**.
 
@@ -83,7 +83,7 @@ La trampa que viene con eso: **LINQ es perezoso**. `Except` no ejecuta nada hast
 
 Y comparte el problema de Java con uno propio: `_ = IndexarAsync(doc)` sin `await` manda la excepción a un `Task` que nadie observa, y desde .NET Core eso ni siquiera termina el proceso. Ver [`dotnet/README.md`](dotnet/README.md).
 
-## 🐍 Python 3.12 — el diagnóstico más corto y el bug más corto
+## 🐍 Python 3.13.17 — el diagnóstico más corto y el bug más corto
 
 ```python
 missing = db_ids - index_ids
@@ -95,7 +95,7 @@ Ningún otro stack lo escribe tan corto. Es el [caso 17](../17-zero-downtime-sch
 
 Y la contracara, que hay que decir: `except: pass` es el caso entero en tres palabras. **Python hace el diagnóstico fácil y el bug también.** Ver [`python/README.md`](python/README.md).
 
-## 🐘 PHP 8.3 — el checkpoint durable no es buena práctica, es la única opción
+## 🐘 PHP 8.4.27 — el checkpoint durable no es buena práctica, es la única opción
 
 En un runtime share-nothing no hay proceso de larga vida donde vivir un consumidor de CDC: el consumidor **es un comando de cron**. Eso obliga a que el checkpoint sobreviva al proceso.
 
@@ -103,7 +103,7 @@ En Java, Go o .NET el consumidor vive en memoria y es tentador dejar el checkpoi
 
 En contra: es el único de los siete donde **nada** ayuda a no ignorar el error. `@$indice->escribir($doc)` compila, corre y calla. Ver [`php/README.md`](php/README.md).
 
-## ☕ Java 25 — el framework sugiere una atomicidad que no existe
+## ☕ Java 25.0.5 — el framework sugiere una atomicidad que no existe
 
 ```java
 @Transactional
@@ -117,7 +117,7 @@ La anotación no miente: cubre lo que puede cubrir. Lo que engaña es que **nada
 
 A favor: `ConcurrentSkipListMap.tailMap(checkpoint, false)` convierte «lo pendiente» de un filtro en una consulta, ya ordenada y concurrente. Es la mejor expresión del outbox de los siete. Ver [`java/README.md`](java/README.md).
 
-## 🟢 Node.js 22 — el único donde el bug es NO escribir algo
+## 🟢 Node.js 22.23.4 — el único donde el bug es NO escribir algo
 
 ```js
 await indice.escribir(doc);   // el error sube y se maneja
@@ -137,12 +137,12 @@ A favor: el modelo de un solo hilo hace que la escritura a la base y la anotaci�
 | Puesto | Stack | Por qué |
 |---|---|---|
 | 🥇 | **Rust 1.99** | El único con las dos piezas: `#[must_use]` hace que el bug original —ignorar la escritura fallida— **no compile** sin escribirlo a propósito, y `HashSet` da el diff de tres caras sin recorrer a mano. Y la defensa está en la biblioteca estándar, no en una herramienta que hay que instalar. |
-| 🥈 | **Go 1.27** | El `_ =` es una declaración de intención auditable, y `errcheck` está en casi todos los CI. Detrás de Rust por dos razones: la herramienta es externa, y sin tipo conjunto el diagnóstico se escribe a mano. |
-| 🥉 | **.NET 10** | `Except` y `Join` expresan las tres caras como consultas tipadas — la forma más legible del set. No tiene defensa contra ignorar el error, y su pereza obliga a acordarse del `.ToList()`. |
-| 4º | **Python 3.12** | El diagnóstico más corto de los siete. Y el bug más corto también: `except: pass` es el caso entero en tres palabras, sin nada del lenguaje que lo señale. |
-| 5º | **PHP 8.3** | Su modelo share-nothing **obliga** al checkpoint durable, que es la decisión que los stacks con procesos largos suelen postergar. Pierde puestos porque no ofrece ninguna ayuda contra ignorar el error. |
-| 6º | **Java 25** | `ConcurrentSkipListMap.tailMap` es la mejor expresión del outbox del set, y `@Transactional` es el único elemento del laboratorio que **activamente sugiere** una garantía que no da. Un framework que engaña pesa más que una primitiva que ayuda. |
-| 7º | **Node.js 22** | El único stack donde el bug se produce **por no escribir algo**. Su atomicidad de un solo hilo es una ventaja real para el outbox, y no compensa que la causa raíz del caso sea invisible en una revisión de código. |
+| 🥈 | **Go 1.27.3** | El `_ =` es una declaración de intención auditable, y `errcheck` está en casi todos los CI. Detrás de Rust por dos razones: la herramienta es externa, y sin tipo conjunto el diagnóstico se escribe a mano. |
+| 🥉 | **.NET 10.0.14** | `Except` y `Join` expresan las tres caras como consultas tipadas — la forma más legible del set. No tiene defensa contra ignorar el error, y su pereza obliga a acordarse del `.ToList()`. |
+| 4º | **Python 3.13.17** | El diagnóstico más corto de los siete. Y el bug más corto también: `except: pass` es el caso entero en tres palabras, sin nada del lenguaje que lo señale. |
+| 5º | **PHP 8.4.27** | Su modelo share-nothing **obliga** al checkpoint durable, que es la decisión que los stacks con procesos largos suelen postergar. Pierde puestos porque no ofrece ninguna ayuda contra ignorar el error. |
+| 6º | **Java 25.0.5** | `ConcurrentSkipListMap.tailMap` es la mejor expresión del outbox del set, y `@Transactional` es el único elemento del laboratorio que **activamente sugiere** una garantía que no da. Un framework que engaña pesa más que una primitiva que ayuda. |
+| 7º | **Node.js 22.23.4** | El único stack donde el bug se produce **por no escribir algo**. Su atomicidad de un solo hilo es una ventaja real para el outbox, y no compensa que la causa raíz del caso sea invisible en una revisión de código. |
 
 > **Este caso ordena por una dimensión que ninguno de los otros dieciocho usa: qué hace el lenguaje cuando el programador no mira.** Rust y Go tienen una respuesta; los otros cinco no. Java queda sexto no por lo que le falta sino por lo que promete de más — que es un modo de falla peor que la ausencia.
 

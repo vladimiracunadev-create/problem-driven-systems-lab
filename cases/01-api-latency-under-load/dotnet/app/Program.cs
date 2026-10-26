@@ -9,7 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Data.Sqlite;
 
-// Caso 01 — API lenta bajo carga (stack .NET 10).
+// Caso 01 — API lenta bajo carga (stack .NET 10.0.14).
 //
 // Espejo del Main.java equivalente. Mismos endpoints, misma semantica, JSON con
 // el mismo shape.
@@ -33,7 +33,7 @@ using Microsoft.Data.Sqlite;
 internal static class Program
 {
     private const string CaseName = "01 - API lenta bajo carga";
-    private static readonly string Stack = Environment.GetEnvironmentVariable("APP_STACK") ?? ".NET 10";
+    private static readonly string Stack = Environment.GetEnvironmentVariable("APP_STACK") ?? ".NET 10.0.14";
     private const int SummaryRefreshSeconds = 5;
     private const int MaxSamples = 3000;
     private const int MaxJobRuns = 30;

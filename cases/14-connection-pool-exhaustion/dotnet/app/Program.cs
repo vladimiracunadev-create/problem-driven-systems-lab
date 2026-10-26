@@ -35,7 +35,7 @@ using System.Threading.Tasks;
 internal static class Program
 {
     private const string CaseName = "14 - Agotamiento del pool de conexiones";
-    private static readonly string Stack = Environment.GetEnvironmentVariable("APP_STACK") ?? ".NET 10";
+    private static readonly string Stack = Environment.GetEnvironmentVariable("APP_STACK") ?? ".NET 10.0.14";
 
     private const int AcquireTimeoutMs = 200;
     /// Sin deadline la variante leaky no terminaria. El watchdog permite medirla.

@@ -12,7 +12,7 @@ import threading
 import time
 import tracemalloc
 
-APP_STACK = os.environ.get("APP_STACK", "Python 3.12")
+APP_STACK = os.environ.get("APP_STACK", "Python 3.13.17")
 STORAGE_DIR = os.path.join(tempfile.gettempdir(), "pdsl-case05-python")
 STATE_PATH = os.path.join(STORAGE_DIR, "state.json")
 TELEMETRY_PATH = os.path.join(STORAGE_DIR, "telemetry.json")

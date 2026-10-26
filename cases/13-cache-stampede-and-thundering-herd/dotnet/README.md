@@ -1,4 +1,4 @@
-# 🔵 Caso 13 — .NET 10
+# 🔵 Caso 13 — .NET 10.0.14
 
 <!-- nav-stack -->
 [⬅️ Caso 13](../README.md) · [⚖️ Comparativa de los 7 stacks](../comparison.md) · [🔵 Perfil de .NET](../../../docs/languages/dotnet.md) · [🧬 Todos los perfiles](../../../docs/languages/README.md)

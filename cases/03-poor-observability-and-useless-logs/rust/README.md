@@ -63,6 +63,6 @@ Java propaga con `ScopedValue`, .NET con `AsyncLocal`, Node con `AsyncLocalStora
 
 Rust va un paso mas: el contexto se presta como `&RequestCtx`, y el borrow checker **impide que esa referencia sobreviva al handler**. Guardarla en una estructura de vida mas larga no compila.
 
-Eso cierra una categoria de bug concreta: una referencia Rust no puede sobrevivir al request. Java 25 evita la misma fuga por alcance dinamico restaurado automaticamente; .NET y Node siguen dependiendo de que el flujo ambiente no se capture donde no corresponde.
+Eso cierra una categoria de bug concreta: una referencia Rust no puede sobrevivir al request. Java 25.0.5 evita la misma fuga por alcance dinamico restaurado automaticamente; .NET y Node siguen dependiendo de que el flujo ambiente no se capture donde no corresponde.
 
 **Contrapartida honesta:** `std` no trae logger estructurado. Go tiene `log/slog` en la biblioteca estandar desde 1.21; en Rust el ecosistema usa `tracing` o `log`, y para mantener el caso sin dependencias el JSON se arma con `format!` a mano. Es menos ergonomico y no hay razon para pretender lo contrario.

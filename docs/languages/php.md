@@ -133,7 +133,7 @@ Agregado de los veredictos de las 19 comparativas que rankean: **0 primeros pues
 | **Política de soporte** | 2 años de soporte activo + 2 de seguridad por versión menor |
 | **Producto en endoflife.date** | `php` |
 
-> 📌 **Nota de coherencia:** este stack usa **dos variantes** de la misma versión — `cli-alpine` para los doce casos y `apache` para el portal, porque el portal necesita servidor web y los casos no. Las variantes pueden diferir; **la versión no**. Si el portal quedara en `8.2` mientras los casos van en `8.3`, `scripts/language_drift.py` lo reporta como drift y hace bien: sería el mismo repositorio afirmando dos verdades.
+> 📌 **Nota de coherencia:** este stack usa **dos variantes** de la misma versión — `cli-alpine` para los veinte casos y `apache` para el portal, porque el portal necesita servidor web y los casos no. Las variantes pueden diferir; **la versión no**. Si el portal quedara en una versión anterior a los casos, `scripts/language_drift.py` lo reporta como drift y hace bien: sería el mismo repositorio afirmando dos verdades.
 
 **Qué revisar en el próximo salto:**
 

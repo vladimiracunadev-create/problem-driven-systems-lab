@@ -1,4 +1,4 @@
-// Caso 02 — N+1 queries y cuellos de botella DB (stack Go 1.27).
+// Caso 02 — N+1 queries y cuellos de botella DB (stack Go 1.27.3).
 //
 // Espejo del Main.java / Program.cs equivalentes: mismos endpoints, mismo shape
 // de JSON, mismo dataset.
@@ -37,7 +37,7 @@ const (
 )
 
 var (
-	stack = envOr("APP_STACK", "Go 1.27")
+	stack = envOr("APP_STACK", "Go 1.27.3")
 	db    *sql.DB
 
 	legacyMetrics    = &metrics{}

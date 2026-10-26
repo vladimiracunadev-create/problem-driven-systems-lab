@@ -3,7 +3,7 @@
 > **TL;DR** — Con 20.000 filas y 8 lectores concurrentes, el `ALTER TABLE` bloqueante mantiene el lock **400 ms de corrido** y rechaza lectores. Expand-contract hace el mismo trabajo en 10 lotes: el lock más largo baja a **40 ms** y **ningún lector falla**. `lock_held_ms` total es casi idéntico en las dos: **el trabajo no desaparece, se reparte**. Lo que cambia entre stacks es cuánto ayuda cada uno a darle un plazo al lector.
 
 <!-- nav -->
-`🐘 PHP 8.3` · `🐍 Python 3.12` · `🟢 Node.js 22` · `☕ Java 25` · `🔵 .NET 10` · `🐹 Go 1.27` · `🦀 Rust 1.99`
+`🐘 PHP 8.4.27` · `🐍 Python 3.13.17` · `🟢 Node.js 22.23.4` · `☕ Java 25.0.5` · `🔵 .NET 10.0.14` · `🐹 Go 1.27.3` · `🦀 Rust 1.99`
 
 **Estructura:** 🎯 el problema → 🧪 fidelidad del substrato → una sección por stack → ⚖️ tabla de decisión → 📊 primitiva por stack → 🏁 veredicto y ranking
 <!-- /nav -->
@@ -179,12 +179,12 @@ Lo que sí aporta: los **guards** sueltan el lock en su `Drop`. No existe el cam
 
 | Puesto | Stack | Por qué |
 |---|---|---|
-| 🥇 | **Java 25** | El único que trae **deadline y equidad de fábrica**: `tryLock(timeout, unit)` y el flag de justicia en el constructor. Son las dos cosas que este caso necesita, y ningún otro stack tiene ambas. |
-| 🥈 | **PHP 8.3** | Su `flock` es el único read-write lock del lab que lo provee **el sistema operativo y coordina procesos**, que es lo que hace de verdad un motor. `LOCK_NB` da el deadline sin construir nada. |
-| 🥉 | **.NET 10** | `TryEnterReadLock(ms)` devuelve `false` en vez de lanzar, lo que separa «no pude leer» de «falló». Baja del podio más alto porque no tiene modo justo y la documentación admite que favorece a los lectores. |
-| 4º | **Go 1.27** | `sync.RWMutex` es lo más simple del set y no tiene hambruna. Pierde por la carencia del deadline: armarlo con goroutine y `select` funciona, pero deja una goroutine viva por cada lector que se rindió. |
-| 5º | **Python 3.12** | No tiene la primitiva y hay que escribirla — con la ventaja didáctica de entender qué hace por dentro, y el riesgo de que la versión ingenua deje al escritor sin entrar nunca. |
+| 🥇 | **Java 25.0.5** | El único que trae **deadline y equidad de fábrica**: `tryLock(timeout, unit)` y el flag de justicia en el constructor. Son las dos cosas que este caso necesita, y ningún otro stack tiene ambas. |
+| 🥈 | **PHP 8.4.27** | Su `flock` es el único read-write lock del lab que lo provee **el sistema operativo y coordina procesos**, que es lo que hace de verdad un motor. `LOCK_NB` da el deadline sin construir nada. |
+| 🥉 | **.NET 10.0.14** | `TryEnterReadLock(ms)` devuelve `false` en vez de lanzar, lo que separa «no pude leer» de «falló». Baja del podio más alto porque no tiene modo justo y la documentación admite que favorece a los lectores. |
+| 4º | **Go 1.27.3** | `sync.RWMutex` es lo más simple del set y no tiene hambruna. Pierde por la carencia del deadline: armarlo con goroutine y `select` funciona, pero deja una goroutine viva por cada lector que se rindió. |
+| 5º | **Python 3.13.17** | No tiene la primitiva y hay que escribirla — con la ventaja didáctica de entender qué hace por dentro, y el riesgo de que la versión ingenua deje al escritor sin entrar nunca. |
 | 6º | **Rust 1.99** | La `std` no ofrece deadline de ninguna clase, así que la única opción es un spin que consume CPU. Es **el caso donde la respuesta de Rust es peor que la de los otros seis**, y salva el puesto porque los guards eliminan el unlock olvidado. |
-| 7º | **Node.js 22** | No tiene locks, y el modo de falla es el más severo: el lock exclusivo es el event loop entero, y **ni siquiera el timeout del lector puede dispararse**. No falla rápido: no responde. |
+| 7º | **Node.js 22.23.4** | No tiene locks, y el modo de falla es el más severo: el lock exclusivo es el event loop entero, y **ni siquiera el timeout del lector puede dispararse**. No falla rápido: no responde. |
 
 **Lectura honesta:** los siete llegan al mismo resultado —0 lectores rechazados y el lock más largo dividido por diez— porque el patrón es de arquitectura, no de lenguaje. Si este caso te deja con la conclusión «debería migrar a Java», lo leíste al revés. La conclusión es «debería partir mi migración en lotes y medir el lock más largo en vez del total».

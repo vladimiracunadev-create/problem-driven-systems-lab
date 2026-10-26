@@ -1,4 +1,4 @@
-"""Caso 13 — Cache stampede (thundering herd) — stack Python 3.12.
+"""Caso 13 — Cache stampede (thundering herd) — stack Python 3.13.17.
 
 Naive: la clave expira y los N llamadores concurrentes recalculan el origen a
 la vez. `origin_computations == concurrency`.
@@ -24,7 +24,7 @@ import random
 import threading
 import time
 
-APP_STACK = os.environ.get("APP_STACK", "Python 3.12")
+APP_STACK = os.environ.get("APP_STACK", "Python 3.13.17")
 CASE_NAME = "13 - Cache stampede y thundering herd"
 
 # TTL base y jitter. El jitter es la mitad barata del arreglo: sin el, mil

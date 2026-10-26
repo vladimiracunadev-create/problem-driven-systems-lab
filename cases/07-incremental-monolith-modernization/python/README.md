@@ -1,4 +1,4 @@
-# 🐍 Caso 07 — Python 3.12 con modernizacion incremental comparada
+# 🐍 Caso 07 — Python 3.13.17 con modernizacion incremental comparada
 
 > Implementacion operativa del caso 07 para contrastar un cambio sobre un monolito acoplado contra una ruta strangler con migracion gradual.
 
@@ -27,7 +27,7 @@ El acoplamiento de un monolito se modela en Python como dependencias directas en
 
 ## 🧱 Servicio
 
-- `app` → API Python 3.12 con progreso por consumidor, blast radius y metricas de cobertura del modulo extraido.
+- `app` → API Python 3.13.17 con progreso por consumidor, blast radius y metricas de cobertura del modulo extraido.
 
 ## 🚀 Arranque
 

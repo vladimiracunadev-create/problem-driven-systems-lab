@@ -1,4 +1,4 @@
-// Caso 03 — Observabilidad deficiente y logs inutiles (stack Go 1.27).
+// Caso 03 — Observabilidad deficiente y logs inutiles (stack Go 1.27.3).
 //
 // Legacy: log.Printf sin correlation, sin contexto. Errores opacos.
 // Observable: log estructurado JSON con correlation_id propagado, mas /logs
@@ -39,7 +39,7 @@ const (
 	maxLogEntries = 200
 )
 
-var stack = envOr("APP_STACK", "Go 1.27")
+var stack = envOr("APP_STACK", "Go 1.27.3")
 
 var (
 	legacyRequests     int64

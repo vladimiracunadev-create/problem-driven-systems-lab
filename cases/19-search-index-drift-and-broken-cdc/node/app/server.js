@@ -38,7 +38,7 @@
 
 const http = require('http');
 
-const APP_STACK = process.env.APP_STACK || 'Node.js 22';
+const APP_STACK = process.env.APP_STACK || 'Node.js 22.23.4';
 const CASE_NAME = '19 - Deriva del indice de busqueda y CDC roto';
 const TERMS = ['alfa', 'beta', 'gamma', 'delta', 'epsilon', 'zeta', 'eta', 'theta'];
 

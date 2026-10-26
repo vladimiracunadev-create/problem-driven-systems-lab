@@ -8,7 +8,7 @@ import tempfile
 import threading
 import time
 
-APP_STACK = "Python 3.12"
+APP_STACK = "Python 3.13.17"
 CASE_NAME = "01 - API lenta bajo carga por cuellos de botella reales"
 STORAGE_DIR = os.path.join(tempfile.gettempdir(), "pdsl-case01-python")
 DB_PATH = os.path.join(STORAGE_DIR, "case01.sqlite3")

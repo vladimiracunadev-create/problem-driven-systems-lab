@@ -55,7 +55,7 @@ import java.util.concurrent.atomic.LongAdder;
 public class Main {
 
     private static final String CASE_NAME = "16 - Idempotencia y efectos duplicados";
-    private static final String STACK = System.getenv().getOrDefault("APP_STACK", "Java 25");
+    private static final String STACK = System.getenv().getOrDefault("APP_STACK", "Java 25.0.5");
     private static final int PORT = Integer.parseInt(System.getenv().getOrDefault("PORT", "8080"));
 
     private static final long DEDUPE_WINDOW_MS = 24L * 60 * 60 * 1000;

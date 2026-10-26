@@ -95,23 +95,23 @@ Los siete stacks exponen el mismo contrato: `/cache-naive` y `/cache-singlefligh
 
 Sin heap compartido entre requests, el single-flight vive en el almacenamiento: `flock()` exclusivo más **double-checked locking**. Es el stack que no puede esconder el paso que los otros seis sí pueden omitir. Ver [`php/README.md`](php/README.md). Modo aislado: puerto `8113`.
 
-### 🐍 Python 3.12
+### 🐍 Python 3.13.17
 
 Dict de vuelos en curso protegido por `Lock`, con un `threading.Event` por clave. El líder lo publica antes de calcular; los seguidores hacen `wait()`. Incluye una barrera de dos fases para que el GIL no produzca un falso verde. Ver [`python/README.md`](python/README.md). Modo aislado: `8313`. Hub: `http://localhost:8200/13/`.
 
-### 🟢 Node.js 22
+### 🟢 Node.js 22.23.4
 
 `Map<key, Promise>`: la Promise **es** el single-flight. Tres líneas, y el orden entre el `Map.set` y el primer `await` es toda la garantía. Ver [`node/README.md`](node/README.md). Modo aislado: `8213`. Hub: `http://localhost:8300/13/`.
 
-### ☕ Java 25
+### ☕ Java 25.0.5
 
 `ConcurrentHashMap.computeIfAbsent` es atómico por clave: no hay ventana check-then-act que ordenar a mano. El trabajo caro corre en otro executor para no dejar el bin tomado. Ver [`java/README.md`](java/README.md). Modo aislado: `8413`. Hub: `http://localhost:8400/13/`.
 
-### 🔵 .NET 10
+### 🔵 .NET 10.0.14
 
 `GetOrAdd` **no** garantiza fábrica única — la garantía la aporta `Lazy<Task<T>>` con `ExecutionAndPublication`. Es el contraste directo con Java. Ver [`dotnet/README.md`](dotnet/README.md). Modo aislado: `8513`. Hub: `http://localhost:8500/13/`.
 
-### 🐹 Go 1.27
+### 🐹 Go 1.27.3
 
 `singleflight` escrito a mano en 25 líneas de stdlib: `sync.WaitGroup` usado al revés — el líder hace `Add(1)`, los seguidores `Wait()`. Ver [`go/README.md`](go/README.md). Modo aislado: `8613`. Hub: `http://localhost:8600/13/`.
 
@@ -141,11 +141,11 @@ Convierte una caída nocturna recurrente e inexplicable en un número que se pue
 | Stack | Estado |
 | --- | --- |
 | 🐘 PHP 8.4.27 | `OPERATIVO` (`flock` + double-checked locking) |
-| 🐍 Python 3.12 | `OPERATIVO` (dict de vuelos + `threading.Event`) |
-| 🟢 Node.js 22 | `OPERATIVO` (`Map<key, Promise>`) |
-| ☕ Java 25 | `OPERATIVO` (`computeIfAbsent` atómico + `CompletableFuture`) |
-| 🔵 .NET 10 | `OPERATIVO` (`Lazy<Task<T>>` con `ExecutionAndPublication`) |
-| 🐹 Go 1.27 | `OPERATIVO` (`singleflight` a mano con `sync.WaitGroup`) |
+| 🐍 Python 3.13.17 | `OPERATIVO` (dict de vuelos + `threading.Event`) |
+| 🟢 Node.js 22.23.4 | `OPERATIVO` (`Map<key, Promise>`) |
+| ☕ Java 25.0.5 | `OPERATIVO` (`computeIfAbsent` atómico + `CompletableFuture`) |
+| 🔵 .NET 10.0.14 | `OPERATIVO` (`Lazy<Task<T>>` con `ExecutionAndPublication`) |
+| 🐹 Go 1.27.3 | `OPERATIVO` (`singleflight` a mano con `sync.WaitGroup`) |
 | 🦀 Rust 1.99 | `OPERATIVO` (`Arc<Flight>` con `Mutex` + `Condvar`) |
 
 ---

@@ -1,4 +1,4 @@
-"""Caso 15 — Backpressure en colas de mensajes — stack Python 3.12.
+"""Caso 15 — Backpressure en colas de mensajes — stack Python 3.13.17.
 
 Unbounded: `queue.Queue()` sin `maxsize`. El productor nunca espera, la cola
 crece hasta donde de la memoria, y el mensaje mas viejo envejece sin limite.
@@ -31,7 +31,7 @@ import queue
 import threading
 import time
 
-APP_STACK = os.environ.get("APP_STACK", "Python 3.12")
+APP_STACK = os.environ.get("APP_STACK", "Python 3.13.17")
 CASE_NAME = "15 - Backpressure en colas de mensajes"
 
 POLICIES = ("block", "drop_oldest", "dead_letter")

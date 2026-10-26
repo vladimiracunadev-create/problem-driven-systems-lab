@@ -29,12 +29,12 @@ Cada perfil documenta seis cosas:
 
 | Stack | Versión fijada | Modelo de ejecución | Perfil |
 |---|---|---|---|
-| 🐘 **PHP** | `8.3` | Proceso por petición, sin estado compartido | [php.md](php.md) |
-| 🐍 **Python** | `3.12` | Threads reales con GIL | [python.md](python.md) |
-| 🟢 **Node.js** | `22` | Event loop de un solo hilo | [node.md](node.md) |
-| ☕ **Java** | `25` | Threads del SO, paralelismo real, JVM | [java.md](java.md) |
+| 🐘 **PHP** | `8.4.27` | Proceso por petición, sin estado compartido | [php.md](php.md) |
+| 🐍 **Python** | `3.13.17` | Threads reales con GIL | [python.md](python.md) |
+| 🟢 **Node.js** | `22.23.4` | Event loop de un solo hilo | [node.md](node.md) |
+| ☕ **Java** | `25.0.5` | Threads del SO, paralelismo real, JVM | [java.md](java.md) |
 | 🔵 **.NET** | `10.0` | ThreadPool con `async/await` | [dotnet.md](dotnet.md) |
-| 🐹 **Go** | `1.27` | Goroutines multiplexadas por el runtime | [go.md](go.md) |
+| 🐹 **Go** | `1.27.3` | Goroutines multiplexadas por el runtime | [go.md](go.md) |
 | 🦀 **Rust** | `1.99` | Threads del SO sin GC, `Drop` determinista | [rust.md](rust.md) |
 
 La versión fijada no se escribe a mano en esta tabla ni en los perfiles: sale de [`shared/catalog/cases.json`](../../shared/catalog/cases.json) y [`scripts/check-language-versions.sh`](../../scripts/check-language-versions.sh) falla el PR si algún `Dockerfile` dice otra cosa.

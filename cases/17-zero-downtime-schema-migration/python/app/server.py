@@ -1,4 +1,4 @@
-"""Caso 17 — Migracion de esquema sin downtime — stack Python 3.12.
+"""Caso 17 — Migracion de esquema sin downtime — stack Python 3.13.17.
 
 Blocking: un `ALTER TABLE` sobre una tabla caliente toma el lock exclusivo
 durante toda la migracion. Los lectores esperan, y los que tienen timeout
@@ -35,7 +35,7 @@ import os
 import threading
 import time
 
-APP_STACK = os.environ.get("APP_STACK", "Python 3.12")
+APP_STACK = os.environ.get("APP_STACK", "Python 3.13.17")
 CASE_NAME = "17 - Migracion de esquema sin downtime"
 
 READ_TIMEOUT_MS = 120     # lo que un lector aguanta antes de rendirse

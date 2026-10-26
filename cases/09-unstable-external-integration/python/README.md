@@ -1,4 +1,4 @@
-# 🐍 Caso 09 — Python 3.12 con adapter y cache defensiva
+# 🐍 Caso 09 — Python 3.13.17 con adapter y cache defensiva
 
 > Implementacion operativa del caso 09 para contrastar una integracion externa directa contra una variante endurecida.
 
@@ -31,7 +31,7 @@ Las APIs de terceros fallan en formas sutiles. Este caso implementa integracion 
 
 ## 🧱 Servicio
 
-- `app` → API Python 3.12 con proveedor externo simulado, adapter de contrato, cache de idempotencia y metricas de calidad de datos.
+- `app` → API Python 3.13.17 con proveedor externo simulado, adapter de contrato, cache de idempotencia y metricas de calidad de datos.
 
 ## 🚀 Arranque
 

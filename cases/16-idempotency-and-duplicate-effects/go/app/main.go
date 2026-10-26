@@ -43,7 +43,7 @@ const (
 	maxRows         = 200
 )
 
-var stack = envOr("APP_STACK", "Go 1.27")
+var stack = envOr("APP_STACK", "Go 1.27.3")
 
 type entry struct {
 	mu       sync.Mutex

@@ -66,12 +66,12 @@ La raiz contiene documentos para lectura ejecutiva, tecnica y operacional. Esta 
 
 Cada lenguaje operativo tiene su propio compose en la raíz — un comando levanta los 20 casos de ese lenguaje:
 
-- `compose.root.yml` — PHP: portal (`8080`) + dispatcher PHP `php-lab` (`8100`, 20 casos internos en `:9001-:9020`) + PostgreSQL (casos 01–02) + worker case01 + Prometheus (`9091`) + Grafana (`3001`)
-- `compose.python.yml` — Python: dispatcher único con 20 casos internos (`8200`), stdlib pura, sin dependencias externas
-- `compose.nodejs.yml` — Node.js 22: dispatcher único con 20 casos internos (`8300`), stdlib pura (incluye `node:sqlite` built-in usado en caso 02), sin dependencias externas
-- `compose.java.yml` — Java 25: dispatcher único con 20 casos internos (`8400`), JDK built-in (`HttpServer`, `HttpClient`), sin Maven
-- `compose.dotnet.yml` — .NET 10: dispatcher único con 20 casos internos (`8500`), BCL built-in (`HttpListener`, `System.Text.Json`)
-- `compose.go.yml` — Go 1.27: dispatcher único con 20 casos internos (`8600`), stdlib (`net/http`, `httputil.ReverseProxy`)
+- `compose.root.yml` — PHP 8.4.27: portal (`8080`) + dispatcher PHP `php-lab` (`8100`, 20 casos internos en `:9001-:9020`) + PostgreSQL (casos 01–02) + worker case01 + Prometheus (`9091`) + Grafana (`3001`)
+- `compose.python.yml` — Python 3.13.17: dispatcher único con 20 casos internos (`8200`), stdlib pura, sin dependencias externas
+- `compose.nodejs.yml` — Node.js 22.23.4: dispatcher único con 20 casos internos (`8300`), stdlib pura (incluye `node:sqlite` built-in usado en caso 02), sin dependencias externas
+- `compose.java.yml` — Java 25.0.5 (Corretto): dispatcher único con 20 casos internos (`8400`), JDK built-in (`HttpServer`, `HttpClient`), sin Maven
+- `compose.dotnet.yml` — .NET 10.0.14: dispatcher único con 20 casos internos (`8500`), BCL built-in (`HttpListener`, `System.Text.Json`)
+- `compose.go.yml` — Go 1.27.3: dispatcher único con 20 casos internos (`8600`), stdlib (`net/http`, `httputil.ReverseProxy`)
 - `compose.rust.yml` — Rust 1.99: dispatcher único con 20 casos internos (`8700`); `std` no trae HTTP, la capa va sobre `TcpListener`
 - `compose.portal.yml` — portal liviano solamente (`8080`)
 
@@ -113,7 +113,7 @@ scripts/validate-structure.sh ──▶ .github/workflows/ci.yml ◀── catal
 | `compose.python.yml` | dispatcher Python (`8200`) con los 20 casos internos, stdlib pura, sin dependencias externas |
 | `compose.nodejs.yml` | dispatcher Node.js (`8300`) con los 20 casos internos, stdlib pura |
 | `compose.java.yml` | dispatcher Java (`8400`) con los 20 casos internos, JDK built-in (sin Maven) |
-| `compose.dotnet.yml` | dispatcher .NET 10 (`8500`) con los 20 casos internos, BCL built-in |
+| `compose.dotnet.yml` | dispatcher .NET 10.0.14 (`8500`) con los 20 casos internos, BCL built-in |
 | `compose.go.yml` | dispatcher Go 1.27 (`8600`) con los 20 casos internos, stdlib |
 | `compose.rust.yml` | dispatcher Rust 1.99 (`8700`) con los 20 casos internos, capa HTTP propia |
 | `compose.portal.yml` | portal liviano |
@@ -139,7 +139,7 @@ La familia PHP reutiliza un runtime comun en `docker/php/Dockerfile`. La familia
 | `11` | ✅ OPERATIVO | ✅ OPERATIVO | ✅ OPERATIVO | ✅ OPERATIVO | ✅ OPERATIVO |
 | `12` | ✅ OPERATIVO | ✅ OPERATIVO | ✅ OPERATIVO | ✅ OPERATIVO | ✅ OPERATIVO |
 
-**OPERATIVO** = lógica real, Docker funcional, evidencia observable. Los 20 casos × 7 stacks (PHP / Python / Node.js 22 / Java 25 / .NET 10 / Go 1.27 / Rust 1.99) son todos `OPERATIVO` — paridad funcional completa con primitivas idiomáticas distintas por runtime.
+**OPERATIVO** = lógica real, Docker funcional, evidencia observable. Los 20 casos × 7 stacks (PHP / Python / Node.js 22 / Java 25 / .NET 10.0.14 / Go 1.27 / Rust 1.99) son todos `OPERATIVO` — paridad funcional completa con primitivas idiomáticas distintas por runtime.
 
 ## 🧭 Regla principal
 

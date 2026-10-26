@@ -60,7 +60,7 @@ public class Dispatcher {
     );
 
     private static final int DISPATCH_PORT = Integer.parseInt(System.getenv().getOrDefault("PORT", "8400"));
-    private static final String APP_STACK = System.getenv().getOrDefault("APP_STACK", "Java 25");
+    private static final String APP_STACK = System.getenv().getOrDefault("APP_STACK", "Java 25.0.5");
 
     private static final HttpClient client = HttpClient.newBuilder()
             .connectTimeout(Duration.ofSeconds(2))

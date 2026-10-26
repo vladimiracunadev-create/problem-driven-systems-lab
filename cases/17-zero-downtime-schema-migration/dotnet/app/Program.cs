@@ -40,7 +40,7 @@ using System.Threading.Tasks;
 internal static class Program
 {
     private const string CaseName = "17 - Migracion de esquema sin downtime";
-    private static readonly string Stack = Environment.GetEnvironmentVariable("APP_STACK") ?? ".NET 10";
+    private static readonly string Stack = Environment.GetEnvironmentVariable("APP_STACK") ?? ".NET 10.0.14";
 
     private const int ReadTimeoutMs = 120;
 

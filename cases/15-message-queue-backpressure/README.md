@@ -101,23 +101,23 @@ Los siete stacks exponen el mismo contrato: `/produce-unbounded` y `/produce-bou
 
 No tiene cola en proceso: el backpressure vive en el transporte (`listen.backlog` de FPM, `pm.max_children`, la DLQ del broker). Es el stack que mejor enseña que **el freno es una propiedad del sistema, no de la cola**. Ver [`php/README.md`](php/README.md). Modo aislado: `8115`.
 
-### 🐍 Python 3.12
+### 🐍 Python 3.13.17
 
 La política se elige en la firma de `put()`: bloquear, levantar `Full`, o esperar acotado. La API más explícita del set — y `Queue()` sin `maxsize` se escribe con menos caracteres que la acotada. Ver [`python/README.md`](python/README.md). Modo aislado: `8315`. Hub: `http://localhost:8200/15/`.
 
-### 🟢 Node.js 22
+### 🟢 Node.js 22.23.4
 
 Único stack donde el backpressure es parte del protocolo del runtime: `write()` devuelve `false` y `'drain'` avisa cuándo seguir. Y único donde **ignorarlo compila y pasa los tests**. Ver [`node/README.md`](node/README.md). Modo aislado: `8215`. Hub: `http://localhost:8300/15/`.
 
-### ☕ Java 25
+### ☕ Java 25.0.5
 
 `BlockingQueue` codifica las tres políticas en `put`/`offer`/`offer(timeout)`, igual que las `RejectedExecutionHandler`. El contraste: `ConcurrentLinkedQueue` comparte interfaz y **no tiene capacidad**. Ver [`java/README.md`](java/README.md). Modo aislado: `8415`. Hub: `http://localhost:8400/15/`.
 
-### 🔵 .NET 10
+### 🔵 .NET 10.0.14
 
 Único stack donde la política es un **enum del constructor**, decidido una vez para todo el sistema. Y el canal avisa cuando descarta, así que la pérdida silenciosa es difícil de escribir. Ver [`dotnet/README.md`](dotnet/README.md). Modo aislado: `8515`. Hub: `http://localhost:8500/15/`.
 
-### 🐹 Go 1.27
+### 🐹 Go 1.27.3
 
 **No existe el canal con buffer infinito**: la capacidad es parte del `make`. La versión con el bug hay que construirla a mano, con más código que la correcta. Ver [`go/README.md`](go/README.md). Modo aislado: `8615`. Hub: `http://localhost:8600/15/`.
 
@@ -147,11 +147,11 @@ Convierte un reinicio inexplicable cada tantas horas —y una pérdida de datos 
 | Stack | Estado |
 | --- | --- |
 | 🐘 PHP 8.4.27 | `OPERATIVO` (el freno vive en FPM y el broker, no en el lenguaje) |
-| 🐍 Python 3.12 | `OPERATIVO` (`queue.Queue(maxsize=N)` + política en la firma de `put()`) |
-| 🟢 Node.js 22 | `OPERATIVO` (`stream.Writable` con `highWaterMark` y `'drain'`) |
-| ☕ Java 25 | `OPERATIVO` (`ArrayBlockingQueue` + `put`/`offer`/`offer(timeout)`) |
-| 🔵 .NET 10 | `OPERATIVO` (`Channel.CreateBounded` + `BoundedChannelFullMode`) |
-| 🐹 Go 1.27 | `OPERATIVO` (canal bufferizado + `select` con `default`) |
+| 🐍 Python 3.13.17 | `OPERATIVO` (`queue.Queue(maxsize=N)` + política en la firma de `put()`) |
+| 🟢 Node.js 22.23.4 | `OPERATIVO` (`stream.Writable` con `highWaterMark` y `'drain'`) |
+| ☕ Java 25.0.5 | `OPERATIVO` (`ArrayBlockingQueue` + `put`/`offer`/`offer(timeout)`) |
+| 🔵 .NET 10.0.14 | `OPERATIVO` (`Channel.CreateBounded` + `BoundedChannelFullMode`) |
+| 🐹 Go 1.27.3 | `OPERATIVO` (canal bufferizado + `select` con `default`) |
 | 🦀 Rust 1.99 | `OPERATIVO` (`mpsc::sync_channel` + `TrySendError::Full(T)`) |
 
 ---

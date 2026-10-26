@@ -39,7 +39,7 @@ const (
 	maxEvents = 50
 )
 
-var stack = envOr("APP_STACK", "Go 1.27")
+var stack = envOr("APP_STACK", "Go 1.27.3")
 
 var (
 	bigbangCalls        int64

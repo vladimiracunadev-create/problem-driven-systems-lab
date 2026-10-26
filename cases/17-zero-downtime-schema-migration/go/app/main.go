@@ -45,7 +45,7 @@ const (
 	readTimeoutMs  = 120
 )
 
-var stack = envOr("APP_STACK", "Go 1.27")
+var stack = envOr("APP_STACK", "Go 1.27.3")
 
 var (
 	rw sync.RWMutex

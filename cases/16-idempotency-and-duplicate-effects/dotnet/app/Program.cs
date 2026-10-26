@@ -36,7 +36,7 @@ using System.Threading.Tasks;
 internal static class Program
 {
     private const string CaseName = "16 - Idempotencia y efectos duplicados";
-    private static readonly string Stack = Environment.GetEnvironmentVariable("APP_STACK") ?? ".NET 10";
+    private static readonly string Stack = Environment.GetEnvironmentVariable("APP_STACK") ?? ".NET 10.0.14";
 
     private const long DedupeWindowMs = 24L * 60 * 60 * 1000;
 

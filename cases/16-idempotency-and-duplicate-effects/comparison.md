@@ -3,7 +3,7 @@
 > **TL;DR** — Cinco reintentos del mismo pago sin clave de idempotencia aplican **5 cargos** y emiten **5 emails**: $100 cobrados de más sobre una operación de $25. Con reserva atómica de la clave: **1 cargo, 4 duplicados evitados, 1 efecto**. Los siete stacks dan el mismo número. Pero hay una asimetría que el ranking no captura: **seis de las siete versiones dejan de ser correctas con dos réplicas**, y la séptima es la que peor puntúa.
 
 <!-- nav -->
-`🐘 PHP 8.3` · `🐍 Python 3.12` · `🟢 Node.js 22` · `☕ Java 25` · `🔵 .NET 10` · `🐹 Go 1.27` · `🦀 Rust 1.99`
+`🐘 PHP 8.4.27` · `🐍 Python 3.13.17` · `🟢 Node.js 22.23.4` · `☕ Java 25.0.5` · `🔵 .NET 10.0.14` · `🐹 Go 1.27.3` · `🦀 Rust 1.99`
 
 **Estructura:** 🎯 el problema → 🧪 fidelidad del substrato → una sección por stack → ⚖️ tabla de decisión → 📊 primitiva por stack → 🏁 veredicto y ranking
 <!-- /nav -->
@@ -184,12 +184,12 @@ Y hay algo más que solo Rust aporta: el `Entry` **toma prestado el mapa** mient
 | Puesto | Stack | Por qué |
 |---|---|---|
 | 🥇 | **Rust 1.99** | El único donde ignorar el resultado de la reserva **no compila**: el `match` sobre `Occupied`/`Vacant` es exhaustivo. Y el `Entry` presta el mapa, así que la ventana check-then-act es inexpresable, no solo desaconsejada. |
-| 🥈 | **Java 25** | `putIfAbsent` resuelve la carrera y dice quién ganó en una llamada. Es la formulación más directa del patrón, y la que los otros tres runtimes copiaron con otro nombre. |
-| 🥉 | **Go 1.27** | `LoadOrStore` devuelve valor y bandera con el mismo contrato comma-ok de todo el lenguaje. Suma que `sync.Map` es aquí la estructura documentada para el caso — el opuesto exacto del 13. |
-| 4º | **.NET 10** | `TryAdd` es igual de correcto y el `if` se lee como la pregunta del negocio. Baja un puesto porque convive con `GetOrAdd`, que parece equivalente y no lo es — la trampa del caso 13. |
-| 5º | **Python 3.12** | `setdefault` expresa bien la operación, pero su atomicidad viene del GIL y no del contrato del lenguaje. Hay que agregar el `Lock` para decir lo que uno quiere decir. |
-| 6º | **Node.js 22** | El código correcto es el más corto de los siete y **deja de ser correcto al escalar a dos procesos**, sin ningún aviso. Es el único stack donde la corrección depende del despliegue. |
-| 7º | **PHP 8.3** | Sin heap compartido, la reserva es la más costosa de escribir. **Y es la única de las siete que sigue siendo correcta con veinte réplicas.** |
+| 🥈 | **Java 25.0.5** | `putIfAbsent` resuelve la carrera y dice quién ganó en una llamada. Es la formulación más directa del patrón, y la que los otros tres runtimes copiaron con otro nombre. |
+| 🥉 | **Go 1.27.3** | `LoadOrStore` devuelve valor y bandera con el mismo contrato comma-ok de todo el lenguaje. Suma que `sync.Map` es aquí la estructura documentada para el caso — el opuesto exacto del 13. |
+| 4º | **.NET 10.0.14** | `TryAdd` es igual de correcto y el `if` se lee como la pregunta del negocio. Baja un puesto porque convive con `GetOrAdd`, que parece equivalente y no lo es — la trampa del caso 13. |
+| 5º | **Python 3.13.17** | `setdefault` expresa bien la operación, pero su atomicidad viene del GIL y no del contrato del lenguaje. Hay que agregar el `Lock` para decir lo que uno quiere decir. |
+| 6º | **Node.js 22.23.4** | El código correcto es el más corto de los siete y **deja de ser correcto al escalar a dos procesos**, sin ningún aviso. Es el único stack donde la corrección depende del despliegue. |
+| 7º | **PHP 8.4.27** | Sin heap compartido, la reserva es la más costosa de escribir. **Y es la única de las siete que sigue siendo correcta con veinte réplicas.** |
 
 **Lectura honesta:** el ranking mide expresividad de la primitiva, y por eso PHP queda último. Pero si la pregunta fuera «¿cuál de estas siete implementaciones desplegarías con tres réplicas?», la respuesta sería **la de PHP y ninguna otra**.
 

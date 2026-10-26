@@ -2,7 +2,7 @@
 /**
  * PHP Lab Dispatcher — un solo contenedor, un solo puerto para los 20 casos.
  *
- * Cada caso corre como subproceso interno en un puerto local (9001-9012).
+ * Cada caso corre como subproceso interno en un puerto local (9001-9020).
  * El dispatcher escucha en :8100 y enruta por prefijo de path:
  *
  *     GET /01/health          -> case 01 server (interno :9001)

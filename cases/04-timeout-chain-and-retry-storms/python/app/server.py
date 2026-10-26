@@ -9,7 +9,7 @@ import tempfile
 import threading
 import time
 
-APP_STACK = os.environ.get("APP_STACK", "Python 3.12")
+APP_STACK = os.environ.get("APP_STACK", "Python 3.13.17")
 STORAGE_DIR = os.path.join(tempfile.gettempdir(), "pdsl-case04-python")
 TELEMETRY_PATH = os.path.join(STORAGE_DIR, "telemetry.json")
 DEPENDENCY_PATH = os.path.join(STORAGE_DIR, "dependency_state.json")

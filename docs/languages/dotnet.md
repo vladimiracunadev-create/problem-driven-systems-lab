@@ -1,6 +1,6 @@
 # 🔵 .NET
 
-> **Versión fijada:** `10.0` (LTS) · **Imagen base:** `mcr.microsoft.com/dotnet/sdk:10.0` · **Hub:** `:8500` · **Casos operativos:** 20 / 20
+> **Runtime fijado:** `10.0.14` (LTS) · **SDK:** `mcr.microsoft.com/dotnet/sdk:10.0.403` · **Ejecución:** `mcr.microsoft.com/dotnet/aspnet:10.0.14` · **Hub:** `:8500` · **Casos operativos:** 20 / 20
 
 [⬅️ Volver a los perfiles de lenguaje](README.md) · [🗺️ Mapa de stacks](../stack-map.md) · [🔄 Protocolo de actualización](../language-upgrade-protocol.md)
 
@@ -125,14 +125,14 @@ Agregado de los veredictos de las 19 comparativas que rankean: **1 primer puesto
 
 | | |
 |---|---|
-| **Versión fijada hoy** | `10.0` LTS (`mcr.microsoft.com/dotnet/sdk:10.0`) |
+| **Versión fijada hoy** | runtime `10.0.14` LTS; SDK `10.0.403` |
 | **Cadencia upstream** | Una release por año en noviembre; LTS en las pares |
-| **Política de soporte** | LTS: 3 años. .NET 10 recibe soporte hasta noviembre de 2028 |
+| **Política de soporte** | LTS: 3 años. .NET 10.0.14 recibe soporte hasta noviembre de 2028 |
 | **Producto en endoflife.date** | `dotnet` |
 
 **Qué revisar en el próximo salto:**
 
-1. **Fecha de EOL de .NET 10 (noviembre 2028)** — `language-drift.yml` la marcara en rojo cuando llegue.
+1. **Fecha de EOL de .NET 10.0.14 (noviembre 2028)** — `language-drift.yml` la marcara en rojo cuando llegue.
 2. **Cambios en las primitivas BCL de los casos 04, 09 y 11** — `CancellationTokenSource`, `SemaphoreSlim` y la API de `ThreadPool` son el corazón de esos tres casos.
 3. **Mejoras en el análisis de nulabilidad** — si el compilador endureciera el aviso a error, el veredicto del caso 12 cambiaría.
 4. **Nuevas colecciones en la BCL** — una LRU oficial dejaría obsoleta la construcción manual del caso 05.

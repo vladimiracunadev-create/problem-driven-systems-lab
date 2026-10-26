@@ -17,7 +17,7 @@ class WorkflowFailure extends Error {
   }
 }
 
-const APP_STACK = 'Node.js 22';
+const APP_STACK = 'Node.js 22.23.4';
 const STORAGE_DIR = path.join(os.tmpdir(), 'pdsl-case03-node');
 const TELEMETRY_PATH = path.join(STORAGE_DIR, 'telemetry.json');
 const LEGACY_LOG_PATH = path.join(STORAGE_DIR, 'legacy.log');

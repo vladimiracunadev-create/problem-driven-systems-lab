@@ -63,7 +63,7 @@ import (
 )
 
 var (
-	appStack      = envOr("APP_STACK", "Go 1.27")
+	appStack      = envOr("APP_STACK", "Go 1.27.3")
 	caseName      = "20 - La dead letter queue olvidada"
 	poisonClasses = []string{"schema_mismatch", "unknown_field", "null_required", "invalid_encoding"}
 	start         = time.Now()

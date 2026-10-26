@@ -110,19 +110,19 @@ Una API, servicio o proveedor externo introduce **latencia, errores intermitente
 
 `catalog-legacy` pega directo al proveedor sin protecciones; `catalog-hardened` usa adapter + cache + breaker + budget. `integration/state`, `sync-events` y `diagnostics/summary` exponen budget restante, schema mappings y eventos de cuarentena. Ver [`php/README.md`](php/README.md). Modo aislado: puerto `819`.
 
-### Python 3.12
+### Python 3.13.17
 
 Misma lógica con stdlib + `dict` como cache + `threading.Lock` para budget. Ver [`python/README.md`](python/README.md). Modo aislado: puerto `839`. Hub: `http://localhost:8200/09/`.
 
-### Node.js 22
+### Node.js 22.23.4
 
 `AbortSignal.timeout(ms)` (Node 18+) marca deadline del llamado externo + circuit breaker en memoria con tres estados (`closed`/`open`/`half_open`) y reapertura automática tras cooldown. Ver [`node/README.md`](node/README.md). Modo aislado: puerto `829`. Hub: `http://localhost:8300/09/`.
 
-### Java 25
+### Java 25.0.5
 
 `Semaphore` como budget de cuota (`tryAcquire()` no bloquea — si no hay permits, sirve snapshot). `ConcurrentHashMap` como snapshot cache thread-safe. `AtomicReference<String>` como breaker con CAS implícito. Ver [`java/README.md`](java/README.md). Modo aislado: puerto `849`. Hub: `http://localhost:8400/09/`.
 
-### .NET 10
+### .NET 10.0.14
 
 `SemaphoreSlim.Wait(0)` como budget de cuota (no bloquea — si no hay permits, sirve snapshot). `ConcurrentDictionary<string,string>` como snapshot cache thread-safe. `Interlocked.CompareExchange` sobre el estado del breaker (`closed`/`open`/`half_open`) con CAS explicito. Ver [`dotnet/README.md`](dotnet/README.md). Modo aislado: puerto `859`. Hub: `http://localhost:8500/09/`.
 
@@ -147,10 +147,10 @@ Misma lógica con stdlib + `dict` como cache + `threading.Lock` para budget. Ver
 | Stack | Estado |
 | --- | --- |
 | 🐘 PHP 8 | `OPERATIVO` (adapter + cache + breaker persistente) |
-| 🐍 Python 3.12 | `OPERATIVO` (stdlib + threading.Lock + dict cache) |
-| 🟢 Node.js 22 | `OPERATIVO` (`AbortSignal.timeout` + CB en memoria) |
-| ☕ Java 25 | `OPERATIVO` (`Semaphore` budget + snapshot cache + `AtomicReference` breaker) |
-| 🔵 .NET 10 | `OPERATIVO` (`SemaphoreSlim` budget + `ConcurrentDictionary` cache + `Interlocked.CompareExchange` breaker) |
+| 🐍 Python 3.13.17 | `OPERATIVO` (stdlib + threading.Lock + dict cache) |
+| 🟢 Node.js 22.23.4 | `OPERATIVO` (`AbortSignal.timeout` + CB en memoria) |
+| ☕ Java 25.0.5 | `OPERATIVO` (`Semaphore` budget + snapshot cache + `AtomicReference` breaker) |
+| 🔵 .NET 10.0.14 | `OPERATIVO` (`SemaphoreSlim` budget + `ConcurrentDictionary` cache + `Interlocked.CompareExchange` breaker) |
 
 ---
 

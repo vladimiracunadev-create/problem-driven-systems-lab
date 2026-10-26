@@ -284,7 +284,7 @@ def diagram_case_map(cat: dict) -> str:
         filas = (len(items) + cols - 1) // cols
         y += filas * (card_h + gap) + 16
 
-    return svg(width, y + 16, "\n".join("  " + s for s in p), "Mapa de los 12 casos por categoria")
+    return svg(width, y + 16, "\n".join("  " + s for s in p), "Mapa de los 20 casos por categoria")
 
 
 # --------------------------------------------------------------------------

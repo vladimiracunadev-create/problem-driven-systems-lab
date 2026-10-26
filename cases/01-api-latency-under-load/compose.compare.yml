@@ -95,7 +95,7 @@ services:
       - prometheus
 
   loadtest:
-    image: python:3.12-alpine
+    image: python:3.13.17-alpine3.24
     working_dir: /work
     volumes:
       - ./shared/loadtest:/work

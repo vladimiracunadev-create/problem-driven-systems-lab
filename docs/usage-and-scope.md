@@ -20,7 +20,7 @@
 | Casos `01` al `12` operativos en Python | si |
 | Casos `01` al `12` operativos en Node.js | si |
 | Casos `01` al `12` operativos en Java 25 | si |
-| Casos `01` al `12` operativos en .NET 10 | si |
+| Casos `01` al `12` operativos en .NET 10.0.14 | si |
 | Docker por caso y por stack como ruta oficial | si |
 | Portal raiz para navegar el laboratorio | si |
 | Familia documental profesional en la raiz | si |

@@ -53,7 +53,7 @@ const (
 )
 
 var (
-	appStack = envOr("APP_STACK", "Go 1.27")
+	appStack = envOr("APP_STACK", "Go 1.27.3")
 	caseName = "18 - Arranque en frio y retraso del autoescalado"
 	start    = time.Now()
 )

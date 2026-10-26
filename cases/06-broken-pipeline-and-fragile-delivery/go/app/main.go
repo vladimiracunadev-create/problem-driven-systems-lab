@@ -1,4 +1,4 @@
-// Caso 06 — Pipeline roto y entrega fragil (stack Go 1.27).
+// Caso 06 — Pipeline roto y entrega fragil (stack Go 1.27.3).
 //
 // Legacy: deploy directo sin preflight, sin smoke, sin rollback.
 // Controlled: preflight → deploy → smoke → promote | rollback.
@@ -38,7 +38,7 @@ const (
 	maxDeployments = 30
 )
 
-var stack = envOr("APP_STACK", "Go 1.27")
+var stack = envOr("APP_STACK", "Go 1.27.3")
 
 var (
 	legacyDeploys       int64

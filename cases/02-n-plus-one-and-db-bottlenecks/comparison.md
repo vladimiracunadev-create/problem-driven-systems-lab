@@ -3,7 +3,7 @@
 > **TL;DR** — `db_hits` pasa de `21` a `2` con `limit=20`, sin cambiar el resultado. Los 7 stacks ejecutan N+1 real contra un motor: el contador mide `prepare()` + `execute()`, no iteraciones de un bucle.
 
 <!-- nav -->
-`🐘 PHP` · `🐍 Python` · `🟢 Node.js` · `☕ Java 25` · `🔵 .NET 10` · `🐹 Go 1.27` · `🦀 Rust 1.99`
+`🐘 PHP` · `🐍 Python` · `🟢 Node.js` · `☕ Java 25.0.5` · `🔵 .NET 10.0.14` · `🐹 Go 1.27.3` · `🦀 Rust 1.99`
 
 **Estructura:** 🎯 el problema → una seccion por stack → ⚖️ tabla de decision → 📊 primitiva por stack → 🏁 veredicto y ranking
 <!-- /nav -->
@@ -22,8 +22,8 @@ Un feed de pedidos que necesita devolver, por cada pedido, el cliente, los items
 | PHP | PostgreSQL 16 (externo) | `PDO` + prepared statements |
 | Python | SQLite (stdlib) | `sqlite3` + cursor compartido |
 | Node.js | SQLite (`node:sqlite` built-in en Node 22.5+) | `Database` + `db.prepare()` |
-| Java 25 | SQLite (`sqlite-jdbc`) | `Connection` + `PreparedStatement` |
-| .NET 10 | SQLite (`Microsoft.Data.Sqlite`) | `SqliteConnection` + `SqliteCommand` |
+| Java 25.0.5 | SQLite (`sqlite-jdbc`) | `Connection` + `PreparedStatement` |
+| .NET 10.0.14 | SQLite (`Microsoft.Data.Sqlite`) | `SqliteConnection` + `SqliteCommand` |
 
 `db_hits` ahora es un contador real, no una metrica derivada. La diferencia entre `orders-legacy` y `orders-optimized` es observable a nivel motor en los siete runtimes. El contrato JSON externo no cambio — lo que cambio es que el numero ahora corresponde a `prepare()` + `execute()` reales contra una DB.
 
@@ -133,7 +133,7 @@ Python usa `dict.setdefault()` y list comprehensions. El resultado es funcionalm
 
 ## 🟢 Node.js: SQLite via `node:sqlite` built-in, `db.prepare()`, single-thread
 
-**Runtime:** Node.js 22 single-thread con event loop. El N+1 anidado se traduce en `for (const order of baseOrders) { const c = stmt.get(order.customer_id); ... }` — el costo es `1 + N + sum(items_por_order * 2)` `prepare()`/`get()` reales contra SQLite.
+**Runtime:** Node.js 22.23.4 single-thread con event loop. El N+1 anidado se traduce en `for (const order of baseOrders) { const c = stmt.get(order.customer_id); ... }` — el costo es `1 + N + sum(items_por_order * 2)` `prepare()`/`get()` reales contra SQLite.
 
 **Motor de datos:** `node:sqlite` (modulo built-in desde Node 22.5, sin npm install, sin bindings nativos a compilar). DB en `:memory:` por instancia o `/tmp/case02.db`. `Database` + `db.prepare(sql).get(...)` / `db.prepare(sql).all(...)` con prepared statements verdaderos.
 
@@ -183,7 +183,7 @@ Dos `prepare().all()` reales. Joins resueltos por SQLite, agrupacion en JS con `
 
 ---
 
-## ☕ Java 25: sqlite-jdbc, `PreparedStatement`, batch `IN(...)`
+## ☕ Java 25.0.5: sqlite-jdbc, `PreparedStatement`, batch `IN(...)`
 
 **Runtime:** JVM con thread pool. Cada handler corre en thread propio. La `Connection` SQLite es compartida y serializada por SQLite mismo (la libreria `sqlite-jdbc` empaqueta el motor nativo).
 
@@ -232,9 +232,9 @@ Un solo `executeQuery()` con `IN(?, ?, ?, ...)` construido dinamicamente — el 
 
 ---
 
-## 🔵 .NET 10: Microsoft.Data.Sqlite, `SqliteCommand`, parameter binding
+## 🔵 .NET 10.0.14: Microsoft.Data.Sqlite, `SqliteCommand`, parameter binding
 
-**Runtime:** .NET 10 sobre `HttpListener`. El CLR despacha al `ThreadPool`. Cada request puede tomar una `SqliteConnection` (la libreria es thread-safe a nivel de connection, no de command compartido).
+**Runtime:** .NET 10.0.14 sobre `HttpListener`. El CLR despacha al `ThreadPool`. Cada request puede tomar una `SqliteConnection` (la libreria es thread-safe a nivel de connection, no de command compartido).
 
 **Motor de datos:** SQLite via `Microsoft.Data.Sqlite` (paquete oficial Microsoft, ADO.NET-style). DB en `:memory:` por instancia o `/tmp/case02.db`. `SqliteConnection` + `SqliteCommand` con `@parametro` named bindings.
 
@@ -288,7 +288,7 @@ Un solo `ExecuteReader()` con `IN(@id0, @id1, ...)` parametrizado. `using` garan
 
 ---
 
-## 🐹 Go 1.27: `database/sql` + `modernc.org/sqlite`, sin ORM que culpar
+## 🐹 Go 1.27.3: `database/sql` + `modernc.org/sqlite`, sin ORM que culpar
 
 **Motor:** SQLite en memoria compartida (`file:case02?mode=memory&cache=shared`). Sin `cache=shared`, cada conexion del pool abriria su propia base vacia — es el detalle que hace que el caso funcione con `database/sql`.
 
@@ -346,9 +346,9 @@ En Go el equivalente es recorrer `rows.Next()` y **acordarse** de chequear `rows
 | PHP | PostgreSQL real via `PDO` |
 | Python | `sqlite3` stdlib |
 | Node.js | `node:sqlite` `db.prepare()` |
-| Java 25 | `sqlite-jdbc` `PreparedStatement` + batch `IN(...)` |
-| .NET 10 | `Microsoft.Data.Sqlite` `SqliteCommand` + parametros |
-| Go 1.27 | `database/sql` — sin ORM que genere el N+1 por accidente |
+| Java 25.0.5 | `sqlite-jdbc` `PreparedStatement` + batch `IN(...)` |
+| .NET 10.0.14 | `Microsoft.Data.Sqlite` `SqliteCommand` + parametros |
+| Go 1.27.3 | `database/sql` — sin ORM que genere el N+1 por accidente |
 | Rust 1.99 | `rusqlite`; `collect::<Result<Vec<_>>>()` impide ignorar el error de cursor |
 
 ---
@@ -360,10 +360,10 @@ En Go el equivalente es recorrer `rows.Next()` y **acordarse** de chequear `rows
 | | Stack | Por que |
 |---|---|---|
 | 🥇 | **Rust 1.99** | `collect::<Result<Vec<_>>>()` hace **imposible** ignorar un fallo parcial del cursor, y sin ORM el N+1 no puede colarse solo. |
-| 🥈 | **Go 1.27** | Mismo argumento —`database/sql` obliga a escribir el SQL— pero olvidarse de `rows.Err()` compila. |
-| 🥉 | **PHP 8.3** | PDO contra PostgreSQL real: es el unico donde el N+1 cruza un socket y el coste es de red, no de CPU. |
-| 4º | **Python 3.12** | `sqlite3` stdlib, directo y legible. |
-| 5º | **Node.js 22** | `node:sqlite` built-in, sin `npm install`. |
-| 6º | **Java 25 / .NET 10** | Las APIs son correctas, pero son **los dos ecosistemas donde este bug nace solo**: Hibernate y EF Core generan el N+1 al iterar una coleccion lazy sin que nadie lo escriba. |
+| 🥈 | **Go 1.27.3** | Mismo argumento —`database/sql` obliga a escribir el SQL— pero olvidarse de `rows.Err()` compila. |
+| 🥉 | **PHP 8.4.27** | PDO contra PostgreSQL real: es el unico donde el N+1 cruza un socket y el coste es de red, no de CPU. |
+| 4º | **Python 3.13.17** | `sqlite3` stdlib, directo y legible. |
+| 5º | **Node.js 22.23.4** | `node:sqlite` built-in, sin `npm install`. |
+| 6º | **Java 25.0.5 / .NET 10.0.14** | Las APIs son correctas, pero son **los dos ecosistemas donde este bug nace solo**: Hibernate y EF Core generan el N+1 al iterar una coleccion lazy sin que nadie lo escriba. |
 
 **Lectura honesta:** El ranking se invierte respecto de la intuicion: los stacks con mejor tooling de datos son los mas expuestos, porque el ORM que te ahorra escribir SQL es el mismo que te esconde 41 queries.

@@ -3,7 +3,7 @@
 > **TL;DR** — el mismo fallo pasa de `[ERROR] checkout failed` a un evento JSON con `correlation_id`, `reason` y `limit`. Lo que cambia entre stacks es **quien garantiza que el contexto no se pierda**: nadie, el revisor, o el compilador.
 
 <!-- nav -->
-`🐘 PHP` · `🐍 Python` · `🟢 Node.js` · `☕ Java 25` · `🔵 .NET 10` · `🐹 Go 1.27` · `🦀 Rust 1.99`
+`🐘 PHP` · `🐍 Python` · `🟢 Node.js` · `☕ Java 25.0.5` · `🔵 .NET 10.0.14` · `🐹 Go 1.27.3` · `🦀 Rust 1.99`
 
 **Estructura:** 🎯 el problema → una seccion por stack → ⚖️ tabla de decision → 📊 primitiva por stack → 🏁 veredicto y ranking
 <!-- /nav -->
@@ -148,7 +148,7 @@ Misma filosofía que PHP: la excepción lleva el contexto completo del fallo. La
 
 ## 🟢 Node.js: `WorkflowFailure` extends Error, JSON sin libreria, append por linea
 
-**Runtime:** Node.js 22 single-thread. Cada request es una funcion `async (req, res) => {...}` que comparte el mismo proceso con todos los handlers. El logger es ad-hoc — `fs.appendFileSync()` con `JSON.stringify()` — porque agregar una dependencia (winston, pino) ocultaria la decision detras de una libreria.
+**Runtime:** Node.js 22.23.4 single-thread. Cada request es una funcion `async (req, res) => {...}` que comparte el mismo proceso con todos los handlers. El logger es ad-hoc — `fs.appendFileSync()` con `JSON.stringify()` — porque agregar una dependencia (winston, pino) ocultaria la decision detras de una libreria.
 
 **El fallo legacy en Node.js:**
 ```javascript
@@ -200,7 +200,7 @@ Misma filosofia que PHP/Python. Node soporta clases ES6 nativamente y el `extend
 
 ---
 
-## ☕ Java 25: `ScopedValue<RequestContext>` para correlation, log estructurado JSON inline, `/logs` endpoint
+## ☕ Java 25.0.5: `ScopedValue<RequestContext>` para correlation, log estructurado JSON inline, `/logs` endpoint
 
 **Runtime:** JVM con thread pool. Cada request vincula un `ScopedValue` inmutable durante el alcance del handler; cualquier metodo llamado dentro de ese alcance puede leerlo sin pasarlo por parametros.
 
@@ -232,9 +232,9 @@ return ScopedValue.where(CTX, ctx).call(() -> {
 
 ---
 
-## 🔵 .NET 10: AsyncLocal<T> que fluye por await, System.Text.Json para logs estructurados
+## 🔵 .NET 10.0.14: AsyncLocal<T> que fluye por await, System.Text.Json para logs estructurados
 
-**Runtime:** .NET 10 sobre `HttpListener`. El CLR ejecuta handlers async sobre el `ThreadPool`. Un `await` puede retomar en otro thread — un `ThreadLocal<T>` no sobreviviria.
+**Runtime:** .NET 10.0.14 sobre `HttpListener`. El CLR ejecuta handlers async sobre el `ThreadPool`. Un `await` puede retomar en otro thread — un `ThreadLocal<T>` no sobreviviria.
 
 **El fallo legacy en C#:**
 ```csharp
@@ -260,7 +260,7 @@ StructuredLog("error", "checkout_failed", new Dictionary<string,string> {
 `AsyncLocal<T>` esta amarrado al `ExecutionContext`, que el CLR captura y restaura en cada `await`. El correlation_id sobrevive thread hops sin disciplina manual.
 
 **Notas idiomaticas vs los otros stacks:**
-- `AsyncLocal<T>` es el equivalente de flujo asincronico del `ScopedValue` Java 25 y de `contextvars` Python. Resuelve el mismo problema que `ThreadLocal` no resuelve en codigo async.
+- `AsyncLocal<T>` es el equivalente de flujo asincronico del `ScopedValue` Java 25.0.5 y de `contextvars` Python. Resuelve el mismo problema que `ThreadLocal` no resuelve en codigo async.
 - `Guid.NewGuid()` reemplaza `crypto.randomBytes` Node, `secrets.token_hex` Python o `random_bytes` PHP.
 - `System.Text.Json.JsonSerializer.Serialize(dict)` reemplaza `JSON.stringify` Node o `json_encode` PHP, sin librerias externas.
 - C# tiene un sistema de excepciones tipadas tan rico como Java; `class WorkflowFailure : Exception` es 1:1 con el equivalente Java.
@@ -269,7 +269,7 @@ StructuredLog("error", "checkout_failed", new Dictionary<string,string> {
 
 ---
 
-## 🐹 Go 1.27: `context.Context` como parametro explicito + `log/slog` de la stdlib
+## 🐹 Go 1.27.3: `context.Context` como parametro explicito + `log/slog` de la stdlib
 
 **La primitiva:** el correlation ID viaja en un `context.Context` que se pasa **como parametro**, no en almacenamiento ambiente. La clave del contexto es un tipo privado (`type ctxKey struct{}`) para que nadie de afuera pueda colisionar con ella.
 
@@ -293,7 +293,7 @@ La firma obliga a tener contexto para loguear. Y la variante legacy **no recibe 
 fn structured_log(ctx: &RequestCtx, level: &str, event: &str, fields: &[(&str, &str)])
 ```
 
-**La categoria de bug que esto cierra:** una referencia Rust no puede sobrevivir a su request. Java 25 obtiene una garantia operacional parecida mediante el alcance de `ScopedValue`; `AsyncLocal` y `AsyncLocalStorage` siguen siendo contexto ambiente que puede capturarse donde no corresponde.
+**La categoria de bug que esto cierra:** una referencia Rust no puede sobrevivir a su request. Java 25.0.5 obtiene una garantia operacional parecida mediante el alcance de `ScopedValue`; `AsyncLocal` y `AsyncLocalStorage` siguen siendo contexto ambiente que puede capturarse donde no corresponde.
 
 **Aqui esta la garantia que Go no da:** Go hace visible la dependencia; Rust la hace verificable. Es el unico de los siete stacks donde el compilador impide que el contexto se filtre fuera de su request.
 
@@ -323,9 +323,9 @@ fn structured_log(ctx: &RequestCtx, level: &str, event: &str, fields: &[(&str, &
 | PHP | contexto por request en el proceso FPM |
 | Python | `logging.LoggerAdapter` + `JsonFormatter` |
 | Node.js | `AsyncLocalStorage` |
-| Java 25 | `ScopedValue<RequestContext>` con alcance lexical |
-| .NET 10 | `AsyncLocal<T>` que fluye por `await` |
-| Go 1.27 | `context.Context` **como parametro**; `log/slog` en la stdlib |
+| Java 25.0.5 | `ScopedValue<RequestContext>` con alcance lexical |
+| .NET 10.0.14 | `AsyncLocal<T>` que fluye por `await` |
+| Go 1.27.3 | `context.Context` **como parametro**; `log/slog` en la stdlib |
 | Rust 1.99 | **`&RequestCtx` prestado**; el borrow checker impide que sobreviva al request |
 
 ---
@@ -337,10 +337,10 @@ fn structured_log(ctx: &RequestCtx, level: &str, event: &str, fields: &[(&str, &
 | | Stack | Por que |
 |---|---|---|
 | 🥇 | **Rust 1.99** | Unico stack donde **el compilador impide** que el contexto sobreviva al request. La fuga de correlacion entre usuarios no se puede escribir. |
-| 🥈 | **Go 1.27** | `context.Context` explicito + `log/slog` en la stdlib. Hace la dependencia visible en la firma, pero **no la impone**: `go func(){}()` sin `ctx` compila. |
-| 🥉 | **Java 25** | `ScopedValue` hace inmutable el contexto y lo revierte al salir del alcance: no hay limpieza manual que olvidar. |
-| 4º | **Python 3.12** | `LoggerAdapter` + `JsonFormatter` de stdlib: la API mas dificil de violar por accidente entre los interpretados. |
-| 5º | **.NET 10** | `AsyncLocal` fluye correctamente por `await`, pero sigue siendo contexto ambiente mutable. |
-| 6º | **Node.js 22 / PHP 8.3** | `AsyncLocalStorage` y disciplina manual. Funcionan; nada las respalda. |
+| 🥈 | **Go 1.27.3** | `context.Context` explicito + `log/slog` en la stdlib. Hace la dependencia visible en la firma, pero **no la impone**: `go func(){}()` sin `ctx` compila. |
+| 🥉 | **Java 25.0.5** | `ScopedValue` hace inmutable el contexto y lo revierte al salir del alcance: no hay limpieza manual que olvidar. |
+| 4º | **Python 3.13.17** | `LoggerAdapter` + `JsonFormatter` de stdlib: la API mas dificil de violar por accidente entre los interpretados. |
+| 5º | **.NET 10.0.14** | `AsyncLocal` fluye correctamente por `await`, pero sigue siendo contexto ambiente mutable. |
+| 6º | **Node.js 22.23.4 / PHP 8.4.27** | `AsyncLocalStorage` y disciplina manual. Funcionan; nada las respalda. |
 
 **Lectura honesta:** Es el caso donde mas se nota la diferencia entre *hacer algo visible* (Go) y *hacerlo imposible de romper* (Rust).

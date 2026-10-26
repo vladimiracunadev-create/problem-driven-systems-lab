@@ -24,7 +24,7 @@ services:
     ports:
       - "8200:8200"
     environment:
-      APP_STACK: Python 3.12
+      APP_STACK: Python 3.13.17
       PORT: "8200"
     healthcheck:
       test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://127.0.0.1:8200/01/health', timeout=3).read()\""]

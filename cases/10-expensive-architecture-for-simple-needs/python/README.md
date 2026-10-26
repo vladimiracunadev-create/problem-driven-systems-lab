@@ -1,4 +1,4 @@
-# 🐍 Caso 10 — Python 3.12 con comparacion complex vs right-sized
+# 🐍 Caso 10 — Python 3.13.17 con comparacion complex vs right-sized
 
 > Implementacion operativa del caso 10 para contrastar sobrearquitectura contra una solucion proporcional.
 
@@ -27,7 +27,7 @@ La sobre-arquitectura tiene un costo fisico medible en Python: cada capa adicion
 
 ## 🧱 Servicio
 
-- `app` → API Python 3.12 con comparacion de latencia, servicios tocados y lead time entre ambos enfoques.
+- `app` → API Python 3.13.17 con comparacion de latencia, servicios tocados y lead time entre ambos enfoques.
 
 ## 🚀 Arranque
 

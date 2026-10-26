@@ -49,7 +49,7 @@ import java.util.concurrent.atomic.LongAdder;
 public class Main {
 
     private static final String CASE_NAME = "14 - Agotamiento del pool de conexiones";
-    private static final String STACK = System.getenv().getOrDefault("APP_STACK", "Java 25");
+    private static final String STACK = System.getenv().getOrDefault("APP_STACK", "Java 25.0.5");
     private static final int PORT = Integer.parseInt(System.getenv().getOrDefault("PORT", "8080"));
 
     private static final long ACQUIRE_TIMEOUT_MS = 200;

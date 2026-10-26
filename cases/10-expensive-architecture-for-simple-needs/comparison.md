@@ -3,7 +3,7 @@
 > **TL;DR** — `hops=8` cuesta 8 servicios y ~200 USD/mes estimados; el lookup directo cuesta 1 y 3 USD. **Este caso no tiene ranking de runtime**: el problema es de diseño, y la pendiente es identica en los siete lenguajes.
 
 <!-- nav -->
-`🐘 PHP` · `🐍 Python` · `🟢 Node.js` · `☕ Java 25` · `🔵 .NET 10` · `🐹 Go 1.27` · `🦀 Rust 1.99`
+`🐘 PHP` · `🐍 Python` · `🟢 Node.js` · `☕ Java 25.0.5` · `🔵 .NET 10.0.14` · `🐹 Go 1.27.3` · `🦀 Rust 1.99`
 
 **Estructura:** 🎯 el problema → una seccion por stack → ⚖️ tabla de decision → 📊 primitiva por stack → 🏁 veredicto y ranking
 <!-- /nav -->
@@ -100,7 +100,7 @@ Dos `.get()` anidados. Los `dict` de Python son hash tables — acceso O(1) gara
 
 ## 🟢 Node.js: JSON.stringify/parse en bucle vs acceso O(1) directo
 
-**Runtime:** Node.js 22 single-thread. El overhead de la sobrearquitectura se materializa como CPU real sobre el event loop — y esa medicion es lo que hace al caso accionable en Node.
+**Runtime:** Node.js 22.23.4 single-thread. El overhead de la sobrearquitectura se materializa como CPU real sobre el event loop — y esa medicion es lo que hace al caso accionable en Node.
 
 **El fallo complex en Node:**
 ```javascript
@@ -128,7 +128,7 @@ const _ = entities[0]?.id;   // O(1)
 
 ---
 
-## ☕ Java 25: CPU real medido en `StringBuilder` loops vs `HashMap.get` O(1)
+## ☕ Java 25.0.5: CPU real medido en `StringBuilder` loops vs `HashMap.get` O(1)
 
 **Runtime:** JVM con JIT — el JIT optimiza `HashMap.get` agresivamente; el camino complex con N hops de `StringBuilder` no se puede optimizar porque cada hop construye objetos nuevos.
 
@@ -152,9 +152,9 @@ return /* 1 service touched, cost_usd_month=3, lead_time=1 */;
 
 ---
 
-## 🔵 .NET 10: Dictionary O(1) vs N hops JsonSerializer
+## 🔵 .NET 10.0.14: Dictionary O(1) vs N hops JsonSerializer
 
-**Runtime:** .NET 10 sobre `HttpListener`. CLR `ThreadPool`. El "complex" cobra CPU real con `JsonSerializer.Serialize`/`Deserialize` por hop — no `Task.Delay()`.
+**Runtime:** .NET 10.0.14 sobre `HttpListener`. CLR `ThreadPool`. El "complex" cobra CPU real con `JsonSerializer.Serialize`/`Deserialize` por hop — no `Task.Delay()`.
 
 **El fallo complex en C#:**
 ```csharp
@@ -184,7 +184,7 @@ return /* 1 service touched, cost_usd_month=3, lead_time=1 */;
 
 ---
 
-## 🐹 Go 1.27 y Rust 1.99: los dos mas rapidos, y por que eso no importa aca
+## 🐹 Go 1.27.3 y Rust 1.99: los dos mas rapidos, y por que eso no importa aca
 
 El costo de este caso es CPU puro: construir y recorrer buffers.
 
@@ -221,9 +221,9 @@ Lo comparable es la **forma de la curva dentro de cada stack**: lineal en `hops`
 | PHP | `array` asociativo O(1) |
 | Python | `dict` O(1) |
 | Node.js | `Map` + `JSON.stringify` por hop |
-| Java 25 | `HashMap` vs N hops con `StringBuilder` |
-| .NET 10 | `Dictionary` vs `JsonSerializer` con presion LOH |
-| Go 1.27 | `map` vs `strings.Builder` (cero copias al convertir a string) |
+| Java 25.0.5 | `HashMap` vs N hops con `StringBuilder` |
+| .NET 10.0.14 | `Dictionary` vs `JsonSerializer` con presion LOH |
+| Go 1.27.3 | `map` vs `strings.Builder` (cero copias al convertir a string) |
 | Rust 1.99 | `HashMap` vs `String::with_capacity` (sin GC que recoja despues) |
 
 ---

@@ -1,4 +1,4 @@
-# 🐍 Caso 08 — Python 3.12 con extraccion compatible
+# 🐍 Caso 08 — Python 3.13.17 con extraccion compatible
 
 > Implementacion operativa del caso 08 para contrastar una extraccion big bang contra una ruta segura con proxy, contratos y cutover por fases.
 
@@ -27,7 +27,7 @@ Los cruces de contrato se implementan mediante accesos a diccionarios y el opera
 
 ## 🧱 Servicio
 
-- `app` → API Python 3.12 con proxy de compatibilidad, estado de cutover en 5 fases y metricas de drift.
+- `app` → API Python 3.13.17 con proxy de compatibilidad, estado de cutover en 5 fases y metricas de drift.
 
 ## 🚀 Arranque
 

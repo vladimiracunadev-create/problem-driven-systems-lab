@@ -3,7 +3,7 @@
 > **TL;DR** — el reporte sin acotar le come CPU a `/order-write`; con limitador, la operacion conserva su latencia. Es el caso que **no se traduce literal**: Go y Rust no tienen pool de threads que agotar.
 
 <!-- nav -->
-`🐘 PHP` · `🐍 Python` · `🟢 Node.js` · `☕ Java 25` · `🔵 .NET 10` · `🐹 Go 1.27` · `🦀 Rust 1.99`
+`🐘 PHP` · `🐍 Python` · `🟢 Node.js` · `☕ Java 25.0.5` · `🔵 .NET 10.0.14` · `🐹 Go 1.27.3` · `🦀 Rust 1.99`
 
 **Estructura:** 🎯 el problema → una seccion por stack → ⚖️ tabla de decision → 📊 primitiva por stack → 🏁 veredicto y ranking
 <!-- /nav -->
@@ -116,7 +116,7 @@ Los dos locks son objetos distintos en memoria. Son completamente independientes
 
 ## 🟢 Node.js: monitorEventLoopDelay() + setImmediate — el lock es el event loop
 
-**Runtime:** Node.js 22 single-thread. **No hay locks** porque no hay concurrencia paralela en el codigo JS — todo corre en un solo thread del event loop. La "contencion" es de otro tipo: una operacion sincronica costosa **bloquea el loop entero** y todas las requests concurrentes lo pagan.
+**Runtime:** Node.js 22.23.4 single-thread. **No hay locks** porque no hay concurrencia paralela en el codigo JS — todo corre en un solo thread del event loop. La "contencion" es de otro tipo: una operacion sincronica costosa **bloquea el loop entero** y todas las requests concurrentes lo pagan.
 
 **El fallo legacy en Node — bloqueo sincronico del event loop:**
 ```javascript
@@ -160,7 +160,7 @@ if (mode === 'isolated') {
 
 ---
 
-## ☕ Java 25: `ThreadPoolExecutor` saturation observable + `ExecutorService` dedicado para reporting
+## ☕ Java 25.0.5: `ThreadPoolExecutor` saturation observable + `ExecutorService` dedicado para reporting
 
 **Runtime:** El `HttpServer` JDK usa un `Executor` que entregamos — un `ThreadPoolExecutor` acotado (4 threads) hace que la saturacion sea **realista y observable**. Java no tiene event loop; el equivalente es saturacion del pool.
 
@@ -185,9 +185,9 @@ CompletableFuture<Long> fut = CompletableFuture.supplyAsync(() -> {
 
 ---
 
-## 🔵 .NET 10: ConcurrentExclusiveSchedulerPair + ThreadPool.GetAvailableWorkerThreads
+## 🔵 .NET 10.0.14: ConcurrentExclusiveSchedulerPair + ThreadPool.GetAvailableWorkerThreads
 
-**Runtime:** .NET 10 sobre `HttpListener`. CLR `ThreadPool` global compartido por todos los handlers. Reporting CPU-bound sin aislamiento → satura el pool → `/order-write` espera.
+**Runtime:** .NET 10.0.14 sobre `HttpListener`. CLR `ThreadPool` global compartido por todos los handlers. Reporting CPU-bound sin aislamiento → satura el pool → `/order-write` espera.
 
 **El fallo legacy en C#:**
 ```csharp
@@ -229,7 +229,7 @@ Se exponen en `/activity`. Es el equivalente .NET de `monitorEventLoopDelay()` N
 
 ---
 
-## 🐹 Go 1.27 y Rust 1.99: el caso que NO se traduce literal
+## 🐹 Go 1.27.3 y Rust 1.99: el caso que NO se traduce literal
 
 Java y .NET aislan con **pools de threads separados**: un `ThreadPoolExecutor` de 4 para trafico y otro de 2 para reporting. Ese modelo no existe en Go ni en Rust — ninguno tiene un `ExecutorService` en su biblioteca estandar que copiar.
 
@@ -275,9 +275,9 @@ El sintoma final es el mismo en los siete stacks —la operacion se degrada— p
 | PHP | proceso por request; el pool FPM es el limite |
 | Python | `ThreadPoolExecutor` separado (GIL de por medio) |
 | Node.js | `worker_threads` para no bloquear el loop |
-| Java 25 | **pool de threads dedicado** (`ExecutorService` de 2) |
-| .NET 10 | `ConcurrentExclusiveSchedulerPair` / thread dedicado |
-| Go 1.27 | **semaforo de concurrencia — no hay pool que agotar**; `runtime.Gosched()` |
+| Java 25.0.5 | **pool de threads dedicado** (`ExecutorService` de 2) |
+| .NET 10.0.14 | `ConcurrentExclusiveSchedulerPair` / thread dedicado |
+| Go 1.27.3 | **semaforo de concurrencia — no hay pool que agotar**; `runtime.Gosched()` |
 | Rust 1.99 | **`Mutex`+`Condvar` — duerme al thread, sin busy-wait**; thread del SO 1:1 |
 
 ---
@@ -288,11 +288,11 @@ El sintoma final es el mismo en los siete stacks —la operacion se degrada— p
 
 | | Stack | Por que |
 |---|---|---|
-| 🥇 | **Java 25 / .NET 10** | Son el **modelo canonico** del problema: pools separados, y `getActiveCount()` / `GetAvailableWorkerThreads` exponen la saturacion sin agente externo. El caso nacio pensando en este modelo. |
-| 🥈 | **Go 1.27** | No tiene pool que agotar, asi que resuelve con semaforo de concurrencia. La goroutine de ~2 KB le da un techo de escala que ningun otro stack alcanza. |
+| 🥇 | **Java 25.0.5 / .NET 10.0.14** | Son el **modelo canonico** del problema: pools separados, y `getActiveCount()` / `GetAvailableWorkerThreads` exponen la saturacion sin agente externo. El caso nacio pensando en este modelo. |
+| 🥈 | **Go 1.27.3** | No tiene pool que agotar, asi que resuelve con semaforo de concurrencia. La goroutine de ~2 KB le da un techo de escala que ningun otro stack alcanza. |
 | 🥉 | **Rust 1.99** | `Mutex` + `Condvar` con espera pasiva es correcto y explicito, pero `std::thread` es 1:1 con el SO: el techo esta miles de veces mas abajo que en Go. |
-| 4º | **Node.js 22** | `worker_threads` saca el CPU del loop; es la unica forma de no bloquear el proceso entero. |
-| 5º | **Python 3.12** | `ThreadPoolExecutor` separado, con el GIL limitando el paralelismo real del trabajo CPU. |
-| 6º | **PHP 8.3** | Procesos FPM aislados: no hay nada que aislar, y tampoco nada que observar desde dentro. |
+| 4º | **Node.js 22.23.4** | `worker_threads` saca el CPU del loop; es la unica forma de no bloquear el proceso entero. |
+| 5º | **Python 3.13.17** | `ThreadPoolExecutor` separado, con el GIL limitando el paralelismo real del trabajo CPU. |
+| 6º | **PHP 8.4.27** | Procesos FPM aislados: no hay nada que aislar, y tampoco nada que observar desde dentro. |
 
 **Lectura honesta:** **Es el unico caso donde Java y .NET ganan**, y por una buena razon: el problema esta enunciado en su vocabulario. Traducir literalmente su `ExecutorService` a Go o Rust habria producido codigo que compila y no enseña nada.

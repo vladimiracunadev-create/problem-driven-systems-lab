@@ -95,19 +95,19 @@ El sistema legacy sigue siendo **crítico**, pero su evolución se vuelve lenta,
 
 `change-legacy` aplica todos los cambios al monolito; `change-strangler` consulta una tabla de routing y dispara handler nuevo o legacy según el consumer. `migration/state` muestra cobertura por módulo y `flows` el progreso real. Ver [`php/README.md`](php/README.md). Modo aislado: puerto `817`.
 
-### Python 3.12
+### Python 3.13.17
 
 Misma lógica con `dict[str, Callable]` como routing table. Ver [`python/README.md`](python/README.md). Modo aislado: puerto `837`. Hub: `http://localhost:8200/07/`.
 
-### Node.js 22
+### Node.js 22.23.4
 
 `Map<string, handler>` **mutable en runtime** — agregar un consumer migrado es `routingTable.set(...)` sin reload del proceso. ACL como closure que filtra contrato. Ver [`node/README.md`](node/README.md). Modo aislado: puerto `827`. Hub: `http://localhost:8300/07/`.
 
-### Java 25
+### Java 25.0.5
 
 `ConcurrentHashMap<String, Function<Request, Response>>` como routing table — reads paralelos sin lock, writes atómicos por bucket. `Function<T,R>` como ACL closure: la firma del handler **es** el contrato; agregar consumer = registrar lambda. Ver [`java/README.md`](java/README.md). Modo aislado: puerto `847`. Hub: `http://localhost:8400/07/`.
 
-### .NET 10
+### .NET 10.0.14
 
 `ConcurrentDictionary<string, Func<Request, Response>>` como routing table — reads paralelos sin lock, writes atomicos por bucket. `Func<Request, Response>` delegate como ACL closure: la firma del delegate **es** el contrato; agregar consumer = `routingTable[key] = lambda`. `record Request/Response` inmutables. Ver [`dotnet/README.md`](dotnet/README.md). Modo aislado: puerto `857`. Hub: `http://localhost:8500/07/`.
 
@@ -132,10 +132,10 @@ Permite **renovar plataformas reales sin detener operación** ni asumir una rees
 | Stack | Estado |
 | --- | --- |
 | 🐘 PHP 8 | `OPERATIVO` (tabla de routing persistente + migration/state) |
-| 🐍 Python 3.12 | `OPERATIVO` (`dict[str, Callable]` routing + stdlib pura) |
-| 🟢 Node.js 22 | `OPERATIVO` (`Map<consumer, handler>` mutable en runtime + ACL como closure) |
-| ☕ Java 25 | `OPERATIVO` (`ConcurrentHashMap<String, Function>` routing + `Function` ACL) |
-| 🔵 .NET 10 | `OPERATIVO` (`ConcurrentDictionary<string, Func<Request,Response>>` routing + `record` types) |
+| 🐍 Python 3.13.17 | `OPERATIVO` (`dict[str, Callable]` routing + stdlib pura) |
+| 🟢 Node.js 22.23.4 | `OPERATIVO` (`Map<consumer, handler>` mutable en runtime + ACL como closure) |
+| ☕ Java 25.0.5 | `OPERATIVO` (`ConcurrentHashMap<String, Function>` routing + `Function` ACL) |
+| 🔵 .NET 10.0.14 | `OPERATIVO` (`ConcurrentDictionary<string, Func<Request,Response>>` routing + `record` types) |
 
 ---
 

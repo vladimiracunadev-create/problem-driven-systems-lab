@@ -1,4 +1,4 @@
-# 🐍 Caso 02 — Python 3.12 + SQLite
+# 🐍 Caso 02 — Python 3.13.17 + SQLite
 
 > Implementacion operativa del caso 02 para demostrar N+1 anidado y una correccion medible sobre la misma base de datos.
 
@@ -31,7 +31,7 @@ El patron N+1 en Python sobre SQLite exhibe exactamente el mismo comportamiento 
 
 ## 🧱 Servicio
 
-- `app` → API Python 3.12 con endpoints legacy y optimized, SQLite embebida con datos semilla deterministicos.
+- `app` → API Python 3.13.17 con endpoints legacy y optimized, SQLite embebida con datos semilla deterministicos.
 
 ## 🚀 Arranque
 

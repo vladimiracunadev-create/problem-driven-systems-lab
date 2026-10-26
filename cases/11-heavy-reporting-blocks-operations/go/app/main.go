@@ -43,7 +43,7 @@ const (
 	degradedThreshold = 100 // ms
 )
 
-var stack = envOr("APP_STACK", "Go 1.27")
+var stack = envOr("APP_STACK", "Go 1.27.3")
 
 var (
 	legacyReports       int64

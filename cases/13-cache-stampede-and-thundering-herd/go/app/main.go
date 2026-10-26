@@ -46,7 +46,7 @@ const (
 	softFraction = 0.6
 )
 
-var stack = envOr("APP_STACK", "Go 1.27")
+var stack = envOr("APP_STACK", "Go 1.27.3")
 
 // ---------- cache ----------
 

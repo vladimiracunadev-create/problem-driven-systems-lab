@@ -16,7 +16,8 @@
     {"name":"python","SPDXID":"SPDXRef-Python","versionInfo":"3.13.17-alpine3.24","downloadLocation":"https://hub.docker.com/_/python","filesAnalyzed":false,"licenseConcluded":"NOASSERTION","licenseDeclared":"NOASSERTION","externalRefs":[{"referenceCategory":"PACKAGE-MANAGER","referenceType":"purl","referenceLocator":"pkg:docker/python@3.13.17-alpine3.24"}]},
     {"name":"amazoncorretto","SPDXID":"SPDXRef-Java","versionInfo":"25.0.5-alpine3.24","downloadLocation":"https://hub.docker.com/_/amazoncorretto","filesAnalyzed":false,"licenseConcluded":"NOASSERTION","licenseDeclared":"NOASSERTION","externalRefs":[{"referenceCategory":"PACKAGE-MANAGER","referenceType":"purl","referenceLocator":"pkg:docker/amazoncorretto@25.0.5-alpine3.24"}]},
     {"name":"golang","SPDXID":"SPDXRef-Go","versionInfo":"1.27.3-alpine3.24","downloadLocation":"https://hub.docker.com/_/golang","filesAnalyzed":false,"licenseConcluded":"NOASSERTION","licenseDeclared":"NOASSERTION","externalRefs":[{"referenceCategory":"PACKAGE-MANAGER","referenceType":"purl","referenceLocator":"pkg:docker/golang@1.27.3-alpine3.24"}]},
-    {"name":"dotnet-sdk","SPDXID":"SPDXRef-DotNet","versionInfo":"10.0","downloadLocation":"https://mcr.microsoft.com/product/dotnet/sdk/about","filesAnalyzed":false,"licenseConcluded":"NOASSERTION","licenseDeclared":"NOASSERTION"},
+    {"name":"dotnet-sdk","SPDXID":"SPDXRef-DotNet-SDK","versionInfo":"10.0.403","downloadLocation":"https://mcr.microsoft.com/product/dotnet/sdk/about","filesAnalyzed":false,"licenseConcluded":"NOASSERTION","licenseDeclared":"NOASSERTION","externalRefs":[{"referenceCategory":"PACKAGE-MANAGER","referenceType":"purl","referenceLocator":"pkg:docker/mcr.microsoft.com/dotnet/sdk@10.0.403"}]},
+    {"name":"dotnet-aspnet","SPDXID":"SPDXRef-DotNet-AspNet","versionInfo":"10.0.14","downloadLocation":"https://mcr.microsoft.com/product/dotnet/aspnet/about","filesAnalyzed":false,"licenseConcluded":"NOASSERTION","licenseDeclared":"NOASSERTION","externalRefs":[{"referenceCategory":"PACKAGE-MANAGER","referenceType":"purl","referenceLocator":"pkg:docker/mcr.microsoft.com/dotnet/aspnet@10.0.14"}]},
     {"name":"rust","SPDXID":"SPDXRef-Rust","versionInfo":"1.99-alpine","downloadLocation":"https://hub.docker.com/_/rust","filesAnalyzed":false,"licenseConcluded":"NOASSERTION","licenseDeclared":"NOASSERTION"}
   ],
   "relationships": [
@@ -26,7 +27,8 @@
     {"spdxElementId":"SPDXRef-DOCUMENT","relationshipType":"DESCRIBES","relatedSpdxElement":"SPDXRef-Python"},
     {"spdxElementId":"SPDXRef-DOCUMENT","relationshipType":"DESCRIBES","relatedSpdxElement":"SPDXRef-Java"},
     {"spdxElementId":"SPDXRef-DOCUMENT","relationshipType":"DESCRIBES","relatedSpdxElement":"SPDXRef-Go"},
-    {"spdxElementId":"SPDXRef-DOCUMENT","relationshipType":"DESCRIBES","relatedSpdxElement":"SPDXRef-DotNet"},
+    {"spdxElementId":"SPDXRef-DOCUMENT","relationshipType":"DESCRIBES","relatedSpdxElement":"SPDXRef-DotNet-SDK"},
+    {"spdxElementId":"SPDXRef-DOCUMENT","relationshipType":"DESCRIBES","relatedSpdxElement":"SPDXRef-DotNet-AspNet"},
     {"spdxElementId":"SPDXRef-DOCUMENT","relationshipType":"DESCRIBES","relatedSpdxElement":"SPDXRef-Rust"}
   ]
 }

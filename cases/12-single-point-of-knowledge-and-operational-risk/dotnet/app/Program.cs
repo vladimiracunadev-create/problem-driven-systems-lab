@@ -17,7 +17,7 @@ using System.Threading.Tasks;
 internal static class Program
 {
     private const string CaseName = "12 - Punto unico de conocimiento";
-    private static readonly string Stack = Environment.GetEnvironmentVariable("APP_STACK") ?? ".NET 10";
+    private static readonly string Stack = Environment.GetEnvironmentVariable("APP_STACK") ?? ".NET 10.0.14";
     private const int MaxIncidents = 30;
 
     private sealed record Owner(string Name, bool Available, Dictionary<string, string> Runbook);

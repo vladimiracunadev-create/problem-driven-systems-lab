@@ -34,7 +34,7 @@ import (
 
 const caseName = "07 - Modernizacion incremental de monolito"
 
-var stack = envOr("APP_STACK", "Go 1.27")
+var stack = envOr("APP_STACK", "Go 1.27.3")
 
 var (
 	legacyCalls       int64

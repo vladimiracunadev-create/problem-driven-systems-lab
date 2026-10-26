@@ -95,19 +95,19 @@ Consultas y procesos de **reporting compiten con la operación transaccional** y
 
 `report-legacy` corre sobre el primario; `report-isolated` lo desplaza a cola/replica/snapshot. `/order-write` mide si la operación conserva aire. `reporting/state` y `diagnostics/summary` exponen `primary_load`, `lock_pressure`, `replica_lag_s`, `queue_depth`. Ver [`php/README.md`](php/README.md). Modo aislado: puerto `8111`.
 
-### Python 3.12
+### Python 3.13.17
 
 Mismo contraste con threading. Ver [`python/README.md`](python/README.md). Modo aislado: puerto `8311`. Hub: `http://localhost:8200/11/`.
 
-### Node.js 22
+### Node.js 22.23.4
 
 `monitorEventLoopDelay()` (perf_hooks) mide lag real del event loop. `report-legacy` ejecuta CPU sincrónico que castiga el loop entero (visible en `event_loop_lag_ms_p99`); `report-isolated` cede control con `setImmediate` para que el loop respire. Ver [`node/README.md`](node/README.md). Modo aislado: puerto `8211`. Hub: `http://localhost:8300/11/`.
 
-### Java 25
+### Java 25.0.5
 
 `ThreadPoolExecutor` acotado a 4 threads como pool principal (saturación realista); `ExecutorService` dedicado de 2 threads para reporting. `CompletableFuture.supplyAsync(task, executor)` para submission explícita al pool correcto. `getActiveCount()` y `getQueue().size()` son la señal nativa de saturación, equivalente al `monitorEventLoopDelay` de Node. Ver [`java/README.md`](java/README.md). Modo aislado: puerto `8411`. Hub: `http://localhost:8400/11/`.
 
-### .NET 10
+### .NET 10.0.14
 
 `ConcurrentExclusiveSchedulerPair.ExclusiveScheduler` (o `Thread` dedicado) como aislamiento del trabajo CPU-bound de reporting. `Task.Factory.StartNew(task, ..., scheduler)` para submission explicita. `ThreadPool.GetAvailableWorkerThreads` revela la saturacion del pool principal — equivalente .NET de `monitorEventLoopDelay` Node y de `ThreadPoolExecutor.getActiveCount()` Java. Ver [`dotnet/README.md`](dotnet/README.md). Modo aislado: puerto `8511`. Hub: `http://localhost:8500/11/`.
 
@@ -132,10 +132,10 @@ Mismo contraste con threading. Ver [`python/README.md`](python/README.md). Modo 
 | Stack | Estado |
 | --- | --- |
 | 🐘 PHP 8 | `OPERATIVO` (locks vs cola/replica) |
-| 🐍 Python 3.12 | `OPERATIVO` (threading + métricas locales) |
-| 🟢 Node.js 22 | `OPERATIVO` (`monitorEventLoopDelay()` + `setImmediate` para ceder) |
-| ☕ Java 25 | `OPERATIVO` (`ThreadPoolExecutor` saturation observable + `ExecutorService` dedicado) |
-| 🔵 .NET 10 | `OPERATIVO` (`ConcurrentExclusiveSchedulerPair` + `ThreadPool.GetAvailableWorkerThreads`) |
+| 🐍 Python 3.13.17 | `OPERATIVO` (threading + métricas locales) |
+| 🟢 Node.js 22.23.4 | `OPERATIVO` (`monitorEventLoopDelay()` + `setImmediate` para ceder) |
+| ☕ Java 25.0.5 | `OPERATIVO` (`ThreadPoolExecutor` saturation observable + `ExecutorService` dedicado) |
+| 🔵 .NET 10.0.14 | `OPERATIVO` (`ConcurrentExclusiveSchedulerPair` + `ThreadPool.GetAvailableWorkerThreads`) |
 
 ---
 

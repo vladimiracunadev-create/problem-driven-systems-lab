@@ -17,7 +17,7 @@ using System.Threading.Tasks;
 internal static class Program
 {
     private const string CaseName = "08 - Extraccion critica de modulo";
-    private static readonly string Stack = Environment.GetEnvironmentVariable("APP_STACK") ?? ".NET 10";
+    private static readonly string Stack = Environment.GetEnvironmentVariable("APP_STACK") ?? ".NET 10.0.14";
     private const int MaxEvents = 50;
 
     private sealed record PriceRequestOld(string Sku, double CostUsd);

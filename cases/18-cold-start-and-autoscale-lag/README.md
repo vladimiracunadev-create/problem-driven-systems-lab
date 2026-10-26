@@ -110,23 +110,23 @@ Los siete stacks exponen el mismo contrato: `/boot-cold` y `/boot-warmed` con cl
 
 El **único stack que arranca en frío en cada petición, por diseño**. `opcache` es lo que evita que eso sea catastrófico — y es el único AOT del lab cuya caché comparten los procesos, no los hilos. Ver [`php/README.md`](php/README.md). Modo aislado: `8118`.
 
-### 🐍 Python 3.12
+### 🐍 Python 3.13.17
 
 Sin JIT: la curva es plana porque no hay nada que calentar. Y **el único stack sin ninguna salida compilada** — la única palanca contra su arranque es rediseñar los imports. Ver [`python/README.md`](python/README.md). Modo aislado: `8318`. Hub: `http://localhost:8200/18/`.
 
-### 🟢 Node.js 22
+### 🟢 Node.js 22.23.4
 
 V8 optimiza en capas de verdad, pero el cold start de Node no está ahí: está en el **grafo de `require`**, que este caso no alcanza. El número es honesto e incompleto, y por eso se dice. Ver [`node/README.md`](node/README.md). Modo aislado: `8218`. Hub: `http://localhost:8300/18/`.
 
-### ☕ Java 25
+### ☕ Java 25.0.5
 
 **51,9x medidos.** El arranque en frío canónico, y el único donde la lentitud posterior a estar «listo» realimenta al autoescalador. La caja de herramientas más profunda, y ninguna activada por defecto. Ver [`java/README.md`](java/README.md). Modo aislado: `8418`. Hub: `http://localhost:8400/18/`.
 
-### 🔵 .NET 10
+### 🔵 .NET 10.0.14
 
 El mismo problema que Java con la respuesta **en la caja**: `PublishReadyToRun`, `TieredPGO`, `PublishAot`. Tres líneas del `.csproj`. Ver [`dotnet/README.md`](dotnet/README.md). Modo aislado: `8518`. Hub: `http://localhost:8500/18/`.
 
-### 🐹 Go 1.27
+### 🐹 Go 1.27.3
 
 No gana por rápido: gana por **no tener nada que calentar**. Y `sync.Once` es a la vez la primitiva correcta y la trampa, si se dispara con tráfico en vez de con el arranque. Ver [`go/README.md`](go/README.md). Modo aislado: `8618`. Hub: `http://localhost:8600/18/`.
 
@@ -159,11 +159,11 @@ El indicador honesto no es cuánto tarda en arrancar, sino **`health_vs_ready_ga
 | Stack | Estado |
 | --- | --- |
 | 🐘 PHP 8.4.27 | `OPERATIVO` (`opcache` + `pm.start_servers`; cold start en cada petición) |
-| 🐍 Python 3.12 | `OPERATIVO` (sin JIT; imports diferidos como única palanca) |
-| 🟢 Node.js 22 | `OPERATIVO` (V8 en capas; el costo real está en `require`) |
-| ☕ Java 25 | `OPERATIVO` (compilación en capas — **51,9x medidos**) |
-| 🔵 .NET 10 | `OPERATIVO` (`PublishReadyToRun` / `TieredPGO` / `PublishAot`) |
-| 🐹 Go 1.27 | `OPERATIVO` (binario AOT + `sync.Once`) |
+| 🐍 Python 3.13.17 | `OPERATIVO` (sin JIT; imports diferidos como única palanca) |
+| 🟢 Node.js 22.23.4 | `OPERATIVO` (V8 en capas; el costo real está en `require`) |
+| ☕ Java 25.0.5 | `OPERATIVO` (compilación en capas — **51,9x medidos**) |
+| 🔵 .NET 10.0.14 | `OPERATIVO` (`PublishReadyToRun` / `TieredPGO` / `PublishAot`) |
+| 🐹 Go 1.27.3 | `OPERATIVO` (binario AOT + `sync.Once`) |
 | 🦀 Rust 1.99 | `OPERATIVO` (AOT sin runtime + `OnceLock` con garantía de tipo) |
 
 ---

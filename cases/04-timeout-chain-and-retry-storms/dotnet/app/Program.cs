@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-// Caso 04 — Timeout chain y retry storms (stack .NET 10).
+// Caso 04 — Timeout chain y retry storms (stack .NET 10.0.14).
 // Espejo funcional del Main.java equivalente.
 // Primitivas distintivas:
 //   - CancellationTokenSource + Task.Delay para timeout cooperativo.
@@ -16,7 +16,7 @@ using System.Threading.Tasks;
 internal static class Program
 {
     private const string CaseName = "04 - Timeout chain y retry storms";
-    private static readonly string Stack = Environment.GetEnvironmentVariable("APP_STACK") ?? ".NET 10";
+    private static readonly string Stack = Environment.GetEnvironmentVariable("APP_STACK") ?? ".NET 10.0.14";
     private const long BreakerCooldownMs = 5000;
     private const int BreakerFailThreshold = 3;
 

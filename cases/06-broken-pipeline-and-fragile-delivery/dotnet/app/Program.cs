@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-// Caso 06 — Pipeline roto y delivery fragil (stack .NET 10).
+// Caso 06 — Pipeline roto y delivery fragil (stack .NET 10.0.14).
 // Espejo funcional del Main.java equivalente.
 // Primitivas distintivas:
 //   - record para EnvState/Deployment inmutables.
@@ -16,7 +16,7 @@ using System.Threading.Tasks;
 internal static class Program
 {
     private const string CaseName = "06 - Pipeline roto y delivery fragil";
-    private static readonly string Stack = Environment.GetEnvironmentVariable("APP_STACK") ?? ".NET 10";
+    private static readonly string Stack = Environment.GetEnvironmentVariable("APP_STACK") ?? ".NET 10.0.14";
     private const int MaxDeployments = 30;
 
     private sealed record EnvState(string Name, string Version, string Health);

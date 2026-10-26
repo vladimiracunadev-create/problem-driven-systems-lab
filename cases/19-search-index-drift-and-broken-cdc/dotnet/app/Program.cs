@@ -51,7 +51,7 @@ using System.Threading.Tasks;
 internal static class Program
 {
     private const string CaseName = "19 - Deriva del indice de busqueda y CDC roto";
-    private static readonly string Stack = Environment.GetEnvironmentVariable("APP_STACK") ?? ".NET 10";
+    private static readonly string Stack = Environment.GetEnvironmentVariable("APP_STACK") ?? ".NET 10.0.14";
     private static readonly string[] Terms = { "alfa", "beta", "gamma", "delta", "epsilon", "zeta", "eta", "theta" };
 
     private static readonly Stopwatch Clock = Stopwatch.StartNew();

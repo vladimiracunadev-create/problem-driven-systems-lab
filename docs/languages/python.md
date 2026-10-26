@@ -26,7 +26,7 @@ El *Global Interpreter Lock* permite que solo un thread ejecute bytecode de Pyth
 |---|---|
 | **Concurrencia de I/O sí, paralelismo de CPU no** | Dos threads esperando a la base avanzan en paralelo; dos threads calculando, no — [caso 11](../../cases/11-heavy-reporting-blocks-operations/python/README.md) |
 | **El worker en thread compite con los lectores** | En el caso 01 el worker que refresca la tabla resumen serializa trabajo de CPU con los handlers — [caso 01](../../cases/01-api-latency-under-load/python/README.md) |
-| **La biblioteca estándar cubre casi todo** | `sqlite3`, `logging`, `threading`, `gc`, `tracemalloc`, `re` — ninguno de los doce casos necesita un paquete de PyPI | transversal |
+| **La biblioteca estándar cubre casi todo** | `sqlite3`, `logging`, `threading`, `gc`, `tracemalloc`, `re` — ninguno de los veinte casos necesita un paquete de PyPI | transversal |
 | **Sin tipos en runtime** | Las anotaciones no se verifican al ejecutar. El error de firma llega con el request — [caso 07](../../cases/07-incremental-monolith-modernization/python/README.md) |
 
 ---
@@ -56,7 +56,7 @@ El *Global Interpreter Lock* permite que solo un thread ejecute bytecode de Pyth
 | [19 · Deriva del índice](../../cases/19-search-index-drift-and-broken-cdc/python/README.md) | álgebra de conjuntos (`-`, `&`) | **El diagnóstico más corto de los siete** — y `except: pass`, el bug más corto |
 | [20 · DLQ olvidada](../../cases/20-forgotten-dead-letter-queue/python/README.md) | jerarquía de excepciones | Clasifica en cuatro líneas — y `except Exception` está a una palabra de arruinarlo |
 
-> 💡 **El patrón que solo se ve mirando la columna entera:** ninguno de los doce casos necesita instalar nada. `sqlite3`, `logging`, `threading`, `gc` y `re` alcanzan. Es el argumento más fuerte de Python en este laboratorio y no tiene que ver con rendimiento: tiene que ver con cuánto código de terceros hay que auditar para llegar a producción.
+> 💡 **El patrón que solo se ve mirando la columna entera:** ninguno de los veinte casos necesita instalar nada. `sqlite3`, `logging`, `threading`, `gc` y `re` alcanzan. Es el argumento más fuerte de Python en este laboratorio y no tiene que ver con rendimiento: tiene que ver con cuánto código de terceros hay que auditar para llegar a producción.
 
 ---
 

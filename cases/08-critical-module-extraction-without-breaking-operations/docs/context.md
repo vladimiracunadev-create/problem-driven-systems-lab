@@ -22,11 +22,11 @@ Es un reto frecuente cuando se busca aliviar cuellos de botella o reducir depend
 | Stack | Versión | URL en el hub | Implementación |
 |---|---|---|---|
 | 🐘 PHP | `PHP 8.4.27` | `http://localhost:8100/08/` | [README](../php/README.md) |
-| 🐍 Python | `Python 3.12` | `http://localhost:8200/08/` | [README](../python/README.md) |
-| 🟢 Node.js | `Node.js 22` | `http://localhost:8300/08/` | [README](../node/README.md) |
-| ☕ Java | `Java 25` | `http://localhost:8400/08/` | [README](../java/README.md) |
-| 🔵 .NET | `.NET 10` | `http://localhost:8500/08/` | [README](../dotnet/README.md) |
-| 🐹 Go | `Go 1.27` | `http://localhost:8600/08/` | [README](../go/README.md) |
+| 🐍 Python | `Python 3.13.17` | `http://localhost:8200/08/` | [README](../python/README.md) |
+| 🟢 Node.js | `Node.js 22.23.4` | `http://localhost:8300/08/` | [README](../node/README.md) |
+| ☕ Java | `Java 25.0.5` | `http://localhost:8400/08/` | [README](../java/README.md) |
+| 🔵 .NET | `.NET 10.0.14` | `http://localhost:8500/08/` | [README](../dotnet/README.md) |
+| 🐹 Go | `Go 1.27.3` | `http://localhost:8600/08/` | [README](../go/README.md) |
 | 🦀 Rust | `Rust 1.99` | `http://localhost:8700/08/` | [README](../rust/README.md) |
 
 > ⚠️ **Nota de honestidad del caso:** No simula un rollout distribuido completo ni feature flags globales. Si deja visible la logica clave: proxy de compatibilidad, contratos y cutover gradual.

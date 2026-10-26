@@ -7,7 +7,7 @@
 El laboratorio se organiza hoy como un sistema de cuatro capas:
 
 1. una capa editorial y operativa en la raíz;
-2. un portal local ligero para evaluación guiada, más entradas completas por lenguaje (PHP, Python, Node.js, Java 25 y .NET 10 operativos, cada uno con su propio compose raíz);
+2. un portal local ligero para evaluación guiada, más entradas completas por lenguaje (PHP, Python, Node.js, Java 25 y .NET 10.0.14 operativos, cada uno con su propio compose raíz);
 3. un catálogo maestro en metadatos compartidos;
 4. casos problem-driven con stacks aislados por Docker.
 
@@ -93,11 +93,11 @@ Cada lenguaje operativo tiene su compose raíz — un comando levanta los 20 cas
 | Archivo | Lenguaje | Puerto hub | Observaciones |
 |---|---|---|---|
 | `compose.root.yml` | PHP 8.4.27 | `:8100` | + portal `:8080`, Prometheus `:9091`, Grafana `:3001`, RDS × 2 internos |
-| `compose.python.yml` | Python 3.12 | `:8200` | 20 casos en un solo contenedor dispatcher, stdlib pura |
-| `compose.nodejs.yml` | Node.js 20 | `:8300` | 20 casos en un solo contenedor, stdlib pura |
-| `compose.java.yml` | Java 25 | `:8400` | 20 casos en un solo contenedor, JDK built-in (`HttpServer`, `HttpClient`) |
-| `compose.dotnet.yml` | .NET 10 | `:8500` | 20 casos en un solo contenedor, BCL built-in (`HttpListener`, `System.Text.Json`) |
-| `compose.go.yml` | Go 1.27 | `:8600` | 20 casos en un solo contenedor, stdlib (`net/http`, `encoding/json`, `httputil.ReverseProxy`) |
+| `compose.python.yml` | Python 3.13.17 | `:8200` | 20 casos en un solo contenedor dispatcher, stdlib pura |
+| `compose.nodejs.yml` | Node.js 22.23.4 | `:8300` | 20 casos en un solo contenedor, stdlib pura |
+| `compose.java.yml` | Java 25.0.5 (Corretto) | `:8400` | 20 casos en un solo contenedor, JDK built-in (`HttpServer`, `HttpClient`) |
+| `compose.dotnet.yml` | .NET 10.0.14 | `:8500` | 20 casos en un solo contenedor, BCL built-in (`HttpListener`, `System.Text.Json`) |
+| `compose.go.yml` | Go 1.27.3 | `:8600` | 20 casos en un solo contenedor, stdlib (`net/http`, `encoding/json`, `httputil.ReverseProxy`) |
 | `compose.rust.yml` | Rust 1.99 | `:8700` | 20 casos en un solo contenedor; `std` **no** trae HTTP ni JSON — capa propia sobre `TcpListener` |
 | `compose.portal.yml` | — | `:8080` | portal liviano solamente |
 
@@ -168,11 +168,13 @@ graph TB
 
 | Stack | Contenedores | Detalle |
 |---|---|---|
-| PHP | **~7** | 1 dispatcher con 12 subprocesos + 2 PostgreSQL + worker + exporter + Prometheus + Grafana. Los 6 extras son **servicios reales del caso 01**, no procesos PHP. |
-| Python | **1** | dispatcher con 12 subprocesos `subprocess.Popen` internos |
-| Node | **1** | dispatcher con 12 subprocesos `child_process.spawn` internos |
-| Java | **1** | dispatcher con 12 `ProcessBuilder` (`java Main`) internos |
-| .NET | **1** | dispatcher con 12 subprocesos `dotnet` internos |
+| PHP | **~7** | 1 dispatcher con 20 subprocesos + 2 PostgreSQL + worker + exporter + Prometheus + Grafana. Los servicios adicionales son **servicios reales del caso 01**, no procesos PHP. |
+| Python | **1** | dispatcher con 20 subprocesos `subprocess.Popen` internos |
+| Node | **1** | dispatcher con 20 subprocesos `child_process.spawn` internos |
+| Java | **1** | dispatcher con 20 `ProcessBuilder` (`java Main`) internos |
+| .NET | **1** | dispatcher con 20 subprocesos `dotnet` internos |
+| Go | **1** | dispatcher con 20 subprocesos binarios internos |
+| Rust | **1** | dispatcher con 20 subprocesos binarios internos |
 
 **Por qué la asimetría existe y por qué es honesta:** el caso 01 PHP estudia contención real de DB. Eso requiere una PostgreSQL real, un worker real que actualice cache en background, y observabilidad real (Prometheus + Grafana) para que el visitante pueda *ver* la contención disolviéndose. Los otros stacks tienen los mismos patrones de solución (worker + cache + readers no bloqueados) pero contra substrato simulado para caso 01 — esa asimetría está documentada explícitamente en cada `comparison.md` y en el [ROADMAP Eje 2](ROADMAP.md#fidelidad-universal-de-caso-01) como deuda.
 
@@ -397,7 +399,7 @@ La arquitectura actual queda sostenida por seis mecanismos:
 | CI `compose-config` | 92 archivos `compose.yml` parsean sin errores (7 hubs + 84 per-case + portal) |
 | CI `compose-smoke` (PHP per-case) | Cada caso PHP arranca y responde `/health` en aislamiento |
 | CI `portal-probe` (hub PHP) | El hub PHP `:8100` arranca y el portal resuelve `probe.php` |
-| CI `hub-probe` (Python/Node/Java/.NET/Go/Rust) | Cada hub arranca y responde `/01/health`…`/12/health` |
+| CI `hub-probe` (Python/Node/Java/.NET/Go/Rust) | Cada hub arranca y responde `/01/health`…`/20/health` |
 
 ---
 
@@ -409,7 +411,7 @@ La arquitectura actual queda sostenida por seis mecanismos:
 | `compose.python.yml` | Python: dispatcher único con 20 casos internos (`:8200`) |
 | `compose.nodejs.yml` | Node: dispatcher único con 20 casos internos (`:8300`) |
 | `compose.java.yml` | Java 25: dispatcher único con 20 casos internos (`:8400`) |
-| `compose.dotnet.yml` | .NET 10: dispatcher único con 20 casos internos (`:8500`) |
+| `compose.dotnet.yml` | .NET 10.0.14: dispatcher único con 20 casos internos (`:8500`) |
 | `compose.go.yml` | Go 1.27: dispatcher único con 20 casos internos (`:8600`) |
 | `compose.rust.yml` | Rust 1.99: dispatcher único con 20 casos internos (`:8700`) |
 | `compose.portal.yml` | Portal liviano solamente (`:8080`) |

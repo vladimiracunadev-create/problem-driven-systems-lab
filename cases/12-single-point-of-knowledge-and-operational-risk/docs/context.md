@@ -22,11 +22,11 @@ No es solo problema humano: también es problema arquitectónico, documental y o
 | Stack | Versión | URL en el hub | Implementación |
 |---|---|---|---|
 | 🐘 PHP | `PHP 8.4.27` | `http://localhost:8100/12/` | [README](../php/README.md) |
-| 🐍 Python | `Python 3.12` | `http://localhost:8200/12/` | [README](../python/README.md) |
-| 🟢 Node.js | `Node.js 22` | `http://localhost:8300/12/` | [README](../node/README.md) |
-| ☕ Java | `Java 25` | `http://localhost:8400/12/` | [README](../java/README.md) |
-| 🔵 .NET | `.NET 10` | `http://localhost:8500/12/` | [README](../dotnet/README.md) |
-| 🐹 Go | `Go 1.27` | `http://localhost:8600/12/` | [README](../go/README.md) |
+| 🐍 Python | `Python 3.13.17` | `http://localhost:8200/12/` | [README](../python/README.md) |
+| 🟢 Node.js | `Node.js 22.23.4` | `http://localhost:8300/12/` | [README](../node/README.md) |
+| ☕ Java | `Java 25.0.5` | `http://localhost:8400/12/` | [README](../java/README.md) |
+| 🔵 .NET | `.NET 10.0.14` | `http://localhost:8500/12/` | [README](../dotnet/README.md) |
+| 🐹 Go | `Go 1.27.3` | `http://localhost:8600/12/` | [README](../go/README.md) |
 | 🦀 Rust | `Rust 1.99` | `http://localhost:8700/12/` | [README](../rust/README.md) |
 
 > ⚠️ **Nota de honestidad del caso:** No reemplaza una organizacion real ni un programa formal de on-call. Si reproduce el riesgo central: memoria tribal, bus factor y continuidad operacional.

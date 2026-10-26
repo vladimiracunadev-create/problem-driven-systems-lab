@@ -1,4 +1,4 @@
-# 🐍 Caso 12 — Python 3.12 con comparacion legacy vs conocimiento distribuido
+# 🐍 Caso 12 — Python 3.13.17 con comparacion legacy vs conocimiento distribuido
 
 > Implementacion operativa del caso 12 para contrastar dependencia de conocimiento tribal contra una postura mas resiliente.
 
@@ -28,7 +28,7 @@ El conocimiento silencioso y la dependencia tribal tienen un impacto tangible en
 
 ## 🧱 Servicio
 
-- `app` → API Python 3.12 con dominios operativos, puntajes de runbook, backups, drills y simulacion de incidentes.
+- `app` → API Python 3.13.17 con dominios operativos, puntajes de runbook, backups, drills y simulacion de incidentes.
 
 ## 🚀 Arranque
 

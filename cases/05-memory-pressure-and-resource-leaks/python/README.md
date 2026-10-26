@@ -1,4 +1,4 @@
-# 🐍 Caso 05 — Python 3.12 con presion de memoria comparada
+# 🐍 Caso 05 — Python 3.13.17 con presion de memoria comparada
 
 > Implementacion operativa del caso 05 para mostrar como una fuga silenciosa degrada un proceso largo frente a una variante que controla su estado.
 
@@ -27,7 +27,7 @@ Python tiene recolector de basura automatico, pero no elimina el problema de fug
 
 ## 🧱 Servicio
 
-- `app` → API Python 3.12 con estado local acumulado por modo y metricas de presion.
+- `app` → API Python 3.13.17 con estado local acumulado por modo y metricas de presion.
 
 ## 🚀 Arranque
 

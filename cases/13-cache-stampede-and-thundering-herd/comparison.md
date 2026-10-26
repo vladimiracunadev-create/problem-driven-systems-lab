@@ -3,7 +3,7 @@
 > **TL;DR** — Con 16 llamadores sobre una clave recién expirada, la variante naive manda **16 recálculos** al origen en los siete stacks. La variante corregida manda **1**, y los otros 15 se cuelgan del mismo resultado. El número es idéntico en los siete; lo que cambia es cuánto código hace falta para conseguirlo.
 
 <!-- nav -->
-`🐘 PHP 8.3` · `🐍 Python 3.12` · `🟢 Node.js 22` · `☕ Java 25` · `🔵 .NET 10` · `🐹 Go 1.27` · `🦀 Rust 1.99`
+`🐘 PHP 8.4.27` · `🐍 Python 3.13.17` · `🟢 Node.js 22.23.4` · `☕ Java 25.0.5` · `🔵 .NET 10.0.14` · `🐹 Go 1.27.3` · `🦀 Rust 1.99`
 
 **Estructura:** 🎯 el problema → 🧪 fidelidad del substrato → una sección por stack → ⚖️ tabla de decisión → 📊 primitiva por stack → 🏁 veredicto y ranking
 <!-- /nav -->
@@ -230,12 +230,12 @@ flight.ready.notify_all();
 
 | Puesto | Stack | Por qué |
 |---|---|---|
-| 🥇 | **Go 1.27** | El patrón canónico cabe en 25 líneas de stdlib. `WaitGroup` usado al revés es la expresión más económica del lab: un contador con espera **es** un single-flight. |
-| 🥈 | **Java 25** | `computeIfAbsent` elimina la ventana check-then-act por contrato del mapa. Es el único stack donde la garantía no depende de que el autor ordene bien las líneas. |
-| 🥉 | **Node.js 22** | Tres líneas y no hace falta ninguna primitiva de sincronización: la Promise ya es el patrón. Pierde el podio porque la garantía la pone el orden que escriba el autor. |
+| 🥇 | **Go 1.27.3** | El patrón canónico cabe en 25 líneas de stdlib. `WaitGroup` usado al revés es la expresión más económica del lab: un contador con espera **es** un single-flight. |
+| 🥈 | **Java 25.0.5** | `computeIfAbsent` elimina la ventana check-then-act por contrato del mapa. Es el único stack donde la garantía no depende de que el autor ordene bien las líneas. |
+| 🥉 | **Node.js 22.23.4** | Tres líneas y no hace falta ninguna primitiva de sincronización: la Promise ya es el patrón. Pierde el podio porque la garantía la pone el orden que escriba el autor. |
 | 4º | **Rust 1.99** | Hay que construir la primitiva entera con `Condvar`, pero a cambio el compilador impide el use-after-remove que en los otros seis es responsabilidad del programador. |
-| 5º | **.NET 10** | La trampa de `GetOrAdd` es una lección valiosa, pero es una lección sobre la biblioteca, no sobre el problema. El envoltorio `Lazy` no es obvio y hay que saberlo de antes. |
-| 6º | **Python 3.12** | `Event` expresa bien la espera, pero el GIL vuelve el fenómeno difícil de observar: sin una barrera explícita el caso da un falso verde. |
-| 7º | **PHP 8.3** | Sin heap compartido, el single-flight tiene que salir del proceso. Es la respuesta más costosa — y, a la vez, la que enseña la lección más transferible: **el double check dentro del lock**, que los otros seis pueden esconder y PHP no. |
+| 5º | **.NET 10.0.14** | La trampa de `GetOrAdd` es una lección valiosa, pero es una lección sobre la biblioteca, no sobre el problema. El envoltorio `Lazy` no es obvio y hay que saberlo de antes. |
+| 6º | **Python 3.13.17** | `Event` expresa bien la espera, pero el GIL vuelve el fenómeno difícil de observar: sin una barrera explícita el caso da un falso verde. |
+| 7º | **PHP 8.4.27** | Sin heap compartido, el single-flight tiene que salir del proceso. Es la respuesta más costosa — y, a la vez, la que enseña la lección más transferible: **el double check dentro del lock**, que los otros seis pueden esconder y PHP no. |
 
 **Lectura honesta:** el resultado del caso es el mismo en los siete. 16 recálculos sin coordinación, 1 con ella. Si este caso te deja con la conclusión «debería migrar a Go», lo leíste al revés. La conclusión es «debería agregar el double check adentro del lock que ya tengo».

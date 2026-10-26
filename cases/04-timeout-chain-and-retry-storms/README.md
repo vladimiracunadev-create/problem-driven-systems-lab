@@ -61,19 +61,19 @@ Una integración lenta o inestable dispara **reintentos sin control**, satura th
 
 `quote-legacy` amplifica el incidente con más intentos y más espera. `quote-resilient` aplica timeout corto, backoff, circuit breaker en estado persistente y fallback cacheado. `dependency/state`, `incidents` y `diagnostics/summary` dejan visible el costo operacional de cada postura. Ver [`php/README.md`](php/README.md). Modo aislado: puerto `814`.
 
-### Python 3.12
+### Python 3.13.17
 
 Misma lógica que PHP con `stdlib`: `time.sleep` para latencias, `threading.Lock` para el breaker, `time.time` para cooldown. Sin requirements externos. Ver [`python/README.md`](python/README.md). Modo aislado: puerto `834`. Hub Python: `http://localhost:8200/04/`.
 
-### Node.js 22
+### Node.js 22.23.4
 
 `AbortController` y `AbortSignal` como timeout **cooperativo**: el handler decide si abortar al recibir la señal. Circuit breaker en memoria con tres estados (`closed`/`open`/`half_open`) y reapertura automática tras cooldown. Ver [`node/README.md`](node/README.md). Modo aislado: puerto `824`. Hub Node: `http://localhost:8300/04/`.
 
-### Java 25
+### Java 25.0.5
 
 `CompletableFuture.orTimeout(Duration)` como deadline a nivel future (cancela cooperativamente al pasar el plazo). `AtomicReference<BreakerState>` con CAS para transiciones `closed → open → half_open` sin lock global. `record BreakerState(state, failCount, openedAt)` inmutable evita race conditions de "leí state pero failCount era stale". Ver [`java/README.md`](java/README.md). Modo aislado: puerto `844`. Hub Java: `http://localhost:8400/04/`.
 
-### .NET 10
+### .NET 10.0.14
 
 `CancellationTokenSource(TimeSpan)` como deadline cooperativo a nivel `Task` (cancela cooperativamente al pasar el plazo). `Interlocked.CompareExchange` para transiciones `closed → open → half_open` sin lock. `record BreakerState(string State, int FailCount, DateTime OpenedAt)` inmutable evita race conditions. Ver [`dotnet/README.md`](dotnet/README.md). Modo aislado: puerto `854`. Hub .NET: `http://localhost:8500/04/`.
 
@@ -130,10 +130,10 @@ Evita caídas en cascada y mejora resiliencia frente a terceros o componentes in
 | Stack | Estado |
 | --- | --- |
 | 🐘 PHP 8 | `OPERATIVO` (timeout corto + backoff + circuit breaker + fallback) |
-| 🐍 Python 3.12 | `OPERATIVO` (`threading.Lock`, `time.time()` cooldown, stdlib pura) |
-| 🟢 Node.js 22 | `OPERATIVO` (`AbortController`/`AbortSignal` cooperativo + CB en memoria) |
-| ☕ Java 25 | `OPERATIVO` (`CompletableFuture.orTimeout` + `AtomicReference<BreakerState>` CAS) |
-| 🔵 .NET 10 | `OPERATIVO` (`CancellationTokenSource` + `Interlocked.CompareExchange` sobre `record BreakerState`) |
+| 🐍 Python 3.13.17 | `OPERATIVO` (`threading.Lock`, `time.time()` cooldown, stdlib pura) |
+| 🟢 Node.js 22.23.4 | `OPERATIVO` (`AbortController`/`AbortSignal` cooperativo + CB en memoria) |
+| ☕ Java 25.0.5 | `OPERATIVO` (`CompletableFuture.orTimeout` + `AtomicReference<BreakerState>` CAS) |
+| 🔵 .NET 10.0.14 | `OPERATIVO` (`CancellationTokenSource` + `Interlocked.CompareExchange` sobre `record BreakerState`) |
 
 ---
 
@@ -157,7 +157,7 @@ curl http://localhost:8300/04/health
 docker compose -f compose.java.yml up -d --build
 curl http://localhost:8400/04/health
 
-# .NET 10 (los 20 casos)
+# .NET 10.0.14 (los 20 casos)
 docker compose -f compose.dotnet.yml up -d --build
 curl http://localhost:8500/04/health
 ```

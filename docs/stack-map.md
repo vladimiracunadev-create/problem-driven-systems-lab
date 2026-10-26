@@ -15,7 +15,7 @@ El objetivo es mostrar cómo **el mismo problema se manifiesta y se resuelve de 
 
 | Stack | Ícono | Versión | Fortaleza en el contexto del lab |
 |-------|-------|---------|----------------------------------|
-| PHP | 🐘 | 8.3 | Ideal para casos de APIs web, ORMs y patrones MVC |
+| PHP | 🐘 | 8.4.27 | Ideal para casos de APIs web, ORMs y patrones MVC |
 | Node.js | 🟢 | 22 LTS | Single-thread + event loop; primitivas estandar (`AbortController`, `AbortSignal.timeout`, `Proxy`, `EventEmitter`, `monitorEventLoopDelay`, `process.memoryUsage`) que mapean a problemas de cancelacion, contratos, eventos y observabilidad sin libreria externa |
 | Python | 🐍 | 3.12 | Data, análisis, scripting y rapidez de prototipado |
 | Java | ☕ | 25 LTS | Tipado fuerte, contexto acotado con `ScopedValue` y primitivas concurrentes ricas (`ConcurrentHashMap`, `CompletableFuture.orTimeout`, `LinkedHashMap` LRU, `Semaphore`, `ThreadPoolExecutor`); paralelismo real sin GIL |

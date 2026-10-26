@@ -43,12 +43,12 @@ Mapa de lo que vive hoy en los 5 composes raíz:
 
 | Servicio actual | Imagen / runtime | Equivalente AWS sugerido |
 |---|---|---|
-| `portal-php8` (`:8080`) | PHP 8 + Apache | ECS Fargate Service · o S3 + CloudFront si se hace estático |
-| `pdsl-php-lab` (`:8100`) — dispatcher PHP con 12 procesos `php -S` internos | PHP 8.4.27 + tini | ECS Fargate Service · Lambda Container |
-| `pdsl-python-lab` (`:8200`) — dispatcher con 12 subprocesos `subprocess.Popen` | Python 3.12 | ECS Fargate Service · Lambda zip |
-| `pdsl-node-lab` (`:8300`) — dispatcher con 12 subprocesos `child_process.spawn` | Node.js 20 | ECS Fargate Service · Lambda zip |
-| `pdsl-java-lab` (`:8400`) — dispatcher con 12 `ProcessBuilder` (`java Main`) | Java 25 (eclipse-temurin) | ECS Fargate Service · Lambda Container |
-| `pdsl-dotnet-lab` (`:8500`) — dispatcher con 12 subprocesos `dotnet` | .NET 10 | ECS Fargate Service · Lambda Container |
+| `portal-php8` (`:8080`) | PHP 8.4.27 + Apache | ECS Fargate Service · o S3 + CloudFront si se hace estático |
+| `pdsl-php-lab` (`:8100`) — dispatcher PHP con 20 procesos `php -S` internos | PHP 8.4.27 + tini | ECS Fargate Service · Lambda Container |
+| `pdsl-python-lab` (`:8200`) — dispatcher con 20 subprocesos `subprocess.Popen` | Python 3.13.17 | ECS Fargate Service · Lambda zip |
+| `pdsl-node-lab` (`:8300`) — dispatcher con 20 subprocesos `child_process.spawn` | Node.js 22.23.4 | ECS Fargate Service · Lambda zip |
+| `pdsl-java-lab` (`:8400`) — dispatcher con 20 `ProcessBuilder` (`java Main`) | Java 25.0.5 (Corretto) | ECS Fargate Service · Lambda Container |
+| `pdsl-dotnet-lab` (`:8500`) — dispatcher con 20 subprocesos `dotnet` | .NET 10.0.14 | ECS Fargate Service · Lambda Container |
 | `case01-db`, `case02-db` | postgres:16-alpine | **RDS PostgreSQL** (db.t4g.micro) · Aurora Serverless v2 |
 | `case01-worker` | PHP CLI loop | ECS Fargate Service long-running · EventBridge + Lambda |
 | `case01-prometheus` (`:9091`) | prom/prometheus | **AMP** (Amazon Managed Prometheus) |
@@ -450,7 +450,7 @@ psql "postgres://problemlab:***@case01.xxxxx.us-east-1.rds.amazonaws.com:5432/pr
 ### Fase 4 — Cluster ECS y task definitions (Días 3-4)
 
 - Crear cluster `pdsl-prod` con capacity provider Fargate + Fargate Spot 70/30 para ahorrar.
-- Por cada hub: una task definition de 512 CPU / 1024 MiB (ARM64) que corre el dispatcher con sus 12 procesos internos.
+- Por cada hub: una task definition de 512 CPU / 1024 MiB (ARM64) que corre el dispatcher con sus 20 procesos internos.
 - Worker case01 como service separado (256 CPU / 512 MiB).
 - 6 services detrás de un único ALB con listener rules por path:
 

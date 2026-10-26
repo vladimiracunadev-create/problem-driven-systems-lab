@@ -15,7 +15,7 @@ using System.Threading.Tasks;
 // Espejo del patron java-dispatcher / python-dispatcher / node-dispatcher:
 //   - Spawnea cada caso como subproceso interno (`dotnet /app/cases/0X/Case0X.dll`).
 //   - Listening publico en :8500.
-//   - Enruta por prefijo de path: /01/* → :9501, /02/* → :9502, ..., /12/* → :9512.
+//   - Enruta por prefijo de path: /01/* → :9501, /02/* → :9502, ..., /20/* → :9520.
 //   - Los puertos internos nunca se exponen al host.
 //
 // Casos operativos hoy: 01-12.
@@ -52,7 +52,7 @@ internal static class Program
         int.TryParse(Environment.GetEnvironmentVariable("PORT"), out var p) ? p : 8500;
 
     private static readonly string AppStack =
-        Environment.GetEnvironmentVariable("APP_STACK") ?? ".NET 10";
+        Environment.GetEnvironmentVariable("APP_STACK") ?? ".NET 10.0.14";
 
     private static readonly HttpClient Http = new(new SocketsHttpHandler
     {
@@ -159,7 +159,7 @@ internal static class Program
             }
             if (path.Length < 3 || path[0] != '/')
             {
-                await SendJsonAsync(ctx, 404, "{\"error\":\"not_found\",\"hint\":\"usa /01/..., /02/..., ..., /12/...\"}");
+                await SendJsonAsync(ctx, 404, "{\"error\":\"not_found\",\"hint\":\"usa /01/..., /02/..., ..., /20/...\"}");
                 return;
             }
             var caseId = path.Substring(1, 2);

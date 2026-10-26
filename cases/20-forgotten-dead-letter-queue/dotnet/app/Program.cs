@@ -56,7 +56,7 @@ using System.Threading.Tasks;
 internal static class Program
 {
     private const string CaseName = "20 - La dead letter queue olvidada";
-    private static readonly string Stack = Environment.GetEnvironmentVariable("APP_STACK") ?? ".NET 10";
+    private static readonly string Stack = Environment.GetEnvironmentVariable("APP_STACK") ?? ".NET 10.0.14";
     private static readonly string[] PoisonClasses =
         { "schema_mismatch", "unknown_field", "null_required", "invalid_encoding" };
 

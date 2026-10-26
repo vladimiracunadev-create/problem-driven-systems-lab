@@ -96,19 +96,19 @@ Se necesita **desacoplar una parte clave** del sistema, pero esa parte participa
 
 `pricing-bigbang` rompe el contrato y deja a los consumers fallando; `pricing-compatible` mantiene contrato estable con proxy de traducción y registra progreso de cutover por consumer. `extraction/state`, `flows` y `diagnostics/summary` exponen `compatibility_proxy_hits`, `contract_tests`, shadow traffic. Ver [`php/README.md`](php/README.md). Modo aislado: puerto `818`.
 
-### Python 3.12
+### Python 3.13.17
 
 Función de adaptación + lista de listeners para eventos. Sin frameworks externos. Ver [`python/README.md`](python/README.md). Modo aislado: puerto `838`. Hub: `http://localhost:8200/08/`.
 
-### Node.js 22
+### Node.js 22.23.4
 
 `Proxy` nativo intercepta `computeFinalPrice` y traduce `cost_usd` → `price` en vuelo. `EventEmitter` (`cutoverBus`) publica cada avance del cutover a N subscribers. Ver [`node/README.md`](node/README.md). Modo aislado: puerto `828`. Hub: `http://localhost:8300/08/`.
 
-### Java 25
+### Java 25.0.5
 
 `Function<PriceRequestOld, PriceRequestNew>` como proxy compat (tipado, sin reflection). `CopyOnWriteArrayList<Consumer<String>>` como event bus thread-safe: reads paralelos sin lock, writes raros copian el array — exactamente el patrón "muchos suscriptores, raras altas/bajas". Ver [`java/README.md`](java/README.md). Modo aislado: puerto `848`. Hub: `http://localhost:8400/08/`.
 
-### .NET 10
+### .NET 10.0.14
 
 `Func<PriceRequestOld, PriceRequestNew>` como proxy compat (tipado, sin reflection). `ImmutableList<Action<string>>` + `ImmutableInterlocked.Update` como event bus thread-safe: reads paralelos sin lock, writes raros generan nueva lista persistente — patron equivalente al `CopyOnWriteArrayList` Java. `record PriceRequestOld/New` inmutables. Ver [`dotnet/README.md`](dotnet/README.md). Modo aislado: puerto `858`. Hub: `http://localhost:8500/08/`.
 
@@ -133,10 +133,10 @@ Reduce **riesgo operacional** y habilita **evolución controlada** de piezas cr�
 | Stack | Estado |
 | --- | --- |
 | 🐘 PHP 8 | `OPERATIVO` (proxy de traducción + registro de cutover) |
-| 🐍 Python 3.12 | `OPERATIVO` (función adapter + lista de listeners) |
-| 🟢 Node.js 22 | `OPERATIVO` (`Proxy` nativo + `EventEmitter` para eventos) |
-| ☕ Java 25 | `OPERATIVO` (`Function` proxy + `CopyOnWriteArrayList<Consumer>` event bus) |
-| 🔵 .NET 10 | `OPERATIVO` (`Func<Old,New>` proxy + `ImmutableList<Action<string>>` event bus) |
+| 🐍 Python 3.13.17 | `OPERATIVO` (función adapter + lista de listeners) |
+| 🟢 Node.js 22.23.4 | `OPERATIVO` (`Proxy` nativo + `EventEmitter` para eventos) |
+| ☕ Java 25.0.5 | `OPERATIVO` (`Function` proxy + `CopyOnWriteArrayList<Consumer>` event bus) |
+| 🔵 .NET 10.0.14 | `OPERATIVO` (`Func<Old,New>` proxy + `ImmutableList<Action<string>>` event bus) |
 
 ---
 

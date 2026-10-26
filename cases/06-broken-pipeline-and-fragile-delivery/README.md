@@ -62,19 +62,19 @@ El software **funciona en desarrollo**, pero falla al desplegar, promover cambio
 
 `deploy-legacy` aplica el cambio directo sin preflight y deja el ambiente en `degraded` cuando el scenario es malo. `deploy-controlled` ejecuta preflight → smoke → promote, o rollback automático al `before.version` si smoke falla. `environments`, `deployments` y `diagnostics/summary` muestran el contraste. Ver [`php/README.md`](php/README.md). Modo aislado: puerto `816`.
 
-### Python 3.12
+### Python 3.13.17
 
 Misma lógica con stdlib. `dict` por ambiente, lista de deployments para historial. Sin frameworks externos. Ver [`python/README.md`](python/README.md). Modo aislado: puerto `836`. Hub: `http://localhost:8200/06/`.
 
-### Node.js 22
+### Node.js 22.23.4
 
 `AbortController` para cancelación cooperativa entre pasos del pipeline — si el cliente desconecta o el deadline se vence, los pasos en curso reciben la señal y limpian limpio. Ver [`node/README.md`](node/README.md). Modo aislado: puerto `826`. Hub: `http://localhost:8300/06/`.
 
-### Java 25
+### Java 25.0.5
 
 `record EnvState(name, version, health)` y `record Deployment(at, variant, env, version, scenario, result)` **inmutables** — cada deploy crea instancias nuevas, no muta. Eso descarta una clase entera de bugs de concurrencia: el snapshot que captura `before` en preflight se mantiene aunque otro thread haga `put()` paralelo. `ConcurrentHashMap<String, EnvState>` por ambiente; state machine como guards explícitos (preflight → smoke → promote | rollback). Ver [`java/README.md`](java/README.md). Modo aislado: puerto `846`. Hub: `http://localhost:8400/06/`.
 
-### .NET 10
+### .NET 10.0.14
 
 `record EnvState(string Name, string Version, string Health)` y `record Deployment(...)` **inmutables** con `with`-expressions para rollback sin mutar. `ConcurrentDictionary<string, EnvState>` por ambiente; state machine con guards explicitos (preflight → smoke → promote | rollback). `Interlocked.Increment` para contadores. Ver [`dotnet/README.md`](dotnet/README.md). Modo aislado: puerto `856`. Hub: `http://localhost:8500/06/`.
 
@@ -99,10 +99,10 @@ Permite **publicar con menos riesgo**, reducir incidentes operativos y mejorar l
 | Stack | Estado |
 | --- | --- |
 | 🐘 PHP 8 | `OPERATIVO` (preflight + smoke + rollback automático) |
-| 🐍 Python 3.12 | `OPERATIVO` (misma lógica con stdlib, dict por ambiente) |
-| 🟢 Node.js 22 | `OPERATIVO` (`AbortController` para cancelación cooperativa entre pasos) |
-| ☕ Java 25 | `OPERATIVO` (`record` types inmutables + state machine + `ConcurrentHashMap`) |
-| 🔵 .NET 10 | `OPERATIVO` (`record EnvState` + `ConcurrentDictionary` + `with`-expressions para rollback) |
+| 🐍 Python 3.13.17 | `OPERATIVO` (misma lógica con stdlib, dict por ambiente) |
+| 🟢 Node.js 22.23.4 | `OPERATIVO` (`AbortController` para cancelación cooperativa entre pasos) |
+| ☕ Java 25.0.5 | `OPERATIVO` (`record` types inmutables + state machine + `ConcurrentHashMap`) |
+| 🔵 .NET 10.0.14 | `OPERATIVO` (`record EnvState` + `ConcurrentDictionary` + `with`-expressions para rollback) |
 
 ---
 

@@ -1,4 +1,4 @@
-# 🐍 Caso 04 — Python 3.12 resiliente vs legacy
+# 🐍 Caso 04 — Python 3.13.17 resiliente vs legacy
 
 > Implementacion operativa del caso 04 para contrastar retries agresivos contra una variante que contiene la falla.
 
@@ -27,7 +27,7 @@ El control de tiempo en Python sobre I/O simulado con `time.sleep()` expone la d
 
 ## 🧱 Servicio
 
-- `app` → API Python 3.12 con escenarios de proveedor estable, lento, caido o intermitente.
+- `app` → API Python 3.13.17 con escenarios de proveedor estable, lento, caido o intermitente.
 
 ## 🚀 Arranque
 
